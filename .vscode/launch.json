@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Dev (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "-d",
+        "chrome",
+        "--web-port=8080",
+        "--dart-define=ENV=dev"
+      ]
+    },
+    {
+      "name": "Flutter Prod (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "-d",
+        "chrome",
+        "--web-port=8080",
+        "--dart-define=ENV=prod"
+      ]
+    },
+    {
+      "name": "Flutter (Edge)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "-d",
+        "edge",
+        "--web-port=8080"
+      ]
+    }
+  ]
+}

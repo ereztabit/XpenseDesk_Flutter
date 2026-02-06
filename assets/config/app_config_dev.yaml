@@ -1,0 +1,7 @@
+api:
+  baseUrl: https://localhost:7223
+
+app:
+  name: XpenseDesk Dev
+  version: 1.0.0
+  environment: development

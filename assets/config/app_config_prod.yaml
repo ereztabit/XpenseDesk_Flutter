@@ -1,0 +1,7 @@
+api:
+  baseUrl: https://api.xpensedesk.com
+
+app:
+  name: XpenseDesk
+  version: 1.0.0
+  environment: production
