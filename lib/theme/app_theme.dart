@@ -11,7 +11,31 @@ class AppTheme {
   static const Color textGray = Color(0xFF6B7280);
   
   static ThemeData get lightTheme {
+    final textTheme = GoogleFonts.assistantTextTheme(
+      const TextTheme(
+        headlineMedium: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.bold,
+          color: textDark,
+        ),
+        headlineSmall: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+          color: textDark,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 16,
+          color: textDark,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 14,
+          color: textGray,
+        ),
+      ),
+    );
+
     return ThemeData(
+      fontFamily: GoogleFonts.assistant().fontFamily,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryPurple,
         primary: primaryPurple,
@@ -55,35 +79,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.assistant(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       
-      textTheme: GoogleFonts.assistantTextTheme(
-        const TextTheme(
-          headlineMedium: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: textDark,
-          ),
-          headlineSmall: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: textDark,
-          ),
-          bodyLarge: TextStyle(
-            fontSize: 16,
-            color: textDark,
-          ),
-          bodyMedium: TextStyle(
-            fontSize: 14,
-            color: textGray,
-          ),
-        ),
-      ),
+      textTheme: textTheme,
       
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         elevation: 4,

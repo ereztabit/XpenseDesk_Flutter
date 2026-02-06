@@ -108,9 +108,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(40),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
+                    child: AutofillGroup(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -144,6 +145,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
+                            autocorrect: false,
+                            autofillHints: const [AutofillHints.email],
                             autofocus: true,
                             enabled: !_isLoading,
                             decoration: InputDecoration(
@@ -236,6 +239,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
+          ),
           ),
 
           // Footer
