@@ -65,5 +65,8 @@ linux/flutter/generated_plugins.cmake
 # Coverage
 coverage/
 
+# Generated localization files
+lib/generated/
+
 # Exceptions to above rules.
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
