@@ -26,5 +26,6 @@
   "manager": "Manager",
   "employee": "Employee",
   "english": "English",
-  "hebrew": "Hebrew"
+  "hebrew": "Hebrew",
+  "checkEmailForMagicLink": "Check your email for the magic link"
 }

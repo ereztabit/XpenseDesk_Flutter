@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'generated/l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
+import 'config/app_config.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'providers/locale_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppConfig.getInstance();
   runApp(const ProviderScope(child: MyApp()));
 }
 

@@ -19,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? _errorMessage;
+  String? _successMessage;
 
   @override
   void dispose() {
@@ -27,20 +28,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    setState(() => _errorMessage = null);
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+    });
 
     final email = _emailController.text;
     if (email.trim().isEmpty) return;
 
     final authService = ref.read(authServiceProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
-      final user = await authService.login(email);
-      ref.read(currentUserProvider.notifier).setUser(user);
+      await authService.tryToLogin(email);
       
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/dashboard');
-      }
+      setState(() {
+        _successMessage = l10n.checkEmailForMagicLink;
+      });
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
     }
@@ -114,6 +118,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
+                            
+                            // Success Message
+                            if (_successMessage != null) ...[
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.check_circle_outline, color: Colors.green[700]),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        _successMessage!,
+                                        style: TextStyle(color: Colors.green[700]),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
                             
                             // Error Alert
                             if (_errorMessage != null) ...[
