@@ -2,18 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
-import '../models/user.dart';
+import 'package:intl/intl.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSession();
+  }
+
+  Future<void> _initializeSession() async {
+    await ref.read(tokenInfoProvider.notifier).loadFromSession();
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokenInfo = ref.watch(tokenInfoProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    if (user == null) {
-      // Navigate back to login if no user
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (tokenInfo == null) {
+      // Navigate back to login if no token info
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/');
       });
@@ -24,81 +50,95 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.appName),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final authService = ref.read(authServiceProvider);
+              await authService.clearSessionToken();
+              ref.read(tokenInfoProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.of(context).pushReplacementNamed('/');
+              }
+            },
+          ),
+        ],
       ),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                l10n.welcome,
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
-              const SizedBox(height: 32),
-              
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoRow(
-                        context,
-                        label: l10n.workEmail,
-                        value: user.email,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildInfoRow(
-                        context,
-                        label: l10n.role,
-                        value: user.role == UserRole.manager 
-                          ? l10n.manager 
-                          : l10n.employee,
-                      ),
-                    ],
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              children: [
+                Text(
+                  '${l10n.welcome}, ${tokenInfo.fullName}!',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Token Information',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Table(
+                          columnWidths: const {
+                            0: IntrinsicColumnWidth(),
+                            1: FlexColumnWidth(),
+                          },
+                          border: TableBorder.all(
+                            color: Colors.grey.shade300,
+                            width: 1,
+                          ),
+                          children: [
+                            _buildTableRow('Session ID', tokenInfo.sessionId),
+                            _buildTableRow('Session Expires At', 
+                              DateFormat('yyyy-MM-dd HH:mm:ss').format(tokenInfo.sessionExpiresAt)),
+                            _buildTableRow('User ID', tokenInfo.userId),
+                            _buildTableRow('Email', tokenInfo.email),
+                            _buildTableRow('Full Name', tokenInfo.fullName),
+                            _buildTableRow('Role ID', tokenInfo.roleId.toString()),
+                            _buildTableRow('Role', tokenInfo.roleId == 1 ? 'Manager' : 'Employee'),
+                            _buildTableRow('User Status', tokenInfo.userStatus),
+                            _buildTableRow('Company ID', tokenInfo.companyId),
+                            _buildTableRow('Company Name', tokenInfo.companyName),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              
-              ElevatedButton(
-                onPressed: () async {
-                  final authService = ref.read(authServiceProvider);
-                  await authService.clearSessionToken();
-                  ref.read(currentUserProvider.notifier).logout();
-                  if (context.mounted) {
-                    Navigator.of(context).pushReplacementNamed('/');
-                  }
-                },
-                child: const Text('Logout'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, {required String label, required String value}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
       children: [
-        SizedBox(
-          width: 100,
+        Padding(
+          padding: const EdgeInsets.all(12),
           child: Text(
-            '$label:',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Text(value),
         ),
       ],
     );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web/web.dart' as web;
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
-import '../models/user.dart';
 import '../theme/app_theme.dart';
 
 class LoginCallbackScreen extends ConsumerStatefulWidget {
@@ -40,13 +40,16 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
       await authService.login(widget.token!);
       
       // Fetch user info
-      final userInfo = await authService.getUserInfo();
-      final user = User.fromJson(userInfo);
+      final tokenInfo = await authService.getUserInfo();
       
-      // Set user in provider
-      ref.read(currentUserProvider.notifier).setUser(user);
+      // Set token info in provider
+      ref.read(tokenInfoProvider.notifier).setTokenInfo(tokenInfo);
       
       if (mounted) {
+        // Update browser URL to remove token
+        web.window.history.replaceState(null, '', '/dashboard');
+        
+        // Navigate to dashboard
         Navigator.of(context).pushReplacementNamed('/dashboard');
       }
     } on AuthException catch (e) {

@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import '../models/token_info.dart';
 
 /// Exception thrown when authentication fails
 class AuthException implements Exception {
@@ -94,8 +95,8 @@ class AuthService {
   }
 
   /// Get current user info using session token
-  /// Returns user data from /api/auth/token-info
-  Future<Map<String, dynamic>> getUserInfo() async {
+  /// Returns TokenInfo from /api/auth/token-info
+  Future<TokenInfo> getUserInfo() async {
     final sessionToken = await getSessionToken();
     
     if (sessionToken == null || sessionToken.isEmpty) {
@@ -118,7 +119,7 @@ class AuthService {
       throw const AuthException('Invalid response from server');
     }
 
-    return data;
+    return TokenInfo.fromJson(data);
   }
 }
 
