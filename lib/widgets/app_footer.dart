@@ -21,34 +21,76 @@ class AppFooter extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Copyright
-          Text(
-            '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 600;
           
-          // Legal Links
-          Row(
+          if (isMobile) {
+            // Stack vertically on mobile
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Legal Links
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        // Navigate to privacy policy
+                      },
+                      child: Text(l10n.privacyPolicy),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        // Navigate to terms of service
+                      },
+                      child: Text(l10n.termsOfService),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Copyright
+                Text(
+                  '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            );
+          }
+          
+          // Desktop layout - side by side
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              TextButton(
-                onPressed: () {
-                  // Navigate to privacy policy
-                },
-                child: Text(l10n.privacyPolicy),
+              // Copyright
+              Text(
+                '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(width: 8),
-              TextButton(
-                onPressed: () {
-                  // Navigate to terms of service
-                },
-                child: Text(l10n.termsOfService),
+              
+              // Legal Links
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to privacy policy
+                    },
+                    child: Text(l10n.privacyPolicy),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: () {
+                      // Navigate to terms of service
+                    },
+                    child: Text(l10n.termsOfService),
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
