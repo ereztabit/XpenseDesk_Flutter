@@ -24,4 +24,21 @@ class ApiService {
 
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
+
+  /// Make a GET request with optional authorization token
+  Future<Map<String, dynamic>> get(
+    String endpoint, {
+    String? authToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    if (authToken != null) {
+      headers['Authorization'] = 'Bearer $authToken';
+    }
+    
+    final response = await http.get(uri, headers: headers);
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
 }

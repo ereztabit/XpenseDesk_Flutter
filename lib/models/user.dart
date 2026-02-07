@@ -14,6 +14,14 @@ class User {
 
   String get displayName => email.split('@').first;
 
+  factory User.fromJson(Map<String, dynamic> json) {
+    final roleId = json['roleId'] as int? ?? 2;
+    return User(
+      email: json['email'] as String,
+      role: roleId == 1 ? UserRole.manager : UserRole.employee,
+    );
+  }
+
   User copyWith({
     String? email,
     UserRole? role,

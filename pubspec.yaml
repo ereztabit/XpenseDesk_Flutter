@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   # Internationalization
   intl: any
@@ -48,6 +50,7 @@ dependencies:
   # Icons & Fonts
   cupertino_icons: ^1.0.2
   google_fonts: ^8.0.1
+  shared_preferences: ^2.5.4
 
 dev_dependencies:
   flutter_test:

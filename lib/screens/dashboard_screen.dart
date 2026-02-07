@@ -64,9 +64,13 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  final authService = ref.read(authServiceProvider);
+                  await authService.clearSessionToken();
                   ref.read(currentUserProvider.notifier).logout();
-                  Navigator.of(context).pushReplacementNamed('/');
+                  if (context.mounted) {
+                    Navigator.of(context).pushReplacementNamed('/');
+                  }
                 },
                 child: const Text('Logout'),
               ),
