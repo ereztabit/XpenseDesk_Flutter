@@ -32,5 +32,7 @@
   "spendHistory": "Spend History",
   "companyConfiguration": "Company Configuration",
   "userManagement": "User Management",
-  "logout": "Logout"
+  "logout": "Logout",
+  "contactSupport": "Contact Support",
+  "helpRequestSubject": "Help Request for {companyName}"
 }

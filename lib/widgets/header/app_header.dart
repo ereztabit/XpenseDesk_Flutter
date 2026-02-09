@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../generated/l10n/app_localizations.dart';
 import 'desktop_menu.dart';
 import '../../models/menu_items.dart';
 import 'mobile_menu_sheet.dart';
@@ -113,6 +114,10 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         break;
       case 'users':
         if (mounted) Navigator.pushNamed(context, '/manager/users');
+        break;
+      case 'contact-support':
+        final t = AppLocalizations.of(context)!;
+        await MenuItems.launchContactSupport(tokenInfo, t);
         break;
       case 'logout':
         ref.read(tokenInfoProvider.notifier).logout();

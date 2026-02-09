@@ -44,6 +44,9 @@ dependencies:
   # HTTP Client
   http: ^1.6.0
   
+  # URL Launcher (for mailto links)
+  url_launcher: ^6.3.1
+  
   # YAML Configuration
   yaml: ^3.1.3
   

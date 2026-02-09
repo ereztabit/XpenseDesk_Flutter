@@ -65,9 +65,13 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
   }
 
   void _handleMenuItemSelected(String value) async {
-    await _close();
+    final tokenInfo = ref.read(tokenInfoProvider);
+    final t = AppLocalizations.of(context)!;
 
-    if (value == 'logout') {
+    if (value == 'contact-support' && tokenInfo != null) {
+      await MenuItems.launchContactSupport(tokenInfo, t);
+    } else if (value == 'logout') {
+      await _close();
       ref.read(tokenInfoProvider.notifier).logout();
       await ref.read(authServiceProvider).clearSessionToken();
       if (mounted) {
@@ -179,11 +183,11 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                         itemCount: menuItems.length,
                         itemBuilder: (context, index) {
                           final item = menuItems[index];
-                          final isLast = index == menuItems.length - 1;
+                          final isPrevItemAction = index > 0 && menuItems[index - 1].isAction;
 
                           return Column(
                             children: [
-                              if (isLast && item.isDestructive)
+                              if (item.isAction && !isPrevItemAction)
                                 const Divider(height: 1),
                               InkWell(
                                 onTap: () => _handleMenuItemSelected(item.id),
@@ -206,7 +210,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
-                                            color: item.isDestructive
+                                            color: item.isAction
                                                 ? AppTheme.mutedForeground
                                                 : AppTheme.foreground,
                                           ),

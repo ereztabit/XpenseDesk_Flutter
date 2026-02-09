@@ -119,13 +119,14 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                               final item = entry.value;
                               final items = MenuItems.getItems(t, widget.isManager);
                               final isLast = index == items.length - 1;
+                              final isPrevItemAction = index > 0 && items[index - 1].isAction;
                               
                               return Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (index == 0)
                                     const SizedBox.shrink(),
-                                  if (isLast && item.isDestructive)
+                                  if ((item.isAction && !isPrevItemAction) || (isLast && item.isDestructive))
                                     Container(
                                       height: 1,
                                       width: double.infinity,
@@ -133,13 +134,13 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                                     ),
                                   Padding(
                                     padding: EdgeInsets.symmetric(
-                                      vertical: (index == 0 || isLast) ? 4 : 0,
+                                      vertical: (index == 0 || item.isAction) ? 4 : 0,
                                     ),
                                     child: _buildMenuItem(
                                       icon: item.icon,
                                       label: item.label,
                                       onTap: () => widget.onMenuItemSelected(item.id),
-                                      isDestructive: item.isDestructive,
+                                      isAction: item.isAction,
                                     ),
                                   ),
                                 ],
@@ -223,7 +224,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    bool isDestructive = false,
+    bool isAction = false,
   }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -239,14 +240,14 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
               Icon(
                 icon,
                 size: 16, // h-4 w-4
-                color: isDestructive ? AppTheme.mutedForeground : AppTheme.mutedForeground, // text-muted-foreground for icons
+                color: AppTheme.mutedForeground, // text-muted-foreground for icons
               ),
               const SizedBox(width: 12), // gap-3
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 14, // text-sm
-                  color: isDestructive ? AppTheme.mutedForeground : AppTheme.foreground, // text-foreground or text-muted-foreground
+                  color: isAction ? AppTheme.mutedForeground : AppTheme.foreground,
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../generated/l10n/app_localizations.dart';
 import 'token_info.dart';
 
@@ -8,6 +9,7 @@ class MenuItem {
   final String label;
   final bool requiresManagerRole;
   final bool isDestructive;
+  final bool isAction;
 
   const MenuItem({
     required this.id,
@@ -15,6 +17,7 @@ class MenuItem {
     required this.label,
     this.requiresManagerRole = false,
     this.isDestructive = false,
+    this.isAction = false,
   });
 }
 
@@ -49,6 +52,13 @@ class MenuItems {
         icon: Icons.logout,
         label: t.logout,
         isDestructive: true,
+        isAction: true,
+      ),
+      MenuItem(
+        id: 'contact-support',
+        icon: Icons.email_outlined,
+        label: t.contactSupport,
+        isAction: true,
       ),
     ];
 
@@ -99,5 +109,21 @@ class MenuItems {
       return fullName[0].toUpperCase();
     }
     return email.isNotEmpty ? email[0].toUpperCase() : '?';
+  }
+
+  static Future<void> launchContactSupport(
+    TokenInfo tokenInfo,
+    AppLocalizations t,
+  ) async {
+    try {
+      final subject = Uri.encodeComponent(
+        t.helpRequestSubject(tokenInfo.companyName),
+      );
+      final mailtoUri = Uri.parse('mailto:support@xpensedesk.com?subject=$subject');
+      await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      // Silently fail if email client cannot be launched
+      print('Could not launch email client: $e');
+    }
   }
 }

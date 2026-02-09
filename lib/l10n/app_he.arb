@@ -32,5 +32,7 @@
   "spendHistory": "היסטוריית הוצאות",
   "companyConfiguration": "הגדרות חברה",
   "userManagement": "ניהול משתמשים",
-  "logout": "התנתקות"
+  "logout": "התנתקות",
+  "contactSupport": "צור קשר עם התמיכה",
+  "helpRequestSubject": "בקשת עזרה עבור {companyName}"
 }
