@@ -7,11 +7,13 @@ import '../../generated/l10n/app_localizations.dart';
 import 'desktop_menu.dart';
 import '../../models/menu_items.dart';
 import 'mobile_menu_sheet.dart';
+import '../language_switcher.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 /// 
-/// Layout: Logo (left) | Avatar Menu (right)
+/// Layout: Logo (left) | Language Switcher + Avatar Menu (right)
 /// Role-based menu: Manager sees all options, Employee sees limited options
+/// Language Switcher: Always visible in header, left of avatar/hamburger button
 class AppHeader extends ConsumerStatefulWidget {
   const AppHeader({super.key});
 
@@ -138,12 +140,54 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   @override
   Widget build(BuildContext context) {
     final tokenInfo = ref.watch(tokenInfoProvider);
+    final isMobile = MediaQuery.of(context).size.width < 768;
 
+    // For login/signup pages (no tokenInfo)
     if (tokenInfo == null) {
-      return const SizedBox.shrink();
+      return Container(
+        height: 56,
+        decoration: const BoxDecoration(
+          color: AppTheme.card,
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.border,
+              width: 1,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: AppTheme.containerMaxWidth),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Logo (left)
+                  Image.asset(
+                    'assets/images/logo.png',
+                    height: 32,
+                    fit: BoxFit.contain,
+                  ),
+
+                  // Language Switcher (far right on login/signup)
+                  const LanguageSwitcher(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    // For logged-in pages
     final initials = MenuItems.getInitials(tokenInfo.fullName, tokenInfo.email);
 
     return Container(
@@ -184,74 +228,84 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   ),
                 ),
 
-                // Menu Button (right) - Hamburger on mobile, Avatar on desktop
-                if (isMobile)
-                  // Mobile: Hamburger icon
-                  GestureDetector(
-                    key: _avatarKey,
-                    onTap: _toggleMenu,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: _isMenuOpen
-                              ? AppTheme.muted
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Icon(
-                          Icons.menu,
-                          size: 24,
-                          color: AppTheme.foreground,
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  // Desktop: Avatar Button
-                  GestureDetector(
-                    key: _avatarKey,
-                    onTap: _toggleMenu,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 36, // h-9
-                        height: 36, // w-9
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: _isMenuOpen
-                              ? Border.all(
-                                  color: AppTheme.primary.withAlpha(51),
-                                  width: 2,
-                                )
-                              : null,
-                        ),
-                        child: Center(
+                // Right side: Language Switcher + Menu Button
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Language Switcher (left of avatar/hamburger)
+                    const LanguageSwitcher(),
+                    const SizedBox(width: 12),
+
+                    // Menu Button - Hamburger on mobile, Avatar on desktop
+                    if (isMobile)
+                      // Mobile: Hamburger icon
+                      GestureDetector(
+                        key: _avatarKey,
+                        onTap: _toggleMenu,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
                           child: Container(
-                            width: 32, // h-8
-                            height: 32, // w-8
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(25), // bg-primary/10
+                              color: _isMenuOpen
+                                  ? AppTheme.muted
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(
+                              Icons.menu,
+                              size: 24,
+                              color: AppTheme.foreground,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      // Desktop: Avatar Button
+                      GestureDetector(
+                        key: _avatarKey,
+                        onTap: _toggleMenu,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: 36, // h-9
+                            height: 36, // w-9
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
+                              border: _isMenuOpen
+                                  ? Border.all(
+                                      color: AppTheme.primary.withAlpha(51),
+                                      width: 2,
+                                    )
+                                  : null,
                             ),
                             child: Center(
-                              child: Text(
-                                initials,
-                                style: const TextStyle(
-                                  color: AppTheme.primary, // text-primary
-                                  fontSize: 12, // text-xs
-                                  fontWeight: FontWeight.w600, // font-semibold
+                              child: Container(
+                                width: 32, // h-8
+                                height: 32, // w-8
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withAlpha(25), // bg-primary/10
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    initials,
+                                    style: const TextStyle(
+                                      color: AppTheme.primary, // text-primary
+                                      fontSize: 12, // text-xs
+                                      fontWeight: FontWeight.w600, // font-semibold
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                  ],
+                ),
               ],
             ),
           ),
