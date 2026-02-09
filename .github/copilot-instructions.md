@@ -352,3 +352,96 @@ Help me learn and implement:
 - **Architecture**: Clean architecture, separation of concerns, project structure
 - **Testing**: Widget tests, unit tests, integration tests
 - **Performance**: Build optimization, lazy loading, performance best practices
+
+---
+
+## File Organization Rules
+
+Models vs Widgets:
+- If a file contains only data classes, utilities, or business logic, place it in lib/models/ or lib/services/
+- If a file contains UI components that extend Widget, StatelessWidget, or StatefulWidget, place it in lib/widgets/
+- Data models with UI helper methods like buildUserInfo are still models if they are primarily data structures
+
+Widget Grouping:
+- Group related widgets in subfolders: lib/widgets/feature-name/
+- Example: Header-related widgets go in lib/widgets/header/
+- Shared or generic widgets stay at lib/widgets/ root level
+- Keep one primary widget per file, extract complex sub-widgets if needed
+
+---
+
+## Flutter Modern Patterns
+
+Deprecated Methods to Avoid:
+- DO NOT use Color.withOpacity() - this is deprecated
+- Instead use Color.withAlpha() with 0-255 range
+
+Opacity to Alpha Conversion:
+- 10 percent opacity = withAlpha(25)
+- 20 percent opacity = withAlpha(51)
+- 40 percent opacity = withAlpha(102)
+- 60 percent opacity = withAlpha(153)
+- 80 percent opacity = withAlpha(204)
+- Formula: opacity percentage times 2.55 rounded to integer
+
+---
+
+## Incremental Development Approach
+
+When building multi-platform features follow this order:
+
+1. Desktop First - Build and test the desktop version completely
+2. Extract Shared Logic - Identify reusable components and data structures
+3. Create Shared Models - Build a single source of truth for data structures
+4. Mobile Adaptation - Build the mobile version using the shared models
+5. Responsive Coordination - Add breakpoint logic in parent components to switch between versions
+
+Example Pattern: Built desktop avatar menu, extracted menu items model, built mobile menu sheet using shared model, added responsive header that coordinates both versions.
+
+---
+
+## Naming Best Practices
+
+Widget Naming:
+- Include platform context for clarity when building platform-specific widgets
+- Bad example: AvatarMenu (ambiguous which platform)
+- Good example: DesktopMenu (clear platform target)
+- Good example: MobileMenuSheet (clear platform and UI pattern)
+
+File Naming:
+- File names must match the primary class name in snake case
+- DesktopMenu class goes in desktop_menu.dart
+- Keep feature context in file names, not generic names like sheet.dart
+
+---
+
+## Safe Refactoring Process
+
+When reorganizing files follow these steps:
+
+1. Create new directory structure first using create_directory
+2. Move files using terminal commands like Move-Item, not manual copy and paste
+3. Update all import statements in batch using multi_replace_string_in_file
+4. Always verify with get_errors tool BEFORE assuming the refactoring succeeded
+5. Run flutter clean followed by flutter pub get to clear stale build cache
+6. Close and reopen affected files in the editor to refresh the language server
+7. If errors persist after cleaning, they may be stale IDE cache, ask user to reload VS Code window
+
+---
+
+## Import Path Patterns
+
+After moving files, update relative import paths correctly:
+
+From lib/widgets/file.dart to other locations:
+- Theme: import '../theme/app_theme.dart'
+- Models: import '../models/model_name.dart'
+- Providers: import '../providers/provider_name.dart'
+
+From lib/widgets/header/file.dart to other locations:
+- Theme: import '../../theme/app_theme.dart'
+- Models: import '../../models/model_name.dart'
+- Sibling widgets in same folder: import 'sibling_widget.dart'
+
+Each level up requires one more set of ../
+
