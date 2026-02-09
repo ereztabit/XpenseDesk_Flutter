@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../theme/app_theme.dart';
-import '../providers/auth_provider.dart';
-import '../services/auth_service.dart';
-import '../generated/l10n/app_localizations.dart';
-import 'avatar_menu.dart';
+import '../../theme/app_theme.dart';
+import '../../providers/auth_provider.dart';
+import 'desktop_menu.dart';
+import '../../models/menu_items.dart';
+import 'mobile_menu_sheet.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 /// 
@@ -22,17 +22,6 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   OverlayEntry? _overlayEntry;
   final GlobalKey _avatarKey = GlobalKey();
   bool _isMenuOpen = false;
-
-  /// Extract initials from full name (first letter of first + last name)
-  String _getInitials(String? fullName, String email) {
-    if (fullName == null || fullName.isEmpty) {
-      return email.isNotEmpty ? email[0].toUpperCase() : '?';
-    }
-    final parts = fullName.trim().split(' ');
-    if (parts.isEmpty) return email.isNotEmpty ? email[0].toUpperCase() : '?';
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
 
   /// Get dashboard route based on user role
   String _getDashboardRoute(int roleId) {
@@ -54,6 +43,30 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     final tokenInfo = ref.read(tokenInfoProvider);
     if (tokenInfo == null) return;
 
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
+    if (isMobile) {
+      _openMobileMenu();
+    } else {
+      _openDesktopMenu();
+    }
+  }
+
+  void _openMobileMenu() {
+    _overlayEntry = OverlayEntry(
+      builder: (context) => MobileMenuSheet(
+        onClose: _closeMenu,
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    setState(() => _isMenuOpen = true);
+  }
+
+  void _openDesktopMenu() {
+    final tokenInfo = ref.read(tokenInfoProvider);
+    if (tokenInfo == null) return;
+
     final renderBox = _avatarKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
@@ -61,7 +74,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     final size = renderBox.size;
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => AvatarMenu(
+      builder: (context) => DesktopMenu(
         offset: offset,
         avatarSize: size,
         tokenInfo: tokenInfo,
@@ -92,7 +105,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         final role = _isManager(tokenInfo.roleId) ? 'manager' : 'employee';
         if (mounted) Navigator.pushNamed(context, '/$role/profile');
         break;
-      case 'history':
+      case 'spend-history':
         if (mounted) Navigator.pushNamed(context, '/manager/history');
         break;
       case 'company-config':
@@ -120,13 +133,13 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   @override
   Widget build(BuildContext context) {
     final tokenInfo = ref.watch(tokenInfoProvider);
-    final t = AppLocalizations.of(context);
 
     if (tokenInfo == null) {
       return const SizedBox.shrink();
     }
 
-    final initials = _getInitials(tokenInfo.fullName, tokenInfo.email);
+    final isMobile = MediaQuery.of(context).size.width < 768;
+    final initials = MenuItems.getInitials(tokenInfo.fullName, tokenInfo.email);
 
     return Container(
       height: 56,
@@ -166,40 +179,67 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   ),
                 ),
 
-                // Avatar Button (right)
-                GestureDetector(
-                  key: _avatarKey,
-                  onTap: _toggleMenu,
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 36, // h-9
-                      height: 36, // w-9
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: _isMenuOpen
-                            ? Border.all(
-                                color: AppTheme.primary.withOpacity(0.2),
-                                width: 2,
-                              )
-                            : null,
+                // Menu Button (right) - Hamburger on mobile, Avatar on desktop
+                if (isMobile)
+                  // Mobile: Hamburger icon
+                  GestureDetector(
+                    key: _avatarKey,
+                    onTap: _toggleMenu,
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: _isMenuOpen
+                              ? AppTheme.muted
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(
+                          Icons.menu,
+                          size: 24,
+                          color: AppTheme.foreground,
+                        ),
                       ),
-                      child: Center(
-                        child: Container(
-                          width: 32, // h-8
-                          height: 32, // w-8
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary.withOpacity(0.1), // bg-primary/10
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              initials,
-                              style: const TextStyle(
-                                color: AppTheme.primary, // text-primary
-                                fontSize: 12, // text-xs
-                                fontWeight: FontWeight.w600, // font-semibold
+                    ),
+                  )
+                else
+                  // Desktop: Avatar Button
+                  GestureDetector(
+                    key: _avatarKey,
+                    onTap: _toggleMenu,
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 36, // h-9
+                        height: 36, // w-9
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: _isMenuOpen
+                              ? Border.all(
+                                  color: AppTheme.primary.withAlpha(51),
+                                  width: 2,
+                                )
+                              : null,
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 32, // h-8
+                            height: 32, // w-8
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withAlpha(25), // bg-primary/10
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                initials,
+                                style: const TextStyle(
+                                  color: AppTheme.primary, // text-primary
+                                  fontSize: 12, // text-xs
+                                  fontWeight: FontWeight.w600, // font-semibold
+                                ),
                               ),
                             ),
                           ),
@@ -207,7 +247,6 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

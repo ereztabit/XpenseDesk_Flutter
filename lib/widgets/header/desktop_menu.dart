@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../theme/app_theme.dart';
-import '../generated/l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
+import '../../generated/l10n/app_localizations.dart';
+import '../../models/menu_items.dart';
 
-/// Custom avatar menu overlay - Jira-style popover
-class AvatarMenu extends ConsumerStatefulWidget {
+/// Desktop menu overlay - Jira-style popover
+class DesktopMenu extends ConsumerStatefulWidget {
   final Offset offset;
   final Size avatarSize;
   final dynamic tokenInfo;
@@ -13,7 +14,7 @@ class AvatarMenu extends ConsumerStatefulWidget {
   final VoidCallback onClose;
   final Function(String) onMenuItemSelected;
 
-  const AvatarMenu({
+  const DesktopMenu({
     super.key,
     required this.offset,
     required this.avatarSize,
@@ -24,10 +25,10 @@ class AvatarMenu extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<AvatarMenu> createState() => _AvatarMenuState();
+  ConsumerState<DesktopMenu> createState() => _DesktopMenuState();
 }
 
-class _AvatarMenuState extends ConsumerState<AvatarMenu>
+class _DesktopMenuState extends ConsumerState<DesktopMenu>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
@@ -112,55 +113,38 @@ class _AvatarMenuState extends ConsumerState<AvatarMenu>
                               color: AppTheme.border, // bg-border
                             ),
 
-                            // Menu items group
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4), // py-1
-                              child: Column(
+                            // Menu items
+                            ...MenuItems.getItems(t!, widget.isManager).asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final item = entry.value;
+                              final items = MenuItems.getItems(t, widget.isManager);
+                              final isLast = index == items.length - 1;
+                              
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _buildMenuItem(
-                                    icon: Icons.person_outline,
-                                    label: t?.myProfile ?? 'My Profile',
-                                    onTap: () => widget.onMenuItemSelected('profile'),
+                                  if (index == 0)
+                                    const SizedBox.shrink(),
+                                  if (isLast && item.isDestructive)
+                                    Container(
+                                      height: 1,
+                                      width: double.infinity,
+                                      color: AppTheme.border,
+                                    ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: (index == 0 || isLast) ? 4 : 0,
+                                    ),
+                                    child: _buildMenuItem(
+                                      icon: item.icon,
+                                      label: item.label,
+                                      onTap: () => widget.onMenuItemSelected(item.id),
+                                      isDestructive: item.isDestructive,
+                                    ),
                                   ),
-
-                                  if (widget.isManager) ...[
-                                    _buildMenuItem(
-                                      icon: Icons.history,
-                                      label: t?.spendHistory ?? 'Spend History',
-                                      onTap: () => widget.onMenuItemSelected('history'),
-                                    ),
-                                    _buildMenuItem(
-                                      icon: Icons.business,
-                                      label: t?.companyConfiguration ?? 'Company Configuration',
-                                      onTap: () => widget.onMenuItemSelected('company-config'),
-                                    ),
-                                    _buildMenuItem(
-                                      icon: Icons.people_outline,
-                                      label: t?.userManagement ?? 'User Management',
-                                      onTap: () => widget.onMenuItemSelected('users'),
-                                    ),
-                                  ],
                                 ],
-                              ),
-                            ),
-
-                            // Divider
-                            Container(
-                              height: 1,
-                              width: double.infinity,
-                              color: AppTheme.border,
-                            ),
-
-                            // Logout section
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: _buildMenuItem(
-                                icon: Icons.logout,
-                                label: t?.logout ?? 'Logout',
-                                onTap: () => widget.onMenuItemSelected('logout'),
-                                isDestructive: true,
-                              ),
-                            ),
+                              );
+                            }).toList(),
                           ],
                         ),
                       ),
@@ -176,7 +160,7 @@ class _AvatarMenuState extends ConsumerState<AvatarMenu>
   }
 
   Widget _buildUserInfoSection() {
-    final initials = _getInitials(widget.tokenInfo.fullName, widget.tokenInfo.email);
+    final initials = MenuItems.getInitials(widget.tokenInfo.fullName, widget.tokenInfo.email);
     
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16), // px-5 pt-5 pb-4
@@ -189,7 +173,7 @@ class _AvatarMenuState extends ConsumerState<AvatarMenu>
             height: 56, // w-14
             margin: const EdgeInsets.only(bottom: 4), // mb-1
             decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1), // bg-primary/10
+              color: AppTheme.primary.withAlpha(25), // bg-primary/10
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -245,8 +229,8 @@ class _AvatarMenuState extends ConsumerState<AvatarMenu>
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: onTap,
-        hoverColor: AppTheme.muted.withOpacity(0.6), // hover:bg-muted/60
-        splashColor: AppTheme.muted.withOpacity(0.4),
+        hoverColor: AppTheme.muted.withAlpha(153), // hover:bg-muted/60
+        splashColor: AppTheme.muted.withAlpha(102),
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), // px-5 py-2.5
@@ -270,15 +254,5 @@ class _AvatarMenuState extends ConsumerState<AvatarMenu>
         ),
       ),
     );
-  }
-
-  String _getInitials(String? fullName, String email) {
-    if (fullName == null || fullName.isEmpty) {
-      return email.isNotEmpty ? email[0].toUpperCase() : '?';
-    }
-    final parts = fullName.trim().split(' ');
-    if (parts.isEmpty) return email.isNotEmpty ? email[0].toUpperCase() : '?';
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 }
