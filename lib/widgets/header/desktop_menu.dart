@@ -126,7 +126,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                                 children: [
                                   if (index == 0)
                                     const SizedBox.shrink(),
-                                  if ((item.isAction && !isPrevItemAction) || (isLast && item.isDestructive))
+                                  if ((item.isAction && !isPrevItemAction) || (isLast && item.isDestructive) || item.id == 'contact-support')
                                     Container(
                                       height: 1,
                                       width: double.infinity,

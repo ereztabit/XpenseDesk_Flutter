@@ -39,6 +39,22 @@ class AuthService {
     await _apiService.post('/api/auth/try-login', {'email': normalizedEmail});
   }
 
+  // ==================== DEV-ONLY CODE START ====================
+  /// DEV ONLY: Request magic link and return full response including magicLink
+  /// This is used for automated login during development
+  Future<Map<String, dynamic>> tryToLoginDev(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+
+    // Validate email format
+    if (!isValidEmail(normalizedEmail)) {
+      throw const AuthException('Please enter a valid email address');
+    }
+
+    // Call API and return full response (includes magicLink in dev mode)
+    return await _apiService.post('/api/auth/try-login', {'email': normalizedEmail});
+  }
+  // ==================== DEV-ONLY CODE END ======================
+
   /// Exchange login token for session token
   /// Returns the session token on success
   Future<String> login(String loginToken) async {

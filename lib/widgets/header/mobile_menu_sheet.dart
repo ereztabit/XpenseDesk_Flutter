@@ -187,7 +187,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
                           return Column(
                             children: [
-                              if (item.isAction && !isPrevItemAction)
+                              if ((item.isAction && !isPrevItemAction) || item.id == 'contact-support')
                                 const Divider(height: 1),
                               InkWell(
                                 onTap: () => _handleMenuItemSelected(item.id),

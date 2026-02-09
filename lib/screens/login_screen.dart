@@ -7,6 +7,9 @@ import '../widgets/header/app_header.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/error_alert.dart';
 import '../theme/app_theme.dart';
+// ==================== DEV-ONLY IMPORT START ====================
+import 'package:url_launcher/url_launcher.dart';
+// ==================== DEV-ONLY IMPORT END ======================
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -49,6 +52,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() => _errorMessage = e.message);
     }
   }
+
+  // ==================== DEV-ONLY CODE START ====================
+  /// DEV ONLY: Automated login for development
+  Future<void> _handleDevLogin(String email) async {
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+      _emailController.text = email;
+    });
+
+    final authService = ref.read(authServiceProvider);
+
+    try {
+      final response = await authService.tryToLoginDev(email);
+      
+      // Extract magic link from response (backend returns it in dev mode)
+      final data = response['data'] as Map<String, dynamic>?;
+      final magicLink = data?['magicLink'] as String?;
+
+      if (magicLink != null && magicLink.isNotEmpty) {
+        // Open magic link in new tab
+        final uri = Uri.parse(magicLink);
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        setState(() {
+          _errorMessage = 'Dev mode: Magic link not found in response';
+        });
+      }
+    } on AuthException catch (e) {
+      setState(() => _errorMessage = e.message);
+    } catch (e) {
+      setState(() => _errorMessage = 'Dev login failed: $e');
+    }
+  }
+  // ==================== DEV-ONLY CODE END ======================
 
   @override
   Widget build(BuildContext context) {
@@ -159,6 +197,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
+                            
+                            // ==================== DEV-ONLY UI START ====================
+                            // DEV ONLY: Auto-login buttons
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: OutlinedButton(
+                                onPressed: () => _handleDevLogin('erez0502760106@gmail.com'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.orange,
+                                  side: const BorderSide(color: Colors.orange),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.bug_report, size: 16),
+                                    SizedBox(width: 8),
+                                    Text('DEV: Login as Admin'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: OutlinedButton(
+                                onPressed: () => _handleDevLogin('user@domain.com'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.orange,
+                                  side: const BorderSide(color: Colors.orange),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.bug_report, size: 16),
+                                    SizedBox(width: 8),
+                                    Text('DEV: Login as User'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            // ==================== DEV-ONLY UI END ======================
                             
                             // Sign Up Link
                             Row(
