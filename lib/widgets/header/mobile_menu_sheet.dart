@@ -20,7 +20,6 @@ class MobileMenuSheet extends ConsumerStatefulWidget {
 class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
 
   @override
@@ -31,15 +30,6 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
       reverseDuration: const Duration(milliseconds: 300),
       vsync: this,
     );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-      reverseCurve: Curves.easeIn,
-    ));
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
@@ -91,6 +81,17 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     final sheetWidth = (screenWidth * 0.75).clamp(0.0, 384.0);
 
     final menuItems = MenuItems.getItems(t, isManager);
+    
+    // Determine slide direction based on text direction
+    final isRTL = Directionality.of(context) == TextDirection.rtl;
+    final slideAnimation = Tween<Offset>(
+      begin: Offset(isRTL ? -1.0 : 1.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+      reverseCurve: Curves.easeIn,
+    ));
 
     return Stack(
       children: [
@@ -109,12 +110,13 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
         // Side sheet
         Positioned(
-          right: 0,
+          left: isRTL ? 0 : null,
+          right: isRTL ? null : 0,
           top: 0,
           bottom: 0,
           width: sheetWidth,
           child: SlideTransition(
-            position: _slideAnimation,
+            position: slideAnimation,
             child: Material(
               color: Colors.white,
               elevation: 16,
@@ -126,7 +128,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: isRTL ? MainAxisAlignment.start : MainAxisAlignment.end,
                         children: [
                           IconButton(
                             icon: const Icon(Icons.close),

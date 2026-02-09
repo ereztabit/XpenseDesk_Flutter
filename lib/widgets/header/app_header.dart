@@ -170,14 +170,14 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Logo (left)
+                  // Logo (auto-positions left in LTR, right in RTL)
                   Image.asset(
                     'assets/images/logo.png',
                     height: 32,
                     fit: BoxFit.contain,
                   ),
 
-                  // Language Switcher (far right on login/signup)
+                  // Language Switcher (auto-positions right in LTR, left in RTL)
                   const LanguageSwitcher(),
                 ],
               ),
@@ -216,7 +216,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Logo (left)
+                // Logo (auto-positions left in LTR, right in RTL)
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, _getDashboardRoute(tokenInfo.roleId));
@@ -228,7 +228,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   ),
                 ),
 
-                // Right side: Language Switcher + Menu Button
+                // Right side: Language Switcher + Menu Button (auto-reverses in RTL)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
