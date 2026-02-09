@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/app_header.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -47,81 +48,71 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appName),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              final authService = ref.read(authServiceProvider);
-              await authService.clearSessionToken();
-              ref.read(tokenInfoProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacementNamed('/');
-              }
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
-            child: Column(
-              children: [
-                Text(
-                  '${l10n.welcome}, ${tokenInfo.fullName}!',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Token Information',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+      body: Column(
+        children: [
+          const AppHeader(),
+          Expanded(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: Column(
+                    children: [
+                      Text(
+                        '${l10n.welcome}, ${tokenInfo.fullName ?? tokenInfo.email}!',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Token Information',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Table(
+                                columnWidths: const {
+                                  0: IntrinsicColumnWidth(),
+                                  1: FlexColumnWidth(),
+                                },
+                                border: TableBorder.all(
+                                  color: Colors.grey.shade300,
+                                  width: 1,
+                                ),
+                                children: [
+                                  _buildTableRow('Session ID', tokenInfo.sessionId),
+                                  _buildTableRow('Session Expires At', 
+                                    DateFormat('yyyy-MM-dd HH:mm:ss').format(tokenInfo.sessionExpiresAt)),
+                                  _buildTableRow('User ID', tokenInfo.userId),
+                                  _buildTableRow('Email', tokenInfo.email),
+                                  _buildTableRow('Full Name', tokenInfo.fullName ?? 'N/A'),
+                                  _buildTableRow('Role ID', tokenInfo.roleId.toString()),
+                                  _buildTableRow('Role', tokenInfo.roleId == 1 ? 'Manager' : 'Employee'),
+                                  _buildTableRow('User Status', tokenInfo.userStatus),
+                                  _buildTableRow('Company ID', tokenInfo.companyId),
+                                  _buildTableRow('Company Name', tokenInfo.companyName),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Table(
-                          columnWidths: const {
-                            0: IntrinsicColumnWidth(),
-                            1: FlexColumnWidth(),
-                          },
-                          border: TableBorder.all(
-                            color: Colors.grey.shade300,
-                            width: 1,
-                          ),
-                          children: [
-                            _buildTableRow('Session ID', tokenInfo.sessionId),
-                            _buildTableRow('Session Expires At', 
-                              DateFormat('yyyy-MM-dd HH:mm:ss').format(tokenInfo.sessionExpiresAt)),
-                            _buildTableRow('User ID', tokenInfo.userId),
-                            _buildTableRow('Email', tokenInfo.email),
-                            _buildTableRow('Full Name', tokenInfo.fullName),
-                            _buildTableRow('Role ID', tokenInfo.roleId.toString()),
-                            _buildTableRow('Role', tokenInfo.roleId == 1 ? 'Manager' : 'Employee'),
-                            _buildTableRow('User Status', tokenInfo.userStatus),
-                            _buildTableRow('Company ID', tokenInfo.companyId),
-                            _buildTableRow('Company Name', tokenInfo.companyName),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

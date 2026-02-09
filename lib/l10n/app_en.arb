@@ -27,5 +27,10 @@
   "employee": "Employee",
   "english": "English",
   "hebrew": "Hebrew",
-  "checkEmailForMagicLink": "Check your email for the magic link"
+  "checkEmailForMagicLink": "Check your email for the magic link",
+  "myProfile": "My Profile",
+  "spendHistory": "Spend History",
+  "companyConfiguration": "Company Configuration",
+  "userManagement": "User Management",
+  "logout": "Logout"
 }

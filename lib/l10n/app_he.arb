@@ -27,5 +27,10 @@
   "employee": "עובד",
   "english": "English",
   "hebrew": "עברית",
-  "checkEmailForMagicLink": "בדוק את תיבת הדואר שלך עבור הקישור הקסם"
+  "checkEmailForMagicLink": "בדוק את תיבת הדואר שלך עבור הקישור הקסם",
+  "myProfile": "הפרופיל שלי",
+  "spendHistory": "היסטוריית הוצאות",
+  "companyConfiguration": "הגדרות חברה",
+  "userManagement": "ניהול משתמשים",
+  "logout": "התנתקות"
 }

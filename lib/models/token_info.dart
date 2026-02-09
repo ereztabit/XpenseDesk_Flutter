@@ -3,7 +3,7 @@ class TokenInfo {
   final DateTime sessionExpiresAt;
   final String userId;
   final String email;
-  final String fullName;
+  final String? fullName;
   final int roleId;
   final String userStatus;
   final String companyId;
@@ -14,7 +14,7 @@ class TokenInfo {
     required this.sessionExpiresAt,
     required this.userId,
     required this.email,
-    required this.fullName,
+    this.fullName,
     required this.roleId,
     required this.userStatus,
     required this.companyId,
@@ -27,7 +27,7 @@ class TokenInfo {
       sessionExpiresAt: DateTime.parse(json['sessionExpiresAt'] as String),
       userId: json['userId'] as String,
       email: json['email'] as String,
-      fullName: json['fullName'] as String,
+      fullName: json['fullName'] as String?,
       roleId: json['roleId'] as int,
       userStatus: json['userStatus'] as String,
       companyId: json['companyId'] as String,
