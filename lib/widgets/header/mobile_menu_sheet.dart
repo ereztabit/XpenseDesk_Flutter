@@ -83,9 +83,11 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     final menuItems = MenuItems.getItems(t, isManager);
     
     // Determine slide direction based on text direction
+    // In LTR: hamburger is on left, slide from left
+    // In RTL: hamburger is on right, slide from right
     final isRTL = Directionality.of(context) == TextDirection.rtl;
     final slideAnimation = Tween<Offset>(
-      begin: Offset(isRTL ? -1.0 : 1.0, 0.0),
+      begin: Offset(isRTL ? 1.0 : -1.0, 0.0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _controller,
@@ -110,8 +112,8 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
         // Side sheet
         Positioned(
-          left: isRTL ? 0 : null,
-          right: isRTL ? null : 0,
+          left: isRTL ? null : 0,
+          right: isRTL ? 0 : null,
           top: 0,
           bottom: 0,
           width: sheetWidth,
