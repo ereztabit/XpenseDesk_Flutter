@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../generated/l10n/app_localizations.dart';
-import 'token_info.dart';
+import 'user_info.dart';
 
 class MenuItem {
   final String id;
@@ -67,9 +67,9 @@ class MenuItems {
         .toList();
   }
 
-  static Widget buildUserInfo(TokenInfo? tokenInfo, AppLocalizations t) {
-    final displayName = tokenInfo?.fullName ?? tokenInfo?.email ?? '';
-    final email = tokenInfo?.email ?? '';
+  static Widget buildUserInfo(UserInfo? userInfo, AppLocalizations t) {
+    final displayName = userInfo?.fullName ?? userInfo?.email ?? '';
+    final email = userInfo?.email ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +84,7 @@ class MenuItems {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        if (tokenInfo?.fullName != null) ...[
+        if (userInfo?.fullName != null) ...[
           const SizedBox(height: 4),
           Text(
             email,
@@ -112,12 +112,12 @@ class MenuItems {
   }
 
   static Future<void> launchContactSupport(
-    TokenInfo tokenInfo,
+    UserInfo userInfo,
     AppLocalizations t,
   ) async {
     try {
       final subject = Uri.encodeComponent(
-        t.helpRequestSubject(tokenInfo.companyName),
+        t.helpRequestSubject(userInfo.companyName),
       );
       final mailtoUri = Uri.parse('mailto:support@xpensedesk.com?subject=$subject');
       await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);

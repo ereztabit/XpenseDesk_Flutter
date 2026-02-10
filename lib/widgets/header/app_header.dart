@@ -43,8 +43,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   }
 
   void _openMenu() {
-    final tokenInfo = ref.read(tokenInfoProvider);
-    if (tokenInfo == null) return;
+    final userInfo = ref.read(userInfoProvider);
+    if (userInfo == null) return;
 
     final isMobile = MediaQuery.of(context).size.width < 768;
 
@@ -67,8 +67,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   }
 
   void _openDesktopMenu() {
-    final tokenInfo = ref.read(tokenInfoProvider);
-    if (tokenInfo == null) return;
+    final userInfo = ref.read(userInfoProvider);
+    if (userInfo == null) return;
 
     final renderBox = _avatarKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
@@ -80,8 +80,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       builder: (context) => DesktopMenu(
         offset: offset,
         avatarSize: size,
-        tokenInfo: tokenInfo,
-        isManager: _isManager(tokenInfo.roleId),
+        userInfo: userInfo,
+        isManager: _isManager(userInfo.roleId),
         onClose: _closeMenu,
         onMenuItemSelected: _handleMenuItemSelected,
       ),
@@ -98,14 +98,14 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   }
 
   void _handleMenuItemSelected(String value) async {
-    final tokenInfo = ref.read(tokenInfoProvider);
-    if (tokenInfo == null) return;
+    final userInfo = ref.read(userInfoProvider);
+    if (userInfo == null) return;
 
     _closeMenu();
 
     switch (value) {
       case 'profile':
-        final role = _isManager(tokenInfo.roleId) ? 'manager' : 'employee';
+        final role = _isManager(userInfo.roleId) ? 'manager' : 'employee';
         if (mounted) Navigator.pushNamed(context, '/$role/profile');
         break;
       case 'spend-history':
@@ -119,10 +119,10 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         break;
       case 'contact-support':
         final t = AppLocalizations.of(context)!;
-        await MenuItems.launchContactSupport(tokenInfo, t);
+        await MenuItems.launchContactSupport(userInfo, t);
         break;
       case 'logout':
-        ref.read(tokenInfoProvider.notifier).logout();
+        ref.read(userInfoProvider.notifier).logout();
         await ref.read(authServiceProvider).clearSessionToken();
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
@@ -139,11 +139,11 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final tokenInfo = ref.watch(tokenInfoProvider);
+    final userInfo = ref.watch(userInfoProvider);
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    // For login/signup pages (no tokenInfo)
-    if (tokenInfo == null) {
+    // For login/signup pages (no userInfo)
+    if (userInfo == null) {
       return Container(
         height: 56,
         decoration: const BoxDecoration(
@@ -190,7 +190,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     }
 
     // For logged-in pages
-    final initials = MenuItems.getInitials(tokenInfo.fullName, tokenInfo.email);
+    final initials = MenuItems.getInitials(userInfo.fullName, userInfo.email);
 
     return Container(
       height: 56,
@@ -296,7 +296,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                 // Logo
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, _getDashboardRoute(tokenInfo.roleId));
+                    Navigator.pushNamed(context, _getDashboardRoute(userInfo.roleId));
                   },
                   child: Image.asset(
                     'assets/images/logo.png',

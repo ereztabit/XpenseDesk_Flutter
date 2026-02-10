@@ -55,14 +55,14 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
   }
 
   void _handleMenuItemSelected(String value) async {
-    final tokenInfo = ref.read(tokenInfoProvider);
+    final userInfo = ref.read(userInfoProvider);
     final t = AppLocalizations.of(context)!;
 
-    if (value == 'contact-support' && tokenInfo != null) {
-      await MenuItems.launchContactSupport(tokenInfo, t);
+    if (value == 'contact-support' && userInfo != null) {
+      await MenuItems.launchContactSupport(userInfo, t);
     } else if (value == 'logout') {
       await _close();
-      ref.read(tokenInfoProvider.notifier).logout();
+      ref.read(userInfoProvider.notifier).logout();
       await ref.read(authServiceProvider).clearSessionToken();
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
@@ -74,8 +74,8 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final tokenInfo = ref.watch(tokenInfoProvider);
-    final isManager = tokenInfo?.roleId == 1;
+    final userInfo = ref.watch(userInfoProvider);
+    final isManager = userInfo?.roleId == 1;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final sheetWidth = (screenWidth * 0.75).clamp(0.0, 384.0);
@@ -158,8 +158,8 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                             child: Center(
                               child: Text(
                                 MenuItems.getInitials(
-                                  tokenInfo?.fullName,
-                                  tokenInfo?.email ?? '',
+                                  userInfo?.fullName,
+                                  userInfo?.email ?? '',
                                 ),
                                 style: const TextStyle(
                                   color: AppTheme.primary,
@@ -172,7 +172,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                           const SizedBox(width: 12),
                           // User details
                           Expanded(
-                            child: MenuItems.buildUserInfo(tokenInfo, t),
+                            child: MenuItems.buildUserInfo(userInfo, t),
                           ),
                         ],
                       ),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/header/app_header.dart';
-import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -22,7 +21,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _initializeSession() async {
-    await ref.read(tokenInfoProvider.notifier).loadFromSession();
+    // Load user info from API using session token
+    await ref.read(userInfoProvider.notifier).loadFromSession();
+    
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -30,7 +31,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tokenInfo = ref.watch(tokenInfoProvider);
+    final userInfo = ref.watch(userInfoProvider);
     final l10n = AppLocalizations.of(context)!;
 
     if (_isLoading) {
@@ -39,8 +40,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       );
     }
 
-    if (tokenInfo == null) {
-      // Navigate back to login if no token info
+    if (userInfo == null) {
+      // Navigate back to login if no user info (session expired)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/');
       });
@@ -60,52 +61,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   child: Column(
                     children: [
                       Text(
-                        '${l10n.welcome}, ${tokenInfo.fullName ?? tokenInfo.email}!',
+                        '${l10n.welcome}, ${userInfo.fullName}!',
                         style: Theme.of(context).textTheme.headlineMedium,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
-                      
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Token Information',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Table(
-                                columnWidths: const {
-                                  0: IntrinsicColumnWidth(),
-                                  1: FlexColumnWidth(),
-                                },
-                                border: TableBorder.all(
-                                  color: Colors.grey.shade300,
-                                  width: 1,
-                                ),
-                                children: [
-                                  _buildTableRow('Session ID', tokenInfo.sessionId),
-                                  _buildTableRow('Session Expires At', 
-                                    DateFormat('yyyy-MM-dd HH:mm:ss').format(tokenInfo.sessionExpiresAt)),
-                                  _buildTableRow('User ID', tokenInfo.userId),
-                                  _buildTableRow('Email', tokenInfo.email),
-                                  _buildTableRow('Full Name', tokenInfo.fullName ?? 'N/A'),
-                                  _buildTableRow('Role ID', tokenInfo.roleId.toString()),
-                                  _buildTableRow('Role', tokenInfo.roleId == 1 ? 'Manager' : 'Employee'),
-                                  _buildTableRow('User Status', tokenInfo.userStatus),
-                                  _buildTableRow('Company ID', tokenInfo.companyId),
-                                  _buildTableRow('Company Name', tokenInfo.companyName),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -114,24 +74,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  TableRow _buildTableRow(String label, String value) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Text(value),
-        ),
-      ],
     );
   }
 }

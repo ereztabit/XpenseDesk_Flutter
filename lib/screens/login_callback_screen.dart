@@ -39,11 +39,11 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
       // Exchange token for session token
       await authService.login(widget.token!);
       
-      // Fetch user info
-      final tokenInfo = await authService.getUserInfo();
+      // Fetch user info from /api/users/me
+      final userInfo = await authService.getUserInfo();
       
-      // Set token info in provider
-      ref.read(tokenInfoProvider.notifier).setTokenInfo(tokenInfo);
+      // Set user info in provider
+      ref.read(userInfoProvider.notifier).setUserInfo(userInfo);
       
       if (mounted) {
         // Update browser URL to remove token

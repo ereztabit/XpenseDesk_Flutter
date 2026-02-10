@@ -9,7 +9,7 @@ import '../../models/menu_items.dart';
 class DesktopMenu extends ConsumerStatefulWidget {
   final Offset offset;
   final Size avatarSize;
-  final dynamic tokenInfo;
+  final dynamic userInfo;
   final bool isManager;
   final VoidCallback onClose;
   final Function(String) onMenuItemSelected;
@@ -18,7 +18,7 @@ class DesktopMenu extends ConsumerStatefulWidget {
     super.key,
     required this.offset,
     required this.avatarSize,
-    required this.tokenInfo,
+    required this.userInfo,
     required this.isManager,
     required this.onClose,
     required this.onMenuItemSelected,
@@ -161,7 +161,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
   }
 
   Widget _buildUserInfoSection() {
-    final initials = MenuItems.getInitials(widget.tokenInfo.fullName, widget.tokenInfo.email);
+    final initials = MenuItems.getInitials(widget.userInfo.fullName, widget.userInfo.email);
     
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16), // px-5 pt-5 pb-4
@@ -193,7 +193,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
           
           // Name - text-sm font-semibold text-foreground
           Text(
-            widget.tokenInfo.fullName ?? widget.tokenInfo.email,
+            widget.userInfo.fullName ?? widget.userInfo.email,
             style: const TextStyle(
               fontSize: 14, // text-sm
               fontWeight: FontWeight.w600, // font-semibold
@@ -206,7 +206,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
           
           // Email - text-xs text-muted-foreground
           Text(
-            widget.tokenInfo.email,
+            widget.userInfo.email,
             style: const TextStyle(
               fontSize: 12, // text-xs
               color: AppTheme.mutedForeground, // text-muted-foreground

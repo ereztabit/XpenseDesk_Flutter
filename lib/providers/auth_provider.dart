@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/token_info.dart';
+import '../models/user_info.dart';
 import '../services/auth_service.dart';
 
 /// Provider for AuthService singleton
@@ -7,16 +7,16 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
 });
 
-/// Provider for current authenticated user token info
-class TokenInfoNotifier extends Notifier<TokenInfo?> {
+/// Provider for current authenticated user info
+class UserInfoNotifier extends Notifier<UserInfo?> {
   @override
-  TokenInfo? build() => null;
+  UserInfo? build() => null;
 
-  void setTokenInfo(TokenInfo? tokenInfo) {
-    state = tokenInfo;
+  void setUserInfo(UserInfo? userInfo) {
+    state = userInfo;
   }
 
-  /// Load token info from stored session
+  /// Load user info from API using stored session
   Future<void> loadFromSession() async {
     if (state != null) return; // Already loaded
     
@@ -25,8 +25,8 @@ class TokenInfoNotifier extends Notifier<TokenInfo?> {
     try {
       final hasToken = await authService.hasSessionToken();
       if (hasToken) {
-        final tokenInfo = await authService.getUserInfo();
-        state = tokenInfo;
+        final userInfo = await authService.getUserInfo();
+        state = userInfo;
       }
     } catch (e) {
       // Session expired or invalid - clear it
@@ -40,6 +40,6 @@ class TokenInfoNotifier extends Notifier<TokenInfo?> {
   }
 }
 
-final tokenInfoProvider = NotifierProvider<TokenInfoNotifier, TokenInfo?>(
-  TokenInfoNotifier.new,
+final userInfoProvider = NotifierProvider<UserInfoNotifier, UserInfo?>(
+  UserInfoNotifier.new,
 );
