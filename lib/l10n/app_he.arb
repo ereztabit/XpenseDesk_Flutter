@@ -47,5 +47,9 @@
   "nameMaxLength": "השם חייב להיות עד 50 תווים",
   "nameNoNumbers": "השם לא יכול להכיל מספרים",
   "nameOnlyLetters": "השם יכול להכיל רק אותיות, רווחים ומקפים",
-  "failedToUpdateProfile": "עידכון הפרופיל נכשל"
+  "failedToUpdateProfile": "עדכון הפרופיל נכשל",
+  "unsavedChanges": "שינויים לא שמורים",
+  "unsavedChangesMessage": "יש לך שינויים לא שמורים. האם אתה בטוח שברצונך לעזוב בלי לשמור?",
+  "cancel": "ביטול",
+  "discard": "התעלם"
 }

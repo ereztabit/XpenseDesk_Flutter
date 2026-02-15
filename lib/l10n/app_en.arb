@@ -47,5 +47,9 @@
   "nameMaxLength": "Name must be 50 characters or less",
   "nameNoNumbers": "Name cannot contain numbers",
   "nameOnlyLetters": "Name can only contain letters, spaces, and hyphens",
-  "failedToUpdateProfile": "Failed to update profile"
+  "failedToUpdateProfile": "Failed to update profile",
+  "unsavedChanges": "Unsaved Changes",
+  "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave without saving?",
+  "cancel": "Cancel",
+  "discard": "Discard"
 }

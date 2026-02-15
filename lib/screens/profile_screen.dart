@@ -20,6 +20,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+  
+  // Store initial values to detect changes
+  late String _initialFullName;
+  late int _initialLanguageId;
 
   @override
   void initState() {
@@ -30,6 +35,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (userInfo != null) {
       _fullNameController.text = userInfo.fullName;
       _selectedLanguageId = userInfo.languageId;
+      _initialFullName = userInfo.fullName;
+      _initialLanguageId = userInfo.languageId;
     }
   }
 
@@ -37,6 +44,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   void dispose() {
     _fullNameController.dispose();
     super.dispose();
+  }
+
+  /// Check if form has unsaved changes
+  bool get _hasChanges {
+    return _fullNameController.text.trim() != _initialFullName ||
+        _selectedLanguageId != _initialLanguageId;
+  }
+
+  /// Show dialog to confirm navigation with unsaved changes
+  Future<bool> _confirmDiscard() async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.unsavedChanges),
+        content: Text(l10n.unsavedChangesMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.discard),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   String? _validateFullName(String? value) {
@@ -65,6 +101,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     setState(() {
       _errorMessage = null;
       _successMessage = null;
+      _autovalidateMode = AutovalidateMode.onUserInteraction;
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -84,6 +121,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
       // Update local state (locale is set automatically by updateProfile)
       ref.read(userInfoProvider.notifier).updateProfile(updatedUser);
+
+      // Update initial values after successful save
+      _initialFullName = _fullNameController.text.trim();
+      _initialLanguageId = _selectedLanguageId;
 
       setState(() {
         _successMessage = l10n.profileUpdatedSuccessfully;
@@ -108,25 +149,44 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pushReplacementNamed('/dashboard'),
-        ),
+    return PopScope(
+      canPop: !_hasChanges,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+        final shouldPop = await _confirmDiscard();
+        if (shouldPop && mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () async {
+              if (_hasChanges) {
+                final shouldDiscard = await _confirmDiscard();
+                if (shouldDiscard && mounted) {
+                  Navigator.of(context).pushReplacementNamed('/dashboard');
+                }
+              } else {
+                Navigator.of(context).pushReplacementNamed('/dashboard');
+              }
+            },
+          ),
         title: Text(
           l10n.backToDashboard,
           style: const TextStyle(color: Colors.black, fontSize: 14),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            autovalidateMode: _autovalidateMode,
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile Card
@@ -168,6 +228,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _fullNameController,
+                        maxLength: 50,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.grey.withAlpha(26),
@@ -179,6 +240,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             horizontal: 16,
                             vertical: 12,
                           ),
+                          counterText: '',
                         ),
                         validator: _validateFullName,
                         enabled: !_isLoading,
@@ -349,6 +411,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),
