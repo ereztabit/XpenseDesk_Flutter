@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
-import '../providers/locale_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/error_alert.dart';
 import '../theme/app_theme.dart';
@@ -83,14 +82,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         _selectedLanguageId,
       );
 
-      // Update local state
+      // Update local state (locale is set automatically by updateProfile)
       ref.read(userInfoProvider.notifier).updateProfile(updatedUser);
-
-      // Update locale based on saved language
-      final newLocale = _selectedLanguageId == 1 
-          ? const Locale('en') 
-          : const Locale('he');
-      ref.read(localeProvider.notifier).setLocale(newLocale);
 
       setState(() {
         _successMessage = l10n.profileUpdatedSuccessfully;
