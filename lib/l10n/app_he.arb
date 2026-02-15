@@ -34,5 +34,18 @@
   "userManagement": "ניהול משתמשים",
   "logout": "התנתקות",
   "contactSupport": "צור קשר עם התמיכה",
-  "helpRequestSubject": "בקשת עזרה עבור {companyName}"
+  "helpRequestSubject": "בקשת עזרה עבור {companyName}",
+  "profile": "פרופיל",
+  "settings": "הגדרות",
+  "name": "שם",
+  "email": "אימייל",
+  "language": "שפה",
+  "saveChanges": "שמור שינויים",
+  "backToDashboard": "חזור לדשבורד",
+  "profileUpdatedSuccessfully": "הפרופיל עודכן בהצלחה",
+  "nameRequired": "שם הוא שדה חובה",
+  "nameMaxLength": "השם חייב להיות עד 50 תווים",
+  "nameNoNumbers": "השם לא יכול להכיל מספרים",
+  "nameOnlyLetters": "השם יכול להכיל רק אותיות, רווחים ומקפים",
+  "failedToUpdateProfile": "עידכון הפרופיל נכשל"
 }

@@ -16,6 +16,10 @@ class UserInfoNotifier extends Notifier<UserInfo?> {
     state = userInfo;
   }
 
+  void updateProfile(UserInfo userInfo) {
+    state = userInfo;
+  }
+
   /// Load user info from API using stored session
   Future<void> loadFromSession() async {
     if (state != null) return; // Already loaded

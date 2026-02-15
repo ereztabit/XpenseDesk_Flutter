@@ -4,6 +4,7 @@ class UserInfo {
   final int roleId;
   final String status;
   final String companyName;
+  final int languageId;
 
   const UserInfo({
     required this.email,
@@ -11,6 +12,7 @@ class UserInfo {
     required this.roleId,
     required this.status,
     required this.companyName,
+    this.languageId = 1,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class UserInfo {
       roleId: json['roleId'] as int,
       status: json['status'] as String,
       companyName: json['companyName'] as String,
+      languageId: json['languageId'] as int? ?? 1,
     );
   }
 
@@ -30,11 +33,12 @@ class UserInfo {
       'roleId': roleId,
       'status': status,
       'companyName': companyName,
+      'languageId': languageId,
     };
   }
 
   @override
   String toString() {
-    return 'UserInfo(email: $email, fullName: $fullName, roleId: $roleId, companyName: $companyName)';
+    return 'UserInfo(email: $email, fullName: $fullName, roleId: $roleId, companyName: $companyName, languageId: $languageId)';
   }
 }

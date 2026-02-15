@@ -8,6 +8,7 @@ import 'config/app_config.dart';
 import 'screens/login_screen.dart';
 import 'screens/login_callback_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/profile_screen.dart';
 import 'providers/locale_provider.dart';
 
 void main() async {
@@ -61,6 +62,9 @@ class MyApp extends ConsumerWidget {
             return MaterialPageRoute(builder: (context) => const LoginScreen());
           case '/dashboard':
             return MaterialPageRoute(builder: (context) => const DashboardScreen());
+          case '/manager/profile':
+          case '/employee/profile':
+            return MaterialPageRoute(builder: (context) => const ProfileScreen());
           default:
             return MaterialPageRoute(builder: (context) => const LoginScreen());
         }

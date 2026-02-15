@@ -34,5 +34,18 @@
   "userManagement": "User Management",
   "logout": "Logout",
   "contactSupport": "Contact Support",
-  "helpRequestSubject": "Help Request for {companyName}"
+  "helpRequestSubject": "Help Request for {companyName}",
+  "profile": "Profile",
+  "settings": "Settings",
+  "name": "Name",
+  "email": "Email",
+  "language": "Language",
+  "saveChanges": "Save Changes",
+  "backToDashboard": "Back to Dashboard",
+  "profileUpdatedSuccessfully": "Profile updated successfully",
+  "nameRequired": "Name is required",
+  "nameMaxLength": "Name must be 50 characters or less",
+  "nameNoNumbers": "Name cannot contain numbers",
+  "nameOnlyLetters": "Name can only contain letters, spaces, and hyphens",
+  "failedToUpdateProfile": "Failed to update profile"
 }

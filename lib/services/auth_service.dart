@@ -19,6 +19,22 @@ class AuthService {
   AuthService({ApiService? apiService}) 
       : _apiService = apiService ?? ApiService();
 
+  /// Validates API response and throws exception if not successful
+  void _validateResponse(Map<String, dynamic> response, String defaultErrorMessage) {
+    final success = response['success'] as bool? ?? false;
+    if (!success) {
+      final message = response['message'] as String? ?? defaultErrorMessage;
+      throw AuthException(message);
+    }
+  }
+
+  /// Validates session token and throws exception if invalid
+  void _validateSessionToken(String? sessionToken) {
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const AuthException('No session token found');
+    }
+  }
+
   /// Validates email format using regex
   bool isValidEmail(String email) {
     final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
@@ -67,11 +83,7 @@ class AuthService {
       {'loginToken': loginToken},
     );
 
-    final success = response['success'] as bool? ?? false;
-    if (!success) {
-      final message = response['message'] as String? ?? 'Login failed';
-      throw AuthException(message);
-    }
+    _validateResponse(response, 'Login failed');
 
     final data = response['data'] as Map<String, dynamic>?;
     final sessionToken = data?['sessionToken'] as String?;
@@ -114,21 +126,14 @@ class AuthService {
   /// Returns UserInfo from /api/users/me
   Future<UserInfo> getUserInfo() async {
     final sessionToken = await getSessionToken();
-    
-    if (sessionToken == null || sessionToken.isEmpty) {
-      throw const AuthException('No session token found');
-    }
+    _validateSessionToken(sessionToken);
 
     final response = await _apiService.get(
       '/api/users/me',
       authToken: sessionToken,
     );
 
-    final success = response['success'] as bool? ?? false;
-    if (!success) {
-      final message = response['message'] as String? ?? 'Failed to get user info';
-      throw AuthException(message);
-    }
+    _validateResponse(response, 'Failed to get user info');
 
     final data = response['data'] as Map<String, dynamic>?;
     if (data == null) {
@@ -136,6 +141,27 @@ class AuthService {
     }
 
     return UserInfo.fromJson(data);
+  }
+
+  /// Update user profile (full name and language)
+  /// Returns updated UserInfo from /api/users/update-details
+  Future<UserInfo> updateUserProfile(String fullName, int languageId) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.put(
+      '/api/users/update-details',
+      {
+        'fullName': fullName,
+        'languageId': languageId,
+      },
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to update profile');
+
+    // Backend returns data: null on success, so fetch updated user info
+    return await getUserInfo();
   }
 }
 
