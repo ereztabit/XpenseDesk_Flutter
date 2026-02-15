@@ -58,7 +58,13 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     final userInfo = ref.read(userInfoProvider);
     final t = AppLocalizations.of(context)!;
 
-    if (value == 'contact-support' && userInfo != null) {
+    if (value == 'profile' && userInfo != null) {
+      await _close();
+      final role = userInfo.roleId == 1 ? 'manager' : 'employee';
+      if (mounted) {
+        Navigator.pushNamed(context, '/$role/profile');
+      }
+    } else if (value == 'contact-support' && userInfo != null) {
       await MenuItems.launchContactSupport(userInfo, t);
     } else if (value == 'logout') {
       await _close();

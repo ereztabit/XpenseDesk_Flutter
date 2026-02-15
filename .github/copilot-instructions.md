@@ -445,3 +445,297 @@ From lib/widgets/header/file.dart to other locations:
 
 Each level up requires one more set of ../
 
+---
+
+## API Patterns & Best Practices
+
+### Reusable Validation Helpers
+
+Extract repeated validation patterns into private helper methods:
+
+```dart
+// lib/services/auth_service.dart
+class AuthService {
+  /// Validates API response and throws exception if not successful
+  void _validateResponse(Map<String, dynamic> response, String defaultErrorMessage) {
+    final success = response['success'] as bool? ?? false;
+    if (!success) {
+      final message = response['message'] as String? ?? defaultErrorMessage;
+      throw AuthException(message);
+    }
+  }
+
+  /// Validates session token and throws exception if invalid
+  void _validateSessionToken(String? sessionToken) {
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const AuthException('No session token found');
+    }
+  }
+
+  Future<UserInfo> getUserInfo() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+    
+    final response = await _apiService.get('/api/users/me', authToken: sessionToken);
+    _validateResponse(response, 'Failed to get user info');
+    
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+    return UserInfo.fromJson(data);
+  }
+}
+```
+
+**Key Principles:**
+- Don't repeat validation logic - extract to private helper methods
+- Use descriptive method names that explain what's being validated
+- Keep error messages consistent across similar operations
+
+### API Response Handling
+
+Handle different API response patterns correctly:
+
+```dart
+// Some APIs return data: null on success
+Future<UserInfo> updateUserProfile(String fullName, int languageId) async {
+  final response = await _apiService.put('/api/users/update-details', {
+    'fullName': fullName,
+    'languageId': languageId,
+  }, authToken: sessionToken);
+  
+  _validateResponse(response, 'Failed to update profile');
+  
+  // Backend returns data: null on success, so fetch updated user info separately
+  return await getUserInfo();
+}
+```
+
+**Key Principles:**
+- Don't assume API always returns data in response
+- For update operations returning `data: null`, fetch updated data if needed
+- Check API documentation or actual responses before implementing
+
+### Header Building Pattern
+
+Centralize header construction for API requests:
+
+```dart
+// lib/services/api_service.dart
+class ApiService {
+  /// Build HTTP headers with optional bearer token
+  Map<String, String> _buildHeaders({String? authToken}) {
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    if (authToken != null) {
+      headers['Authorization'] = 'Bearer $authToken';
+    }
+    return headers;
+  }
+
+  Future<Map<String, dynamic>> get(String endpoint, {String? authToken}) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http.get(uri, headers: _buildHeaders(authToken: authToken));
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> body, {String? authToken}) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http.put(uri, headers: _buildHeaders(authToken: authToken), body: jsonEncode(body));
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+}
+```
+
+**Key Principles:**
+- Eliminate duplicate header construction across HTTP methods
+- Single source of truth for authentication header format
+- Makes it easy to add global headers (e.g., correlation IDs)
+
+---
+
+## Locale & Language Management
+
+### Automatic Locale Synchronization
+
+When user data includes language preferences, automatically sync UI locale in the provider layer:
+
+```dart
+// lib/providers/auth_provider.dart
+class UserInfoNotifier extends Notifier<UserInfo?> {
+  void setUserInfo(UserInfo? userInfo) {
+    state = userInfo;
+    if (userInfo != null) {
+      _setLocaleFromUserInfo(userInfo);
+    }
+  }
+
+  void updateProfile(UserInfo userInfo) {
+    state = userInfo;
+    _setLocaleFromUserInfo(userInfo);
+  }
+
+  Future<void> loadFromSession() async {
+    // ... load user info from API
+    state = userInfo;
+    _setLocaleFromUserInfo(userInfo);
+  }
+
+  /// Set application locale based on user's language preference
+  void _setLocaleFromUserInfo(UserInfo userInfo) {
+    final locale = userInfo.languageId == 1 
+        ? const Locale('en') 
+        : const Locale('he');
+    ref.read(localeProvider.notifier).setLocale(locale);
+  }
+}
+```
+
+**Key Principles:**
+- Set locale in ALL user state change paths: login, session load, profile update
+- Keep locale logic centralized in provider, not scattered across UI
+- Locale updates automatically when user data changes
+
+### Form Validation Localization
+
+All validation messages must use localized strings:
+
+```dart
+String? _validateFullName(String? value) {
+  final l10n = AppLocalizations.of(context)!;
+  
+  if (value == null || value.trim().isEmpty) {
+    return l10n.nameRequired;  // NOT: 'Name is required'
+  }
+  
+  if (value.length > 50) {
+    return l10n.nameMaxLength;  // NOT: 'Name must be 50 characters or less'
+  }
+  
+  final validNameRegex = RegExp(r'^[a-zA-Z\s-]+$');
+  if (!validNameRegex.hasMatch(value)) {
+    if (RegExp(r'\d').hasMatch(value)) {
+      return l10n.nameNoNumbers;
+    }
+    return l10n.nameOnlyLetters;
+  }
+  
+  return null;
+}
+```
+
+**Key Principles:**
+- Never hardcode validation messages in validators
+- Access `l10n` in validator methods via `AppLocalizations.of(context)!`
+- Add all validation messages to ARB files for both languages
+
+---
+
+## Modern Flutter Widgets
+
+### Dropdown Widgets
+
+Use modern Material 3 widget instead of deprecated versions:
+
+```dart
+// CORRECT: Use DropdownMenu
+DropdownMenu<int>(
+  initialSelection: _selectedLanguageId,
+  enabled: !_isLoading,
+  expandedInsets: EdgeInsets.zero,
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Colors.grey.withAlpha(26),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide.none,
+    ),
+  ),
+  dropdownMenuEntries: [
+    DropdownMenuEntry(value: 1, label: l10n.english),
+    DropdownMenuEntry(value: 2, label: l10n.hebrew),
+  ],
+  onSelected: (value) {
+    if (value != null) {
+      setState(() => _selectedLanguageId = value);
+    }
+  },
+)
+
+// DEPRECATED: Avoid DropdownButtonFormField
+// Uses deprecated 'value' property instead of 'initialSelection'
+```
+
+**Key Differences:**
+- `initialSelection` instead of `value`
+- `dropdownMenuEntries` with `DropdownMenuEntry` instead of `items` with `DropdownMenuItem`
+- `onSelected` callback instead of `onChanged`
+- `inputDecorationTheme` for styling instead of `decoration`
+- `expandedInsets: EdgeInsets.zero` for full-width display
+
+---
+
+## Multi-Platform Navigation
+
+### Navigation Implementation Checklist
+
+When implementing navigation features, ensure all paths work:
+
+```dart
+// Desktop Menu (lib/widgets/header/app_header.dart)
+case 'profile':
+  final role = _isManager(userInfo.roleId) ? 'manager' : 'employee';
+  if (mounted) Navigator.pushNamed(context, '/$role/profile');
+  break;
+
+// Mobile Menu (lib/widgets/header/mobile_menu_sheet.dart)
+void _handleMenuItemSelected(String value) async {
+  if (value == 'profile' && userInfo != null) {
+    await _close();  // Close sheet first
+    final role = userInfo.roleId == 1 ? 'manager' : 'employee';
+    if (mounted) {
+      Navigator.pushNamed(context, '/$role/profile');
+    }
+  }
+}
+
+// Routing (lib/main.dart)
+switch (uri.path) {
+  case '/manager/profile':
+  case '/employee/profile':
+    return MaterialPageRoute(builder: (context) => const ProfileScreen());
+}
+```
+
+**Key Principles:**
+- Implement navigation in desktop header menu
+- Implement navigation in mobile menu sheet
+- Close mobile sheets/modals before navigation
+- Add routes in main.dart
+- Test both desktop and mobile navigation paths
+
+---
+
+## Step-by-Step Implementation
+
+When implementing complex features:
+
+1. **Plan Steps**: Break down into logical, sequential steps
+2. **Document Steps**: Write implementation plan in documentation
+3. **Build After Each Step**: Run `flutter build web` after each change
+4. **Verify No Errors**: Use `get_errors` tool to verify compilation
+5. **Wait for Confirmation**: Don't proceed to next step without user approval
+6. **Document API Responses**: Include expected API responses in spec docs
+
+**Example Pattern:**
+```
+Step 1: Update model → Build → Verify → Wait
+Step 2: Add API method → Build → Verify → Wait
+Step 3: Add service method → Build → Verify → Wait
+Step 4: Update provider → Build → Verify → Wait
+Step 5: Create UI screen → Build → Verify → Wait
+Step 6: Add routing → Build → Verify → Wait
+Step 7: Integration testing
+```
+
+
