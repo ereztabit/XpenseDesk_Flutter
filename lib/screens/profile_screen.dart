@@ -5,6 +5,7 @@ import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/error_alert.dart';
 import '../theme/app_theme.dart';
+import '../widgets/form_behavior_mixin.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -13,14 +14,14 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehaviorMixin {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
+  final _fullNameFocusNode = FocusNode();
   int _selectedLanguageId = 1;
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
-  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
   
   // Store initial values to detect changes
   late String _initialFullName;
@@ -38,41 +39,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _initialFullName = userInfo.fullName;
       _initialLanguageId = userInfo.languageId;
     }
+    
+    // Validate field when focus is lost
+    _fullNameFocusNode.addListener(() {
+      if (!_fullNameFocusNode.hasFocus) {
+        _formKey.currentState?.validate();
+      }
+    });
   }
 
   @override
   void dispose() {
     _fullNameController.dispose();
+    _fullNameFocusNode.dispose();
     super.dispose();
   }
 
-  /// Check if form has unsaved changes
-  bool get _hasChanges {
+  /// Implementation of FormBehaviorMixin - check if form has unsaved changes
+  @override
+  bool get hasUnsavedChanges {
     return _fullNameController.text.trim() != _initialFullName ||
         _selectedLanguageId != _initialLanguageId;
-  }
-
-  /// Show dialog to confirm navigation with unsaved changes
-  Future<bool> _confirmDiscard() async {
-    final l10n = AppLocalizations.of(context)!;
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.unsavedChanges),
-        content: Text(l10n.unsavedChangesMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.discard),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
   }
 
   String? _validateFullName(String? value) {
@@ -86,7 +73,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return l10n.nameMaxLength;
     }
     
-    final validNameRegex = RegExp(r'^[a-zA-Z\s-]+$');
+    final validNameRegex = RegExp(r'^[a-zA-Z\u0590-\u05FF\s-]+$');
     if (!validNameRegex.hasMatch(value)) {
       if (RegExp(r'\d').hasMatch(value)) {
         return l10n.nameNoNumbers;
@@ -101,7 +88,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     setState(() {
       _errorMessage = null;
       _successMessage = null;
-      _autovalidateMode = AutovalidateMode.onUserInteraction;
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -149,15 +135,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
 
-    return PopScope(
-      canPop: !_hasChanges,
-      onPopInvokedWithResult: (bool didPop, dynamic result) async {
-        if (didPop) return;
-        final shouldPop = await _confirmDiscard();
-        if (shouldPop && mounted) {
-          Navigator.of(context).pop();
-        }
-      },
+    return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(
@@ -165,16 +143,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () async {
-              if (_hasChanges) {
-                final shouldDiscard = await _confirmDiscard();
-                if (shouldDiscard && mounted) {
-                  Navigator.of(context).pushReplacementNamed('/dashboard');
-                }
-              } else {
-                Navigator.of(context).pushReplacementNamed('/dashboard');
-              }
-            },
+            onPressed: () => handleBackNavigation('/dashboard'),
           ),
         title: Text(
           l10n.backToDashboard,
@@ -185,7 +154,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
-            autovalidateMode: _autovalidateMode,
             child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -218,16 +186,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 24),
 
                       // Name Field
-                      Text(
-                        l10n.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      FieldLabel(
+                        label: l10n.name,
+                        isRequired: true,
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _fullNameController,
+                        focusNode: _fullNameFocusNode,
                         maxLength: 50,
                         decoration: InputDecoration(
                           filled: true,
