@@ -71,6 +71,8 @@
   "separateWithSpacesSlots": "Separate with spaces or commas ({slots} slots remaining)",
   "noSlotsRemaining": "No slots remaining",
   "emailsReadyToInvite": "{count} email(s) ready to invite",
+  "invalidEmail": "Invalid email",
+  "emailAlreadyAdded": "Email already added",
   "disableUserTitle": "Disable User?",
   "disableUserMessage": "Are you sure you want to disable {name}? They will no longer be able to access the system.",
   "changeRoleTitle": "Change User Role?",

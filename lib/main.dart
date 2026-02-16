@@ -10,6 +10,8 @@ import 'screens/login_callback_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
+import 'screens/spend_history_screen.dart';
+import 'screens/company_config_screen.dart';
 import 'providers/locale_provider.dart';
 
 void main() async {
@@ -53,6 +55,7 @@ class MyApp extends ConsumerWidget {
         if (uri.path == '/login') {
           final token = uri.queryParameters['token'];
           return MaterialPageRoute(
+            settings: settings,
             builder: (context) => LoginCallbackScreen(token: token),
           );
         }
@@ -60,16 +63,42 @@ class MyApp extends ConsumerWidget {
         // Handle other routes
         switch (uri.path) {
           case '/':
-            return MaterialPageRoute(builder: (context) => const LoginScreen());
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const LoginScreen(),
+            );
           case '/dashboard':
-            return MaterialPageRoute(builder: (context) => const DashboardScreen());
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const DashboardScreen(),
+            );
           case '/manager/profile':
           case '/employee/profile':
-            return MaterialPageRoute(builder: (context) => const ProfileScreen());
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const ProfileScreen(),
+            );
           case '/manager/users':
-            return MaterialPageRoute(builder: (context) => const UsersScreen());
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const UsersScreen(),
+            );
+          case '/manager/history':
+          case '/employee/history':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const SpendHistoryScreen(),
+            );
+          case '/manager/company-config':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const CompanyConfigScreen(),
+            );
           default:
-            return MaterialPageRoute(builder: (context) => const LoginScreen());
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const LoginScreen(),
+            );
         }
       },
     );

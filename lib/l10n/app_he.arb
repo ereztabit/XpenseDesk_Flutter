@@ -71,6 +71,8 @@
   "separateWithSpacesSlots": "הפרד ברווחים או פסיקים ({slots} מקומות נותרו)",
   "noSlotsRemaining": "לא נותרו מקומות",
   "emailsReadyToInvite": "{count} אימייל(ים) מוכנים להזמנה",
+  "invalidEmail": "אימייל לא תקין",
+  "emailAlreadyAdded": "האימייל כבר נוסף",
   "disableUserTitle": "להשבית משתמש?",
   "disableUserMessage": "האם אתה בטוח שברצונך להשבית את {name}? הם לא יוכלו יותר לגשת למערכת.",
   "changeRoleTitle": "לשנות תפקיד משתמש?",

@@ -5,6 +5,7 @@ import '../../providers/users_provider.dart';
 import '../../services/users_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_utils.dart';
+import '../tag_input.dart';
 
 class InviteUsersDialog extends ConsumerStatefulWidget {
   final int remainingSlots;
@@ -19,15 +20,8 @@ class InviteUsersDialog extends ConsumerStatefulWidget {
 }
 
 class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
-  final _emailController = TextEditingController();
   bool _isLoading = false;
   List<String> _emailList = [];
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,33 +52,34 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Email input field
-            TextField(
-              controller: _emailController,
-              enabled: !_isLoading,
-              maxLines: isMobile ? 4 : 3,
-              decoration: InputDecoration(
-                labelText: l10n.emailAddresses,
-                hintText: l10n.pasteOrTypeEmails,
-                helperText: widget.remainingSlots > 0
-                    ? l10n.separateWithSpacesSlots(widget.remainingSlots)
-                    : l10n.noSlotsRemaining,
-                helperMaxLines: 2,
-              ),
-              onChanged: _parseEmails,
+            // Email tag input
+            TagInput(
+              tags: _emailList,
+              onChanged: (tags) {
+                setState(() {
+                  // Limit to remaining slots and max 20 per batch
+                  final maxEmails = widget.remainingSlots < 20 ? widget.remainingSlots : 20;
+                  _emailList = tags.take(maxEmails).toList();
+                });
+              },
+              labelText: l10n.emailAddresses,
+              hintText: l10n.pasteOrTypeEmails,
+              helperText: () {
+                final remaining = widget.remainingSlots - _emailList.length;
+                return remaining > 0
+                    ? l10n.separateWithSpacesSlots(remaining)
+                    : l10n.noSlotsRemaining;
+              }(),
+              enabled: !_isLoading && widget.remainingSlots > 0,
+              maxTags: widget.remainingSlots < 20 ? widget.remainingSlots : 20,
+              validator: (email) {
+                final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+                if (!emailRegex.hasMatch(email)) {
+                  return l10n.invalidEmail;
+                }
+                return null;
+              },
             ),
-            
-            if (_emailList.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                l10n.emailsReadyToInvite(_emailList.length),
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
           ],
         ),
       ),
@@ -105,33 +100,6 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
         ),
       ],
     );
-  }
-
-  void _parseEmails(String value) {
-    setState(() {
-      if (value.trim().isEmpty) {
-        _emailList = [];
-        return;
-      }
-
-      // Split by commas, spaces, semicolons, or newlines
-      final parts = value.split(RegExp(r'[,;\s\n]+'));
-      
-      // Filter valid emails and deduplicate
-      final validEmails = <String>{};
-      final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-      
-      for (var part in parts) {
-        final trimmed = part.trim().toLowerCase();
-        if (trimmed.isNotEmpty && emailRegex.hasMatch(trimmed)) {
-          validEmails.add(trimmed);
-        }
-      }
-      
-      // Limit to remaining slots and max 20 per batch
-      final maxEmails = widget.remainingSlots < 20 ? widget.remainingSlots : 20;
-      _emailList = validEmails.take(maxEmails).toList();
-    });
   }
 
   Future<void> _handleInvite() async {
