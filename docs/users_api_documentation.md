@@ -10,7 +10,7 @@ The Users API provides endpoints for managing user accounts, profiles, and permi
 
 ## Authentication
 
-### ?? All Endpoints Require Authentication
+### 🔒 All Endpoints Require Authentication
 
 Every endpoint in this API requires a valid session token obtained from the authentication flow.
 
@@ -33,10 +33,10 @@ Authorization: Bearer YOUR_SESSION_TOKEN_HERE
 
 Some endpoints require **Administrator** privileges:
 
-- ?? **Employee** (RoleId: 2) - Regular user
-- ?? **Administrator** (RoleId: 1) - Can manage users and company settings
+- 👤 **Employee** (RoleId: 2) - Regular user
+- 👑 **Administrator** (RoleId: 1) - Can manage users and company settings
 
-Endpoints marked with ?? require Administrator role.
+Endpoints marked with 👑 require Administrator role.
 
 ---
 
@@ -47,7 +47,7 @@ Endpoints marked with ?? require Administrator role.
 
 - **Method**: `GET`
 - **Endpoint**: `/api/users/me`
-- **Authentication**: ?? Required
+- **Authentication**: 🔒 Required
 - **Authorization**: Any authenticated user
 
 #### Request
@@ -90,13 +90,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-### 2. Get All Users ??
+### 2. Get All Users 👑
 **Retrieve all users in your company (Admin only).**
 
 - **Method**: `GET`
 - **Endpoint**: `/api/users/all`
-- **Authentication**: ?? Required
-- **Authorization**: ?? Administrator only
+- **Authentication**: 🔒 Required
+- **Authorization**: 👑 Administrator only
 
 #### Request
 ```http
@@ -156,7 +156,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 - **Method**: `PUT`
 - **Endpoint**: `/api/users/update-details`
-- **Authentication**: ?? Required
+- **Authentication**: 🔒 Required
 - **Authorization**: Any authenticated user
 
 #### Request
@@ -175,8 +175,8 @@ Content-Type: application/json
 #### Request Body Parameters
 | Field | Type | Required | Max Length | Description |
 |-------|------|----------|------------|-------------|
-| `fullName` | string | ? Yes | 50 characters | User's full name |
-| `languageId` | integer | ? No | - | User's preferred language ID (optional) |
+| `fullName` | string | ✅ Yes | 50 characters | User's full name |
+| `languageId` | integer | ❌ No | - | User's preferred language ID (optional) |
 
 #### Response (200 OK)
 ```json
@@ -204,13 +204,13 @@ Or:
 
 ---
 
-### 4. Promote User to Admin ??
+### 4. Promote User to Admin 👑
 **Promote an employee to administrator role.**
 
 - **Method**: `POST`
 - **Endpoint**: `/api/users/promote-to-admin`
-- **Authentication**: ?? Required
-- **Authorization**: ?? Administrator only
+- **Authentication**: 🔒 Required
+- **Authorization**: 👑 Administrator only
 
 #### Request
 ```http
@@ -227,7 +227,7 @@ Content-Type: application/json
 #### Request Body Parameters
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `targetUserId` | string (GUID) | ? Yes | The user ID to promote |
+| `targetUserId` | string (GUID) | ✅ Yes | The user ID to promote |
 
 #### Response (200 OK)
 ```json
@@ -254,19 +254,19 @@ Content-Type: application/json
 ```
 
 #### Business Rules
-- ? Administrators cannot promote themselves
-- ? Target user must belong to the same company
-- ? Only administrators can perform this action
+- ❌ Administrators cannot promote themselves
+- ✅ Target user must belong to the same company
+- ✅ Only administrators can perform this action
 
 ---
 
-### 5. Downgrade User to Employee ??
+### 5. Downgrade User to Employee 👑
 **Downgrade an administrator to regular employee role.**
 
 - **Method**: `POST`
 - **Endpoint**: `/api/users/downgrade-to-user`
-- **Authentication**: ?? Required
-- **Authorization**: ?? Administrator only
+- **Authentication**: 🔒 Required
+- **Authorization**: 👑 Administrator only
 
 #### Request
 ```http
@@ -283,7 +283,7 @@ Content-Type: application/json
 #### Request Body Parameters
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `targetUserId` | string (GUID) | ? Yes | The user ID to downgrade |
+| `targetUserId` | string (GUID) | ✅ Yes | The user ID to downgrade |
 
 #### Response (200 OK)
 ```json
@@ -310,19 +310,134 @@ Content-Type: application/json
 ```
 
 #### Business Rules
-- ? Administrators cannot downgrade themselves
-- ? Target user must belong to the same company
-- ? Only administrators can perform this action
+- ❌ Administrators cannot downgrade themselves
+- ✅ Target user must belong to the same company
+- ✅ Only administrators can perform this action
 
 ---
 
-### 6. Invite Users ??
+### 6. Enable User 👑
+**Enable a disabled user account.**
+
+- **Method**: `POST`
+- **Endpoint**: `/api/users/enable`
+- **Authentication**: 🔒 Required
+- **Authorization**: 👑 Administrator only
+
+#### Request
+```http
+POST /api/users/enable HTTP/1.1
+Host: your-api-domain.com
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "targetUserId": "b2c3d4e5-f6a7-8901-2345-67890abcdef1"
+}
+```
+
+#### Request Body Parameters
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `targetUserId` | string (GUID) | ✅ Yes | The user ID to enable |
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "User enabled successfully"
+}
+```
+
+#### Response (400 Bad Request)
+```json
+{
+  "success": false,
+  "message": "You cannot enable yourself"
+}
+```
+
+#### Response (403 Forbidden)
+```json
+{
+  "success": false,
+  "message": "Only administrators can enable users"
+}
+```
+
+#### Business Rules
+- ❌ Administrators cannot enable themselves
+- ✅ Target user must belong to the same company
+- ✅ Only administrators can perform this action
+- ✅ Typically used to re-activate disabled user accounts
+
+---
+
+### 7. Disable User 👑
+**Disable a user account, preventing them from logging in.**
+
+- **Method**: `POST`
+- **Endpoint**: `/api/users/disable`
+- **Authentication**: 🔒 Required
+- **Authorization**: 👑 Administrator only
+
+#### Request
+```http
+POST /api/users/disable HTTP/1.1
+Host: your-api-domain.com
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "targetUserId": "b2c3d4e5-f6a7-8901-2345-67890abcdef1"
+}
+```
+
+#### Request Body Parameters
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `targetUserId` | string (GUID) | ✅ Yes | The user ID to disable |
+
+#### Response (200 OK)
+```json
+{
+  "success": true,
+  "message": "User disabled successfully"
+}
+```
+
+#### Response (400 Bad Request)
+```json
+{
+  "success": false,
+  "message": "You cannot disable yourself"
+}
+```
+
+#### Response (403 Forbidden)
+```json
+{
+  "success": false,
+  "message": "Only administrators can disable users"
+}
+```
+
+#### Business Rules
+- ❌ Administrators cannot disable themselves
+- ✅ Target user must belong to the same company
+- ✅ Only administrators can perform this action
+- ✅ Disabled users cannot log in or access the system
+- ✅ Disabled users will appear with status "Disabled" in user lists
+
+---
+
+### 8. Invite Users 👑
 **Invite new users to join your company (batch operation).**
 
 - **Method**: `POST`
 - **Endpoint**: `/api/users/invite`
-- **Authentication**: ?? Required
-- **Authorization**: ?? Administrator only
+- **Authentication**: 🔒 Required
+- **Authorization**: 👑 Administrator only
 
 #### Request
 ```http
@@ -343,7 +458,7 @@ Content-Type: application/json
 #### Request Body Parameters
 | Field | Type | Required | Max Items | Description |
 |-------|------|----------|-----------|-------------|
-| `emails` | array of strings | ? Yes | 20 | List of email addresses to invite |
+| `emails` | array of strings | ✅ Yes | 20 | List of email addresses to invite |
 
 #### Response (200 OK)
 ```json
@@ -378,12 +493,12 @@ Or:
 ```
 
 #### Business Rules
-- ? Maximum 20 emails per batch
-- ? Duplicate emails in the request are automatically removed
-- ? Invalid email formats are silently skipped
-- ? Emails already registered in the company are silently skipped
-- ? Case-insensitive email matching
-- ?? Invited users will receive an email invitation (pending implementation)
+- ✅ Maximum 20 emails per batch
+- ✅ Duplicate emails in the request are automatically removed
+- ✅ Invalid email formats are silently skipped
+- ✅ Emails already registered in the company are silently skipped
+- ✅ Case-insensitive email matching
+- ⚠️ Invited users will receive an email invitation (pending implementation)
 
 #### Example with Edge Cases
 ```json
@@ -521,33 +636,69 @@ const result = await response.json();
 console.log(result.message); // "User promoted to admin successfully"
 ```
 
+### Step 7: Admin - Disable User
+```javascript
+// Only works if you're an admin
+const response = await fetch("https://your-api-domain.com/api/users/disable", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${sessionToken}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    targetUserId: "b2c3d4e5-f6a7-8901-2345-67890abcdef1"
+  })
+});
+
+const result = await response.json();
+console.log(result.message); // "User disabled successfully"
+```
+
+### Step 8: Admin - Enable User
+```javascript
+// Only works if you're an admin
+const response = await fetch("https://your-api-domain.com/api/users/enable", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${sessionToken}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    targetUserId: "b2c3d4e5-f6a7-8901-2345-67890abcdef1"
+  })
+});
+
+const result = await response.json();
+console.log(result.message); // "User enabled successfully"
+```
+
 ---
 
 ## Best Practices
 
 ### 1. Token Management
-- ? Store tokens securely (not in localStorage for production)
-- ? Include tokens in every request via Authorization header
-- ? Handle 401 responses by redirecting to login
-- ? Implement token refresh logic if needed
+- ✅ Store tokens securely (not in localStorage for production)
+- ✅ Include tokens in every request via Authorization header
+- ✅ Handle 401 responses by redirecting to login
+- ✅ Implement token refresh logic if needed
 
 ### 2. Error Handling
-- ? Always check the `success` field in responses
-- ? Display `message` field to users for error feedback
-- ? Handle network errors gracefully
-- ? Implement retry logic for 500 errors
+- ✅ Always check the `success` field in responses
+- ✅ Display `message` field to users for error feedback
+- ✅ Handle network errors gracefully
+- ✅ Implement retry logic for 500 errors
 
 ### 3. Admin Operations
-- ? Check user's role before showing admin UI elements
-- ? Handle 403 responses appropriately (don't expose admin features)
-- ? Validate data client-side before sending to API
-- ? Provide clear feedback when operations succeed or fail
+- ✅ Check user's role before showing admin UI elements
+- ✅ Handle 403 responses appropriately (don't expose admin features)
+- ✅ Validate data client-side before sending to API
+- ✅ Provide clear feedback when operations succeed or fail
 
 ### 4. Batch Invitations
-- ? Validate email formats before sending
-- ? Limit to 20 emails per request
-- ? Inform users that duplicates/invalids will be skipped
-- ? Consider implementing progress feedback for large batches
+- ✅ Validate email formats before sending
+- ✅ Limit to 20 emails per request
+- ✅ Inform users that duplicates/invalids will be skipped
+- ✅ Consider implementing progress feedback for large batches
 
 ---
 
