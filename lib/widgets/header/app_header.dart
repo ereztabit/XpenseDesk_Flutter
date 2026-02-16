@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../../utils/responsive_utils.dart';
 import 'desktop_menu.dart';
 import '../../models/menu_items.dart';
 import 'mobile_menu_sheet.dart';
@@ -46,9 +47,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     final userInfo = ref.read(userInfoProvider);
     if (userInfo == null) return;
 
-    final isMobile = MediaQuery.of(context).size.width < 768;
-
-    if (isMobile) {
+    if (context.isMobile) {
       _openMobileMenu();
     } else {
       _openDesktopMenu();
@@ -114,7 +113,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       case 'company-config':
         if (mounted) Navigator.pushNamed(context, '/manager/company-config');
         break;
-      case 'users':
+      case 'user-management':
         if (mounted) Navigator.pushNamed(context, '/manager/users');
         break;
       case 'contact-support':
@@ -140,7 +139,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider);
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final isMobile = context.isMobile;
 
     // For login/signup pages (no userInfo)
     if (userInfo == null) {

@@ -58,6 +58,8 @@ lib/
 ├── widgets/                     # Reusable UI components
 │   ├── audit_widget.dart
 │   └── language_picker.dart
+├── utils/                       # Utility extensions and helpers
+│   └── responsive_utils.dart   # Responsive breakpoint utilities
 ├── theme/                       # UI theming
 │   └── app_theme.dart
 └── l10n/                        # Localization files
@@ -311,6 +313,56 @@ class WeatherForecast {
 - **Timeout handling**: Set timeouts on HTTP requests
 - **Error types**: Create custom exception classes
 - **Retry logic**: For transient failures
+
+---
+
+### Responsive Design Utilities
+
+**CRITICAL: Use Centralized Responsive Utilities**
+
+Never use `MediaQuery.of(context).size.width` directly. Always use the centralized responsive extension:
+
+```dart
+import '../utils/responsive_utils.dart';
+
+Widget build(BuildContext context) {
+  if (context.isNarrow) {
+    // Stacked layout for < 600px
+  }
+  
+  if (context.isMobile) {
+    // Reduced padding for < 768px
+  }
+}
+```
+
+**Available Utilities** (`lib/utils/responsive_utils.dart`):
+- `context.screenWidth` - Current screen width in pixels
+- `context.isNarrow` - True if < 600px (use for stacked layouts, major UI simplifications)
+- `context.isMobile` - True if < 768px (use for reduced padding, mobile optimizations)
+- `context.isWide` - True if >= 600px (inverse of isNarrow)
+- `context.isDesktop` - True if >= 768px (inverse of isMobile)
+
+**Breakpoint Standards:**
+- **600px** - Narrow breakpoint (stacked layouts, simplified navigation)
+- **768px** - Mobile breakpoint (reduced spacing, mobile-specific optimizations)
+
+**Benefits:**
+- Single source of truth for breakpoints
+- Easy to change breakpoints globally
+- More readable code
+- No magic numbers scattered across codebase
+
+**Wrong:**
+```dart
+final isMobile = MediaQuery.of(context).size.width < 768;  // ❌ Don't do this
+```
+
+**Correct:**
+```dart
+import '../utils/responsive_utils.dart';
+final isMobile = context.isMobile;  // ✅ Use centralized utility
+```
 
 ---
 

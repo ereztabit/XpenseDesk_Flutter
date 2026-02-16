@@ -839,11 +839,76 @@ Widget build(BuildContext context) {
 ```
 
 **Verification**:
-- [ ] Build completes: `flutter build web`
-- [ ] No errors: `get_errors` tool
-- [ ] Desktop layout looks good
-- [ ] Mobile layout looks good
-- [ ] Tablet breakpoint works
+- [x] Build completes: `flutter build web`
+- [x] No errors: `get_errors` tool
+- [x] Desktop layout looks good
+- [x] Mobile layout looks good
+- [x] Tablet breakpoint works
+
+---
+
+#### Step 12a: Refactor to Centralized Responsive Utilities
+**Goal**: Eliminate repeated MediaQuery checks across components
+
+**Motivation**: After implementing responsive design, we identified that `MediaQuery.of(context).size.width` checks were duplicated across multiple files, violating DRY principles and making breakpoint changes harder to maintain.
+
+**Files Created**:
+- `lib/utils/responsive_utils.dart` - BuildContext extension with centralized breakpoints
+
+**Responsive Utility**:
+```dart
+/// Extension on BuildContext for responsive design utilities
+extension ResponsiveUtils on BuildContext {
+  /// Returns the current screen width
+  double get screenWidth => MediaQuery.of(this).size.width;
+
+  /// Returns true if screen width is less than 600px
+  /// Use for stacked layouts and major UI simplifications
+  bool get isNarrow => screenWidth < 600;
+
+  /// Returns true if screen width is less than 768px
+  /// Use for reduced padding and mobile-specific optimizations
+  bool get isMobile => screenWidth < 768;
+
+  /// Returns true if screen width is 600px or greater
+  bool get isWide => !isNarrow;
+
+  /// Returns true if screen width is 768px or greater
+  bool get isDesktop => !isMobile;
+}
+```
+
+**Files Refactored**:
+- `lib/widgets/header/app_header.dart` - Changed to `context.isMobile`
+- `lib/widgets/header/mobile_menu_sheet.dart` - Changed to `context.screenWidth`
+- `lib/widgets/users/user_list_item_widget.dart` - Changed to `context.isNarrow`
+- `lib/widgets/users/invite_users_dialog.dart` - Changed to `context.isNarrow`
+- `lib/screens/users_screen.dart` - Changed to `context.isNarrow` and `context.isMobile`
+
+**Before**:
+```dart
+final isNarrow = MediaQuery.of(context).size.width < 600;
+```
+
+**After**:
+```dart
+import '../../utils/responsive_utils.dart';
+
+// In build method:
+if (context.isNarrow) { ... }
+```
+
+**Benefits**:
+- Single source of truth for breakpoints
+- Easier to adjust breakpoints globally
+- More readable code (`context.isMobile` vs `MediaQuery.of(context).size.width < 768`)
+- Eliminates magic numbers scattered across codebase
+
+**Verification**:
+- [x] Build completes: `flutter build web`
+- [x] No errors: `get_errors` tool
+- [x] All MediaQuery checks replaced: `grep_search` shows 0 matches for `MediaQuery.of(context).size.width` in lib/
+- [x] All components use centralized utility: 7 uses of `context.isNarrow/isMobile/screenWidth` found
 
 ---
 
@@ -898,12 +963,18 @@ Widget build(BuildContext context) {
 
 **Hebrew Translations**: Add equivalent Hebrew strings to `app_he.arb`
 
+**Implementation Notes**:
+- All ARB strings added without `@` placeholder metadata (Flutter l10n infers types automatically from `{}` placeholders)
+- Fixed l10n scope issues by declaring `l10n` variable before try blocks in all handler methods
+- Used localized strings consistently across all user management screens and dialogs
+
 **Verification**:
-- [ ] Build completes: `flutter build web`
-- [ ] No errors: `get_errors` tool
-- [ ] English strings display correctly
-- [ ] Hebrew strings display correctly
-- [ ] RTL layout works for Hebrew
+- [x] Build completes: `flutter build web`
+- [x] No compilation errors
+- [x] English strings added to app_en.arb
+- [x] Hebrew strings added to app_he.arb
+- [x] All user management files updated to use l10n
+- [ ] RTL layout tested for Hebrew
 
 ---
 

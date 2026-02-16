@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
+import '../../utils/responsive_utils.dart';
 
 class MobileMenuSheet extends ConsumerStatefulWidget {
   final VoidCallback onClose;
@@ -56,25 +57,58 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
   void _handleMenuItemSelected(String value) async {
     final userInfo = ref.read(userInfoProvider);
-    final t = AppLocalizations.of(context)!;
+    if (userInfo == null) return;
 
-    if (value == 'profile' && userInfo != null) {
-      await _close();
-      final role = userInfo.roleId == 1 ? 'manager' : 'employee';
-      if (mounted) {
-        Navigator.pushNamed(context, '/$role/profile');
-      }
-    } else if (value == 'contact-support' && userInfo != null) {
-      await MenuItems.launchContactSupport(userInfo, t);
-    } else if (value == 'logout') {
-      await _close();
-      ref.read(userInfoProvider.notifier).logout();
-      await ref.read(authServiceProvider).clearSessionToken();
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-      }
+    switch (value) {
+      case 'profile':
+        await _navigateToProfile(userInfo);
+        break;
+      case 'user-management':
+        await _navigateToRoute('/manager/users');
+        break;
+      case 'spend-history':
+        await _navigateToRoute('/manager/history');
+        break;
+      case 'company-config':
+        await _navigateToRoute('/manager/company-config');
+        break;
+      case 'contact-support':
+        await _handleContactSupport(userInfo);
+        break;
+      case 'logout':
+        await _handleLogout();
+        break;
     }
-    // TODO: Add navigation for other menu items
+  }
+
+  Future<void> _navigateToProfile(dynamic userInfo) async {
+    await _close();
+    if (!mounted) return;
+    
+    final role = userInfo.roleId == 1 ? 'manager' : 'employee';
+    Navigator.pushNamed(context, '/$role/profile');
+  }
+
+  Future<void> _navigateToRoute(String route) async {
+    await _close();
+    if (!mounted) return;
+    
+    Navigator.pushNamed(context, route);
+  }
+
+  Future<void> _handleContactSupport(dynamic userInfo) async {
+    final t = AppLocalizations.of(context)!;
+    await MenuItems.launchContactSupport(userInfo, t);
+  }
+
+  Future<void> _handleLogout() async {
+    await _close();
+    
+    ref.read(userInfoProvider.notifier).logout();
+    await ref.read(authServiceProvider).clearSessionToken();
+    
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   @override
@@ -83,8 +117,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     final userInfo = ref.watch(userInfoProvider);
     final isManager = userInfo?.roleId == 1;
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final sheetWidth = (screenWidth * 0.75).clamp(0.0, 384.0);
+    final sheetWidth = (context.screenWidth * 0.75).clamp(0.0, 384.0);
 
     final menuItems = MenuItems.getItems(t, isManager);
     
