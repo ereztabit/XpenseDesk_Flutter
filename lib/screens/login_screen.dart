@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
-import '../widgets/header/app_header.dart';
+import '../widgets/header/login_header.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/error_alert.dart';
 import '../theme/app_theme.dart';
@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          const AppHeader(),
+          const LoginHeader(),
           Expanded(
             child: Center(
               child: SingleChildScrollView(

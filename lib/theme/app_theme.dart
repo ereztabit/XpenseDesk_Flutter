@@ -18,6 +18,9 @@ class AppTheme {
   static const Color mutedForeground = Color(0xFF6B6580); // 250 10% 45%
   static const Color border = Color(0xFFE5E3EE); // 250 20% 90%
   static const Color destructive = Color(0xFFE63E7A); // 330 81% 60% - Pink-red
+  static const Color accent = Color(0xFF9B7FA9); // 280 35% 55% - Pending badge
+  static const Color success = Color(0xFF16A34A); // green-600 - Enable action
+  static const Color primaryTint = Color(0xFFEBE8F2); // primary/10% - Avatar backgrounds
 
   // Spacing Constants
   static const double borderRadius = 12.0;

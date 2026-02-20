@@ -141,54 +141,11 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     final userInfo = ref.watch(userInfoProvider);
     final isMobile = context.isMobile;
 
-    // For login/signup pages (no userInfo)
+    // This widget should only be used on authenticated pages
     if (userInfo == null) {
-      return Container(
-        height: 56,
-        decoration: const BoxDecoration(
-          color: AppTheme.card,
-          border: Border(
-            bottom: BorderSide(
-              color: AppTheme.border,
-              width: 1,
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 2,
-              offset: Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: AppTheme.containerMaxWidth),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  // Language Switcher
-                  const LanguageSwitcher(),
-
-                  // Spacer
-                  const Spacer(),
-
-                  // Logo
-                  Image.asset(
-                    'assets/images/logo.png',
-                    height: 24,
-                    fit: BoxFit.contain,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
-    // For logged-in pages
     final initials = MenuItems.getInitials(userInfo.fullName, userInfo.email);
 
     return Container(
