@@ -22,9 +22,11 @@
 - ✅ **Step 11:** User row typography - name 16px w600, "(you)" marker 14px muted, email 13px muted, invited date 11px with icon
 - ✅ **Step 12:** Hide action menu for current user - already implemented with conditional rendering
 - ✅ **Step 13:** Action menu styling - admin_panel_settings icon for role, color-coded enable (green) and disable (red/destructive)
+- ✅ **Step 14:** Profile screen constrained layout - added AppHeader/Footer, wrapped content in ConstrainedContent, added back button
+- ✅ **Step 15:** Profile screen form input styles - white fill, 12px radius, theme borders matching search input style
 
 **Next Step:** 
-- 🔜 **Step 14:** Profile screen - apply constrained layout
+- 🔜 **Step 16:** Continue remaining profile/dashboard improvements
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper

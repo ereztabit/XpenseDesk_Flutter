@@ -6,6 +6,9 @@ import '../services/auth_service.dart';
 import '../widgets/error_alert.dart';
 import '../theme/app_theme.dart';
 import '../widgets/form_behavior_mixin.dart';
+import '../widgets/header/app_header.dart';
+import '../widgets/app_footer.dart';
+import '../widgets/constrained_content.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -138,31 +141,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () => handleBackNavigation('/dashboard'),
-          ),
-        title: Text(
-          l10n.backToDashboard,
-          style: const TextStyle(color: Colors.black, fontSize: 14),
-        ),
-      ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Card
-              Card(
+        body: Column(
+          children: [
+            const AppHeader(),
+            Expanded(
+              child: ConstrainedContent(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back button
+                        TextButton.icon(
+                          onPressed: () => handleBackNavigation('/dashboard'),
+                          icon: const Icon(Icons.arrow_back, size: 18),
+                          label: Text(l10n.backToDashboard),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        
+                        // Profile Card
+                        Card(
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.withAlpha(51)),
+                  side: const BorderSide(color: AppTheme.border),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -197,14 +204,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                         maxLength: 50,
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: Colors.grey.withAlpha(26),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
+                          fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.destructive),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.destructive, width: 2),
                           ),
                           counterText: '',
                         ),
@@ -229,14 +252,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.withAlpha(26),
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppTheme.muted,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppTheme.border),
                         ),
                         child: Text(
                           userInfo.email,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
-                            color: Colors.grey[600],
+                            color: AppTheme.mutedForeground,
                           ),
                         ),
                       ),
@@ -251,7 +275,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.withAlpha(51)),
+                  side: const BorderSide(color: AppTheme.border),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(24),
@@ -289,14 +313,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                         expandedInsets: EdgeInsets.zero,
                         inputDecorationTheme: InputDecorationTheme(
                           filled: true,
-                          fillColor: Colors.grey.withAlpha(26),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          ),
+                          fillColor: Colors.white,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
                           ),
                         ),
                         dropdownMenuEntries: [
@@ -354,16 +386,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
               // Save Button
               Align(
                 alignment: Alignment.centerRight,
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: _isLoading ? null : _handleSave,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    backgroundColor: AppTheme.primary,
-                    foregroundColor: Colors.white,
-                  ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 20,
@@ -376,9 +400,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                       : Text(l10n.saveChanges),
                 ),
               ),
-            ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+            const AppFooter(),
+          ],
         ),
       ),
     );
