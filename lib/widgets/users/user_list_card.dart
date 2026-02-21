@@ -5,6 +5,7 @@ import '../../models/user_list_item.dart';
 import '../../providers/users_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/users_service.dart';
+import '../../theme/app_theme.dart';
 import 'user_list_item_widget.dart';
 
 class UserListCard extends ConsumerWidget {
@@ -12,11 +13,17 @@ class UserListCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final usersAsync = ref.watch(usersListProvider);
     final filteredUsers = ref.watch(filteredUsersProvider);
     final currentUser = ref.watch(userInfoProvider);
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppTheme.border),
+      ),
+      elevation: 0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -25,19 +32,20 @@ class UserListCard extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                const Icon(Icons.people, size: 24),
-                const SizedBox(width: 12),
-                const Text(
-                  'Users',
-                  style: TextStyle(
-                    fontSize: 20,
+                const Icon(Icons.people, size: 20, color: AppTheme.foreground),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.users,
+                  style: const TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
+                    color: AppTheme.foreground,
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
+          const Divider(height: 1, color: AppTheme.border),
 
           // User list content
           Expanded(

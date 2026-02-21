@@ -14,9 +14,10 @@
 - ✅ **Step 3:** Added custom back button ("← Back to Dashboard") to Users screen
 - ✅ **Step 4:** Rounded border search input with white fill, 12px radius, purple focus border
 - ✅ **Step 5:** Primary button styling - color #362B71, 50px minimumSize, shrinkWrap tap target
+- ✅ **Step 6:** Counter typography with RichText - muted label, bold numbers
 
 **Next Step:** 
-- 🔜 **Step 6:** Update counter typography
+- 🔜 **Step 7:** Add card wrapper to user list
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper
