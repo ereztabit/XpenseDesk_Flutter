@@ -45,7 +45,6 @@ class UserListCard extends ConsumerWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppTheme.border),
 
           // User list content
           Expanded(
@@ -73,7 +72,7 @@ class UserListCard extends ConsumerWidget {
   ) {
     return ListView.separated(
       itemCount: users.length,
-      separatorBuilder: (context, index) => const Divider(height: 1, indent: 72),
+      separatorBuilder: (context, index) => const Divider(height: 1, color: AppTheme.border),
       itemBuilder: (context, index) {
         final user = users[index];
         final isCurrentUser = user.email == currentUserEmail;

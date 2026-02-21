@@ -281,10 +281,9 @@ class UserListItemWidget extends StatelessWidget {
           value: user.roleId == 1 ? 'demote' : 'promote',
           child: Row(
             children: [
-              Icon(
-                Icons.shield_outlined,
-                size: 20,
-                color: Colors.grey.shade700,
+              const Icon(
+                Icons.admin_panel_settings,
+                size: 18,
               ),
               const SizedBox(width: 12),
               Text(
@@ -300,15 +299,15 @@ class UserListItemWidget extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                user.isDisabled ? Icons.check_circle_outline : Icons.block,
-                size: 20,
-                color: user.isDisabled ? Colors.green : Colors.red,
+                user.isDisabled ? Icons.check_circle : Icons.cancel,
+                size: 18,
+                color: user.isDisabled ? AppTheme.success : AppTheme.destructive,
               ),
               const SizedBox(width: 12),
               Text(
                 user.isDisabled ? l10n.enable : l10n.disable,
                 style: TextStyle(
-                  color: user.isDisabled ? Colors.green : Colors.red,
+                  color: user.isDisabled ? AppTheme.success : AppTheme.destructive,
                 ),
               ),
             ],

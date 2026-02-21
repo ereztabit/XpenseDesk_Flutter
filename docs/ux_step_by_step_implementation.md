@@ -20,9 +20,11 @@
 - ✅ **Step 9:** Status badge colors - primaryTint/primary for active, accent for pending, muted for disabled, pill shape (Updated: disabled also uses primaryTint/primary for consistency)
 - ✅ **Step 10:** Role badge colors - solid primary for Manager, muted for Employee, pill shape
 - ✅ **Step 11:** User row typography - name 16px w600, "(you)" marker 14px muted, email 13px muted, invited date 11px with icon
+- ✅ **Step 12:** Hide action menu for current user - already implemented with conditional rendering
+- ✅ **Step 13:** Action menu styling - admin_panel_settings icon for role, color-coded enable (green) and disable (red/destructive)
 
 **Next Step:** 
-- 🔜 **Step 12:** Hide action menu for current user
+- 🔜 **Step 14:** Profile screen - apply constrained layout
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper

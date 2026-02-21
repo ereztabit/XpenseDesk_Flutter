@@ -16,7 +16,7 @@ class AppTheme {
   static const Color primaryForeground = Color(0xFFFFFFFF);
   static const Color muted = Color(0xFFF2F1F7); // 250 15% 95%
   static const Color mutedForeground = Color(0xFF6B6580); // 250 10% 45%
-  static const Color border = Color(0xFFE5E3EE); // 250 20% 90%
+  static const Color border = Color(0xFFEEEEEE); // Very light gray for subtle borders
   static const Color destructive = Color(0xFFE63E7A); // 330 81% 60% - Pink-red
   static const Color accent = Color(0xFF9B7FA9); // 280 35% 55% - Pending badge
   static const Color success = Color(0xFF16A34A); // green-600 - Enable action
