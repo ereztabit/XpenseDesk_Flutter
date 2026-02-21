@@ -77,7 +77,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                   children: [
                     // Back button
                     Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: TextButton.icon(
                         onPressed: () => Navigator.pushReplacementNamed(context, '/dashboard'),
                         icon: const Icon(Icons.arrow_back),
@@ -107,7 +107,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                       style: const TextStyle(color: AppTheme.mutedForeground),
                                     ),
                                     TextSpan(
-                                      text: '${userStats.utilized} of ${userStats.capacity}',
+                                      text: l10n.countOfTotal(userStats.capacity, userStats.utilized),
                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                     ),
                                   ],
@@ -141,7 +141,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                       style: const TextStyle(color: AppTheme.mutedForeground),
                                     ),
                                     TextSpan(
-                                      text: '${userStats.utilized} of ${userStats.capacity}',
+                                      text: l10n.countOfTotal(userStats.capacity, userStats.utilized),
                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                     ),
                                   ],

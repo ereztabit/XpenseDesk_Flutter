@@ -54,6 +54,7 @@
   "discard": "Discard",
   "manageUsers": "User Management",
   "usersCount": "Users: {capacity} of {utilized}",
+  "countOfTotal": "{utilized} of {capacity}",
   "inviteUsers": "Invite Users",
   "inviteNewUsers": "Invite New Users",
   "searchByNameOrEmail": "Search by name or email...",
