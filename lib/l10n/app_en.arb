@@ -61,6 +61,7 @@
   "active": "Active",
   "pending": "Pending",
   "disabled": "Disabled",
+  "you": "you",
   "promoteToManager": "Promote to Manager",
   "demoteToEmployee": "Demote to Employee",
   "disable": "Disable",

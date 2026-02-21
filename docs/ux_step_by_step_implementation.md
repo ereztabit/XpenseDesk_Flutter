@@ -15,9 +15,14 @@
 - ✅ **Step 4:** Rounded border search input with white fill, 12px radius, purple focus border
 - ✅ **Step 5:** Primary button styling - color #362B71, 50px minimumSize, shrinkWrap tap target
 - ✅ **Step 6:** Counter typography with RichText - muted label, bold numbers
+- ✅ **Step 7:** Card wrapper styling - border, flat elevation, localized header, theme colors
+- ✅ **Step 8:** Avatar colors - primaryTint for active users, muted for disabled users (Updated: all users now use primaryTint for better visual presence)
+- ✅ **Step 9:** Status badge colors - primaryTint/primary for active, accent for pending, muted for disabled, pill shape (Updated: disabled also uses primaryTint/primary for consistency)
+- ✅ **Step 10:** Role badge colors - solid primary for Manager, muted for Employee, pill shape
+- ✅ **Step 11:** User row typography - name 16px w600, "(you)" marker 14px muted, email 13px muted, invited date 11px with icon
 
 **Next Step:** 
-- 🔜 **Step 7:** Add card wrapper to user list
+- 🔜 **Step 12:** Hide action menu for current user
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper

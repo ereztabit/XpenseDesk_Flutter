@@ -89,13 +89,11 @@ class UserListItemWidget extends StatelessWidget {
               // Avatar (smaller on mobile)
               CircleAvatar(
                 radius: 16,
-                backgroundColor: user.isDisabled
-                    ? Colors.grey.withAlpha(51)
-                    : AppTheme.primary.withAlpha(26),
+                backgroundColor: AppTheme.primaryTint,
                 child: Text(
                   user.initials,
-                  style: TextStyle(
-                    color: user.isDisabled ? Colors.grey : AppTheme.primary,
+                  style: const TextStyle(
+                    color: AppTheme.primary,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
@@ -139,19 +137,13 @@ class UserListItemWidget extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    final isDimmed = user.isDisabled;
-    final backgroundColor = isDimmed
-        ? Colors.grey.withAlpha(51)
-        : AppTheme.primary.withAlpha(26);
-    final textColor = isDimmed ? Colors.grey : AppTheme.primary;
-
     return CircleAvatar(
       radius: 20,
-      backgroundColor: backgroundColor,
+      backgroundColor: AppTheme.primaryTint,
       child: Text(
         user.initials,
-        style: TextStyle(
-          color: textColor,
+        style: const TextStyle(
+          color: AppTheme.primary,
           fontWeight: FontWeight.w600,
           fontSize: 14,
         ),
@@ -174,13 +166,12 @@ class UserListItemWidget extends StatelessWidget {
           ),
         ),
         if (isCurrentUser) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
-            '(you)',
-            style: TextStyle(
+            '(${l10n.you})',
+            style: const TextStyle(
               fontSize: 14,
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
+              color: AppTheme.mutedForeground,
             ),
           ),
         ],
@@ -191,9 +182,9 @@ class UserListItemWidget extends StatelessWidget {
   Widget _buildEmail() {
     return Text(
       user.email,
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey.shade600,
+      style: const TextStyle(
+        fontSize: 13,
+        color: AppTheme.mutedForeground,
       ),
       overflow: TextOverflow.ellipsis,
     );
@@ -203,30 +194,23 @@ class UserListItemWidget extends StatelessWidget {
     final dateFormat = DateFormat('MMM d, yyyy', l10n.localeName);
     final formattedDate = dateFormat.format(user.invitedDate!);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey.withAlpha(26),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.schedule,
-            size: 12,
-            color: Colors.grey.shade600,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.schedule,
+          size: 12,
+          color: AppTheme.mutedForeground,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          'Invited on $formattedDate',
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppTheme.mutedForeground,
           ),
-          const SizedBox(width: 4),
-          Text(
-            'Invited on $formattedDate',
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -237,30 +221,30 @@ class UserListItemWidget extends StatelessWidget {
 
     if (user.isActive) {
       label = l10n.active;
-      backgroundColor = AppTheme.primary.withAlpha(26);
+      backgroundColor = AppTheme.primaryTint;
       textColor = AppTheme.primary;
     } else if (user.isPending) {
       label = l10n.pending;
-      backgroundColor = Colors.purple.withAlpha(26);
-      textColor = Colors.purple;
+      backgroundColor = AppTheme.accent.withAlpha(26);
+      textColor = AppTheme.accent;
     } else {
       label = l10n.disabled;
-      backgroundColor = Colors.grey.withAlpha(26);
-      textColor = Colors.grey;
+      backgroundColor = AppTheme.primaryTint;
+      textColor = AppTheme.primary;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: textColor,
           fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -271,17 +255,17 @@ class UserListItemWidget extends StatelessWidget {
     final label = isManager ? l10n.manager : l10n.employee;
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
-        color: isManager ? AppTheme.primary : Colors.grey.withAlpha(26),
-        borderRadius: BorderRadius.circular(12),
+        color: isManager ? AppTheme.primary : AppTheme.muted,
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: isManager ? Colors.white : Colors.grey.shade700,
+          color: isManager ? AppTheme.primaryForeground : AppTheme.foreground,
           fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
