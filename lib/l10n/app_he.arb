@@ -53,7 +53,7 @@
   "cancel": "ביטול",
   "discard": "התעלם",
   "manageUsers": "ניהול משתמשים",
-  "usersCount": "משתמשים: {utilized} מתוך {capacity}",
+  "usersCount": "משתמשים: {capacity} מתוך {utilized}",
   "inviteUsers": "הזמן משתמשים",
   "inviteNewUsers": "הזמן משתמשים חדשים",
   "searchByNameOrEmail": "חיפוש לפי שם או אימייל...",

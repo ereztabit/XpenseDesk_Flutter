@@ -53,7 +53,7 @@
   "cancel": "Cancel",
   "discard": "Discard",
   "manageUsers": "User Management",
-  "usersCount": "Users: {utilized} of {capacity}",
+  "usersCount": "Users: {capacity} of {utilized}",
   "inviteUsers": "Invite Users",
   "inviteNewUsers": "Invite New Users",
   "searchByNameOrEmail": "Search by name or email...",
