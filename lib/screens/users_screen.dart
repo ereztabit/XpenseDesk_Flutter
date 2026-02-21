@@ -9,6 +9,7 @@ import '../widgets/constrained_content.dart';
 import '../widgets/header/app_header.dart';
 import '../widgets/app_footer.dart';
 import '../utils/responsive_utils.dart';
+import '../theme/app_theme.dart';
 
 class UsersScreen extends ConsumerStatefulWidget {
   const UsersScreen({super.key});
@@ -74,6 +75,21 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
+                    // Back button
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () => Navigator.pushReplacementNamed(context, '/dashboard'),
+                        icon: const Icon(Icons.arrow_back),
+                        label: Text(l10n.backToDashboard),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppTheme.foreground,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
                     // Header bar with counter and invite button
                     isNarrow
                         ? Column(
