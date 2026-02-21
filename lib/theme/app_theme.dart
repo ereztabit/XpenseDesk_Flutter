@@ -12,7 +12,7 @@ class AppTheme {
   static const Color foreground = Color(0xFF1F1B36); // 250 30% 15%
   static const Color card = Color(0xFFFFFFFF); // Pure white
   static const Color cardForeground = Color(0xFF1F1B36);
-  static const Color primary = Color(0xFF3D2E6B); // 250 45% 30% - Deep navy-purple
+  static const Color primary = Color(0xFF362B71); // Deep navy-purple
   static const Color primaryForeground = Color(0xFFFFFFFF);
   static const Color muted = Color(0xFFF2F1F7); // 250 15% 95%
   static const Color mutedForeground = Color(0xFF6B6580); // 250 10% 45%
@@ -110,6 +110,26 @@ class AppTheme {
           foregroundColor: primary,
           textStyle: GoogleFonts.assistant(
             fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+
+      // Filled Button Theme
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: primaryForeground,
+          disabledBackgroundColor: muted,
+          disabledForegroundColor: mutedForeground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          minimumSize: const Size(0, 50),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Remove extra padding
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+          textStyle: GoogleFonts.assistant(
+            fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),

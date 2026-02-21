@@ -11,9 +11,11 @@
 **Completed Steps:**
 - ✅ **Step 1:** Added theme colors (accent, success, primaryTint)
 - ✅ **Step 2:** Users screen layout - removed AppBar, added centered 720px layout with header/footer, created LoginHeader widget separate from AppHeader, optimized provider watching to reduce flicker
+- ✅ **Step 3:** Added custom back button ("← Back to Dashboard") to Users screen
+- ✅ **Step 4:** Rounded border search input with white fill, 12px radius, purple focus border
 
 **Next Step:** 
-- 🔜 **Step 3:** Add custom back button ("← Back to Dashboard") to Users screen
+- 🔜 **Step 5:** Primary filled button styling for "Invite Users"
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper
@@ -21,6 +23,7 @@
 - Modified `lib/widgets/header/app_header.dart` - removed dual personality, only handles authenticated users
 - Modified `lib/screens/users_screen.dart` - converted to StatefulWidget with session loading guard
 - Small header flicker during navigation is acceptable (Flutter mounting behavior)
+- Back button navigates to `/dashboard` route
 
 ---
 

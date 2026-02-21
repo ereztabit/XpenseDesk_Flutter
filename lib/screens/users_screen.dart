@@ -106,7 +106,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                               SizedBox(
                                 width: double.infinity,
                                 child: FilledButton.icon(
-                                  icon: const Icon(Icons.person_add),
+                                  icon: const Icon(Icons.person_add_alt_1),
                                   label: Text(l10n.inviteUsers),
                                   onPressed: userStats.hasRemainingSlots
                                       ? () => _showInviteDialog(context, ref, userStats.remaining)
@@ -126,7 +126,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                 ),
                               ),
                               FilledButton.icon(
-                                icon: const Icon(Icons.person_add),
+                                icon: const Icon(Icons.person_add_alt_1),
                                 label: Text(l10n.inviteUsers),
                                 onPressed: userStats.hasRemainingSlots
                                     ? () => _showInviteDialog(context, ref, userStats.remaining)
@@ -141,6 +141,21 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search),
                         hintText: l10n.searchByNameOrEmail,
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppTheme.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppTheme.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                        ),
                       ),
                       onChanged: (value) {
                         ref.read(userSearchQueryProvider.notifier).setQuery(value);
