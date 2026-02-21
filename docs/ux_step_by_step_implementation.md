@@ -13,9 +13,10 @@
 - ✅ **Step 2:** Users screen layout - removed AppBar, added centered 720px layout with header/footer, created LoginHeader widget separate from AppHeader, optimized provider watching to reduce flicker
 - ✅ **Step 3:** Added custom back button ("← Back to Dashboard") to Users screen
 - ✅ **Step 4:** Rounded border search input with white fill, 12px radius, purple focus border
+- ✅ **Step 5:** Primary button styling - color #362B71, 50px minimumSize, shrinkWrap tap target
 
 **Next Step:** 
-- 🔜 **Step 5:** Primary filled button styling for "Invite Users"
+- 🔜 **Step 6:** Update counter typography
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper
@@ -24,6 +25,8 @@
 - Modified `lib/screens/users_screen.dart` - converted to StatefulWidget with session loading guard
 - Small header flicker during navigation is acceptable (Flutter mounting behavior)
 - Back button navigates to `/dashboard` route
+- Primary color updated to #362B71 (affects all primary-colored elements)
+- Button height: minimumSize 50px with shrinkWrap results in ~42px actual height
 
 ---
 

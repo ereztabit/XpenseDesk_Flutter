@@ -95,11 +95,22 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text(
-                                l10n.usersCount(userStats.utilized, userStats.capacity),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: AppTheme.foreground,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '${l10n.users}: ',
+                                      style: const TextStyle(color: AppTheme.mutedForeground),
+                                    ),
+                                    TextSpan(
+                                      text: '${userStats.utilized} of ${userStats.capacity}',
+                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -118,11 +129,22 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                         : Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                l10n.usersCount(userStats.utilized, userStats.capacity),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: AppTheme.foreground,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '${l10n.users}: ',
+                                      style: const TextStyle(color: AppTheme.mutedForeground),
+                                    ),
+                                    TextSpan(
+                                      text: '${userStats.utilized} of ${userStats.capacity}',
+                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
                                 ),
                               ),
                               FilledButton.icon(
