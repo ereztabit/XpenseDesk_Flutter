@@ -27,31 +27,38 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final userStats = ref.watch(userStatsProvider);
-    final isMobile = context.isNarrow;
 
-    return AlertDialog(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(l10n.inviteNewUsers),
-          const SizedBox(height: 4),
-          Text(
-            l10n.usersCount(userStats.utilized, userStats.capacity),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      content: SizedBox(
-        width: isMobile ? double.maxFinite : 500,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 500),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title
+            Text(
+              l10n.inviteNewUsers,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            
+            // Subtitle
+            Text(
+              l10n.usersCount(userStats.utilized, userStats.capacity),
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppTheme.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 24),
+            
             // Email tag input
             TagInput(
               tags: _emailList,
@@ -80,25 +87,32 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
                 return null;
               },
             ),
+            const SizedBox(height: 24),
+            
+            // Actions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton(
+                  onPressed: _isLoading ? null : () => Navigator.pop(context),
+                  child: Text(l10n.cancel),
+                ),
+                const SizedBox(width: 12),
+                FilledButton(
+                  onPressed: _emailList.isEmpty || _isLoading ? null : _handleInvite,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(l10n.inviteUsers),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: _emailList.isEmpty || _isLoading ? null : _handleInvite,
-          child: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(l10n.inviteUsers),
-        ),
-      ],
     );
   }
 

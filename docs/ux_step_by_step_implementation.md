@@ -23,10 +23,13 @@
 - ✅ **Step 12:** Hide action menu for current user - already implemented with conditional rendering
 - ✅ **Step 13:** Action menu styling - admin_panel_settings icon for role, color-coded enable (green) and disable (red/destructive)
 - ✅ **Step 14:** Profile screen constrained layout - added AppHeader/Footer, wrapped content in ConstrainedContent, added back button
-- ✅ **Step 15:** Profile screen form input styles - white fill, 12px radius, theme borders matching search input style
+- ✅ **Step 15:** Profile screen form input styles - white fill, 12px radius, theme borders matching search input style, disabled appearance for email field
+- ✅ **Step 16:** Profile screen button consistency - converted Save Changes button to FilledButton matching Invite Users button
+- ✅ **Step 17:** Dashboard constrained layout - replaced 800px ConstrainedBox with standard 720px ConstrainedContent, added AppFooter
+- ✅ **Step 18:** Invite dialog polish - converted AlertDialog to Dialog with 12px rounded corners, max width 500px, proper spacing, OutlinedButton for cancel
 
 **Next Step:** 
-- 🔜 **Step 16:** Continue remaining profile/dashboard improvements
+- 🔜 **Step 19:** RTL verification (testing only, no code changes)
 
 **Notes from Implementation:**
 - Created `lib/widgets/constrained_content.dart` - reusable 720px constraint wrapper
