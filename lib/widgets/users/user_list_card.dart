@@ -367,8 +367,8 @@ class UserListCard extends ConsumerWidget {
         title: Text(l10n.changeRoleTitle),
         content: Text(
           isPromotion 
-            ? l10n.promoteConfirmMessage(userName)
-            : l10n.demoteConfirmMessage(userName),
+            ? '${l10n.promoteConfirmPrefix}$userName ${l10n.promoteConfirmSuffix}'
+            : '${l10n.demoteConfirmPrefix}$userName ${l10n.demoteConfirmSuffix}',
         ),
         actions: [
           TextButton(
@@ -395,7 +395,7 @@ class UserListCard extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.disableUserTitle),
-        content: Text(l10n.disableUserMessage(userName)),
+        content: Text('${l10n.disableConfirmPrefix}$userName${l10n.disableConfirmSuffix}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

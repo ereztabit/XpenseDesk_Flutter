@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../widgets/header/app_header.dart';
 import '../widgets/app_footer.dart';
-import '../providers/auth_provider.dart';
 import '../utils/responsive_utils.dart';
 
 class SpendHistoryScreen extends ConsumerWidget {

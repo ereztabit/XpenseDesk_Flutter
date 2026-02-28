@@ -204,7 +204,7 @@ class UserListItemWidget extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          'Invited on $formattedDate',
+          '${l10n.invitedOn}$formattedDate',
           style: const TextStyle(
             fontSize: 11,
             color: AppTheme.mutedForeground,

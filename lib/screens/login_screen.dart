@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../widgets/header/login_header.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/error_alert.dart';
+import '../widgets/email_input_field.dart';
 import '../theme/app_theme.dart';
 // ==================== DEV-ONLY IMPORT START ====================
 import 'package:url_launcher/url_launcher.dart';
@@ -139,21 +140,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: 32),
                             
                             // Email Input
-                            Directionality(
-                              textDirection: TextDirection.ltr,
-                              child: TextFormField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                autofillHints: const [AutofillHints.email],
-                                textAlign: TextAlign.left,
-                                textDirection: TextDirection.ltr,
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  hintText: l10n.emailPlaceholder,
-                                ),
-                                onChanged: (_) => setState(() {}),
-                                onFieldSubmitted: (_) => _handleLogin(),
-                              ),
+                            EmailInputField(
+                              controller: _emailController,
+                              autofocus: true,
+                              textInputAction: TextInputAction.done,
+                              onChanged: (_) => setState(() {}),
+                              onFieldSubmitted: (_) => _handleLogin(),
+                              // errorEmpty is null: button is already disabled
+                              // when empty, no need for an inline empty error.
                             ),
                             const SizedBox(height: 16),
                             

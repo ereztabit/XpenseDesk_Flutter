@@ -7,6 +7,7 @@ import '../../widgets/header/login_header.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/onboarding/onboarding_progress.dart';
 import '../../widgets/onboarding/step_shell.dart';
+import 'steps/personal_details_step.dart';
 
 /// Onboarding wizard root.
 /// Manages the current step (1–5) and renders each step's content.
@@ -119,7 +120,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Placeholder step content — replaced per step
+                    // Step content — each step manages its own buttons
                     referenceDataAsync.when(
                       loading: () => const Center(
                         child: Padding(
@@ -141,65 +142,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           style: const TextStyle(color: AppTheme.destructive, fontSize: 13),
                         ),
                       ),
-                      data: (refData) => Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: AppTheme.muted,
-                          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                        ),
-                        alignment: Alignment.center,
-                        // DEBUG: remove when step content is wired up
-                        child: Text(
-                          'Loaded ${refData.countries.length} countries',
-                          style: const TextStyle(
-                            color: AppTheme.mutedForeground,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Navigation buttons
-                    Row(
-                      children: [
-                        if (_currentStep > 1) ...[
-                          OutlinedButton(
-                            onPressed: _prevStep,
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 40),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                              ),
-                              side: const BorderSide(color: AppTheme.borderMedium),
-                            ),
-                            child: Text(
-                              l10n.back,
-                              style: const TextStyle(color: AppTheme.mutedForeground),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                        ],
-                        Expanded(
-                          child: SizedBox(
-                            height: 40,
-                            child: ElevatedButton(
-                              onPressed: _currentStep < 5 ? _nextStep : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryDark,
-                                foregroundColor: AppTheme.primaryForeground,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                                ),
-                              ),
-                              child: Text(
-                                _currentStep == 5 ? l10n.finish : l10n.next,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      data: (refData) => _buildStepContent(l10n, refData),
                     ),
                   ],
                 ),
@@ -211,6 +154,99 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const AppFooter(),
         ],
       ),
+    );
+  }
+
+  /// Dispatches to the appropriate step widget.
+  /// Each step widget is self-contained and renders its own action buttons.
+  Widget _buildStepContent(AppLocalizations l10n, dynamic refData) {
+    switch (_currentStep) {
+      case 1:
+        return PersonalDetailsStep(onContinue: _nextStep);
+      default:
+        return _StepPlaceholder(
+          step: _currentStep,
+          onBack: _currentStep > 1 ? _prevStep : null,
+          onNext: _currentStep < 5 ? _nextStep : null,
+          l10n: l10n,
+        );
+    }
+  }
+}
+
+/// Temporary placeholder rendered for steps that haven't been built yet.
+class _StepPlaceholder extends StatelessWidget {
+  const _StepPlaceholder({
+    required this.step,
+    required this.l10n,
+    this.onBack,
+    this.onNext,
+  });
+
+  final int step;
+  final AppLocalizations l10n;
+  final VoidCallback? onBack;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: AppTheme.muted,
+            borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            'Step $step content here',
+            style: const TextStyle(
+              color: AppTheme.mutedForeground,
+              fontSize: 14,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            if (onBack != null) ...[  
+              OutlinedButton(
+                onPressed: onBack,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                  ),
+                  side: const BorderSide(color: AppTheme.borderMedium),
+                ),
+                child: Text(
+                  l10n.back,
+                  style: const TextStyle(color: AppTheme.mutedForeground),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            Expanded(
+              child: SizedBox(
+                height: 40,
+                child: ElevatedButton(
+                  onPressed: onNext,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryDark,
+                    foregroundColor: AppTheme.primaryForeground,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                    ),
+                  ),
+                  child: Text(step == 5 ? l10n.finish : l10n.next),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

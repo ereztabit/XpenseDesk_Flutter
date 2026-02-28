@@ -107,7 +107,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                       style: const TextStyle(color: AppTheme.mutedForeground),
                                     ),
                                     TextSpan(
-                                      text: l10n.countOfTotal(userStats.capacity, userStats.utilized),
+                                      text: '${userStats.utilized} ${l10n.outOf} ${userStats.capacity}',
                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                     ),
                                   ],
@@ -141,7 +141,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                       style: const TextStyle(color: AppTheme.mutedForeground),
                                     ),
                                     TextSpan(
-                                      text: l10n.countOfTotal(userStats.capacity, userStats.utilized),
+                                      text: '${userStats.utilized} ${l10n.outOf} ${userStats.capacity}',
                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                     ),
                                   ],

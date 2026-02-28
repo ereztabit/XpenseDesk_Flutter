@@ -11,10 +11,14 @@ Both **desktop** (≥768px) and **mobile** (<640px) are tested at every step.
 ## How We Work
 
 1. I implement the step
-2. I tell you exactly what to run and what to look for
-3. You send a screenshot (desktop + mobile)
-4. We validate against the checklist
-5. Only then do we move to the next step
+2. **I run `flutter analyze` across the entire workspace and fix ALL issues** — not just files I touched
+3. Zero warnings/errors is the mandatory gate before requesting screenshots
+4. I tell you exactly what to run and what to look for
+5. You send a screenshot (desktop + mobile)
+6. We validate against the checklist
+7. Only then do we move to the next step
+
+> **Rule:** Never hand off to the user for testing with outstanding warnings or errors. Run `flutter analyze` (no flags) before every screenshot request and fix everything reported — across the full project, not just new files.
 
 ---
 
@@ -91,8 +95,8 @@ Card(
 | Step | Status | Notes |
 |------|--------|-------|
 | 1 — Shell & Routing | ✅ Validated | |
-| 2 — Reference Data | ✅ Validated | Awaiting screenshot confirmation |
-| 3 — Personal Details | ⬜ Not started | |
+| 2 — Reference Data | ✅ Validated | |
+| 3 — Personal Details | ✅ Validated | Awaiting screenshot confirmation |
 | 4 — Company Details | ⬜ Not started | |
 | 5 — OTP Verification | ⬜ Not started | |
 | 6 — Plan Selection | ⬜ Not started | |

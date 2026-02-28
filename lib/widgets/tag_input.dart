@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../generated/l10n/app_localizations.dart';
 
 /// A JIRA-style tag input widget that supports email entry with validation,
 /// visual feedback, animations, and keyboard navigation.
@@ -84,8 +83,6 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -525,58 +522,6 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
         }
       });
     }
-  }
-
-  void _addTag(String tag) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    // Skip duplicates silently (server will handle)
-    if (widget.tags.contains(tag)) {
-      return;
-    }
-    
-    // Validate
-    if (widget.validator != null) {
-      final error = widget.validator!(tag);
-      if (error != null) {
-        _showInvalidInput(error);
-        return;
-      }
-    }
-    
-    // Check max tags
-    if (widget.maxTags != null && widget.tags.length >= widget.maxTags!) {
-      return;
-    }
-    
-    // Add the tag with animation
-    final newTags = [...widget.tags, tag];
-    widget.onChanged(newTags);
-    
-    // Animate tag in
-    final index = newTags.length - 1;
-    _tagAnimationControllers[index] = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-      value: 0.0,
-    );
-    _tagAnimationControllers[index]!.forward();
-    
-    // Keep focus in input field for easy continuous typing
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
-      }
-      // Only request focus if input is still enabled (not at max capacity)
-      final canAddMore = widget.maxTags == null || newTags.length < widget.maxTags!;
-      if (mounted && !_focusNode.hasFocus && canAddMore && widget.enabled) {
-        _focusNode.requestFocus();
-      }
-    });
   }
 
   void _removeTag(int index) {

@@ -4,7 +4,6 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../providers/users_provider.dart';
 import '../../services/users_service.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/responsive_utils.dart';
 import '../tag_input.dart';
 
 class InviteUsersDialog extends ConsumerStatefulWidget {
@@ -51,7 +50,7 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
             
             // Subtitle
             Text(
-              l10n.usersCount(userStats.utilized, userStats.capacity),
+              '${l10n.usersCount}${userStats.utilized} ${l10n.outOf} ${userStats.capacity}',
               style: const TextStyle(
                 fontSize: 14,
                 color: AppTheme.mutedForeground,
@@ -74,7 +73,7 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
               helperText: () {
                 final remaining = widget.remainingSlots - _emailList.length;
                 return remaining > 0
-                    ? l10n.separateWithSpacesSlots(remaining)
+                    ? '${l10n.separateWithSpaces} ($remaining ${l10n.slotsRemaining})'
                     : l10n.noSlotsRemaining;
               }(),
               enabled: !_isLoading && widget.remainingSlots > 0,

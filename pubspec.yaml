@@ -55,6 +55,7 @@ dependencies:
   google_fonts: ^8.0.1
   shared_preferences: ^2.5.4
   web: ^1.1.1
+  email_validator: ^3.0.0
 
 dev_dependencies:
   flutter_test:

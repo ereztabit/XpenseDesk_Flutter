@@ -117,7 +117,7 @@ class MenuItems {
   ) async {
     try {
       final subject = Uri.encodeComponent(
-        t.helpRequestSubject(userInfo.companyName),
+        t.helpRequestSubject + userInfo.companyName,
       );
       final mailtoUri = Uri.parse('mailto:support@xpensedesk.com?subject=$subject');
       await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
