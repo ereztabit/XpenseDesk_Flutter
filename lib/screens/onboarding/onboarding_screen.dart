@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../providers/onboarding_provider.dart';
 import '../../widgets/header/login_header.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/onboarding/onboarding_progress.dart';
@@ -8,14 +10,14 @@ import '../../widgets/onboarding/step_shell.dart';
 
 /// Onboarding wizard root.
 /// Manages the current step (1–5) and renders each step's content.
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentStep = 1;
 
   void _nextStep() {
@@ -33,6 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final referenceDataAsync = ref.watch(referenceDataProvider);
     final encouragements = [
       l10n.onboardingEncouragementStep1,
       l10n.onboardingEncouragementStep2,
@@ -116,19 +119,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Placeholder step content
-                    Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: AppTheme.muted,
-                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                    // Placeholder step content — replaced per step
+                    referenceDataAsync.when(
+                      loading: () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: CircularProgressIndicator(),
+                        ),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'Step $_currentStep content here',
-                        style: const TextStyle(
-                          color: AppTheme.mutedForeground,
-                          fontSize: 14,
+                      error: (err, _) => Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.destructive.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                          border: Border.all(
+                            color: AppTheme.destructive.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          err.toString(),
+                          style: const TextStyle(color: AppTheme.destructive, fontSize: 13),
+                        ),
+                      ),
+                      data: (refData) => Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: AppTheme.muted,
+                          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                        ),
+                        alignment: Alignment.center,
+                        // DEBUG: remove when step content is wired up
+                        child: Text(
+                          'Loaded ${refData.countries.length} countries',
+                          style: const TextStyle(
+                            color: AppTheme.mutedForeground,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),

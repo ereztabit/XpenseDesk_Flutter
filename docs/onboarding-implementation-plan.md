@@ -90,8 +90,8 @@ Card(
 
 | Step | Status | Notes |
 |------|--------|-------|
-| 1 — Shell & Routing | ✅ Validated | Awaiting screenshot confirmation |
-| 2 — Reference Data | ⬜ Not started | |
+| 1 — Shell & Routing | ✅ Validated | |
+| 2 — Reference Data | ✅ Validated | Awaiting screenshot confirmation |
 | 3 — Personal Details | ⬜ Not started | |
 | 4 — Company Details | ⬜ Not started | |
 | 5 — OTP Verification | ⬜ Not started | |
