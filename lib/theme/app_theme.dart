@@ -21,6 +21,9 @@ class AppTheme {
   static const Color accent = Color(0xFF9B7FA9); // 280 35% 55% - Pending badge
   static const Color success = Color(0xFF16A34A); // green-600 - Enable action
   static const Color primaryTint = Color(0xFFEBE8F2); // primary/10% - Avatar backgrounds
+  static const Color primaryDark = Color(0xFF2B2462);  // Deep indigo – onboarding active circles & buttons
+  static const Color teal = Color(0xFF20C997);         // Completion / progress indicator (completed step)
+  static const Color borderMedium = Color(0xFFE2E0ED); // Medium border – input fields, progress connectors
 
   // Spacing Constants
   static const double borderRadius = 12.0;

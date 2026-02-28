@@ -18,11 +18,79 @@ Both **desktop** (≥768px) and **mobile** (<640px) are tested at every step.
 
 ---
 
+## Code Standards (mandatory for every step)
+
+### 1 — No hardcoded colors in widgets
+Every color must reference a constant from `AppTheme`. Never write `Color(0xFF...)` or `Colors.*` directly in a widget.
+
+```dart
+// ❌ Wrong
+color: Color(0xFF2B2462)
+color: Colors.white
+
+// ✅ Correct
+color: AppTheme.primaryDark
+color: AppTheme.primaryForeground
+```
+
+If the required color does not exist in `AppTheme` yet, **add it there first** before using it in the widget.
+
+**Available tokens added for onboarding:**
+| Token | Hex | Use |
+|-------|-----|-----|
+| `AppTheme.primaryDark` | `#2B2462` | Active circles, onboarding buttons |
+| `AppTheme.teal` | `#20C997` | Completed step circles, connectors, labels |
+| `AppTheme.borderMedium` | `#E2E0ED` | Input borders, upcoming connectors, Back button border |
+
+### 2 — No hardcoded strings in widgets
+Every user-visible string must come from `AppLocalizations`. Never write string literals in UI code.
+
+```dart
+// ❌ Wrong
+Text('Back')
+Text('Tell us about yourself')
+
+// ✅ Correct
+final l10n = AppLocalizations.of(context)!;
+Text(l10n.back)
+Text(l10n.onboardingTitleStep1)
+```
+
+When adding a new key, add it to **both** `app_en.arb` and `app_he.arb` before using it.
+
+**ARB key naming convention for onboarding:**
+- Step labels: `onboardingStep<Name>` (e.g. `onboardingStepYou`)
+- Encouragement lines: `onboardingEncouragementStep<N>`
+- Step titles: `onboardingTitleStep<N>`
+- Step subtitles: `onboardingSubtitleStep<N>`
+- Generic actions: `back`, `next`, `finish`, `cancel`, `confirm` (shared across the app)
+
+### 3 — Use Card / theme widgets, not raw Container with decoration
+The `AppTheme.cardTheme` defines background color, border-radius, elevation, and shadow for all cards. Use `Card` from the theme instead of hand-rolling a `Container` with `BoxDecoration`.
+
+```dart
+// ❌ Wrong
+Container(
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: [...],
+  ),
+)
+
+// ✅ Correct  — picks up everything from AppTheme.cardTheme
+Card(
+  child: Padding(...),
+)
+```
+
+---
+
 ## Status Tracker
 
 | Step | Status | Notes |
 |------|--------|-------|
-| 1 — Shell & Routing | ⬜ Not started | |
+| 1 — Shell & Routing | ✅ Validated | Awaiting screenshot confirmation |
 | 2 — Reference Data | ⬜ Not started | |
 | 3 — Personal Details | ⬜ Not started | |
 | 4 — Company Details | ⬜ Not started | |

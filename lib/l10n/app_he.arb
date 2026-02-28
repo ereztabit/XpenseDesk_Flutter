@@ -94,5 +94,33 @@
   "inviteUsersToGetStarted": "הזמן משתמשים כדי להתחיל",
   "tryDifferentSearchTerm": "נסה מונח חיפוש אחר",
   "failedToLoadUsers": "טעינת המשתמשים נכשלה",
-  "anErrorOccurred": "אירעה שגיאה. אנא נסה שוב."
+  "anErrorOccurred": "אירעה שגיאה. אנא נסה שוב.",
+
+  "back": "חזור",
+  "next": "הבא",
+  "finish": "סיום",
+
+  "onboardingStepYou": "אתה",
+  "onboardingStepCompany": "חברה",
+  "onboardingStepVerify": "אימות",
+  "onboardingStepPlan": "תוכנית",
+  "onboardingStepPayment": "תשלום",
+
+  "onboardingEncouragementStep1": "ברוך הבא! הבה נגדיר אותך.",
+  "onboardingEncouragementStep2": "מצוין! עכשיו ספר לנו על החברה שלך.",
+  "onboardingEncouragementStep3": "כמעט שם! הבה נאמת את האימייל שלך.",
+  "onboardingEncouragementStep4": "חדשות טובות — החשבון שלך מוכן!",
+  "onboardingEncouragementStep5": "צעד אחרון — אבטח את המנוי שלך.",
+
+  "onboardingTitleStep1": "ספר לנו על עצמך",
+  "onboardingTitleStep2": "ספר לנו על החברה שלך",
+  "onboardingTitleStep3": "אמת את האימייל שלך",
+  "onboardingTitleStep4": "בחר את התוכנית שלך",
+  "onboardingTitleStep5": "תשלום",
+
+  "onboardingSubtitleStep1": "רק כמה פרטים כדי להתחיל",
+  "onboardingSubtitleStep2": "עזור לנו להגדיר את סביבת העבודה שלך",
+  "onboardingSubtitleStep3": "הזן את הקוד שנשלח לאימייל שלך",
+  "onboardingSubtitleStep4": "בחר את התוכנית המתאימה לך",
+  "onboardingSubtitleStep5": "השלם את המנוי שלך"
 }

@@ -253,7 +253,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 const SizedBox(width: 4),
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.of(context).pushNamed('/signup');
+                                    Navigator.of(context).pushNamed('/onboarding');
                                   },
                                   child: Text(l10n.createAccount),
                                 ),

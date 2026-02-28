@@ -94,5 +94,33 @@
   "inviteUsersToGetStarted": "Invite users to get started",
   "tryDifferentSearchTerm": "Try a different search term",
   "failedToLoadUsers": "Failed to load users",
-  "anErrorOccurred": "An error occurred. Please try again."
+  "anErrorOccurred": "An error occurred. Please try again.",
+
+  "back": "Back",
+  "next": "Next",
+  "finish": "Finish",
+
+  "onboardingStepYou": "You",
+  "onboardingStepCompany": "Company",
+  "onboardingStepVerify": "Verify",
+  "onboardingStepPlan": "Plan",
+  "onboardingStepPayment": "Payment",
+
+  "onboardingEncouragementStep1": "Welcome! Let's get you set up.",
+  "onboardingEncouragementStep2": "Nice! Now tell us about your company.",
+  "onboardingEncouragementStep3": "Almost there! Let's verify your email.",
+  "onboardingEncouragementStep4": "Great news — your account is ready!",
+  "onboardingEncouragementStep5": "Last step — secure your subscription.",
+
+  "onboardingTitleStep1": "Tell us about yourself",
+  "onboardingTitleStep2": "Tell us about your company",
+  "onboardingTitleStep3": "Verify your email",
+  "onboardingTitleStep4": "Choose your plan",
+  "onboardingTitleStep5": "Payment",
+
+  "onboardingSubtitleStep1": "Just a few details to get you started",
+  "onboardingSubtitleStep2": "Help us configure your workspace",
+  "onboardingSubtitleStep3": "Enter the code we sent to your email",
+  "onboardingSubtitleStep4": "Pick the plan that works for you",
+  "onboardingSubtitleStep5": "Complete your subscription"
 }

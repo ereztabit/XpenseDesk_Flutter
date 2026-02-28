@@ -12,6 +12,7 @@ import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/spend_history_screen.dart';
 import 'screens/company_config_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'providers/locale_provider.dart';
 
 void main() async {
@@ -66,6 +67,11 @@ class MyApp extends ConsumerWidget {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => const LoginScreen(),
+            );
+          case '/onboarding':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const OnboardingScreen(),
             );
           case '/dashboard':
             return MaterialPageRoute(
