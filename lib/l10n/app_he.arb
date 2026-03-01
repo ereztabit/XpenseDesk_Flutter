@@ -148,5 +148,29 @@
   "onboardingAccountantEmail": "אימייל רואה החשבון",
   "onboardingAccountantEmailHelper": "אם ריק, ברירת המחדל היא האימייל העסקי שלך",
   "onboardingInvalidAccountantEmail": "אנא הזן כתובת אימייל תקינה",
-  "onboardingEmailConflict": "האימייל הזה כבר רשום. אנא השתמש באימייל אחר."
+  "onboardingEmailConflict": "האימייל הזה כבר רשום. אנא השתמש באימייל אחר.",
+
+  "onboardingOtpVerify": "אמת",
+  "onboardingOtpResend": "שלח קוד מחדש",
+  "onboardingOtpResendIn": "שלח מחדש בעוד {seconds} שניות",
+  "@onboardingOtpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingOtpSentTo": "שלחנו קוד אל {email}",
+  "@onboardingOtpSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingOtpWrongEmail": "כתובת אימייל שגויה?",
+  "onboardingOtpLockout": "יותר מדי ניסיונות. נסה שוב בעוד 15 דקות.",
+  "onboardingOtpExpired": "קוד האימות פג תוקף. אנא התחל מחדש.",
+  "onboardingOtpInvalid": "הקוד אינו תואם. אנא בדוק את האימייל שלך ונסה שוב.",
+  "onboardingOtpStartOver": "התחל מחדש"
 }

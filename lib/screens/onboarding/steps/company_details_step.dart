@@ -71,6 +71,35 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
   String? _submitError;
 
   @override
+  void initState() {
+    super.initState();
+    // Restore previously entered values from wizard state so navigating back
+    // and forward does not lose data.
+    final saved = ref.read(onboardingStateProvider);
+    if (saved.companyName.isNotEmpty) {
+      _companyNameController.text = saved.companyName;
+    }
+    if (saved.accountantEmail.isNotEmpty) {
+      _accountantEmailController.text = saved.accountantEmail;
+    }
+    if (saved.countryCode.isNotEmpty) {
+      _selectedCountryCode = saved.countryCode;
+      // Re-derive the defaults panel values from refData using the saved country.
+      final country = widget.refData.countries.where(
+        (c) => c.countryCode == saved.countryCode,
+      ).firstOrNull;
+      if (country != null) {
+        _selectedCurrencyCode = country.defaultCurrencyCode;
+        _selectedLanguageId = country.defaultLanguageId;
+        _selectedTimeZoneId = country.defaultTimeZoneId;
+      }
+    }
+    if (saved.cutoverDay != null) {
+      _selectedCutoverDay = saved.cutoverDay;
+    }
+  }
+
+  @override
   void dispose() {
     _companyNameController.dispose();
     _accountantEmailController.dispose();
@@ -99,6 +128,18 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
   // -------------------------------------------------------------------------
   // Handlers
   // -------------------------------------------------------------------------
+
+  void _handleBack() {
+    // Persist whatever has been entered so the form is pre-filled if the user
+    // returns to this step.
+    ref.read(onboardingStateProvider.notifier).saveCompanyDraft(
+          companyName: _companyNameController.text.trim(),
+          countryCode: _selectedCountryCode,
+          cutoverDay: _selectedCutoverDay,
+          accountantEmail: _accountantEmailController.text.trim(),
+        );
+    widget.onBack();
+  }
 
   void _onCountrySelected(String? code) {
     if (code == null) return;
@@ -150,7 +191,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
             companyName: request.companyName,
             countryCode: request.countryCode,
             cutoverDay: request.cutoverDay,
-            accountantEmail: request.accountantEmail ?? '',
+            // Store the raw input (empty string if blank) so restoration is
+            // correct — not the API-defaulted value.
+            accountantEmail: accountantEmailInput,
           );
       ref.read(onboardingStateProvider.notifier).setOtpKey(otpKey);
 
@@ -357,7 +400,7 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
           Row(
             children: [
               OutlinedButton(
-                onPressed: _isSubmitting ? null : widget.onBack,
+                onPressed: _isSubmitting ? null : _handleBack,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(0, 40),
                   shape: RoundedRectangleBorder(

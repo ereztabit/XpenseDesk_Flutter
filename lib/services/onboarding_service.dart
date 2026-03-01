@@ -61,4 +61,34 @@ class OnboardingService {
     }
     return otpKey;
   }
+
+  /// POST /api/onboarding/verify-otp
+  /// No auth required. Verifies the OTP code and completes company creation.
+  /// Returns the [sessionToken] on success.
+  ///
+  /// Throws [OnboardingException] with [statusCode]:
+  ///   400 — wrong OTP, expired, or key not found
+  ///   500+ — server error
+  Future<String> verifyOtp({
+    required String otpKey,
+    required String otp,
+  }) async {
+    final (:statusCode, :body) = await _api.postWithStatus(
+      '/api/onboarding/verify-otp',
+      {'otpKey': otpKey, 'otp': otp},
+    );
+
+    final success = body['success'] as bool? ?? false;
+    if (!success) {
+      final message = body['message'] as String? ?? 'Verification failed';
+      throw OnboardingException(message, statusCode: statusCode);
+    }
+
+    final data = body['data'] as Map<String, dynamic>?;
+    final sessionToken = data?['sessionToken'] as String?;
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const OnboardingException('Invalid server response: missing sessionToken');
+    }
+    return sessionToken;
+  }
 }

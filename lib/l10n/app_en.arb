@@ -148,5 +148,29 @@
   "onboardingAccountantEmail": "Accountant Email",
   "onboardingAccountantEmailHelper": "If left empty, defaults to your work email",
   "onboardingInvalidAccountantEmail": "Please enter a valid email address",
-  "onboardingEmailConflict": "This email is already registered. Please use a different email."
+  "onboardingEmailConflict": "This email is already registered. Please use a different email.",
+
+  "onboardingOtpVerify": "Verify",
+  "onboardingOtpResend": "Resend code",
+  "onboardingOtpResendIn": "Resend in {seconds}s",
+  "@onboardingOtpResendIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingOtpSentTo": "We sent a code to {email}",
+  "@onboardingOtpSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingOtpWrongEmail": "Wrong email address?",
+  "onboardingOtpLockout": "Too many attempts. Try again in 15 minutes.",
+  "onboardingOtpExpired": "The verification code has expired. Please start over.",
+  "onboardingOtpInvalid": "That code doesn't match. Please check your email and try again.",
+  "onboardingOtpStartOver": "Start over"
 }

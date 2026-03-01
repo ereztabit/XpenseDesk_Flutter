@@ -10,6 +10,7 @@ import '../../widgets/onboarding/onboarding_progress.dart';
 import '../../widgets/onboarding/step_shell.dart';
 import 'steps/personal_details_step.dart';
 import 'steps/company_details_step.dart';
+import 'steps/otp_verification_step.dart';
 
 /// Onboarding wizard root.
 /// Manages the current step (1–5) and renders each step's content.
@@ -170,6 +171,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           refData: refData,
           onContinue: _nextStep,
           onBack: _prevStep,
+        );
+      case 3:
+        return OtpVerificationStep(
+          onBack: () => setState(() => _currentStep = 1),
         );
       default:
         return _StepPlaceholder(

@@ -109,6 +109,22 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
     );
   }
 
+  /// Saves whatever the user has typed so far without requiring all fields.
+  /// Called when the user taps Back so data is preserved if they return.
+  void saveCompanyDraft({
+    String? companyName,
+    String? countryCode,
+    int? cutoverDay,
+    String? accountantEmail,
+  }) {
+    state = state.copyWith(
+      companyName: companyName,
+      countryCode: countryCode,
+      cutoverDay: cutoverDay,
+      accountantEmail: accountantEmail,
+    );
+  }
+
   void setOtpKey(String otpKey) {
     state = state.copyWith(otpKey: otpKey);
   }

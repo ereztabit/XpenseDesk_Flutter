@@ -98,7 +98,7 @@ Card(
 | 2 — Reference Data | ✅ Validated | |
 | 3 — Personal Details | ✅ Validated | Awaiting screenshot confirmation |
 | 4 — Company Details | ✅ Validated | Awaiting screenshot confirmation |
-| 5 — OTP Verification | ⬜ Not started | |
+| 5 — OTP Verification | 🔄 In progress | Awaiting screenshot confirmation |
 | 6 — Plan Selection | ⬜ Not started | |
 | 7 — Payment | ⬜ Not started | |
 | 8 — RTL & Responsive Polish | ⬜ Not started | |

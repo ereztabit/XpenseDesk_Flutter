@@ -98,11 +98,15 @@ class AuthService {
     return sessionToken;
   }
 
-  /// Store session token in secure storage
-  Future<void> _storeSessionToken(String token) async {
+  /// Store session token in secure storage.
+  /// Called internally after login and externally after OTP verification.
+  Future<void> storeSessionToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_sessionTokenKey, token);
   }
+
+  // Keep the private alias for backward-compat with internal callers
+  Future<void> _storeSessionToken(String token) => storeSessionToken(token);
 
   /// Retrieve stored session token
   Future<String?> getSessionToken() async {
