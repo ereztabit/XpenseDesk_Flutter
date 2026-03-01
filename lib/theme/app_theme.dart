@@ -24,6 +24,7 @@ class AppTheme {
   static const Color primaryDark = Color(0xFF2B2462);  // Deep indigo – onboarding active circles & buttons
   static const Color teal = Color(0xFF20C997);         // Completion / progress indicator (completed step)
   static const Color borderMedium = Color(0xFFE2E0ED); // Medium border – input fields, progress connectors
+  static const Color amber = Color(0xFFF97316);        // Cycle day helper text – warning/info accent
 
   // Spacing Constants
   static const double borderRadius = 12.0;

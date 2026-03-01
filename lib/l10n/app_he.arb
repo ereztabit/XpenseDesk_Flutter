@@ -132,5 +132,21 @@
   "onboardingTermsAcceptMiddle": " ו",
   "onboardingTermsRequired": "עליך לאשר את תנאי השימוש כדי להמשיך",
   "onboardingMarketingOptIn": "שלח לי עדכוני מוצר וטיפים",
-  "onboardingEmailRequired": "נדרש אימייל עסקי"
+  "onboardingEmailRequired": "נדרש אימייל עסקי",
+
+  "onboardingCompanyNameRequired": "שם החברה נדרש",
+  "onboardingCountryOfOperation": "מדינת פעילות",
+  "onboardingCountryRequired": "אנא בחר מדינה",
+  "onboardingCurrency": "מטבע",
+  "onboardingTimezone": "אזור זמן",
+  "onboardingDefaultsPanel": "על פי המדינה שלך, ברירות המחדל הבאות חלות:",
+  "onboardingCycleDay": "יום מחזור",
+  "onboardingCycleDayPrefix": "יום",
+  "onboardingCycleDaySuffix": "בכל חודש",
+  "onboardingCycleDayHelper": "היום בחודש שבו מחזור ההוצאות מתאפס",
+  "onboardingCycleDayRequired": "אנא בחר יום מחזור",
+  "onboardingAccountantEmail": "אימייל רואה החשבון",
+  "onboardingAccountantEmailHelper": "אם ריק, ברירת המחדל היא האימייל העסקי שלך",
+  "onboardingInvalidAccountantEmail": "אנא הזן כתובת אימייל תקינה",
+  "onboardingEmailConflict": "האימייל הזה כבר רשום. אנא השתמש באימייל אחר."
 }

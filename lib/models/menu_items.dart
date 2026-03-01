@@ -123,7 +123,7 @@ class MenuItems {
       await launchUrl(mailtoUri, mode: LaunchMode.externalApplication);
     } catch (e) {
       // Silently fail if email client cannot be launched
-      print('Could not launch email client: $e');
+      debugPrint('Could not launch email client: $e');
     }
   }
 }

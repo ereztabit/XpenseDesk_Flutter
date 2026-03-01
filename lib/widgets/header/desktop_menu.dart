@@ -145,7 +145,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                                   ),
                                 ],
                               );
-                            }).toList(),
+                            }),
                           ],
                         ),
                       ),

@@ -1,4 +1,4 @@
-/// Models for GET /api/onboarding/reference-data
+// Models for GET /api/onboarding/reference-data
 
 class OnboardingCountry {
   final String countryCode;

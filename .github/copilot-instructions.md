@@ -790,4 +790,27 @@ Step 6: Add routing → Build → Verify → Wait
 Step 7: Integration testing
 ```
 
+---
+
+## Email Validation
+
+**ALWAYS use the `email_validator` package. Never write regex for email validation.**
+
+```dart
+// ❌ Wrong — never use raw regex
+RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)
+
+// ✅ Correct — use the package
+import 'package:email_validator/email_validator.dart';
+EmailValidator.validate(email)
+```
+
+**Where this applies:**
+- `_canContinue` / `_isFormValid` getters that gate button state
+- `TextFormField` `validator:` callbacks
+- Any service-layer pre-validation before calling an API
+- Custom email input widgets (see `EmailInputField` for the canonical widget; reuse it wherever possible instead of writing a raw `TextFormField`)
+
+**Rule:** The `email_validator` package is already a project dependency. Use `EmailValidator.validate(value)` — it returns `true` for valid addresses. The call is synchronous, lightweight, and RFC-compliant.
+
 

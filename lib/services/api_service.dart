@@ -35,6 +35,25 @@ class ApiService {
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
+  /// Make a POST request and return both the HTTP status code and the decoded body.
+  /// Use this when you need to differentiate error types by status code (e.g. 400 vs 409).
+  Future<({int statusCode, Map<String, dynamic> body})> postWithStatus(
+    String endpoint,
+    Map<String, dynamic> body, {
+    String? authToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+
+    final response = await http.post(
+      uri,
+      headers: _buildHeaders(authToken: authToken),
+      body: jsonEncode(body),
+    );
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return (statusCode: response.statusCode, body: decoded);
+  }
+
   /// Make a GET request with optional authorization token
   Future<Map<String, dynamic>> get(
     String endpoint, {

@@ -97,7 +97,7 @@ Card(
 | 1 — Shell & Routing | ✅ Validated | |
 | 2 — Reference Data | ✅ Validated | |
 | 3 — Personal Details | ✅ Validated | Awaiting screenshot confirmation |
-| 4 — Company Details | ⬜ Not started | |
+| 4 — Company Details | ✅ Validated | Awaiting screenshot confirmation |
 | 5 — OTP Verification | ⬜ Not started | |
 | 6 — Plan Selection | ⬜ Not started | |
 | 7 — Payment | ⬜ Not started | |

@@ -47,7 +47,7 @@ final filteredUsersProvider = Provider<List<UserListItem>>((ref) {
       }).toList();
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 });
 
@@ -101,7 +101,7 @@ final userStatsProvider = Provider<UserStats>((ref) {
       pendingCount: 0,
       disabledCount: 0,
     ),
-    error: (_, __) => const UserStats(
+    error: (_, _) => const UserStats(
       utilized: 0,
       capacity: 15,
       remaining: 15,

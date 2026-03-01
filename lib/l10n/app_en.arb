@@ -132,5 +132,21 @@
   "onboardingTermsAcceptMiddle": " and ",
   "onboardingTermsRequired": "You must accept the Terms of Service to continue",
   "onboardingMarketingOptIn": "Send me product updates and tips",
-  "onboardingEmailRequired": "Work email is required"
+  "onboardingEmailRequired": "Work email is required",
+
+  "onboardingCompanyNameRequired": "Company name is required",
+  "onboardingCountryOfOperation": "Country of Operation",
+  "onboardingCountryRequired": "Please select a country",
+  "onboardingCurrency": "Currency",
+  "onboardingTimezone": "Timezone",
+  "onboardingDefaultsPanel": "Based on your country, these defaults apply:",
+  "onboardingCycleDay": "Cycle Day",
+  "onboardingCycleDayPrefix": "Day",
+  "onboardingCycleDaySuffix": "of each month",
+  "onboardingCycleDayHelper": "The day of the month when the expense cycle resets",
+  "onboardingCycleDayRequired": "Please select a cycle day",
+  "onboardingAccountantEmail": "Accountant Email",
+  "onboardingAccountantEmailHelper": "If left empty, defaults to your work email",
+  "onboardingInvalidAccountantEmail": "Please enter a valid email address",
+  "onboardingEmailConflict": "This email is already registered. Please use a different email."
 }

@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
+import '../../models/onboarding/reference_data.dart';
 import '../../widgets/header/login_header.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/onboarding/onboarding_progress.dart';
 import '../../widgets/onboarding/step_shell.dart';
 import 'steps/personal_details_step.dart';
+import 'steps/company_details_step.dart';
 
 /// Onboarding wizard root.
 /// Manages the current step (1–5) and renders each step's content.
@@ -159,10 +161,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   /// Dispatches to the appropriate step widget.
   /// Each step widget is self-contained and renders its own action buttons.
-  Widget _buildStepContent(AppLocalizations l10n, dynamic refData) {
+  Widget _buildStepContent(AppLocalizations l10n, OnboardingReferenceData refData) {
     switch (_currentStep) {
       case 1:
         return PersonalDetailsStep(onContinue: _nextStep);
+      case 2:
+        return CompanyDetailsStep(
+          refData: refData,
+          onContinue: _nextStep,
+          onBack: _prevStep,
+        );
       default:
         return _StepPlaceholder(
           step: _currentStep,

@@ -23,6 +23,8 @@ class OnboardingWizardState {
   final String email;
   final bool termsAccepted;
   final bool marketingOptIn;
+  // Non-empty when Step 2 detects the email is already registered (HTTP 409)
+  final String emailConflictError;
 
   // Step 2 — Company Details
   final String companyName;
@@ -38,6 +40,7 @@ class OnboardingWizardState {
     this.email = '',
     this.termsAccepted = false,
     this.marketingOptIn = false,
+    this.emailConflictError = '',
     this.companyName = '',
     this.countryCode = '',
     this.cutoverDay,
@@ -50,6 +53,7 @@ class OnboardingWizardState {
     String? email,
     bool? termsAccepted,
     bool? marketingOptIn,
+    String? emailConflictError,
     String? companyName,
     String? countryCode,
     int? cutoverDay,
@@ -61,6 +65,7 @@ class OnboardingWizardState {
       email: email ?? this.email,
       termsAccepted: termsAccepted ?? this.termsAccepted,
       marketingOptIn: marketingOptIn ?? this.marketingOptIn,
+      emailConflictError: emailConflictError ?? this.emailConflictError,
       companyName: companyName ?? this.companyName,
       countryCode: countryCode ?? this.countryCode,
       cutoverDay: cutoverDay ?? this.cutoverDay,
@@ -85,6 +90,8 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
       email: email,
       termsAccepted: termsAccepted,
       marketingOptIn: marketingOptIn,
+      // Clear any previously set conflict error when the user re-enters Step 1
+      emailConflictError: '',
     );
   }
 
@@ -104,6 +111,12 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
 
   void setOtpKey(String otpKey) {
     state = state.copyWith(otpKey: otpKey);
+  }
+
+  /// Called when POST /api/onboarding/company returns 409 Conflict.
+  /// Stores the error so Step 1 can display it on the email field.
+  void setEmailConflictError(String message) {
+    state = state.copyWith(emailConflictError: message);
   }
 
   void reset() {

@@ -1,3 +1,4 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,8 +31,23 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
   // Recomputed on every keystroke to drive button enable/disable.
   bool get _canContinue =>
       _nameController.text.trim().isNotEmpty &&
-      RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(_emailController.text.trim()) &&
+      EmailValidator.validate(_emailController.text.trim()) &&
       _termsAccepted;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-populate from wizard state so returning from Step 2 doesn't blank the form.
+    final wizardState = ref.read(onboardingStateProvider);
+    if (wizardState.fullName.isNotEmpty) {
+      _nameController.text = wizardState.fullName;
+    }
+    if (wizardState.email.isNotEmpty) {
+      _emailController.text = wizardState.email;
+    }
+    if (wizardState.termsAccepted) _termsAccepted = true;
+    if (wizardState.marketingOptIn) _marketingOptIn = true;
+  }
 
   @override
   void dispose() {
@@ -57,6 +73,10 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Watch at top level — triggers rebuild whenever the 409 conflict error changes.
+    final emailConflictError = ref.watch(
+      onboardingStateProvider.select((s) => s.emailConflictError),
+    );
 
     return Form(
       key: _formKey,
@@ -91,10 +111,27 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
           EmailInputField(
             controller: _emailController,
             textInputAction: TextInputAction.done,
-            onChanged: (_) => setState(() {}),
+            onChanged: (v) {
+              setState(() {});
+              // Clear any 409 conflict error when the user edits the address
+              if (ref.read(onboardingStateProvider).emailConflictError.isNotEmpty) {
+                ref.read(onboardingStateProvider.notifier).setEmailConflictError('');
+              }
+            },
             onFieldSubmitted: (_) => _handleContinue(),
             errorEmpty: l10n.onboardingEmailRequired,
           ),
+          if (emailConflictError.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                emailConflictError,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.destructive,
+                ),
+              ),
+            ),
 
           const SizedBox(height: 20),
 
