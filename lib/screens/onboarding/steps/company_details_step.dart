@@ -69,6 +69,7 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
   bool _isSubmitting = false;
   bool _attemptedSubmit = false;
   String? _submitError;
+  bool _defaultsExpanded = false;
 
   @override
   void initState() {
@@ -130,6 +131,21 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
     return true;
   }
 
+  bool get _hasDefaultsModified {
+    if (_selectedCountryCode == null) return false;
+    final country = widget.refData.countries.firstWhere(
+      (c) => c.countryCode == _selectedCountryCode,
+      orElse: () => widget.refData.countries.first,
+    );
+    if (_selectedCurrencyCode != null &&
+        _selectedCurrencyCode != country.defaultCurrencyCode) return true;
+    if (_selectedLanguageId != null &&
+        _selectedLanguageId != country.defaultLanguageId) return true;
+    if (_selectedTimeZoneId != null &&
+        _selectedTimeZoneId != country.defaultTimeZoneId) return true;
+    return false;
+  }
+
   // -------------------------------------------------------------------------
   // Handlers
   // -------------------------------------------------------------------------
@@ -160,6 +176,7 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
       _selectedCurrencyCode = country.defaultCurrencyCode;
       _selectedLanguageId = country.defaultLanguageId;
       _selectedTimeZoneId = country.defaultTimeZoneId;
+      _defaultsExpanded = false; // collapse panel when country changes
     });
   }
 
@@ -310,6 +327,10 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
               showTimeZone: widget.refData.countries
                   .firstWhere((c) => c.countryCode == _selectedCountryCode)
                   .hasMultipleTimeZones,
+              isExpanded: _defaultsExpanded,
+              hasDefaultsModified: _hasDefaultsModified,
+              onToggleExpanded: () =>
+                  setState(() => _defaultsExpanded = !_defaultsExpanded),
               onCurrencyChanged: (code) =>
                   setState(() => _selectedCurrencyCode = code),
               onLanguageChanged: (id) =>
@@ -470,9 +491,12 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
 // Country Defaults Panel
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// Displays auto-filled Currency, Language and Timezone dropdowns inside a
-/// tinted panel. These are informational overrides — only the parent's
-/// [countryCode] is ever sent to the API.
+/// Shows the auto-filled Currency / Language / (Timezone) as a compact summary
+/// line, with a collapsible section of editable dropdowns revealed by a
+/// "Modify defaults" trigger.
+///
+/// [isExpanded] and [onToggleExpanded] are owned by the parent so that
+/// selecting a new country can collapse the panel.
 class _DefaultsPanel extends StatelessWidget {
   const _DefaultsPanel({
     required this.refData,
@@ -480,6 +504,9 @@ class _DefaultsPanel extends StatelessWidget {
     required this.selectedLanguageId,
     required this.selectedTimeZoneId,
     required this.showTimeZone,
+    required this.isExpanded,
+    required this.hasDefaultsModified,
+    required this.onToggleExpanded,
     required this.onCurrencyChanged,
     required this.onLanguageChanged,
     required this.onTimeZoneChanged,
@@ -490,6 +517,9 @@ class _DefaultsPanel extends StatelessWidget {
   final int? selectedLanguageId;
   final int? selectedTimeZoneId;
   final bool showTimeZone;
+  final bool isExpanded;
+  final bool hasDefaultsModified;
+  final VoidCallback onToggleExpanded;
   final ValueChanged<String?> onCurrencyChanged;
   final ValueChanged<int?> onLanguageChanged;
   final ValueChanged<int?> onTimeZoneChanged;
@@ -498,80 +528,179 @@ class _DefaultsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    final currency = refData.currencies
+        .where((c) => c.currencyCode == selectedCurrencyCode)
+        .firstOrNull;
+    final language = refData.languages
+        .where((lang) => lang.languageId == selectedLanguageId)
+        .firstOrNull;
+    final tz = refData.timeZones
+        .where((t) => t.timeZoneId == selectedTimeZoneId)
+        .firstOrNull;
+
+    final summaryParts = <String>[
+      if (currency != null) '${currency.currencySymbol} ${currency.currencyName}',
+      if (language != null) language.languageName,
+      if (showTimeZone && tz != null) tz.displayName,
+    ];
+    final summaryText = summaryParts.join(' · ');
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        // ~5% opacity of primaryDark
         color: AppTheme.primaryDark.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        border: Border.all(
-          // ~20% opacity of primaryDark
-          color: AppTheme.primaryDark.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppTheme.primaryDark.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // ── Summary line ─────────────────────────────────────────────────
           Text(
-            l10n.onboardingDefaultsPanel,
+            summaryText,
             style: const TextStyle(
-              fontSize: 13,
-              fontStyle: FontStyle.italic,
-              color: AppTheme.primaryDark,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.foreground,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
 
-          // Currency
-          FieldLabel(label: l10n.onboardingCurrency),
-          const SizedBox(height: 6),
-          DropdownMenu<String>(
-            initialSelection: selectedCurrencyCode,
-            expandedInsets: EdgeInsets.zero,
-            inputDecorationTheme: _dropdownInputTheme(),
-            dropdownMenuEntries: refData.currencies
-                .map((c) => DropdownMenuEntry(
-                      value: c.currencyCode,
-                      label: '${c.currencySymbol}  ${c.currencyName}',
-                    ))
-                .toList(),
-            onSelected: onCurrencyChanged,
+          // ── Modify / Hide trigger ─────────────────────────────────────────
+          GestureDetector(
+            onTap: onToggleExpanded,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.edit_outlined,
+                  size: 14,
+                  color: AppTheme.primaryDark,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isExpanded
+                      ? l10n.onboardingHideDefaults
+                      : l10n.onboardingModifyDefaults,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.primaryDark,
+                  ),
+                ),
+                const SizedBox(width: 2),
+                AnimatedRotation(
+                  turns: isExpanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: AppTheme.primaryDark,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
 
-          // Language
-          FieldLabel(label: l10n.language),
-          const SizedBox(height: 6),
-          DropdownMenu<int>(
-            initialSelection: selectedLanguageId,
-            expandedInsets: EdgeInsets.zero,
-            inputDecorationTheme: _dropdownInputTheme(),
-            dropdownMenuEntries: refData.languages
-                .map((lang) => DropdownMenuEntry(
-                      value: lang.languageId,
-                      label: lang.languageName,
-                    ))
-                .toList(),
-            onSelected: onLanguageChanged,
+          // ── Collapsible dropdowns ─────────────────────────────────────────
+          ClipRect(
+            child: AnimatedAlign(
+              alignment: Alignment.topCenter,
+              heightFactor: isExpanded ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Currency
+                    FieldLabel(label: l10n.onboardingCurrency),
+                    const SizedBox(height: 6),
+                    DropdownMenu<String>(
+                      key: ValueKey(selectedCurrencyCode),
+                      initialSelection: selectedCurrencyCode,
+                      expandedInsets: EdgeInsets.zero,
+                      inputDecorationTheme: _dropdownInputTheme(),
+                      dropdownMenuEntries: refData.currencies
+                          .map((c) => DropdownMenuEntry(
+                                value: c.currencyCode,
+                                label: '${c.currencySymbol}  ${c.currencyName}',
+                              ))
+                          .toList(),
+                      onSelected: onCurrencyChanged,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Language
+                    FieldLabel(label: l10n.language),
+                    const SizedBox(height: 6),
+                    DropdownMenu<int>(
+                      key: ValueKey(selectedLanguageId),
+                      initialSelection: selectedLanguageId,
+                      expandedInsets: EdgeInsets.zero,
+                      inputDecorationTheme: _dropdownInputTheme(),
+                      dropdownMenuEntries: refData.languages
+                          .map((lang) => DropdownMenuEntry(
+                                value: lang.languageId,
+                                label: lang.languageName,
+                              ))
+                          .toList(),
+                      onSelected: onLanguageChanged,
+                    ),
+
+                    // Timezone — only for multi-timezone countries
+                    if (showTimeZone) ...[
+                      const SizedBox(height: 12),
+                      FieldLabel(label: l10n.onboardingTimezone),
+                      const SizedBox(height: 6),
+                      DropdownMenu<int>(
+                        key: ValueKey(selectedTimeZoneId),
+                        initialSelection: selectedTimeZoneId,
+                        expandedInsets: EdgeInsets.zero,
+                        inputDecorationTheme: _dropdownInputTheme(),
+                        dropdownMenuEntries: refData.timeZones
+                            .map((tz) => DropdownMenuEntry(
+                                  value: tz.timeZoneId,
+                                  label: tz.displayName,
+                                ))
+                            .toList(),
+                        onSelected: onTimeZoneChanged,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
 
-          // Timezone — only shown for countries with multiple time zones
-          if (showTimeZone) ...[
-            const SizedBox(height: 12),
-            FieldLabel(label: l10n.onboardingTimezone),
-            const SizedBox(height: 6),
-            DropdownMenu<int>(
-              initialSelection: selectedTimeZoneId,
-              expandedInsets: EdgeInsets.zero,
-              inputDecorationTheme: _dropdownInputTheme(),
-              dropdownMenuEntries: refData.timeZones
-                  .map((tz) => DropdownMenuEntry(
-                        value: tz.timeZoneId,
-                        label: tz.displayName,
-                      ))
-                  .toList(),
-              onSelected: onTimeZoneChanged,
+          // ── Amber warning when defaults have been overridden ──────────────
+          if (hasDefaultsModified) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.amber.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                border: Border.all(
+                  color: AppTheme.amber.withValues(alpha: 0.50),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, size: 14, color: AppTheme.amber),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      l10n.onboardingDefaultsModified,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.amber,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],
