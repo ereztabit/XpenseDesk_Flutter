@@ -336,7 +336,7 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
           children: [
             Flexible(
               child: Text(
-                l10n.onboardingOtpSentTo(email),
+'${l10n.onboardingOtpSentTo} $email',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 13,
@@ -422,7 +422,7 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
                   onPressed: _resendCooldown == 0 ? _resend : null,
                   child: Text(
                     _resendCooldown > 0
-                        ? l10n.onboardingOtpResendIn(_resendCooldown)
+                        ? '${l10n.onboardingOtpResendIn} ${_resendCooldown}s'
                         : l10n.onboardingOtpResend,
                     style: TextStyle(
                       color: _resendCooldown > 0

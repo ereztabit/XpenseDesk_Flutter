@@ -152,22 +152,8 @@
 
   "onboardingOtpVerify": "אמת",
   "onboardingOtpResend": "שלח קוד מחדש",
-  "onboardingOtpResendIn": "שלח מחדש בעוד {seconds} שניות",
-  "@onboardingOtpResendIn": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "onboardingOtpSentTo": "שלחנו קוד אל {email}",
-  "@onboardingOtpSentTo": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
+  "onboardingOtpResendIn": "שלח מחדש בעוד",
+  "onboardingOtpSentTo": "שלחנו קוד אל",
   "onboardingOtpWrongEmail": "כתובת אימייל שגויה?",
   "onboardingOtpLockout": "יותר מדי ניסיונות. נסה שוב בעוד 15 דקות.",
   "onboardingOtpExpired": "קוד האימות פג תוקף. אנא התחל מחדש.",

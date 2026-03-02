@@ -62,6 +62,24 @@ class OnboardingService {
     return otpKey;
   }
 
+  /// GET /api/onboarding/check-email?email=...
+  /// No auth required. Returns true if the email is already registered.
+  /// Fails silently on server errors — the submit endpoint is the authoritative gate.
+  Future<bool> checkEmail(String email) async {
+    try {
+      final response = await _api.get(
+        '/api/onboarding/check-email',
+        queryParams: {'email': email},
+      );
+      final success = response['success'] as bool? ?? false;
+      if (!success) return false;
+      final data = response['data'] as Map<String, dynamic>?;
+      return data?['exists'] as bool? ?? false;
+    } catch (_) {
+      return false; // Network / server error — let submit handle it
+    }
+  }
+
   /// POST /api/onboarding/verify-otp
   /// No auth required. Verifies the OTP code and completes company creation.
   /// Returns the [sessionToken] on success.

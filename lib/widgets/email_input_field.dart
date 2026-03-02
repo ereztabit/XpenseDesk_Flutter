@@ -17,6 +17,7 @@ class EmailInputField extends StatefulWidget {
     required this.controller,
     this.onChanged,
     this.onFieldSubmitted,
+    this.onBlur,
     this.textInputAction = TextInputAction.done,
     this.autofocus = false,
     this.errorEmpty,
@@ -25,6 +26,9 @@ class EmailInputField extends StatefulWidget {
   final TextEditingController controller;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onFieldSubmitted;
+  /// Called once when the field loses focus (regardless of whether it has been
+  /// touched before). Use for async checks like check-email.
+  final VoidCallback? onBlur;
   final TextInputAction textInputAction;
   final bool autofocus;
 
@@ -44,9 +48,11 @@ class _EmailInputFieldState extends State<EmailInputField> {
   void initState() {
     super.initState();
     _focusNode.addListener(() {
-      // Mark as touched the first time the user leaves the field.
-      if (!_focusNode.hasFocus && !_touched) {
-        setState(() => _touched = true);
+      if (!_focusNode.hasFocus) {
+        // Mark as touched the first time the user leaves the field.
+        if (!_touched) setState(() => _touched = true);
+        // Always fire the onBlur callback so callers can run async checks.
+        widget.onBlur?.call();
       }
     });
   }

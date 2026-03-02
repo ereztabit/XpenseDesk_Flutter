@@ -28,11 +28,16 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
   bool _termsAccepted = false;
   bool _marketingOptIn = false;
 
+  // Check-email async state
+  bool _isCheckingEmail = false;
+  bool _emailTaken = false;
+
   // Recomputed on every keystroke to drive button enable/disable.
   bool get _canContinue =>
       _nameController.text.trim().isNotEmpty &&
       EmailValidator.validate(_emailController.text.trim()) &&
-      _termsAccepted;
+      _termsAccepted &&
+      !_emailTaken;
 
   @override
   void initState() {
@@ -56,13 +61,27 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
     super.dispose();
   }
 
-  void _handleContinue() {
+  Future<void> _handleContinue() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_canContinue) return;
 
+    // Check email availability before advancing.
+    final email = _emailController.text.trim();
+    setState(() => _isCheckingEmail = true);
+
+    final service = ref.read(onboardingServiceProvider);
+    final taken = await service.checkEmail(email);
+
+    if (!mounted) return;
+    setState(() {
+      _isCheckingEmail = false;
+      _emailTaken = taken;
+    });
+    if (taken) return;
+
     ref.read(onboardingStateProvider.notifier).setPersonalDetails(
           fullName: _nameController.text.trim(),
-          email: _emailController.text.trim(),
+          email: email,
           termsAccepted: _termsAccepted,
           marketingOptIn: _marketingOptIn,
         );
@@ -112,8 +131,11 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
             controller: _emailController,
             textInputAction: TextInputAction.done,
             onChanged: (v) {
-              setState(() {});
-              // Clear any 409 conflict error when the user edits the address
+              setState(() {
+                // Clear taken flag as soon as the user edits the address.
+                _emailTaken = false;
+              });
+              // Clear any 409 conflict error when the user edits the address.
               if (ref.read(onboardingStateProvider).emailConflictError.isNotEmpty) {
                 ref.read(onboardingStateProvider.notifier).setEmailConflictError('');
               }
@@ -121,11 +143,14 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
             onFieldSubmitted: (_) => _handleContinue(),
             errorEmpty: l10n.onboardingEmailRequired,
           ),
-          if (emailConflictError.isNotEmpty)
+          // Inline error: email already registered (from pre-check or 409 on submit)
+          if (_emailTaken || emailConflictError.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                emailConflictError,
+                emailConflictError.isNotEmpty
+                    ? emailConflictError
+                    : l10n.onboardingEmailConflict,
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppTheme.destructive,
@@ -160,7 +185,7 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
           SizedBox(
             height: 40,
             child: ElevatedButton(
-              onPressed: _canContinue ? _handleContinue : null,
+              onPressed: (_canContinue && !_isCheckingEmail) ? _handleContinue : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryDark,
                 foregroundColor: AppTheme.primaryForeground,
@@ -170,7 +195,16 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
                   borderRadius: BorderRadius.circular(AppTheme.borderRadius),
                 ),
               ),
-              child: Text(l10n.continueButton),
+              child: _isCheckingEmail
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.primaryForeground,
+                      ),
+                    )
+                  : Text(l10n.continueButton),
             ),
           ),
         ],

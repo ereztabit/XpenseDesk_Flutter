@@ -681,6 +681,26 @@ String? _validateFullName(String? value) {
 - Access `l10n` in validator methods via `AppLocalizations.of(context)!`
 - Add all validation messages to ARB files for both languages
 
+### ARB Strings — No Placeholders
+
+**NEVER use placeholder parameters (`{varName}`) in ARB files.** Build parameterised strings by concatenation in the widget layer instead.
+
+```dart
+// ❌ Wrong — ARB key with placeholder
+// "onboardingOtpSentTo": "We sent a code to {email}",
+// "@onboardingOtpSentTo": { "placeholders": { "email": { "type": "String" } } }
+// l10n.onboardingOtpSentTo(email)  // generates a Dart method call
+
+// ✅ Correct — plain ARB string
+// "onboardingOtpSentTo": "We sent a code to",
+'${l10n.onboardingOtpSentTo} $email'  // concatenate in the widget
+```
+
+**Reasoning:**
+- Placeholders generate Dart method signatures, coupling l10n to runtime data
+- Concatenation is simpler, explicit, and easier to review
+- Non-translatable units (e.g. counters, `s` suffix) belong in code, not ARB
+
 ---
 
 ## Modern Flutter Widgets

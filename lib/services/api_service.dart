@@ -54,12 +54,14 @@ class ApiService {
     return (statusCode: response.statusCode, body: decoded);
   }
 
-  /// Make a GET request with optional authorization token
+  /// Make a GET request with optional authorization token and query parameters.
   Future<Map<String, dynamic>> get(
     String endpoint, {
     String? authToken,
+    Map<String, String>? queryParams,
   }) async {
-    final uri = Uri.parse('$baseUrl$endpoint');
+    final base = Uri.parse('$baseUrl$endpoint');
+    final uri = queryParams != null ? base.replace(queryParameters: queryParams) : base;
     final response = await http.get(uri, headers: _buildHeaders(authToken: authToken));
     return jsonDecode(response.body) as Map<String, dynamic>;
   }

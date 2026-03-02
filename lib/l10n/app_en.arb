@@ -152,22 +152,8 @@
 
   "onboardingOtpVerify": "Verify",
   "onboardingOtpResend": "Resend code",
-  "onboardingOtpResendIn": "Resend in {seconds}s",
-  "@onboardingOtpResendIn": {
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-  "onboardingOtpSentTo": "We sent a code to {email}",
-  "@onboardingOtpSentTo": {
-    "placeholders": {
-      "email": {
-        "type": "String"
-      }
-    }
-  },
+  "onboardingOtpResendIn": "Resend in",
+  "onboardingOtpSentTo": "We sent a code to",
   "onboardingOtpWrongEmail": "Wrong email address?",
   "onboardingOtpLockout": "Too many attempts. Try again in 15 minutes.",
   "onboardingOtpExpired": "The verification code has expired. Please start over.",
