@@ -244,7 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               width: double.infinity,
                               height: 48,
                               child: OutlinedButton(
-                                onPressed: () => _handleDevLogin('user@domain.com'),
+                                onPressed: () => _handleDevLogin('erez@tabit.cloud'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.orange,
                                   side: const BorderSide(color: Colors.orange),
