@@ -8,6 +8,7 @@ import 'config/app_config.dart';
 import 'screens/login_screen.dart';
 import 'screens/login_callback_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/user_dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/spend_history_screen.dart';
@@ -98,6 +99,11 @@ class _MyAppState extends ConsumerState<MyApp> {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => const DashboardScreen(),
+            );
+          case '/user/dashboard':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const UserDashboardScreen(),
             );
           case '/manager/profile':
           case '/employee/profile':

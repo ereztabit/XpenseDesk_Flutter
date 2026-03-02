@@ -17,12 +17,12 @@ class UserInfo {
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
     return UserInfo(
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      roleId: json['roleId'] as int,
-      status: json['status'] as String,
-      companyName: json['companyName'] as String,
-      languageId: json['languageId'] as int? ?? 1,
+      email: json['email'] as String? ?? '',
+      fullName: json['fullName'] as String? ?? '',
+      roleId: (json['roleId'] as num?)?.toInt() ?? 2,
+      status: json['status'] as String? ?? '',
+      companyName: json['companyName'] as String? ?? '',
+      languageId: (json['languageId'] as num?)?.toInt() ?? 1,
     );
   }
 

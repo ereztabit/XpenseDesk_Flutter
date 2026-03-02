@@ -38,7 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final userInfo = ref.read(userInfoProvider);
     if (userInfo != null) {
-      Navigator.of(context).pushReplacementNamed('/dashboard');
+      final route = userInfo.roleId == 1 ? '/dashboard' : '/user/dashboard';
+      Navigator.of(context).pushReplacementNamed(route);
       return;
     }
 

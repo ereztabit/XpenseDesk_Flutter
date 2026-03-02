@@ -46,11 +46,13 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
       ref.read(userInfoProvider.notifier).setUserInfo(userInfo);
       
       if (mounted) {
+        final route = userInfo.roleId == 1 ? '/dashboard' : '/user/dashboard';
+
         // Update browser URL to remove token
-        web.window.history.replaceState(null, '', '/dashboard');
+        web.window.history.replaceState(null, '', route);
         
-        // Navigate to dashboard
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        // Navigate to appropriate dashboard
+        Navigator.of(context).pushReplacementNamed(route);
       }
     } on AuthException catch (e) {
       if (mounted) {
@@ -63,7 +65,7 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
       if (mounted) {
         setState(() {
           _isProcessing = false;
-          _errorMessage = 'An unexpected error occurred';
+          _errorMessage = e.toString();
         });
       }
     }

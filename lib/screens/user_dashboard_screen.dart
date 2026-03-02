@@ -1,13 +1,13 @@
 import 'screen_imports.dart';
 
-class DashboardScreen extends ConsumerStatefulWidget {
-  const DashboardScreen({super.key});
+class UserDashboardScreen extends ConsumerStatefulWidget {
+  const UserDashboardScreen({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<UserDashboardScreen> createState() => _UserDashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen> {
   bool _isLoading = true;
 
   @override
@@ -17,9 +17,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Future<void> _initializeSession() async {
-    // Load user info from API using session token
     await ref.read(userInfoProvider.notifier).loadFromSession();
-    
+
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -27,32 +26,31 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userInfo = ref.watch(userInfoProvider);
-    final l10n = AppLocalizations.of(context)!;
-
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    final userInfo = ref.watch(userInfoProvider);
+
     if (userInfo == null) {
-      // Navigate back to login if no user info (session expired)
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/');
       });
       return const SizedBox.shrink();
     }
 
-    if (userInfo.roleId == 2) {
-      // Regular user — redirect to user dashboard
+    if (userInfo.roleId == 1) {
+      // Manager landed here — redirect to manager dashboard
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed('/user/dashboard');
+        Navigator.of(context).pushReplacementNamed('/dashboard');
       });
       return const SizedBox.shrink();
     }
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       body: Column(
         children: [
           const AppHeader(),
@@ -61,13 +59,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${l10n.welcome}, ${userInfo.fullName}!',
+                      'Hi ${userInfo.fullName}, you are a user.',
                       style: Theme.of(context).textTheme.headlineMedium,
-                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),

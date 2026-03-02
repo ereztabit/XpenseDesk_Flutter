@@ -33,7 +33,6 @@ class MenuItems {
         id: 'spend-history',
         icon: Icons.history,
         label: t.spendHistory,
-        requiresManagerRole: true,
       ),
       MenuItem(
         id: 'company-config',
