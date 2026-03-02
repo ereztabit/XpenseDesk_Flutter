@@ -195,7 +195,7 @@ class UserListCard extends ConsumerWidget {
       if (!context.mounted) return;
 
       // Refresh users list
-      ref.invalidate(usersListProvider);
+      await ref.read(usersListProvider.notifier).refresh();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -242,7 +242,7 @@ class UserListCard extends ConsumerWidget {
       if (!context.mounted) return;
 
       // Refresh users list
-      ref.invalidate(usersListProvider);
+      await ref.read(usersListProvider.notifier).refresh();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -285,7 +285,7 @@ class UserListCard extends ConsumerWidget {
       if (!context.mounted) return;
 
       // Refresh users list
-      ref.invalidate(usersListProvider);
+      await ref.read(usersListProvider.notifier).refresh();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -324,7 +324,7 @@ class UserListCard extends ConsumerWidget {
       if (!context.mounted) return;
 
       // Refresh users list
-      ref.invalidate(usersListProvider);
+      await ref.read(usersListProvider.notifier).refresh();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

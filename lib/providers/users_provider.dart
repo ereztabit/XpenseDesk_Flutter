@@ -7,11 +7,34 @@ final usersServiceProvider = Provider<UsersService>((ref) {
   return UsersService();
 });
 
-/// Provider for users list (async data loading)
-final usersListProvider = FutureProvider<List<UserListItem>>((ref) async {
-  final service = ref.watch(usersServiceProvider);
-  return service.getAllUsers();
-});
+/// Notifier for the users list.
+/// Uses keepAlive so error state is sticky — the API is not retried
+/// automatically on rebuild. Call [refresh] explicitly (e.g. Retry button).
+class UsersListNotifier extends AsyncNotifier<List<UserListItem>> {
+  @override
+  Future<List<UserListItem>> build() async {
+    // Keep alive: prevent auto-dispose so the error state is never silently
+    // discarded and the API call never re-fires on its own.
+    ref.keepAlive();
+    return _fetchUsers();
+  }
+
+  Future<List<UserListItem>> _fetchUsers() async {
+    final service = ref.read(usersServiceProvider);
+    return service.getAllUsers();
+  }
+
+  /// Explicitly reload the list (e.g. after Retry or a mutation).
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(_fetchUsers);
+  }
+}
+
+final usersListProvider =
+    AsyncNotifierProvider<UsersListNotifier, List<UserListItem>>(
+  UsersListNotifier.new,
+);
 
 /// Notifier for managing search query state
 class UserSearchNotifier extends Notifier<String> {

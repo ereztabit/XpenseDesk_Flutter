@@ -57,6 +57,12 @@ class UserInfoNotifier extends Notifier<UserInfo?> {
   void logout() {
     state = null;
   }
+
+  /// Called by the global 401 handler. Clears in-memory user state so any
+  /// screen watching [userInfoProvider] immediately sees null and redirects.
+  void handleUnauthorized() {
+    state = null;
+  }
 }
 
 final userInfoProvider = NotifierProvider<UserInfoNotifier, UserInfo?>(

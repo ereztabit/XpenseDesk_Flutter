@@ -127,7 +127,7 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
       if (!mounted) return;
 
       // Refresh users list
-      ref.invalidate(usersListProvider);
+      await ref.read(usersListProvider.notifier).refresh();
 
       // Show success message
       final l10n = AppLocalizations.of(context)!;

@@ -14,6 +14,9 @@ import 'screens/spend_history_screen.dart';
 import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'providers/locale_provider.dart';
+import 'providers/auth_provider.dart';
+import 'utils/app_navigator.dart';
+import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +25,32 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Wire up the global 401 handler: clear in-memory session state,
+    // clear the stored token, then hard-navigate to the login page.
+    ApiService.onUnauthorized = () {
+      ref.read(userInfoProvider.notifier).handleUnauthorized();
+      ref.read(authServiceProvider).clearSessionToken();
+      navigatorKey.currentState?.pushNamedAndRemoveUntil('/', (_) => false);
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'XpenseDesk',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

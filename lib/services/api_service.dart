@@ -2,12 +2,33 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
+/// Thrown when the server responds with HTTP 401 Unauthorized.
+/// The app should treat this as a session expiry and return to login.
+class UnauthorizedException implements Exception {
+  const UnauthorizedException();
+  @override
+  String toString() => 'UnauthorizedException: session expired or invalid';
+}
+
 /// Simple API service for HTTP requests
 class ApiService {
   final String baseUrl;
 
   ApiService({String? baseUrl}) 
       : baseUrl = baseUrl ?? AppConfig.instance.apiBaseUrl;
+
+  /// Called whenever any request gets a 401 response.
+  /// Wire this up in main.dart to clear session state and navigate to login.
+  static void Function()? onUnauthorized;
+
+  /// Decode the response body and throw [UnauthorizedException] on 401.
+  Map<String, dynamic> _decode(http.Response response) {
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+      throw const UnauthorizedException();
+    }
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
 
   /// Build HTTP headers with optional bearer token
   Map<String, String> _buildHeaders({String? authToken}) {
@@ -32,7 +53,7 @@ class ApiService {
       body: jsonEncode(body),
     );
 
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return _decode(response);
   }
 
   /// Make a POST request and return both the HTTP status code and the decoded body.
@@ -50,6 +71,12 @@ class ApiService {
       body: jsonEncode(body),
     );
 
+    // For postWithStatus, callers need the raw status code, so we only
+    // auto-handle 401 and let other codes pass through to the caller.
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+      throw const UnauthorizedException();
+    }
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
     return (statusCode: response.statusCode, body: decoded);
   }
@@ -63,7 +90,7 @@ class ApiService {
     final base = Uri.parse('$baseUrl$endpoint');
     final uri = queryParams != null ? base.replace(queryParameters: queryParams) : base;
     final response = await http.get(uri, headers: _buildHeaders(authToken: authToken));
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return _decode(response);
   }
 
   /// Make a PUT request with optional authorization token
@@ -80,6 +107,6 @@ class ApiService {
       body: jsonEncode(body),
     );
 
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return _decode(response);
   }
 }
