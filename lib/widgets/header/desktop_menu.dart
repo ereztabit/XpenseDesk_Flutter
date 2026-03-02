@@ -65,8 +65,22 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final menuWidth = 288.0; // w-72
-    final menuLeft = widget.offset.dx + widget.avatarSize.width - menuWidth;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final avatarCenterX = widget.offset.dx + widget.avatarSize.width / 2;
     final menuTop = widget.offset.dy + widget.avatarSize.height + 8; // sideOffset={8}
+
+    // If avatar is in the right half of the screen, right-align the menu
+    // so its top-right corner sits below the avatar.
+    // Otherwise, left-align so its top-left corner sits below the avatar.
+    double menuLeft;
+    if (avatarCenterX > screenWidth / 2) {
+      menuLeft = widget.offset.dx + widget.avatarSize.width - menuWidth;
+    } else {
+      menuLeft = widget.offset.dx;
+    }
+
+    // Clamp so the menu never clips outside the viewport
+    menuLeft = menuLeft.clamp(0.0, screenWidth - menuWidth);
 
     return KeyboardListener(
       focusNode: _focusNode,
