@@ -8,6 +8,7 @@ import '../../../theme/app_theme.dart';
 import '../../../providers/onboarding_provider.dart';
 import '../../../widgets/email_input_field.dart';
 import '../../../widgets/form_behavior_mixin.dart';
+import '../../../widgets/step_guard_mixin.dart';
 
 /// Step 1 — Personal Details form.
 /// Self-contained: owns its form state, validation, and Continue button.
@@ -21,7 +22,8 @@ class PersonalDetailsStep extends ConsumerStatefulWidget {
   ConsumerState<PersonalDetailsStep> createState() => _PersonalDetailsStepState();
 }
 
-class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
+class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
+    with StepGuardMixin {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -32,6 +34,11 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
   bool _isCheckingEmail = false;
   bool _emailTaken = false;
 
+  @override
+  bool get hasUnsavedChanges =>
+      _nameController.text.trim().isNotEmpty ||
+      _emailController.text.trim().isNotEmpty;
+
   // Recomputed on every keystroke to drive button enable/disable.
   bool get _canContinue =>
       _nameController.text.trim().isNotEmpty &&
@@ -41,7 +48,7 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep> {
 
   @override
   void initState() {
-    super.initState();
+    super.initState(); // calls StepGuardMixin.initState → registers guard
     // Pre-populate from wizard state so returning from Step 2 doesn't blank the form.
     final wizardState = ref.read(onboardingStateProvider);
     if (wizardState.fullName.isNotEmpty) {

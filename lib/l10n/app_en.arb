@@ -50,6 +50,8 @@
   "failedToUpdateProfile": "Failed to update profile",
   "unsavedChanges": "Unsaved Changes",
   "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave without saving?",
+  "keepEditing": "Keep Editing",
+  "leaveWithoutSaving": "Discard Changes",
   "cancel": "Cancel",
   "discard": "Discard",
   "manageUsers": "User Management",

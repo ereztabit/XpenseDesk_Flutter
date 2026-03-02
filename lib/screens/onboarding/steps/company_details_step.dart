@@ -8,6 +8,7 @@ import '../../../providers/onboarding_provider.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/form_behavior_mixin.dart';
+import '../../../widgets/step_guard_mixin.dart';
 
 /// Shared [InputDecorationTheme] used by every [DropdownMenu] on this screen
 /// so they look identical to the [TextFormField]s.
@@ -55,7 +56,8 @@ class CompanyDetailsStep extends ConsumerStatefulWidget {
   ConsumerState<CompanyDetailsStep> createState() => _CompanyDetailsStepState();
 }
 
-class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
+class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
+    with StepGuardMixin {
   final _formKey = GlobalKey<FormState>();
   final _companyNameController = TextEditingController();
   final _accountantEmailController = TextEditingController();
@@ -72,8 +74,13 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
   bool _defaultsExpanded = false;
 
   @override
+  bool get hasUnsavedChanges =>
+      _companyNameController.text.trim().isNotEmpty ||
+      _accountantEmailController.text.trim().isNotEmpty;
+
+  @override
   void initState() {
-    super.initState();
+    super.initState(); // calls StepGuardMixin.initState → registers guard
     // Restore previously entered values from wizard state so navigating back
     // and forward does not lose data.
     final saved = ref.read(onboardingStateProvider);

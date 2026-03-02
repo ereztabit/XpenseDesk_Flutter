@@ -50,6 +50,8 @@
   "failedToUpdateProfile": "עדכון הפרופיל נכשל",
   "unsavedChanges": "שינויים לא שמורים",
   "unsavedChangesMessage": "יש לך שינויים לא שמורים. האם אתה בטוח שברצונך לעזוב בלי לשמור?",
+  "keepEditing": "המשך עריכה",
+  "leaveWithoutSaving": "בטל שינויים",
   "cancel": "ביטול",
   "discard": "התעלם",
   "manageUsers": "ניהול משתמשים",

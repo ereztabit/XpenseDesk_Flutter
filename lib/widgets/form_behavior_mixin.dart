@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../providers/navigation_guard_provider.dart';
 
 /// Mixin that provides reusable form behavior:
 /// - Session restore on direct navigation / browser refresh
@@ -15,8 +16,20 @@ mixin FormBehaviorMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(userInfoProvider.notifier).loadFromSession();
+      if (!mounted) return;
+      ref.read(userInfoProvider.notifier).loadFromSession();
+      // Register this screen's unsaved-changes guard so AppHeader logo
+      // navigation can check it before leaving.
+      ref.read(navigationGuardProvider.notifier).setGuard(
+          () async => confirmDiscard());
     });
+  }
+
+  @override
+  void dispose() {
+    // Unregister guard so the next screen starts clean.
+    ref.read(navigationGuardProvider.notifier).setGuard(null);
+    super.dispose();
   }
   /// Override this getter to indicate if the form has unsaved changes
   bool get hasUnsavedChanges;
@@ -34,11 +47,12 @@ mixin FormBehaviorMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancel),
+            child: Text(l10n.keepEditing),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.discard),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(l10n.leaveWithoutSaving),
           ),
         ],
       ),

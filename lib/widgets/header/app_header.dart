@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/navigation_guard_provider.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../utils/responsive_utils.dart';
 import 'desktop_menu.dart';
@@ -25,11 +26,6 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   OverlayEntry? _overlayEntry;
   final GlobalKey _avatarKey = GlobalKey();
   bool _isMenuOpen = false;
-
-  /// Get dashboard route based on user role
-  String _getDashboardRoute(int roleId) {
-    return roleId == 1 ? '/manager/dashboard' : '/employee/dashboard';
-  }
 
   /// Check if user is a manager
   bool _isManager(int roleId) => roleId == 1;
@@ -100,6 +96,16 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     if (userInfo == null) return;
 
     _closeMenu();
+
+    // Check navigation guard — same as logo tap — before any menu navigation.
+    // contact-support and logout are exempt (support opens external; logout is intentional).
+    if (value != 'contact-support' && value != 'logout') {
+      final guard = ref.read(navigationGuardProvider);
+      if (guard != null) {
+        final canLeave = await guard();
+        if (!canLeave || !mounted) return;
+      }
+    }
 
     switch (value) {
       case 'profile':
@@ -250,13 +256,24 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
 
                 // Logo
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, _getDashboardRoute(userInfo.roleId));
+                  onTap: () async {
+                    final guard = ref.read(navigationGuardProvider);
+                    final canLeave = guard != null ? await guard() : true;
+                    if (canLeave && mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/',
+                        (route) => false,
+                      );
+                    }
                   },
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    height: isMobile ? 24 : 32,
-                    fit: BoxFit.contain,
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: isMobile ? 24 : 32,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ],

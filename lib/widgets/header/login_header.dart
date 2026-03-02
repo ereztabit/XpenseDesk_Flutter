@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
+import '../../providers/navigation_guard_provider.dart';
 import '../language_switcher.dart';
 
 /// LoginHeader - Simple header for login/signup pages
 /// 
 /// Layout: Language Switcher (left) | Logo (right)
-class LoginHeader extends StatelessWidget {
+class LoginHeader extends ConsumerWidget {
   const LoginHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       height: 56,
       decoration: const BoxDecoration(
@@ -42,10 +44,26 @@ class LoginHeader extends StatelessWidget {
                 const Spacer(),
 
                 // Logo
-                Image.asset(
-                  'assets/images/logo.png',
-                  height: 24,
-                  fit: BoxFit.contain,
+                GestureDetector(
+                  onTap: () async {
+                    final guard = ref.read(navigationGuardProvider);
+                    final canLeave = guard != null ? await guard() : true;
+                    if (canLeave && context.mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/',
+                        (route) => false,
+                      );
+                    }
+                  },
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 24,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
               ],
             ),
