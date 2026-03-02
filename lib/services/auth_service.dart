@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import '../models/user_info.dart';
+import '../models/company_info.dart';
 
 /// Exception thrown when authentication fails
 class AuthException implements Exception {
@@ -145,6 +146,58 @@ class AuthService {
     }
 
     return UserInfo.fromJson(data);
+  }
+
+  /// Get company configuration
+  /// Returns CompanyInfo from GET /api/company
+  Future<CompanyInfo> getCompany() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/company',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to get company details');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return CompanyInfo.fromJson(data);
+  }
+
+  /// Update company settings (name, language, accountant email)
+  /// Returns refreshed CompanyInfo from GET /api/company after successful PUT
+  Future<CompanyInfo> updateCompany({
+    required String companyName,
+    required int languageId,
+    String? accountantEmail,
+  }) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{
+      'companyName': companyName,
+      'languageId': languageId,
+    };
+    // Send null explicitly to clear the field; omit if not provided by caller
+    if (accountantEmail != null) {
+      body['accountantEmail'] = accountantEmail.trim().isEmpty ? null : accountantEmail.trim();
+    }
+
+    final response = await _apiService.put(
+      '/api/company',
+      body,
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to update company settings');
+
+    // Backend returns no data on success — re-fetch to get updated state
+    return await getCompany();
   }
 
   /// Update user profile (full name and language)
