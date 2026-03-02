@@ -282,6 +282,9 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
         accountantEmail: wizardState.accountantEmail.isNotEmpty
             ? wizardState.accountantEmail
             : null,
+        currencyCode: wizardState.currencyCode,
+        languageId: wizardState.languageId,
+        timeZoneId: wizardState.timeZoneId,
       );
       final newOtpKey = await service.submitCompany(request);
 

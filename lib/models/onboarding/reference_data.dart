@@ -6,6 +6,7 @@ class OnboardingCountry {
   final String defaultCurrencyCode;
   final int defaultLanguageId;
   final int defaultTimeZoneId;
+  final bool hasMultipleTimeZones;
 
   const OnboardingCountry({
     required this.countryCode,
@@ -13,6 +14,7 @@ class OnboardingCountry {
     required this.defaultCurrencyCode,
     required this.defaultLanguageId,
     required this.defaultTimeZoneId,
+    required this.hasMultipleTimeZones,
   });
 
   factory OnboardingCountry.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class OnboardingCountry {
       defaultCurrencyCode: json['defaultCurrencyCode'] as String,
       defaultLanguageId: json['defaultLanguageId'] as int,
       defaultTimeZoneId: json['defaultTimeZoneId'] as int,
+      hasMultipleTimeZones: json['hasMultipleTimeZones'] as bool? ?? false,
     );
   }
 }

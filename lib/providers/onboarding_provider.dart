@@ -31,6 +31,9 @@ class OnboardingWizardState {
   final String countryCode;
   final int? cutoverDay;
   final String accountantEmail;
+  final String? currencyCode;
+  final int? languageId;
+  final int? timeZoneId;
 
   // Step 3 — OTP
   final String otpKey;
@@ -45,6 +48,9 @@ class OnboardingWizardState {
     this.countryCode = '',
     this.cutoverDay,
     this.accountantEmail = '',
+    this.currencyCode,
+    this.languageId,
+    this.timeZoneId,
     this.otpKey = '',
   });
 
@@ -58,6 +64,9 @@ class OnboardingWizardState {
     String? countryCode,
     int? cutoverDay,
     String? accountantEmail,
+    String? currencyCode,
+    int? languageId,
+    int? timeZoneId,
     String? otpKey,
   }) {
     return OnboardingWizardState(
@@ -70,6 +79,9 @@ class OnboardingWizardState {
       countryCode: countryCode ?? this.countryCode,
       cutoverDay: cutoverDay ?? this.cutoverDay,
       accountantEmail: accountantEmail ?? this.accountantEmail,
+      currencyCode: currencyCode ?? this.currencyCode,
+      languageId: languageId ?? this.languageId,
+      timeZoneId: timeZoneId ?? this.timeZoneId,
       otpKey: otpKey ?? this.otpKey,
     );
   }
@@ -100,12 +112,18 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
     required String countryCode,
     required int cutoverDay,
     required String accountantEmail,
+    String? currencyCode,
+    int? languageId,
+    int? timeZoneId,
   }) {
     state = state.copyWith(
       companyName: companyName,
       countryCode: countryCode,
       cutoverDay: cutoverDay,
       accountantEmail: accountantEmail,
+      currencyCode: currencyCode,
+      languageId: languageId,
+      timeZoneId: timeZoneId,
     );
   }
 
@@ -116,12 +134,18 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
     String? countryCode,
     int? cutoverDay,
     String? accountantEmail,
+    String? currencyCode,
+    int? languageId,
+    int? timeZoneId,
   }) {
     state = state.copyWith(
       companyName: companyName,
       countryCode: countryCode,
       cutoverDay: cutoverDay,
       accountantEmail: accountantEmail,
+      currencyCode: currencyCode,
+      languageId: languageId,
+      timeZoneId: timeZoneId,
     );
   }
 

@@ -6,6 +6,10 @@ class CompanySubmitRequest {
   final String email;
   final String fullName;
   final String? accountantEmail;
+  /// Only sent when the user explicitly overrides the country default.
+  final String? currencyCode;
+  final int? languageId;
+  final int? timeZoneId;
 
   const CompanySubmitRequest({
     required this.companyName,
@@ -14,6 +18,9 @@ class CompanySubmitRequest {
     required this.email,
     required this.fullName,
     this.accountantEmail,
+    this.currencyCode,
+    this.languageId,
+    this.timeZoneId,
   });
 
   Map<String, dynamic> toJson() {
@@ -24,6 +31,9 @@ class CompanySubmitRequest {
       'email': email,
       'fullName': fullName,
       'accountantEmail': accountantEmail ?? email,
+      if (currencyCode != null) 'currencyCode': currencyCode!,
+      if (languageId != null) 'languageId': languageId!,
+      if (timeZoneId != null) 'timeZoneId': timeZoneId!,
     };
   }
 }

@@ -84,7 +84,8 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
     }
     if (saved.countryCode.isNotEmpty) {
       _selectedCountryCode = saved.countryCode;
-      // Re-derive the defaults panel values from refData using the saved country.
+      // Start from country defaults, then overlay any user overrides saved to
+      // wizard state (i.e. the user changed a dropdown before navigating back).
       final country = widget.refData.countries.where(
         (c) => c.countryCode == saved.countryCode,
       ).firstOrNull;
@@ -93,6 +94,10 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
         _selectedLanguageId = country.defaultLanguageId;
         _selectedTimeZoneId = country.defaultTimeZoneId;
       }
+      // Overlay saved overrides (non-null wins over the defaults above)
+      if (saved.currencyCode != null) _selectedCurrencyCode = saved.currencyCode;
+      if (saved.languageId != null) _selectedLanguageId = saved.languageId;
+      if (saved.timeZoneId != null) _selectedTimeZoneId = saved.timeZoneId;
     }
     if (saved.cutoverDay != null) {
       _selectedCutoverDay = saved.cutoverDay;
@@ -137,6 +142,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
           countryCode: _selectedCountryCode,
           cutoverDay: _selectedCutoverDay,
           accountantEmail: _accountantEmailController.text.trim(),
+          currencyCode: _selectedCurrencyCode,
+          languageId: _selectedLanguageId,
+          timeZoneId: _selectedTimeZoneId,
         );
     widget.onBack();
   }
@@ -181,6 +189,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
       fullName: wizardState.fullName,
       // Per spec: when blank, default to the owner's work email
       accountantEmail: accountantEmailInput.isEmpty ? wizardState.email : accountantEmailInput,
+      currencyCode: _selectedCurrencyCode,
+      languageId: _selectedLanguageId,
+      timeZoneId: _selectedTimeZoneId,
     );
 
     try {
@@ -194,6 +205,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
             // Store the raw input (empty string if blank) so restoration is
             // correct — not the API-defaulted value.
             accountantEmail: accountantEmailInput,
+            currencyCode: _selectedCurrencyCode,
+            languageId: _selectedLanguageId,
+            timeZoneId: _selectedTimeZoneId,
           );
       ref.read(onboardingStateProvider.notifier).setOtpKey(otpKey);
 
@@ -293,6 +307,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep> {
               selectedCurrencyCode: _selectedCurrencyCode,
               selectedLanguageId: _selectedLanguageId,
               selectedTimeZoneId: _selectedTimeZoneId,
+              showTimeZone: widget.refData.countries
+                  .firstWhere((c) => c.countryCode == _selectedCountryCode)
+                  .hasMultipleTimeZones,
               onCurrencyChanged: (code) =>
                   setState(() => _selectedCurrencyCode = code),
               onLanguageChanged: (id) =>
@@ -462,6 +479,7 @@ class _DefaultsPanel extends StatelessWidget {
     required this.selectedCurrencyCode,
     required this.selectedLanguageId,
     required this.selectedTimeZoneId,
+    required this.showTimeZone,
     required this.onCurrencyChanged,
     required this.onLanguageChanged,
     required this.onTimeZoneChanged,
@@ -471,6 +489,7 @@ class _DefaultsPanel extends StatelessWidget {
   final String? selectedCurrencyCode;
   final int? selectedLanguageId;
   final int? selectedTimeZoneId;
+  final bool showTimeZone;
   final ValueChanged<String?> onCurrencyChanged;
   final ValueChanged<int?> onLanguageChanged;
   final ValueChanged<int?> onTimeZoneChanged;
@@ -537,21 +556,24 @@ class _DefaultsPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Timezone
-          FieldLabel(label: l10n.onboardingTimezone),
-          const SizedBox(height: 6),
-          DropdownMenu<int>(
-            initialSelection: selectedTimeZoneId,
-            expandedInsets: EdgeInsets.zero,
-            inputDecorationTheme: _dropdownInputTheme(),
-            dropdownMenuEntries: refData.timeZones
-                .map((tz) => DropdownMenuEntry(
-                      value: tz.timeZoneId,
-                      label: tz.displayName,
-                    ))
-                .toList(),
-            onSelected: onTimeZoneChanged,
-          ),
+          // Timezone — only shown for countries with multiple time zones
+          if (showTimeZone) ...[
+            const SizedBox(height: 12),
+            FieldLabel(label: l10n.onboardingTimezone),
+            const SizedBox(height: 6),
+            DropdownMenu<int>(
+              initialSelection: selectedTimeZoneId,
+              expandedInsets: EdgeInsets.zero,
+              inputDecorationTheme: _dropdownInputTheme(),
+              dropdownMenuEntries: refData.timeZones
+                  .map((tz) => DropdownMenuEntry(
+                        value: tz.timeZoneId,
+                        label: tz.displayName,
+                      ))
+                  .toList(),
+              onSelected: onTimeZoneChanged,
+            ),
+          ],
         ],
       ),
     );
