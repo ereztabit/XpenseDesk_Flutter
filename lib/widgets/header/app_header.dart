@@ -127,7 +127,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         break;
       case 'logout':
         ref.read(userInfoProvider.notifier).logout();
-        await ref.read(authServiceProvider).clearSessionToken();
+        await ref.read(authServiceProvider).logout();
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         }

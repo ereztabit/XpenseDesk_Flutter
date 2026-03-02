@@ -105,7 +105,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     await _close();
     
     ref.read(userInfoProvider.notifier).logout();
-    await ref.read(authServiceProvider).clearSessionToken();
+    await ref.read(authServiceProvider).logout();
     
     if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);

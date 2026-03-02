@@ -121,6 +121,21 @@ class AuthService {
     await prefs.remove(_sessionTokenKey);
   }
 
+  /// Call the logout API then clear the local session token.
+  /// Errors from the API are swallowed — the local session is always cleared
+  /// regardless of server response.
+  Future<void> logout() async {
+    final token = await getSessionToken();
+    if (token != null && token.isNotEmpty) {
+      try {
+        await _apiService.post('/api/auth/logout', {}, authToken: token);
+      } catch (_) {
+        // Ignore API errors — local logout must always succeed.
+      }
+    }
+    await clearSessionToken();
+  }
+
   /// Check if user has a stored session token
   Future<bool> hasSessionToken() async {
     final token = await getSessionToken();
