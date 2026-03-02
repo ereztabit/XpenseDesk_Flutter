@@ -1,15 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../generated/l10n/app_localizations.dart';
+import 'screen_imports.dart';
 import '../providers/users_provider.dart';
-import '../providers/auth_provider.dart';
 import '../widgets/users/user_list_card.dart';
 import '../widgets/users/invite_users_dialog.dart';
-import '../widgets/constrained_content.dart';
-import '../widgets/header/app_header.dart';
-import '../widgets/app_footer.dart';
 import '../utils/responsive_utils.dart';
-import '../theme/app_theme.dart';
 
 class UsersScreen extends ConsumerStatefulWidget {
   const UsersScreen({super.key});

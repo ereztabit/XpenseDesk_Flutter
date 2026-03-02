@@ -1,19 +1,11 @@
+import 'screen_imports.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../generated/l10n/app_localizations.dart';
 import '../models/company_info.dart';
 import '../providers/company_provider.dart';
 import '../services/auth_service.dart';
-import '../theme/app_theme.dart';
-import '../widgets/constrained_content.dart';
-import '../widgets/error_alert.dart';
-import '../widgets/form_behavior_mixin.dart';
-import '../widgets/header/app_header.dart';
-import '../widgets/app_footer.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
   const CompanyConfigScreen({super.key});
@@ -69,6 +61,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
     _accountantEmailFocusNode.addListener(() {
       if (!_accountantEmailFocusNode.hasFocus) _formKey.currentState?.validate();
     });
+    // loadFromSession() is handled automatically by FormBehaviorMixin.initState
   }
 
   @override

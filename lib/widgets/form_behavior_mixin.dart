@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
+import '../providers/auth_provider.dart';
 
 /// Mixin that provides reusable form behavior:
+/// - Session restore on direct navigation / browser refresh
 /// - Unsaved changes tracking
 /// - Navigation guard with confirmation dialog
 /// - Validation mode management
-mixin FormBehaviorMixin<T extends StatefulWidget> on State<T> {
+mixin FormBehaviorMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
+  /// Restores the user session on every authenticated screen mount.
+  /// Idempotent — does nothing if a session is already loaded.
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(userInfoProvider.notifier).loadFromSession();
+    });
+  }
   /// Override this getter to indicate if the form has unsaved changes
   bool get hasUnsavedChanges;
 

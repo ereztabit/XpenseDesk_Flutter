@@ -1,14 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../generated/l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
+import 'screen_imports.dart';
 import '../services/auth_service.dart';
-import '../widgets/error_alert.dart';
-import '../theme/app_theme.dart';
-import '../widgets/form_behavior_mixin.dart';
-import '../widgets/header/app_header.dart';
-import '../widgets/app_footer.dart';
-import '../widgets/constrained_content.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -25,24 +16,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
-  
-  // Store initial values to detect changes
-  late String _initialFullName;
-  late int _initialLanguageId;
+
+  // Used to initialize form fields exactly once after first data load
+  bool _initialized = false;
+  String _initialFullName = '';
+  int _initialLanguageId = 1;
+
+  void _initializeFromUser(UserInfo userInfo) {
+    if (_initialized) return;
+    _initialized = true;
+    _fullNameController.text = userInfo.fullName;
+    _selectedLanguageId = userInfo.languageId;
+    _initialFullName = userInfo.fullName;
+    _initialLanguageId = userInfo.languageId;
+  }
 
   @override
   void initState() {
     super.initState();
-    
-    // Load current user data
-    final userInfo = ref.read(userInfoProvider);
-    if (userInfo != null) {
-      _fullNameController.text = userInfo.fullName;
-      _selectedLanguageId = userInfo.languageId;
-      _initialFullName = userInfo.fullName;
-      _initialLanguageId = userInfo.languageId;
-    }
-    
     // Validate field when focus is lost
     _fullNameFocusNode.addListener(() {
       if (!_fullNameFocusNode.hasFocus) {
@@ -58,9 +49,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
     super.dispose();
   }
 
-  /// Implementation of FormBehaviorMixin - check if form has unsaved changes
   @override
   bool get hasUnsavedChanges {
+    if (!_initialized) return false;
     return _fullNameController.text.trim() != _initialFullName ||
         _selectedLanguageId != _initialLanguageId;
   }
@@ -131,6 +122,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final userInfo = ref.watch(userInfoProvider);
+
+    // Initialize form fields once the session is restored
+    if (userInfo != null) _initializeFromUser(userInfo);
 
     if (userInfo == null) {
       return const Scaffold(

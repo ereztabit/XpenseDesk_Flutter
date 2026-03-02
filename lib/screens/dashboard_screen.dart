@@ -1,10 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../generated/l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
-import '../widgets/header/app_header.dart';
-import '../widgets/app_footer.dart';
-import '../widgets/constrained_content.dart';
+import 'screen_imports.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});

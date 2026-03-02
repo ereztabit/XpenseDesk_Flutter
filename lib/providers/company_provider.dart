@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/company_info.dart';
-import '../services/auth_service.dart';
 import 'auth_provider.dart';
 
 /// Loads company details from GET /api/company.
