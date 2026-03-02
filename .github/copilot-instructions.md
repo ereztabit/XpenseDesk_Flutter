@@ -833,4 +833,75 @@ EmailValidator.validate(email)
 
 **Rule:** The `email_validator` package is already a project dependency. Use `EmailValidator.validate(value)` — it returns `true` for valid addresses. The call is synchronous, lightweight, and RFC-compliant.
 
+---
+
+## Screen Scaffold Layout — Mandatory Pattern
+
+**Every app screen MUST follow this exact scaffold structure.** No exceptions.
+
+```dart
+class MyScreen extends ConsumerStatefulWidget {
+  const MyScreen({super.key});
+
+  @override
+  ConsumerState<MyScreen> createState() => _MyScreenState();
+}
+
+class _MyScreenState extends ConsumerState<MyScreen> with FormBehaviorMixin {
+  // FormBehaviorMixin is required even on non-form screens — it provides
+  // buildWithNavigationGuard and the unsaved-changes dialog.
+
+  @override
+  bool get hasUnsavedChanges => false; // override to true when form is dirty
+
+  @override
+  Widget build(BuildContext context) {
+    return buildWithNavigationGuard(
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Column(
+          children: [
+            const AppHeader(),          // ← always first
+            Expanded(
+              child: ConstrainedContent(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Back button
+                      TextButton.icon(
+                        onPressed: () => handleBackNavigation('/dashboard'),
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        label: Text(l10n.backToDashboard),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ... screen content ...
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const AppFooter(),          // ← always last
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+**Rules:**
+- `AppHeader` is always the **first** child of the root `Column`
+- `AppFooter` is always the **last** child of the root `Column`
+- Screen content goes inside `ConstrainedContent` → `SingleChildScrollView`
+- Always wrap the `Scaffold` in `buildWithNavigationGuard` (from `FormBehaviorMixin`)
+- Use `ConsumerStatefulWidget` + `FormBehaviorMixin` for all screens (even read-only ones)
+- Use `ConstrainedContent` (not a raw `ConstrainedBox`) to get the standard max-width + responsive padding
+
+**Reference implementation:** `lib/screens/profile_screen.dart` and `lib/screens/company_config_screen.dart`
 
