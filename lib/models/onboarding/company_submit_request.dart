@@ -10,6 +10,8 @@ class CompanySubmitRequest {
   final String? currencyCode;
   final int? languageId;
   final int? timeZoneId;
+  /// Whether the user opted into marketing communications.
+  final bool isMarketingConsent;
 
   const CompanySubmitRequest({
     required this.companyName,
@@ -17,6 +19,7 @@ class CompanySubmitRequest {
     required this.cutoverDay,
     required this.email,
     required this.fullName,
+    required this.isMarketingConsent,
     this.accountantEmail,
     this.currencyCode,
     this.languageId,
@@ -31,6 +34,7 @@ class CompanySubmitRequest {
       'email': email,
       'fullName': fullName,
       'accountantEmail': accountantEmail ?? email,
+      'isMarketingConsent': isMarketingConsent,
       if (currencyCode != null) 'currencyCode': currencyCode!,
       if (languageId != null) 'languageId': languageId!,
       if (timeZoneId != null) 'timeZoneId': timeZoneId!,

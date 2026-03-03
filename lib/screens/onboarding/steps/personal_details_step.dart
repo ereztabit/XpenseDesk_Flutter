@@ -28,7 +28,7 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   bool _termsAccepted = false;
-  bool _marketingOptIn = false;
+  bool _isMarketingConsent = false;
 
   // Check-email async state
   bool _isCheckingEmail = false;
@@ -58,7 +58,7 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
       _emailController.text = wizardState.email;
     }
     if (wizardState.termsAccepted) _termsAccepted = true;
-    if (wizardState.marketingOptIn) _marketingOptIn = true;
+    if (wizardState.isMarketingConsent) _isMarketingConsent = true;
   }
 
   @override
@@ -90,7 +90,7 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
           fullName: _nameController.text.trim(),
           email: email,
           termsAccepted: _termsAccepted,
-          marketingOptIn: _marketingOptIn,
+          isMarketingConsent: _isMarketingConsent,
         );
 
     widget.onContinue();
@@ -177,8 +177,8 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
 
           // Marketing opt-in (optional)
           _CheckboxField(
-            value: _marketingOptIn,
-            onChanged: (v) => setState(() => _marketingOptIn = v ?? false),
+            value: _isMarketingConsent,
+            onChanged: (v) => setState(() => _isMarketingConsent = v ?? false),
             label: l10n.onboardingMarketingOptIn,
             labelStyle: const TextStyle(
               fontSize: 13,

@@ -213,6 +213,7 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       fullName: wizardState.fullName,
       // Per spec: when blank, default to the owner's work email
       accountantEmail: accountantEmailInput.isEmpty ? wizardState.email : accountantEmailInput,
+      isMarketingConsent: wizardState.isMarketingConsent,
       currencyCode: _selectedCurrencyCode,
       languageId: _selectedLanguageId,
       timeZoneId: _selectedTimeZoneId,

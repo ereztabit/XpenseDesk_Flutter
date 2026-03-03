@@ -282,6 +282,7 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
         accountantEmail: wizardState.accountantEmail.isNotEmpty
             ? wizardState.accountantEmail
             : null,
+        isMarketingConsent: wizardState.isMarketingConsent,
         currencyCode: wizardState.currencyCode,
         languageId: wizardState.languageId,
         timeZoneId: wizardState.timeZoneId,

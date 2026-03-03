@@ -65,6 +65,14 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen> {
                       'Hi ${userInfo.fullName}, you are a user.',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
+                    if (userInfo.termsConsentDate == null) ...
+                      [
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Onboarding',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
                   ],
                 ),
               ),

@@ -5,6 +5,7 @@ class UserInfo {
   final String status;
   final String companyName;
   final int languageId;
+  final DateTime? termsConsentDate;
 
   const UserInfo({
     required this.email,
@@ -13,6 +14,7 @@ class UserInfo {
     required this.status,
     required this.companyName,
     this.languageId = 1,
+    this.termsConsentDate,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,9 @@ class UserInfo {
       status: json['status'] as String? ?? '',
       companyName: json['companyName'] as String? ?? '',
       languageId: (json['languageId'] as num?)?.toInt() ?? 1,
+      termsConsentDate: json['termsConsentDate'] != null
+          ? DateTime.tryParse(json['termsConsentDate'] as String)
+          : null,
     );
   }
 

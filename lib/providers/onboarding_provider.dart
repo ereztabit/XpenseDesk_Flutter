@@ -22,7 +22,7 @@ class OnboardingWizardState {
   final String fullName;
   final String email;
   final bool termsAccepted;
-  final bool marketingOptIn;
+  final bool isMarketingConsent;
   // Non-empty when Step 2 detects the email is already registered (HTTP 409)
   final String emailConflictError;
 
@@ -42,7 +42,7 @@ class OnboardingWizardState {
     this.fullName = '',
     this.email = '',
     this.termsAccepted = false,
-    this.marketingOptIn = false,
+    this.isMarketingConsent = false,
     this.emailConflictError = '',
     this.companyName = '',
     this.countryCode = '',
@@ -58,7 +58,7 @@ class OnboardingWizardState {
     String? fullName,
     String? email,
     bool? termsAccepted,
-    bool? marketingOptIn,
+    bool? isMarketingConsent,
     String? emailConflictError,
     String? companyName,
     String? countryCode,
@@ -73,7 +73,7 @@ class OnboardingWizardState {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       termsAccepted: termsAccepted ?? this.termsAccepted,
-      marketingOptIn: marketingOptIn ?? this.marketingOptIn,
+      isMarketingConsent: isMarketingConsent ?? this.isMarketingConsent,
       emailConflictError: emailConflictError ?? this.emailConflictError,
       companyName: companyName ?? this.companyName,
       countryCode: countryCode ?? this.countryCode,
@@ -95,13 +95,13 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
     required String fullName,
     required String email,
     required bool termsAccepted,
-    required bool marketingOptIn,
+    required bool isMarketingConsent,
   }) {
     state = state.copyWith(
       fullName: fullName,
       email: email,
       termsAccepted: termsAccepted,
-      marketingOptIn: marketingOptIn,
+      isMarketingConsent: isMarketingConsent,
       // Clear any previously set conflict error when the user re-enters Step 1
       emailConflictError: '',
     );

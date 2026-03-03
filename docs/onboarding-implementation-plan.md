@@ -375,7 +375,8 @@ Navigate to `/onboarding`.
   "cutoverDay": 1,
   "email": "owner@acme.com",
   "fullName": "Jane Smith",
-  "accountantEmail": "accountant@acme.com"
+  "accountantEmail": "accountant@acme.com",
+  "isMarketingConsent": true
 }
 ```
 
@@ -387,6 +388,7 @@ Navigate to `/onboarding`.
 | email | string | Yes | Valid email, not already registered — sourced from Step 1 wizard state |
 | fullName | string | Yes | Max 200 characters — sourced from Step 1 wizard state |
 | accountantEmail | string | No | Valid email if provided; omit or null to default to owner email |
+| isMarketingConsent | boolean | Yes | `true` if the user opted into marketing communications, `false` if they declined — sourced from Step 1 wizard state |
 
 **Success response (200):**
 ```json

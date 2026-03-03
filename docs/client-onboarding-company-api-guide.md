@@ -105,7 +105,8 @@ After step 3, the client is fully authenticated and can call any protected endpo
   "cutoverDay": 1,
   "email": "owner@acme.com",
   "fullName": "Jane Smith",
-  "accountantEmail": "accountant@acme.com"
+  "accountantEmail": "accountant@acme.com",
+  "isMarketingConsent": true
 }
 ```
 
@@ -117,6 +118,7 @@ After step 3, the client is fully authenticated and can call any protected endpo
 | email | string | Yes | Owner email. Must be a valid address not already registered. |
 | fullName | string | Yes | Owner display name. Max 200 characters. |
 | accountantEmail | string | No | If omitted, defaults to owner email on the server. |
+| isMarketingConsent | boolean | Yes | `true` if the user opted into marketing communications, `false` if they declined. |
 
 **Success response (200):**
 
