@@ -187,5 +187,13 @@
   "companyConfigNameMaxLength": "שם החברה חייב להיות עד 200 תווים",
   "companyConfigInvalidEmail": "אנא הזן כתובת אימייל תקינה",
   "companyConfigReadOnly": "פרטי החברה",
-  "companyConfigEditable": "הגדרות"
+  "companyConfigEditable": "הגדרות",
+
+  "employeeOnboardingTitle": "ברוכים הבאים ל-XpenseDesk",
+  "employeeOnboardingSubtitle": "הזן את פרטיך כדי להתחיל",
+  "employeeOnboardingConsentPrefix": "אני מסכים ל",
+  "employeeOnboardingConsentAnd": " ו",
+  "employeeOnboardingConsentRequired": "עליך לאשר את התנאים כדי להמשיך",
+  "employeeOnboardingSubmit": "התחל",
+  "employeeOnboardingFailedToSubmit": "שליחה נכשלה. אנא נסה שוב."
 }

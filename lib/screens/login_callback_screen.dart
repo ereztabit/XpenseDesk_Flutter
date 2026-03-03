@@ -46,7 +46,14 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
       ref.read(userInfoProvider.notifier).setUserInfo(userInfo);
       
       if (mounted) {
-        final route = userInfo.roleId == 1 ? '/dashboard' : '/user/dashboard';
+        final String route;
+        if (userInfo.roleId == 1) {
+          route = '/dashboard';
+        } else if (userInfo.termsConsentDate == null) {
+          route = '/employee/onboarding';
+        } else {
+          route = '/user/dashboard';
+        }
 
         // Update browser URL to remove token
         web.window.history.replaceState(null, '', route);

@@ -187,5 +187,13 @@
   "companyConfigNameMaxLength": "Company name must be 200 characters or less",
   "companyConfigInvalidEmail": "Please enter a valid email address",
   "companyConfigReadOnly": "Company Information",
-  "companyConfigEditable": "Settings"
+  "companyConfigEditable": "Settings",
+
+  "employeeOnboardingTitle": "Welcome to XpenseDesk",
+  "employeeOnboardingSubtitle": "Enter your details to get started",
+  "employeeOnboardingConsentPrefix": "I agree to the ",
+  "employeeOnboardingConsentAnd": " and ",
+  "employeeOnboardingConsentRequired": "You must accept the terms to continue",
+  "employeeOnboardingSubmit": "Get Started",
+  "employeeOnboardingFailedToSubmit": "Failed to submit. Please try again."
 }

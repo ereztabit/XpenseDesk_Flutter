@@ -14,6 +14,7 @@ import 'screens/users_screen.dart';
 import 'screens/spend_history_screen.dart';
 import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/employee_onboarding_screen.dart';
 import 'providers/locale_provider.dart';
 import 'providers/auth_provider.dart';
 import 'utils/app_navigator.dart';
@@ -104,6 +105,11 @@ class _MyAppState extends ConsumerState<MyApp> {
             return MaterialPageRoute(
               settings: settings,
               builder: (context) => const UserDashboardScreen(),
+            );
+          case '/employee/onboarding':
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (context) => const EmployeeOnboardingScreen(),
             );
           case '/manager/profile':
           case '/employee/profile':

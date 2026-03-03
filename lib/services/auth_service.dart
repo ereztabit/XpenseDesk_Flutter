@@ -235,5 +235,27 @@ class AuthService {
     // Backend returns data: null on success, so fetch updated user info
     return await getUserInfo();
   }
-}
+  /// Submit employee onboarding (first-time login setup)
+  /// Sets FullName, LanguageId, and records termsConsentDate on the server.
+  Future<UserInfo> submitEmployeeOnboarding({
+    required String fullName,
+    required int languageId,
+  }) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/users/onboarding',
+      {
+        'FullName': fullName,
+        'LanguageId': languageId,
+      },
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to submit onboarding');
+
+    // Re-fetch user info to get the updated termsConsentDate
+    return await getUserInfo();
+  }}
 
