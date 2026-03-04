@@ -1,5 +1,7 @@
 api:
-  baseUrl: https://localhost:7223
+  isBackendOnSameMachine: true
+  backendPort: 7223
+  backendScheme: https
 
 app:
   name: XpenseDesk Dev

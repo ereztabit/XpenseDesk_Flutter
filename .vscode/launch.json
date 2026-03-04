@@ -9,7 +9,11 @@
       "args": [
         "-d",
         "chrome",
+        "--web-hostname",
+        "0.0.0.0",
         "--web-port=8080",
+        "--web-renderer",
+        "html",
         "--dart-define=ENV=dev"
       ]
     },
@@ -34,6 +38,21 @@
         "-d",
         "edge",
         "--web-port=8080"
+      ]
+    },
+    {
+      "name": "Flutter Dev (Web Server - All Interfaces)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "-d",
+        "web-server",
+        "--web-hostname",
+        "0.0.0.0",
+        "--web-port",
+        "8080",
+        "--dart-define=ENV=dev"
       ]
     }
   ]

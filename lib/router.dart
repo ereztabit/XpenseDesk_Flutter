@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'screens/ping_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/login_callback_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -23,6 +24,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   }
 
   switch (uri.path) {
+    // --- Static connectivity check ---
+    case '/ping':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const PingScreen(),
+      );
+
     // --- Auth ---
     case '/':
       return MaterialPageRoute(

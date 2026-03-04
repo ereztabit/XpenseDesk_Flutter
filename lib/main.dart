@@ -14,6 +14,13 @@ import 'services/api_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+
+  // Short-circuit: render a bare static page with zero backend involvement.
+  if (Uri.base.path == '/ping') {
+    runApp(const _PingApp());
+    return;
+  }
+
   await AppConfig.getInstance();
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -64,6 +71,26 @@ class _MyAppState extends ConsumerState<MyApp> {
       // Routes
       initialRoute: '/',
       onGenerateRoute: generateRoute,
+    );
+  }
+}
+
+/// Bare-bones app used only for /ping — no config, no providers, no backend.
+class _PingApp extends StatelessWidget {
+  const _PingApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Text(
+            'Hello, World!',
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
     );
   }
 }
