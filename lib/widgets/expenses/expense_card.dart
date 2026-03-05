@@ -9,8 +9,9 @@ import '../../theme/app_theme.dart';
 class ExpenseCard extends StatelessWidget {
   final ExpenseSummary expense;
   final VoidCallback? onTap;
+  final String companyLocale;
 
-  const ExpenseCard({super.key, required this.expense, this.onTap});
+  const ExpenseCard({super.key, required this.expense, this.onTap, this.companyLocale = 'en'});
 
   Color _statusColor() {
     return switch (expense.expenseStatusId) {
@@ -32,8 +33,9 @@ class ExpenseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor();
+    final locale = companyLocale;
     final dateFormatted =
-        DateFormat('MMM d, yyyy').format(expense.expenseDate.toLocal());
+        DateFormat.yMd(locale).format(expense.expenseDate.toLocal());
 
     final title =
         expense.merchantName?.isNotEmpty == true
@@ -41,9 +43,11 @@ class ExpenseCard extends StatelessWidget {
             : expense.categoryName;
 
     final amountText = expense.amount != null && expense.currencyCode != null
-        ? '${expense.currencyCode} ${NumberFormat('#,##0.00').format(expense.amount)}'
+        ? NumberFormat.simpleCurrency(
+                locale: locale, name: expense.currencyCode)
+            .format(expense.amount)
         : expense.amount != null
-            ? NumberFormat('#,##0.00').format(expense.amount)
+            ? NumberFormat('#,##0.00', locale).format(expense.amount)
             : '—';
 
     return Card(

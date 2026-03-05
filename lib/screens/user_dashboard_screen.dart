@@ -1,8 +1,14 @@
 import 'screen_imports.dart';
 import '../models/expense_summary.dart';
 import '../providers/expense_provider.dart';
+import '../utils/responsive_utils.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/expense_card.dart';
+import '../widgets/expenses/desktop_expense_section.dart';
+import '../widgets/expenses/desktop_expense_table.dart';
+import '../widgets/expenses/expenses_empty_state.dart';
+import '../widgets/expenses/delete_expense_dialog.dart';
+import 'package:intl/intl.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -34,7 +40,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     }
   }
 
-  Widget _buildExpenseList(AppLocalizations l10n) {
+  Widget _buildMobileExpenseList(AppLocalizations l10n) {
     final expensesAsync = ref.watch(expenseSearchProvider);
 
     return expensesAsync.when(
@@ -74,10 +80,107 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
         return Column(
           children: filtered
-              .map((expense) => ExpenseCard(expense: expense))
+              .map((expense) => ExpenseCard(
+                    expense: expense,
+                    companyLocale: ref.watch(userInfoProvider)?.languageCode ?? 'en',
+                  ))
               .toList(),
         );
       },
+    );
+  }
+
+  String _formatSummaryAmount(double total, String? currencyCode, String companyLocale) {
+    if (currencyCode != null) {
+      return NumberFormat.simpleCurrency(locale: companyLocale, name: currencyCode)
+          .format(total);
+    }
+    return NumberFormat('#,##0.00', companyLocale).format(total);
+  }
+
+  Widget _buildDesktopContent(
+    AppLocalizations l10n,
+    List<ExpenseSummary> allExpenses,
+  ) {
+    final pending =
+        allExpenses.where((e) => e.expenseStatusId == 1).toList();
+    final processed =
+        allExpenses.where((e) => e.expenseStatusId != 1).toList();
+
+    final pendingTotal = pending.fold<double>(
+        0, (sum, e) => sum + (e.amount ?? 0));
+    final approvedTotal = processed
+        .where((e) => e.expenseStatusId == 2)
+        .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
+
+    final userInfo = ref.watch(userInfoProvider);
+    final companyCurrency = userInfo?.currencyCode;
+    final companyLocale = userInfo?.languageCode ?? 'en';
+
+    return Column(
+      children: [
+        // ── Pending section ─────────────────────────────────────
+        DesktopExpenseSection(
+          title: l10n.pendingExpenses,
+          count: pending.length,
+          summaryText:
+              '${_formatSummaryAmount(pendingTotal, companyCurrency, companyLocale)} ${l10n.pendingAmountSuffix}',
+          summaryColor: const Color(0xFFEA580C), // orange-600
+          initiallyExpanded: true,
+          child: pending.isEmpty
+              ? ExpensesEmptyState(
+                  title: l10n.noPendingExpensesTitle,
+                  subtitle: l10n.noPendingExpensesSubtitle,
+                  onNewExpense: () => Navigator.of(context)
+                      .pushNamed('/employee/new-expense'),
+                  newExpenseLabel: l10n.newExpense,
+                )
+              : DesktopExpenseTable(
+                  expenses: pending,
+                  isPending: true,
+                  companyLocale: companyLocale,
+                  onEdit: (expense) {
+                    // TODO: Navigate to edit in a later step
+                  },
+                  onDelete: (expense) async {
+                    await DeleteExpenseDialog.show(
+                        context, expense.expenseId);
+                  },
+                ),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Processed section ───────────────────────────────────
+        DesktopExpenseSection(
+          title: l10n.processedExpenses,
+          count: processed.length,
+          summaryText:
+              '${_formatSummaryAmount(approvedTotal, companyCurrency, companyLocale)} ${l10n.approvedAmountSuffix}',
+          summaryColor: const Color(0xFF16A34A), // green-600
+          initiallyExpanded: false,
+          child: processed.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      l10n.noProcessedExpenses,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(color: AppTheme.mutedForeground),
+                    ),
+                  ),
+                )
+              : DesktopExpenseTable(
+                  expenses: processed,
+                  isPending: false,
+                  companyLocale: companyLocale,
+                  onView: (expense) {
+                    // TODO: Navigate to detail in a later step
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -158,17 +261,11 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                       ),
                       const SizedBox(height: 24),
 
-                      // ── Status toggle ──────────────────────────────────
-                      ExpenseStatusToggle(
-                        selectedStatusId: _selectedStatusId,
-                        counts: counts,
-                        onChanged: (id) =>
-                            setState(() => _selectedStatusId = id),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // ── Expense list ───────────────────────────────────
-                      _buildExpenseList(l10n),
+                      // ── Content: desktop or mobile ─────────────────────
+                      if (context.isDesktop)
+                        _buildDesktopLayout(l10n, expensesAsync, allExpenses)
+                      else
+                        _buildMobileLayout(l10n, expensesAsync, allExpenses, counts),
                     ],
                   ),
                 ),
@@ -178,6 +275,49 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDesktopLayout(
+    AppLocalizations l10n,
+    AsyncValue<List<ExpenseSummary>> expensesAsync,
+    List<ExpenseSummary> allExpenses,
+  ) {
+    return expensesAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Text(
+          l10n.failedToLoadExpenses,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppTheme.destructive),
+        ),
+      ),
+      data: (_) => _buildDesktopContent(l10n, allExpenses),
+    );
+  }
+
+  Widget _buildMobileLayout(
+    AppLocalizations l10n,
+    AsyncValue<List<ExpenseSummary>> expensesAsync,
+    List<ExpenseSummary> allExpenses,
+    Map<int, int> counts,
+  ) {
+    return Column(
+      children: [
+        ExpenseStatusToggle(
+          selectedStatusId: _selectedStatusId,
+          counts: counts,
+          onChanged: (id) => setState(() => _selectedStatusId = id),
+        ),
+        const SizedBox(height: 16),
+        _buildMobileExpenseList(l10n),
+      ],
     );
   }
 }

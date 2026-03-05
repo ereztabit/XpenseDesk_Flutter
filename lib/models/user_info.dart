@@ -5,6 +5,8 @@ class UserInfo {
   final String status;
   final String companyName;
   final int languageId;
+  final String? languageCode;
+  final String? currencyCode;
   final DateTime? termsConsentDate;
 
   const UserInfo({
@@ -14,6 +16,8 @@ class UserInfo {
     required this.status,
     required this.companyName,
     this.languageId = 1,
+    this.languageCode,
+    this.currencyCode,
     this.termsConsentDate,
   });
 
@@ -25,6 +29,8 @@ class UserInfo {
       status: json['status'] as String? ?? '',
       companyName: json['companyName'] as String? ?? '',
       languageId: (json['languageId'] as num?)?.toInt() ?? 1,
+      languageCode: json['languageCode'] as String?,
+      currencyCode: json['currencyCode'] as String?,
       termsConsentDate: json['termsConsentDate'] != null
           ? DateTime.tryParse(json['termsConsentDate'] as String)
           : null,

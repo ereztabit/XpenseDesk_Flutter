@@ -67,4 +67,20 @@ class ExpenseService {
             ExpenseSummary.fromJson(json as Map<String, dynamic>))
         .toList();
   }
+
+  /// Permanently delete a pending expense.
+  ///
+  /// Only pending expenses can be deleted.
+  /// The caller must be the expense creator or a manager.
+  Future<void> deleteExpense(String expenseId) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.delete(
+      '/api/expenses/$expenseId',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to delete expense');
+  }
 }

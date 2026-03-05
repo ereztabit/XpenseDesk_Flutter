@@ -204,5 +204,25 @@
   "employeeOnboardingFailedToSubmit": "שליחה נכשלה. אנא נסה שוב.",
 
   "noExpensesFound": "לא נמצאו הוצאות",
-  "failedToLoadExpenses": "טעינת ההוצאות נכשלה"
+  "failedToLoadExpenses": "טעינת ההוצאות נכשלה",
+
+  "pendingExpenses": "הוצאות ממתינות",
+  "processedExpenses": "הוצאות שטופלו",
+  "receiptNumber": "מס׳ קבלה",
+  "date": "תאריך",
+  "amount": "סכום",
+  "category": "קטגוריה",
+  "status": "סטטוס",
+  "actions": "פעולות",
+  "pendingAmountSuffix": "ממתין",
+  "approvedAmountSuffix": "אושר",
+  "deleteExpense": "מחיקת הוצאה",
+  "deleteExpenseBody": "האם אתה בטוח שברצונך למחוק הוצאה זו? לא ניתן לבטל פעולה זו.",
+  "delete": "מחק",
+  "noPendingExpensesTitle": "הכל מעודכן!",
+  "noPendingExpensesSubtitle": "אין לך הוצאות ממתינות. צור אחת כדי להתחיל.",
+  "noProcessedExpenses": "אין עדיין הוצאות שטופלו",
+  "expenseDeletedSuccess": "ההוצאה נמחקה בהצלחה",
+  "failedToDeleteExpense": "מחיקת ההוצאה נכשלה",
+  "reviewedBy": "ע״י "
 }

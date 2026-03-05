@@ -204,5 +204,25 @@
   "employeeOnboardingFailedToSubmit": "Failed to submit. Please try again.",
 
   "noExpensesFound": "No expenses found",
-  "failedToLoadExpenses": "Failed to load expenses"
+  "failedToLoadExpenses": "Failed to load expenses",
+
+  "pendingExpenses": "Pending Expenses",
+  "processedExpenses": "Processed Expenses",
+  "receiptNumber": "Receipt #",
+  "date": "Date",
+  "amount": "Amount",
+  "category": "Category",
+  "status": "Status",
+  "actions": "Actions",
+  "pendingAmountSuffix": "pending",
+  "approvedAmountSuffix": "approved",
+  "deleteExpense": "Delete Expense",
+  "deleteExpenseBody": "Are you sure you want to delete this expense? This action cannot be undone.",
+  "delete": "Delete",
+  "noPendingExpensesTitle": "All caught up!",
+  "noPendingExpensesSubtitle": "You have no pending expenses. Create one to get started.",
+  "noProcessedExpenses": "No processed expenses yet",
+  "expenseDeletedSuccess": "Expense deleted successfully",
+  "failedToDeleteExpense": "Failed to delete expense",
+  "reviewedBy": "by "
 }

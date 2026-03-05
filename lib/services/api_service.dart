@@ -109,4 +109,19 @@ class ApiService {
 
     return _decode(response);
   }
+
+  /// Make a DELETE request with optional authorization token
+  Future<Map<String, dynamic>> delete(
+    String endpoint, {
+    String? authToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+
+    final response = await http.delete(
+      uri,
+      headers: _buildHeaders(authToken: authToken),
+    );
+
+    return _decode(response);
+  }
 }
