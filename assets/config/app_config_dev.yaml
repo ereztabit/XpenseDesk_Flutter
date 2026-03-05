@@ -1,7 +1,6 @@
 api:
-  isBackendOnSameMachine: true
-  backendPort: 7223
-  backendScheme: https
+  isBackendOnSameMachine: false
+  baseUrl: https://tabit-erez.local:7223
 
 app:
   name: XpenseDesk Dev

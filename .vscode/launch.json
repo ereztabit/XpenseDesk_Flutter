@@ -12,8 +12,6 @@
         "--web-hostname",
         "127.0.0.1",
         "--web-port=8080",
-        "--web-renderer",
-        "html",
         "--dart-define=ENV=dev"
       ]
     },
@@ -25,23 +23,14 @@
       "args": [
         "-d",
         "chrome",
+        "--web-hostname",
+        "127.0.0.1",
         "--web-port=8080",
         "--dart-define=ENV=prod"
       ]
     },
     {
-      "name": "Flutter (Edge)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "args": [
-        "-d",
-        "edge",
-        "--web-port=8080"
-      ]
-    },
-    {
-      "name": "Flutter Dev (Web Server - All Interfaces)",
+      "name": "Flutter Dev (Web Server - External)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
@@ -49,7 +38,7 @@
         "-d",
         "web-server",
         "--web-hostname",
-         "127.0.0.1",
+        "0.0.0.0",
         "--web-port",
         "8080",
         "--dart-define=ENV=dev"
