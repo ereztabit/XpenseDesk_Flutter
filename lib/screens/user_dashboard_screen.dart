@@ -1,6 +1,7 @@
 import 'screen_imports.dart';
 import '../models/expense_summary.dart';
 import '../providers/expense_provider.dart';
+import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/expense_card.dart';
@@ -8,7 +9,6 @@ import '../widgets/expenses/desktop_expense_section.dart';
 import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
-import 'package:intl/intl.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -80,10 +80,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
         return Column(
           children: filtered
-              .map((expense) => ExpenseCard(
-                    expense: expense,
-                    companyLocale: ref.watch(userInfoProvider)?.languageCode ?? 'en',
-                  ))
+              .map((expense) => ExpenseCard(expense: expense))
               .toList(),
         );
       },
@@ -92,10 +89,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
   String _formatSummaryAmount(double total, String? currencyCode, String companyLocale) {
     if (currencyCode != null) {
-      return NumberFormat.simpleCurrency(locale: companyLocale, name: currencyCode)
-          .format(total);
+      return total.toCurrency(companyLocale, currencyCode);
     }
-    return NumberFormat('#,##0.00', companyLocale).format(total);
+    return total.toFormattedNumber(companyLocale);
   }
 
   Widget _buildDesktopContent(
@@ -115,7 +111,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
     final userInfo = ref.watch(userInfoProvider);
     final companyCurrency = userInfo?.currencyCode;
-    final companyLocale = userInfo?.languageCode ?? 'en';
+    final companyLocale = ref.watch(companyLocaleProvider);
 
     return Column(
       children: [
@@ -138,7 +134,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
               : DesktopExpenseTable(
                   expenses: pending,
                   isPending: true,
-                  companyLocale: companyLocale,
                   onEdit: (expense) {
                     // TODO: Navigate to edit in a later step
                   },
@@ -174,7 +169,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
               : DesktopExpenseTable(
                   expenses: processed,
                   isPending: false,
-                  companyLocale: companyLocale,
                   onView: (expense) {
                     // TODO: Navigate to detail in a later step
                   },

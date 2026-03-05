@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/format_utils.dart';
 import 'expense_status_badge.dart';
 
 /// Desktop data table showing expenses with columns:
@@ -11,10 +13,9 @@ import 'expense_status_badge.dart';
 /// [isPending] controls which action buttons appear:
 ///   - Pending: edit + delete
 ///   - Processed: view (eye) only
-class DesktopExpenseTable extends StatelessWidget {
+class DesktopExpenseTable extends ConsumerWidget {
   final List<ExpenseSummary> expenses;
   final bool isPending;
-  final String companyLocale;
   final void Function(ExpenseSummary expense)? onEdit;
   final void Function(ExpenseSummary expense)? onDelete;
   final void Function(ExpenseSummary expense)? onView;
@@ -23,17 +24,15 @@ class DesktopExpenseTable extends StatelessWidget {
     super.key,
     required this.expenses,
     this.isPending = true,
-    this.companyLocale = 'en',
     this.onEdit,
     this.onDelete,
     this.onView,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final locale = companyLocale;
-    final dateFormat = DateFormat.yMd(locale);
+    final locale = ref.watch(companyLocaleProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -84,11 +83,9 @@ class DesktopExpenseTable extends StatelessWidget {
             ],
             rows: expenses.map((expense) {
               final dateStr =
-                  dateFormat.format(expense.expenseDate.toLocal());
+                  expense.expenseDate.toCompanyDate(locale);
               final amountStr = expense.amount != null
-                  ? NumberFormat.simpleCurrency(
-                          locale: locale, name: expense.currencyCode)
-                      .format(expense.amount)
+                  ? expense.amount!.toCurrency(locale, expense.currencyCode!)
                   : '—';
 
               return DataRow(
@@ -114,7 +111,7 @@ class DesktopExpenseTable extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              '${l10n.reviewedBy}${dateFormat.format(expense.reviewedAt!.toLocal())}',
+                              '${l10n.reviewedBy}${expense.reviewedAt!.toCompanyDate(locale)}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.mutedForeground,

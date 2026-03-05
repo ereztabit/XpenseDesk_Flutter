@@ -68,3 +68,9 @@ class UserInfoNotifier extends Notifier<UserInfo?> {
 final userInfoProvider = NotifierProvider<UserInfoNotifier, UserInfo?>(
   UserInfoNotifier.new,
 );
+
+/// Derived provider: company locale string for date/currency formatting.
+/// Falls back to 'en' if no user is logged in.
+final companyLocaleProvider = Provider<String>((ref) {
+  return ref.watch(userInfoProvider)?.languageCode ?? 'en';
+});

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/format_utils.dart';
 
 /// A single row card showing a summary of one expense.
 /// Tapping navigates to the expense detail screen (via [onTap]).
-class ExpenseCard extends StatelessWidget {
+class ExpenseCard extends ConsumerWidget {
   final ExpenseSummary expense;
   final VoidCallback? onTap;
-  final String companyLocale;
 
-  const ExpenseCard({super.key, required this.expense, this.onTap, this.companyLocale = 'en'});
+  const ExpenseCard({super.key, required this.expense, this.onTap});
 
   Color _statusColor() {
     return switch (expense.expenseStatusId) {
@@ -30,12 +31,11 @@ class ExpenseCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor();
-    final locale = companyLocale;
-    final dateFormatted =
-        DateFormat.yMd(locale).format(expense.expenseDate.toLocal());
+    final locale = ref.watch(companyLocaleProvider);
+    final dateFormatted = expense.expenseDate.toCompanyDate(locale);
 
     final title =
         expense.merchantName?.isNotEmpty == true
@@ -43,11 +43,9 @@ class ExpenseCard extends StatelessWidget {
             : expense.categoryName;
 
     final amountText = expense.amount != null && expense.currencyCode != null
-        ? NumberFormat.simpleCurrency(
-                locale: locale, name: expense.currencyCode)
-            .format(expense.amount)
+        ? expense.amount!.toCurrency(locale, expense.currencyCode!)
         : expense.amount != null
-            ? NumberFormat('#,##0.00', locale).format(expense.amount)
+            ? expense.amount!.toFormattedNumber(locale)
             : '—';
 
     return Card(
