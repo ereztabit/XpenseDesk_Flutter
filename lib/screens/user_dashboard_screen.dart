@@ -1,4 +1,5 @@
 import 'screen_imports.dart';
+import '../widgets/expenses/expense_status_toggle.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -7,8 +8,18 @@ class UserDashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<UserDashboardScreen> createState() => _UserDashboardScreenState();
 }
 
-class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen> {
+class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
+    with FormBehaviorMixin {
   bool _isLoading = true;
+
+  /// Currently selected filter: 1=Pending, 2=Approved, 3=Declined
+  int _selectedStatusId = 1;
+
+  /// Placeholder counts — will be driven by API data in a future iteration.
+  final Map<int, int> _counts = {1: 0, 2: 0, 3: 0};
+
+  @override
+  bool get hasUnsavedChanges => false;
 
   @override
   void initState() {
@@ -33,6 +44,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen> {
     }
 
     final userInfo = ref.watch(userInfoProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     if (userInfo == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -42,7 +54,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen> {
     }
 
     if (userInfo.roleId == 1) {
-      // Manager landed here — redirect to manager dashboard
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/dashboard');
       });
@@ -50,36 +61,66 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen> {
     }
 
     if (userInfo.termsConsentDate == null) {
-      // Employee hasn't completed onboarding yet
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed('/employee/onboarding');
       });
       return const SizedBox.shrink();
     }
 
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Column(
-        children: [
-          const AppHeader(),
-          Expanded(
-            child: ConstrainedContent(
+    return buildWithNavigationGuard(
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Column(
+          children: [
+            const AppHeader(),
+            Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hi ${userInfo.fullName}, you are a user.',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                  ],
+                child: ConstrainedContent(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Title row ─────────────────────────────────────
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            l10n.myExpenses,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          FilledButton.icon(
+                            onPressed: () => Navigator.of(context)
+                                .pushNamed('/employee/new-expense'),
+                            icon: const Icon(Icons.add, size: 18),
+                            label: Text(l10n.newExpense),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ── Status toggle ──────────────────────────────────
+                      ExpenseStatusToggle(
+                        selectedStatusId: _selectedStatusId,
+                        counts: _counts,
+                        onChanged: (id) =>
+                            setState(() => _selectedStatusId = id),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Debug label ────────────────────────────────────
+                      Text(
+                        'Selected expenseStatusId: $_selectedStatusId',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          const AppFooter(),
-        ],
+            const AppFooter(),
+          ],
+        ),
       ),
     );
   }

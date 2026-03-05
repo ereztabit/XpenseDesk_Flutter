@@ -681,6 +681,37 @@ String? _validateFullName(String? value) {
 - Access `l10n` in validator methods via `AppLocalizations.of(context)!`
 - Add all validation messages to ARB files for both languages
 
+### All User-Visible Strings — ABSOLUTE RULE
+
+**EVERY user-visible string in every widget — headings, labels, button text, dialog titles, tab names, placeholder text, tooltips, error messages — MUST use `AppLocalizations.of(context)!`. Hardcoding English strings anywhere is a defect, not a shortcut.**
+
+This applies to:
+- Screen titles and section headings
+- Button and link labels
+- Toggle/tab labels
+- Dialog titles and body text
+- Empty state messages
+- Any `Text(...)` widget that a user will read
+
+**Wrong:**
+```dart
+Text('My Expenses')          // ❌ hardcoded
+FilledButton(child: Text('New Expense'))  // ❌ hardcoded
+```
+
+**Correct:**
+```dart
+final l10n = AppLocalizations.of(context)!;
+Text(l10n.myExpenses)        // ✅
+FilledButton(child: Text(l10n.newExpense))  // ✅
+```
+
+**Process — always add ARB keys BEFORE writing widget code:**
+1. Add the key + English string to `lib/l10n/app_en.arb`
+2. Add the key + Hebrew string to `lib/l10n/app_he.arb`
+3. Run `flutter pub get` (triggers code generation)
+4. Use `l10n.yourKey` in the widget
+
 ### ARB Strings — No Placeholders
 
 **NEVER use placeholder parameters (`{varName}`) in ARB files.** Build parameterised strings by concatenation in the widget layer instead.
@@ -856,6 +887,8 @@ class _MyScreenState extends ConsumerState<MyScreen> with FormBehaviorMixin {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ← ALWAYS declare l10n first
+
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
@@ -863,9 +896,9 @@ class _MyScreenState extends ConsumerState<MyScreen> with FormBehaviorMixin {
           children: [
             const AppHeader(),          // ← always first
             Expanded(
-              child: ConstrainedContent(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+              child: SingleChildScrollView(   // ← OUTSIDE ConstrainedContent
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: ConstrainedContent(   // ← INSIDE SingleChildScrollView
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -898,10 +931,90 @@ class _MyScreenState extends ConsumerState<MyScreen> with FormBehaviorMixin {
 **Rules:**
 - `AppHeader` is always the **first** child of the root `Column`
 - `AppFooter` is always the **last** child of the root `Column`
-- Screen content goes inside `ConstrainedContent` → `SingleChildScrollView`
+- **`Expanded` → `SingleChildScrollView` → `ConstrainedContent`** — this exact nesting order is mandatory
+  - `SingleChildScrollView` gets a tight bounded height from `Expanded`, anchoring content to the top
+  - `ConstrainedContent` inside the scroll view handles max-width and horizontal padding only
+  - **WRONG** (causes vertical centering and RTL layout bugs): `Expanded` → `ConstrainedContent` → `SingleChildScrollView`
 - Always wrap the `Scaffold` in `buildWithNavigationGuard` (from `FormBehaviorMixin`)
 - Use `ConsumerStatefulWidget` + `FormBehaviorMixin` for all screens (even read-only ones)
 - Use `ConstrainedContent` (not a raw `ConstrainedBox`) to get the standard max-width + responsive padding
+- `final l10n = AppLocalizations.of(context)!;` must be the first line of every `build()` method
 
 **Reference implementation:** `lib/screens/profile_screen.dart` and `lib/screens/company_config_screen.dart`
 
+---
+
+## New Screen Checklist — Required Steps Every Time
+
+Follow this checklist **in order** whenever creating any new screen or widget with user-visible text. Do not skip steps.
+
+### Step 1 — Add ARB keys first (before writing any widget code)
+
+```
+1. Add every string the screen will display to lib/l10n/app_en.arb
+2. Add the Hebrew translation of every string to lib/l10n/app_he.arb
+3. Run: flutter pub get   (triggers code generation)
+```
+
+Never write `Text('Some Label')` as a placeholder with a plan to localize later. Start localized.
+
+### Step 2 — Screen class boilerplate
+
+```dart
+// lib/screens/my_new_screen.dart
+import 'screen_imports.dart'; // exports AppLocalizations, AppTheme, FormBehaviorMixin, etc.
+
+class MyNewScreen extends ConsumerStatefulWidget {
+  const MyNewScreen({super.key});
+
+  @override
+  ConsumerState<MyNewScreen> createState() => _MyNewScreenState();
+}
+
+class _MyNewScreenState extends ConsumerState<MyNewScreen> with FormBehaviorMixin {
+  @override
+  bool get hasUnsavedChanges => false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ← first line, always
+    // ...
+  }
+}
+```
+
+### Step 3 — Add route to router.dart
+
+```dart
+// lib/router.dart
+case '/employee/my-new-screen':
+  return MaterialPageRoute(
+    settings: settings,
+    builder: (_) => const MyNewScreen(),
+  );
+```
+
+### Step 4 — Add import to screen_imports.dart if needed
+
+Only needed if the screen introduces a new shared export. Most screens just `import 'screen_imports.dart'`.
+
+### Step 5 — RTL checklist before calling done
+
+Before marking the screen complete, verify:
+
+| Check | What to look for |
+|-------|------------------|
+| All strings via l10n | No hardcoded English in any `Text(...)` |
+| `Row` children order | Leading/trailing, not left/right — Flutter mirrors these automatically |
+| `CrossAxisAlignment.start` on `Column` | Correct — aligns to the reading-direction start, not pixel-left |
+| `TextAlign.left` / `.right` hardcoded | Replace with `.start` / `.end` or omit (default is `.start`) |
+| Icon direction | Use `Icons.arrow_back` not `Icons.arrow_back_ios` for consistency; Flutter auto-mirrors directional icons |
+| `EdgeInsets.only(left/right)` | Replace with `EdgeInsetsDirectional.only(start/end)` if the padding is direction-dependent |
+
+### Step 6 — Widgets inside the screen follow the same rules
+
+Every widget file created as part of a new screen feature must:
+- Import `app_localizations.dart` and accept/read `l10n` from `AppLocalizations.of(context)!`
+- Use no hardcoded strings
+- Use `CrossAxisAlignment.start` (not left) on columns
+- Use `MainAxisAlignment.spaceBetween` or `start`/`end` — never pixel-based positioning that breaks under RTL

@@ -29,8 +29,10 @@ class ConstrainedContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMobile = context.isMobile;
 
-    return Center(
+    return Align(
+      alignment: Alignment.topCenter,
       child: Container(
+        width: double.infinity,
         constraints: BoxConstraints(
           maxWidth: maxWidth,
         ),

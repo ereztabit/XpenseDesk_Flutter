@@ -10,6 +10,7 @@ import 'screens/spend_history_screen.dart';
 import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
+import 'screens/new_expense_screen.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   final uri = Uri.parse(settings.name ?? '/');
@@ -99,6 +100,12 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const SpendHistoryScreen(),
+      );
+
+    case '/employee/new-expense':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const NewExpenseScreen(),
       );
 
     default:

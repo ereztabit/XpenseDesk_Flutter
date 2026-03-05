@@ -9,7 +9,7 @@ This guide explains how to use the Expense API from the Flutter client.
 The Expense API handles the full lifecycle of an expense record: creation, review, and deletion.
 
 All endpoints require authentication via Bearer token.
-The client never sends CompanyId or UserId — these are always resolved from the session on the backend.
+The client never sends CompanyId or UserId - these are always resolved from the session on the backend.
 
 ---
 
@@ -42,6 +42,34 @@ If the token is missing or invalid the server returns 401 Unauthorized.
 | 2 | Employee |
 
 Endpoints that are restricted to managers are noted in each section.
+
+---
+
+## API Quick Reference
+
+### Employee
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | /api/expenses/analyze-receipt | Scan receipt with AI |
+| POST | /api/expenses | Submit a new expense |
+| GET | /api/expenses/{expenseId} | View expense detail |
+| DELETE | /api/expenses/{expenseId} | Delete own pending expense |
+| GET | /api/expenses/search | Search own expenses by date range |
+
+### Manager
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | /api/expenses/analyze-receipt | Scan receipt with AI |
+| POST | /api/expenses | Submit a new expense |
+| GET | /api/expenses/{expenseId} | View expense detail |
+| DELETE | /api/expenses/{expenseId} | Delete any pending expense |
+| GET | /api/expenses/search | Search all company expenses by date range |
+| GET | /api/expenses/{userId}/search | Search a specific user's expenses |
+| POST | /api/expenses/{expenseId}/approve | Approve a pending expense |
+| POST | /api/expenses/{expenseId}/decline | Decline a pending expense |
+| POST | /api/expenses/{expenseId}/reopen | Reopen an approved or declined expense |
 
 ---
 
@@ -126,7 +154,7 @@ Retrieve the full details of a single expense.
 - URL: /api/expenses/{expenseId}
 - Access: Any authenticated user
 
-The backend enforces tenant isolation — only expenses belonging to the user's company are accessible.
+The backend enforces tenant isolation - only expenses belonging to the user's company are accessible.
 
 #### Request
 
@@ -258,7 +286,7 @@ Status: 403 Forbidden
   "message": "Unable to approve expense."
 }
 ```
-Status: 400 Bad Request — returned when the expense is not in Pending status, amount is missing, or the expense does not belong to the company.
+Status: 400 Bad Request - returned when the expense is not in Pending status, amount is missing, or the expense does not belong to the company.
 
 ---
 
@@ -305,7 +333,7 @@ Status: 403 Forbidden
   "message": "Unable to decline expense."
 }
 ```
-Status: 400 Bad Request — expense is not in Pending status or does not belong to the company.
+Status: 400 Bad Request - expense is not in Pending status or does not belong to the company.
 
 ---
 
@@ -354,7 +382,7 @@ Status: 403 Forbidden
   "message": "Unable to reopen expense."
 }
 ```
-Status: 400 Bad Request — expense is already Pending or does not belong to the company.
+Status: 400 Bad Request - expense is already Pending or does not belong to the company.
 
 ---
 
@@ -396,7 +424,7 @@ Authorization: Bearer YOUR_SESSION_TOKEN
   "message": "Unable to delete expense."
 }
 ```
-Status: 400 Bad Request — expense is not Pending, does not belong to the company, or the caller is not the creator and not a manager.
+Status: 400 Bad Request - expense is not Pending, does not belong to the company, or the caller is not the creator and not a manager.
 
 ---
 
@@ -474,13 +502,16 @@ Status: 500 Internal Server Error
 
 ---
 
-### 8. Search All Company Expenses
+### 8. Search Expenses
 
-Return a list of expenses for the entire company filtered by date range.
+Return a list of expenses filtered by date range. The result scope depends on the caller's role.
+
+- Manager: receives all company expenses
+- Employee: receives only their own expenses
 
 - Method: GET
 - URL: /api/expenses/search
-- Access: Manager only (RoleId 1)
+- Access: All authenticated users
 - Query Parameters: fromDate, toDate
 
 #### Request
@@ -553,14 +584,6 @@ The array is empty when no expenses match the date range.
 Note: This response is a summary shape. It does not include note, receiptRef, imageUrl, createdByEmail, or reviewedByName. Use GET /api/expenses/{expenseId} to retrieve full details.
 
 #### Error Responses
-
-```json
-{
-  "success": false,
-  "message": "Only managers can search all company expenses."
-}
-```
-Status: 403 Forbidden
 
 ```json
 {
@@ -643,7 +666,7 @@ Same shape as section 8. The array contains only expenses created by the specifi
   "message": "You can only search your own expenses."
 }
 ```
-Status: 403 Forbidden — returned when an Employee passes a userId that does not match their own session identity.
+Status: 403 Forbidden - returned when an Employee passes a userId that does not match their own session identity.
 
 ```json
 {
@@ -698,10 +721,10 @@ Any transition not listed above will be rejected with a 400 error.
 
 ### Reopen Flow
 
-1. Load expense detail — status is Approved or Declined
+1. Load expense detail - status is Approved or Declined
 2. Manager taps Reopen
 3. Call POST /api/expenses/{expenseId}/reopen
-4. On success, reload detail — status returns to Pending
+4. On success, reload detail - status returns to Pending
 
 ### Search Flow (Manager)
 
@@ -713,8 +736,8 @@ Any transition not listed above will be rejected with a 400 error.
 ### Search Flow (Employee)
 
 1. Employee selects a date range
-2. Call GET /api/expenses/{ownUserId}/search?fromDate=...&toDate=...
-3. Display the returned list
+2. Call GET /api/expenses/search?fromDate=...&toDate=...
+3. Display the returned list (backend automatically scopes results to the calling user)
 4. Tap an item to load full details with GET /api/expenses/{expenseId}
 
 ---
