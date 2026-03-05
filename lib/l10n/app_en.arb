@@ -201,5 +201,8 @@
   "employeeOnboardingConsentAnd": " and ",
   "employeeOnboardingConsentRequired": "You must accept the terms to continue",
   "employeeOnboardingSubmit": "Get Started",
-  "employeeOnboardingFailedToSubmit": "Failed to submit. Please try again."
+  "employeeOnboardingFailedToSubmit": "Failed to submit. Please try again.",
+
+  "noExpensesFound": "No expenses found",
+  "failedToLoadExpenses": "Failed to load expenses"
 }

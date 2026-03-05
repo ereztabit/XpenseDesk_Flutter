@@ -1,5 +1,8 @@
 import 'screen_imports.dart';
+import '../models/expense_summary.dart';
+import '../providers/expense_provider.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
+import '../widgets/expenses/expense_card.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -15,9 +18,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
   /// Currently selected filter: 1=Pending, 2=Approved, 3=Declined
   int _selectedStatusId = 1;
 
-  /// Placeholder counts — will be driven by API data in a future iteration.
-  final Map<int, int> _counts = {1: 0, 2: 0, 3: 0};
-
   @override
   bool get hasUnsavedChanges => false;
 
@@ -29,10 +29,56 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
   Future<void> _initializeSession() async {
     await ref.read(userInfoProvider.notifier).loadFromSession();
-
     if (mounted) {
       setState(() => _isLoading = false);
     }
+  }
+
+  Widget _buildExpenseList(AppLocalizations l10n) {
+    final expensesAsync = ref.watch(expenseSearchProvider);
+
+    return expensesAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Text(
+          l10n.failedToLoadExpenses,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: AppTheme.destructive),
+        ),
+      ),
+      data: (expenses) {
+        final filtered = expenses
+            .where((e) => e.expenseStatusId == _selectedStatusId)
+            .toList();
+
+        if (filtered.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32),
+            child: Center(
+              child: Text(
+                l10n.noExpensesFound,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppTheme.mutedForeground),
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          children: filtered
+              .map((expense) => ExpenseCard(expense: expense))
+              .toList(),
+        );
+      },
+    );
   }
 
   @override
@@ -45,6 +91,19 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
     final userInfo = ref.watch(userInfoProvider);
     final l10n = AppLocalizations.of(context)!;
+    final expensesAsync = ref.watch(expenseSearchProvider);
+
+    // Derive counts from provider data (empty while loading)
+    final allExpenses = expensesAsync.when(
+      data: (data) => data,
+      loading: () => const <ExpenseSummary>[],
+      error: (_, __) => const <ExpenseSummary>[],
+    );
+    final counts = {
+      1: allExpenses.where((e) => e.expenseStatusId == 1).length,
+      2: allExpenses.where((e) => e.expenseStatusId == 2).length,
+      3: allExpenses.where((e) => e.expenseStatusId == 3).length,
+    };
 
     if (userInfo == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -102,17 +161,14 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                       // ── Status toggle ──────────────────────────────────
                       ExpenseStatusToggle(
                         selectedStatusId: _selectedStatusId,
-                        counts: _counts,
+                        counts: counts,
                         onChanged: (id) =>
                             setState(() => _selectedStatusId = id),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
 
-                      // ── Debug label ────────────────────────────────────
-                      Text(
-                        'Selected expenseStatusId: $_selectedStatusId',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
+                      // ── Expense list ───────────────────────────────────
+                      _buildExpenseList(l10n),
                     ],
                   ),
                 ),

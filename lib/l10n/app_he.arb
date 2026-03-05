@@ -201,5 +201,8 @@
   "employeeOnboardingConsentAnd": " ו",
   "employeeOnboardingConsentRequired": "עליך לאשר את התנאים כדי להמשיך",
   "employeeOnboardingSubmit": "התחל",
-  "employeeOnboardingFailedToSubmit": "שליחה נכשלה. אנא נסה שוב."
+  "employeeOnboardingFailedToSubmit": "שליחה נכשלה. אנא נסה שוב.",
+
+  "noExpensesFound": "לא נמצאו הוצאות",
+  "failedToLoadExpenses": "טעינת ההוצאות נכשלה"
 }
