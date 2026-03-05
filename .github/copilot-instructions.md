@@ -866,6 +866,79 @@ EmailValidator.validate(email)
 
 ---
 
+## Date & Currency Formatting — Company Locale
+
+**CRITICAL: Dates and currency amounts are ALWAYS formatted using the company locale, NOT the UI language.**
+
+Switching the UI between English and Hebrew changes labels and text direction only — it must **never** change how dates or amounts are displayed. The company locale comes from the `/api/users/me` response (`languageCode` field).
+
+### Format Utilities (`lib/utils/format_utils.dart`)
+
+The project provides Dart extensions that work like Angular pipes — use them everywhere instead of raw `DateFormat` / `NumberFormat`:
+
+```dart
+import '../utils/format_utils.dart';
+
+// Date formatting — short numeric in company locale
+expense.expenseDate.toCompanyDate(locale)   // "5.3.2026" (he) or "3/5/2026" (en)
+
+// Currency with symbol
+expense.amount.toCurrency(locale, 'ILS')    // "₪1,234.56"
+expense.amount.toCurrency(locale, 'USD')    // "$1,234.56"
+
+// Plain number (no currency symbol)
+total.toFormattedNumber(locale)             // "1,234.56"
+```
+
+### Company Locale Provider (`companyLocaleProvider`)
+
+Defined in `lib/providers/auth_provider.dart`. Derives the locale string from `userInfoProvider.languageCode`, falls back to `'en'`:
+
+```dart
+final companyLocaleProvider = Provider<String>((ref) {
+  return ref.watch(userInfoProvider)?.languageCode ?? 'en';
+});
+```
+
+### Usage in Widgets
+
+Widgets that display dates or amounts should be `ConsumerWidget` (or `ConsumerStatefulWidget`) and read the locale from the provider:
+
+```dart
+class MyWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(companyLocaleProvider);
+
+    Text(expense.expenseDate.toCompanyDate(locale))
+    Text(expense.amount.toCurrency(locale, expense.currencyCode))
+  }
+}
+```
+
+### Rules
+
+- **NEVER** use `Localizations.localeOf(context)` for date or currency formatting — that returns the UI language
+- **NEVER** use `DateFormat` or `NumberFormat` directly — always use the extensions in `format_utils.dart`
+- **ALWAYS** get the locale from `ref.watch(companyLocaleProvider)`
+- If a widget is currently `StatelessWidget` and needs formatting, convert it to `ConsumerWidget`
+- The extensions handle `.toLocal()` internally for dates — no need to call it separately
+
+**Wrong:**
+```dart
+DateFormat.yMd(Localizations.localeOf(context).toString()).format(date)  // ❌ UI language
+NumberFormat.simpleCurrency(locale: locale, name: 'ILS').format(amount)  // ❌ raw NumberFormat
+```
+
+**Correct:**
+```dart
+final locale = ref.watch(companyLocaleProvider);
+date.toCompanyDate(locale)              // ✅
+amount.toCurrency(locale, 'ILS')        // ✅
+```
+
+---
+
 ## Screen Scaffold Layout — Mandatory Pattern
 
 **Every app screen MUST follow this exact scaffold structure.** No exceptions.
