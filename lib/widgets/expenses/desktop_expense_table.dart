@@ -41,7 +41,7 @@ class DesktopExpenseTable extends ConsumerWidget {
           child: DataTable(
             headingRowHeight: 44,
             dataRowMinHeight: 48,
-            dataRowMaxHeight: 64,
+            dataRowMaxHeight: 80,
             horizontalMargin: 16,
             columnSpacing: 12,
             headingRowColor: WidgetStateProperty.all(
@@ -111,11 +111,21 @@ class DesktopExpenseTable extends ConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              '${l10n.reviewedBy}${expense.reviewedAt!.toCompanyDate(locale)}',
+                              '${l10n.reviewedBy}${expense.reviewedBy ?? ''}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.mutedForeground,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        if (!isPending && expense.reviewedAt != null)
+                          Text(
+                            expense.reviewedAt!.toCompanyDate(locale),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.mutedForeground,
                             ),
                           ),
                       ],

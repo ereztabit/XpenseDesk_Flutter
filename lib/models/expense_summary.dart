@@ -17,6 +17,7 @@ class ExpenseSummary {
   final int expenseStatusId;
   final String statusAlias;
   final String? reviewedByUserId;
+  final String? reviewedBy;
   final DateTime? reviewedAt;
 
   const ExpenseSummary({
@@ -35,6 +36,7 @@ class ExpenseSummary {
     required this.expenseStatusId,
     required this.statusAlias,
     this.reviewedByUserId,
+    this.reviewedBy,
     this.reviewedAt,
   });
 
@@ -55,6 +57,7 @@ class ExpenseSummary {
       expenseStatusId: json['expenseStatusId'] as int,
       statusAlias: json['statusAlias'] as String,
       reviewedByUserId: json['reviewedByUserId'] as String?,
+      reviewedBy: json['reviewedBy'] as String?,
       reviewedAt: json['reviewedAt'] != null
           ? DateTime.parse(json['reviewedAt'] as String)
           : null,
