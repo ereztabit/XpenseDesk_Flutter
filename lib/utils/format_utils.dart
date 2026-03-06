@@ -19,10 +19,12 @@ extension CompanyDateFormat on DateTime {
 }
 
 extension CompanyCurrencyFormat on num {
-  /// Currency with symbol (₪, $, €) using company locale for number grouping.
-  String toCurrency(String companyLocale, String currencyCode) =>
-      NumberFormat.simpleCurrency(locale: companyLocale, name: currencyCode)
-          .format(this);
+  /// Currency with symbol always on the left, number in company locale format.
+  String toCurrency(String companyLocale, String currencyCode) {
+    final symbol = NumberFormat.simpleCurrency(locale: 'en', name: currencyCode)
+        .currencySymbol;
+    return '$symbol${toFormattedNumber(companyLocale)}';
+  }
 
   /// Plain number format (no currency symbol) using company locale.
   String toFormattedNumber(String companyLocale) =>

@@ -88,12 +88,15 @@ class ExpenseCard extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    amountText,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      amountText,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(

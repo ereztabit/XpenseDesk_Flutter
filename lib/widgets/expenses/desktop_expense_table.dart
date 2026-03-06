@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
@@ -46,14 +45,10 @@ class DesktopExpenseTable extends ConsumerWidget {
     this.onView,
   });
 
-  /// Amount formatted with currency symbol placed AFTER the number.
   String _formatAmount(double? amount, String? currencyCode, String locale) {
     if (amount == null) return '—';
-    final numberStr = amount.toFormattedNumber(locale);
-    if (currencyCode == null) return numberStr;
-    final symbol =
-        NumberFormat.simpleCurrency(name: currencyCode).currencySymbol;
-    return '$numberStr$symbol';
+    if (currencyCode == null) return amount.toFormattedNumber(locale);
+    return amount.toCurrency(locale, currencyCode);
   }
 
   Widget _buildDateCell(
@@ -163,13 +158,19 @@ class DesktopExpenseTable extends ConsumerWidget {
         ),
         // Date
         _buildDateCell(expense, locale, l10n),
-        // Amount
-        Text(
-          _formatAmount(expense.amount, expense.currencyCode, locale),
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.foreground,
+        // Amount — start-aligned (left in LTR, right in RTL); LTR forces symbol-left rendering
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Text(
+              _formatAmount(expense.amount, expense.currencyCode, locale),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.foreground,
+              ),
+            ),
           ),
         ),
         // Category
