@@ -50,11 +50,6 @@ class DesktopExpenseTable extends ConsumerWidget {
       children: [
         // ── Header row ─────────────────────────────────────────
         Container(
-          decoration: const BoxDecoration(
-            border: Border(
-              top: BorderSide(color: AppTheme.borderMedium, width: 1),
-            ),
-          ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
@@ -90,7 +85,7 @@ class DesktopExpenseTable extends ConsumerWidget {
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 14,
+          fontSize: 15,
           fontWeight: FontWeight.w500,
           color: AppTheme.mutedForeground,
         ),

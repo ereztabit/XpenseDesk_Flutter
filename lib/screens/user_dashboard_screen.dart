@@ -237,21 +237,29 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // ── Title row ─────────────────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            l10n.myExpenses,
-                            style: Theme.of(context).textTheme.headlineMedium,
+                      Container(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: AppTheme.borderMedium, width: 1),
                           ),
-                          FilledButton.icon(
-                            onPressed: () => Navigator.of(context)
-                                .pushNamed('/employee/new-expense'),
-                            icon: const Icon(Icons.add, size: 18),
-                            label: Text(l10n.newExpense),
-                          ),
-                        ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              l10n.myExpenses,
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                            FilledButton.icon(
+                              onPressed: () => Navigator.of(context)
+                                  .pushNamed('/employee/new-expense'),
+                              icon: const Icon(Icons.add, size: 18),
+                              label: Text(l10n.newExpense),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 24),
 
