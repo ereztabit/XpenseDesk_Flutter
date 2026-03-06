@@ -5,7 +5,6 @@ import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/expense_card.dart';
-import '../widgets/expenses/desktop_expense_section.dart';
 import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
@@ -116,63 +115,56 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     return Column(
       children: [
         // ── Pending section ─────────────────────────────────────
-        DesktopExpenseSection(
+        DesktopExpenseTable(
           title: l10n.pendingExpenses,
           count: pending.length,
           summaryText:
               '${_formatSummaryAmount(pendingTotal, companyCurrency, companyLocale)} ${l10n.pendingAmountSuffix}',
           summaryColor: const Color(0xFFEA580C), // orange-600
           initiallyExpanded: true,
-          child: pending.isEmpty
-              ? ExpensesEmptyState(
-                  title: l10n.noPendingExpensesTitle,
-                  subtitle: l10n.noPendingExpensesSubtitle,
-                  onNewExpense: () => Navigator.of(context)
-                      .pushNamed('/employee/new-expense'),
-                  newExpenseLabel: l10n.newExpense,
-                )
-              : DesktopExpenseTable(
-                  expenses: pending,
-                  isPending: true,
-                  onEdit: (expense) {
-                    // TODO: Navigate to edit in a later step
-                  },
-                  onDelete: (expense) async {
-                    await DeleteExpenseDialog.show(
-                        context, expense.expenseId);
-                  },
-                ),
+          expenses: pending,
+          isPending: true,
+          emptyState: ExpensesEmptyState(
+            title: l10n.noPendingExpensesTitle,
+            subtitle: l10n.noPendingExpensesSubtitle,
+            onNewExpense: () =>
+                Navigator.of(context).pushNamed('/employee/new-expense'),
+            newExpenseLabel: l10n.newExpense,
+          ),
+          onEdit: (expense) {
+            // TODO: Navigate to edit in a later step
+          },
+          onDelete: (expense) async {
+            await DeleteExpenseDialog.show(context, expense.expenseId);
+          },
         ),
         const SizedBox(height: 16),
 
         // ── Processed section ───────────────────────────────────
-        DesktopExpenseSection(
+        DesktopExpenseTable(
           title: l10n.processedExpenses,
           count: processed.length,
           summaryText:
               '${_formatSummaryAmount(approvedTotal, companyCurrency, companyLocale)} ${l10n.approvedAmountSuffix}',
           summaryColor: const Color(0xFF16A34A), // green-600
           initiallyExpanded: false,
-          child: processed.isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text(
-                      l10n.noProcessedExpenses,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: AppTheme.mutedForeground),
-                    ),
-                  ),
-                )
-              : DesktopExpenseTable(
-                  expenses: processed,
-                  isPending: false,
-                  onView: (expense) {
-                    // TODO: Navigate to detail in a later step
-                  },
-                ),
+          expenses: processed,
+          isPending: false,
+          emptyState: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: Text(
+                l10n.noProcessedExpenses,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: AppTheme.mutedForeground),
+              ),
+            ),
+          ),
+          onView: (expense) {
+            // TODO: Navigate to detail in a later step
+          },
         ),
       ],
     );
