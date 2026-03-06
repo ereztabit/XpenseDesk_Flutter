@@ -58,8 +58,11 @@ class AppTheme {
         shadowColor: Colors.black.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
+          side: const BorderSide(color: border, width: 1),
         ),
       ),
+
+      dividerColor: border,
 
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(

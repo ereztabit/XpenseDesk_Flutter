@@ -29,7 +29,7 @@ class ExpenseStatusBadge extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
         color: _backgroundColor(),
         borderRadius: BorderRadius.circular(999),
@@ -38,7 +38,7 @@ class ExpenseStatusBadge extends StatelessWidget {
         _label(l10n),
         style: const TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
       ),

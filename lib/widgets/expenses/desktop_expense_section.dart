@@ -69,86 +69,103 @@ class _DesktopExpenseSectionState extends State<DesktopExpenseSection>
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Column(
-        children: [
-          // ── Header ──────────────────────────────────────────────
-          InkWell(
-            onTap: _toggle,
-            borderRadius: _isExpanded
-                ? const BorderRadius.vertical(
-                    top: Radius.circular(12))
-                : BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  // Title + count
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.foreground,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '(${widget.count})',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.mutedForeground,
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  // Summary amount
-                  Text(
-                    widget.summaryText,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: widget.summaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-
-                  // Animated chevron
-                  RotationTransition(
-                    turns: _iconTurns,
-                    child: const Icon(
-                      Icons.keyboard_arrow_down,
-                      size: 20,
-                      color: AppTheme.mutedForeground,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Collapsible body ────────────────────────────────────
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) {
-              return ClipRect(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  heightFactor: _heightFactor.value,
-                  child: child,
-                ),
-              );
-            },
-            child: Column(
-              children: [
-                const Divider(height: 1, color: AppTheme.border),
-                widget.child,
-              ],
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.card,
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        border: Border.all(color: AppTheme.borderMedium, width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.05),
+            offset: Offset(0, 1),
+            blurRadius: 3,
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            children: [
+              // ── Header ──────────────────────────────────────────────
+              InkWell(
+                onTap: _toggle,
+                borderRadius: _isExpanded
+                    ? const BorderRadius.vertical(
+                        top: Radius.circular(12))
+                    : BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      // Title + count
+                      Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.foreground,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '(${widget.count})',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.mutedForeground,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      // Summary amount
+                      Text(
+                        widget.summaryText,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: widget.summaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Animated chevron
+                      RotationTransition(
+                        turns: _iconTurns,
+                        child: const Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 20,
+                          color: AppTheme.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ── Collapsible body ────────────────────────────────────
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return ClipRect(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      heightFactor: _heightFactor.value,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    const Divider(height: 1, color: AppTheme.borderMedium),
+                    widget.child,
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

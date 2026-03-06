@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
@@ -29,196 +31,268 @@ class DesktopExpenseTable extends ConsumerWidget {
     this.onView,
   });
 
+  /// Format amount with currency symbol AFTER the number.
+  String _formatAmount(double? amount, String? currencyCode, String locale) {
+    if (amount == null) return '—';
+    final numberStr = amount.toFormattedNumber(locale);
+    if (currencyCode == null) return numberStr;
+    final symbol =
+        NumberFormat.simpleCurrency(name: currencyCode).currencySymbol;
+    return '$numberStr$symbol';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          width: constraints.maxWidth,
-          child: DataTable(
-            headingRowHeight: 44,
-            dataRowMinHeight: 48,
-            dataRowMaxHeight: 80,
-            horizontalMargin: 16,
-            columnSpacing: 12,
-            headingRowColor: WidgetStateProperty.all(
-              AppTheme.muted.withAlpha(128),
+    return Column(
+      children: [
+        // ── Header row ─────────────────────────────────────────
+        Container(
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: AppTheme.borderMedium, width: 1),
             ),
-            columns: [
-              DataColumn(
-                label: Expanded(
-                  child: Text(l10n.receiptNumber,
-                      style: _headerStyle()),
-                ),
-              ),
-              DataColumn(
-                label: Expanded(
-                  child:
-                      Text(l10n.date, style: _headerStyle()),
-                ),
-              ),
-              DataColumn(
-                label: Expanded(
-                  child: Text(l10n.amount, style: _headerStyle()),
-                ),
-              ),
-              DataColumn(
-                label: Expanded(
-                  child: Text(l10n.category, style: _headerStyle()),
-                ),
-              ),
-              DataColumn(
-                label: Expanded(
-                  child: Text(l10n.status, style: _headerStyle()),
-                ),
-              ),
-              DataColumn(
-                label: Expanded(
-                  child: Text(l10n.actions, style: _headerStyle()),
-                ),
-              ),
-            ],
-            rows: expenses.map((expense) {
-              final dateStr =
-                  expense.expenseDate.toCompanyDate(locale);
-              final amountStr = expense.amount != null
-                  ? expense.amount!.toCurrency(locale, expense.currencyCode!)
-                  : '—';
-
-              return DataRow(
-                cells: [
-                  // Receipt # (not in search API response — shows dash)
-                  DataCell(Text(
-                    expense.receiptRef ?? '—',
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 14,
-                    ),
-                  )),
-
-                  // Date (+ reviewer info for processed)
-                  DataCell(
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(dateStr,
-                            style: const TextStyle(fontSize: 14)),
-                        if (!isPending && expense.reviewedAt != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              '${l10n.reviewedBy}${expense.reviewedBy ?? ''}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppTheme.mutedForeground,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        if (!isPending && expense.reviewedAt != null)
-                          Text(
-                            expense.reviewedAt!.toCompanyDate(locale),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.mutedForeground,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-
-                  // Amount
-                  DataCell(Text(
-                    amountStr,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  )),
-
-                  // Category
-                  DataCell(Text(
-                    expense.categoryName,
-                    style: const TextStyle(fontSize: 14),
-                  )),
-
-                  // Status badge
-                  DataCell(
-                    ExpenseStatusBadge(
-                        expenseStatusId: expense.expenseStatusId),
-                  ),
-
-                  // Actions
-                  DataCell(
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: isPending
-                          ? [
-                              // Edit
-                              SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: IconButton(
-                                  onPressed: () => onEdit?.call(expense),
-                                  icon: const Icon(Icons.edit_outlined,
-                                      size: 16),
-                                  padding: EdgeInsets.zero,
-                                  tooltip: l10n.actions,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              // Delete
-                              SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: IconButton(
-                                  onPressed: () =>
-                                      onDelete?.call(expense),
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    size: 16,
-                                    color: AppTheme.destructive,
-                                  ),
-                                  padding: EdgeInsets.zero,
-                                  hoverColor: AppTheme.destructive
-                                      .withAlpha(25),
-                                ),
-                              ),
-                            ]
-                          : [
-                              // View
-                              SizedBox(
-                                width: 32,
-                                height: 32,
-                                child: IconButton(
-                                  onPressed: () =>
-                                      onView?.call(expense),
-                                  icon: const Icon(
-                                      Icons.visibility_outlined,
-                                      size: 16),
-                                  padding: EdgeInsets.zero,
-                                ),
-                              ),
-                            ],
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
           ),
-        );
-      },
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              _headerCell(l10n.receiptNumber, flex: 3),
+              _headerCell(l10n.date, flex: 4),
+              _headerCell(l10n.amount, flex: 3),
+              _headerCell(l10n.category, flex: 4),
+              _headerCell(l10n.status, flex: 3),
+              _headerCell(l10n.actions, flex: 3),
+            ],
+          ),
+        ),
+
+        // ── Body rows ───────────────────────────────────────────
+        ...expenses.map((expense) => _ExpenseTableRow(
+              expense: expense,
+              isPending: isPending,
+              locale: locale,
+              amountText:
+                  _formatAmount(expense.amount, expense.currencyCode, locale),
+              dateText: expense.expenseDate.toCompanyDate(locale),
+              onEdit: onEdit,
+              onDelete: onDelete,
+              onView: onView,
+            )),
+      ],
     );
   }
 
-  TextStyle _headerStyle() => const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppTheme.mutedForeground,
-      );
+  Widget _headerCell(String label, {required int flex}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.mutedForeground,
+        ),
+      ),
+    );
+  }
+}
+
+/// A single table body row with hover effect.
+class _ExpenseTableRow extends StatefulWidget {
+  final ExpenseSummary expense;
+  final bool isPending;
+  final String locale;
+  final String amountText;
+  final String dateText;
+  final void Function(ExpenseSummary expense)? onEdit;
+  final void Function(ExpenseSummary expense)? onDelete;
+  final void Function(ExpenseSummary expense)? onView;
+
+  const _ExpenseTableRow({
+    required this.expense,
+    required this.isPending,
+    required this.locale,
+    required this.amountText,
+    required this.dateText,
+    this.onEdit,
+    this.onDelete,
+    this.onView,
+  });
+
+  @override
+  State<_ExpenseTableRow> createState() => _ExpenseTableRowState();
+}
+
+class _ExpenseTableRowState extends State<_ExpenseTableRow> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _isHovered ? AppTheme.muted : Colors.transparent,
+          border: const Border(
+            top: BorderSide(color: AppTheme.borderMedium, width: 1),
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        child: Row(
+          children: [
+            // Receipt #
+            Expanded(
+              flex: 3,
+              child: Text(
+                widget.expense.receiptRef ?? '—',
+                style: GoogleFonts.robotoMono(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.foreground,
+                ),
+              ),
+            ),
+
+            // Date (+ reviewer info for processed)
+            Expanded(
+              flex: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    widget.dateText,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.foreground,
+                    ),
+                  ),
+                  if (!widget.isPending &&
+                      widget.expense.reviewedAt != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '${l10n.reviewedBy}${widget.expense.reviewedBy ?? ''}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.mutedForeground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      widget.expense.reviewedAt!
+                          .toCompanyDate(widget.locale),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Amount
+            Expanded(
+              flex: 3,
+              child: Text(
+                widget.amountText,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.foreground,
+                ),
+              ),
+            ),
+
+            // Category
+            Expanded(
+              flex: 4,
+              child: Text(
+                widget.expense.categoryName,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.foreground,
+                ),
+              ),
+            ),
+
+            // Status badge
+            Expanded(
+              flex: 3,
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: ExpenseStatusBadge(
+                  expenseStatusId: widget.expense.expenseStatusId,
+                ),
+              ),
+            ),
+
+            // Actions
+            Expanded(
+              flex: 3,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.isPending
+                    ? [
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: IconButton(
+                            onPressed: () =>
+                                widget.onEdit?.call(widget.expense),
+                            icon: const Icon(Icons.edit_outlined, size: 16),
+                            padding: EdgeInsets.zero,
+                            style: IconButton.styleFrom(
+                              shape: const CircleBorder(),
+                            ),
+                            color: AppTheme.foreground,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: IconButton(
+                            onPressed: () =>
+                                widget.onDelete?.call(widget.expense),
+                            icon: const Icon(Icons.delete_outline, size: 16),
+                            padding: EdgeInsets.zero,
+                            style: IconButton.styleFrom(
+                              shape: const CircleBorder(),
+                              foregroundColor: AppTheme.destructive,
+                            ),
+                            color: AppTheme.destructive,
+                          ),
+                        ),
+                      ]
+                    : [
+                        SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: IconButton(
+                            onPressed: () =>
+                                widget.onView?.call(widget.expense),
+                            icon: const Icon(Icons.visibility_outlined,
+                                size: 16),
+                            padding: EdgeInsets.zero,
+                            style: IconButton.styleFrom(
+                              shape: const CircleBorder(),
+                            ),
+                            color: AppTheme.foreground,
+                          ),
+                        ),
+                      ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
