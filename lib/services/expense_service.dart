@@ -36,23 +36,17 @@ class ExpenseService {
     }
   }
 
-  /// Search the current user's expenses by date range.
+  /// Search the current user's expenses for the current billing cycle.
   ///
   /// Employees see only their own expenses.
   /// Managers see all company expenses.
-  ///
-  /// [fromDate] and [toDate] must be ISO 8601 date strings (YYYY-MM-DD).
-  Future<List<ExpenseSummary>> searchExpenses({
-    required String fromDate,
-    required String toDate,
-  }) async {
+  Future<List<ExpenseSummary>> searchExpenses() async {
     final sessionToken = await _authService.getSessionToken();
     _validateSessionToken(sessionToken);
 
     final response = await _apiService.get(
       '/api/expenses/search',
       authToken: sessionToken,
-      queryParams: {'fromDate': fromDate, 'toDate': toDate},
     );
 
     _validateResponse(response, 'Failed to load expenses');

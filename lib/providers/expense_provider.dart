@@ -9,7 +9,7 @@ final expenseServiceProvider = Provider<ExpenseService>((ref) {
   return ExpenseService();
 });
 
-/// Loads the current user's expenses for the current calendar year.
+/// Loads the current user's expenses for the server-derived current cycle.
 ///
 /// Depends on [userInfoProvider] so it:
 ///   - returns [] immediately when the session isn't loaded yet
@@ -21,9 +21,5 @@ final expenseSearchProvider =
   if (userInfo == null) return [];
 
   final service = ref.watch(expenseServiceProvider);
-  final now = DateTime.now();
-  return service.searchExpenses(
-    fromDate: '${now.year}-01-01',
-    toDate: '${now.year}-12-31',
-  );
+  return service.searchExpenses();
 });
