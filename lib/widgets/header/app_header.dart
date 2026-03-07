@@ -11,7 +11,7 @@ import 'mobile_menu_sheet.dart';
 import '../language_switcher.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
-/// 
+///
 /// Layout: Logo (left) | Language Switcher + Avatar Menu (right)
 /// Role-based menu: Manager sees all options, Employee sees limited options
 /// Language Switcher: Always visible in header, left of avatar/hamburger button
@@ -51,9 +51,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
 
   void _openMobileMenu() {
     _overlayEntry = OverlayEntry(
-      builder: (context) => MobileMenuSheet(
-        onClose: _closeMenu,
-      ),
+      builder: (context) => MobileMenuSheet(onClose: _closeMenu),
     );
 
     Overlay.of(context).insert(_overlayEntry!);
@@ -64,7 +62,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     final userInfo = ref.read(userInfoProvider);
     if (userInfo == null) return;
 
-    final renderBox = _avatarKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox =
+        _avatarKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     final offset = renderBox.localToGlobal(Offset.zero);
@@ -113,7 +112,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         if (mounted) Navigator.pushNamed(context, '/$role/profile');
         break;
       case 'spend-history':
-        final historyRoute = _isManager(userInfo.roleId) ? '/manager/history' : '/employee/history';
+        final historyRoute = _isManager(userInfo.roleId)
+            ? '/manager/history'
+            : '/employee/history';
         if (mounted) Navigator.pushNamed(context, historyRoute);
         break;
       case 'company-config':
@@ -158,12 +159,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       height: 56,
       decoration: const BoxDecoration(
         color: AppTheme.card,
-        border: Border(
-          bottom: BorderSide(
-            color: AppTheme.border,
-            width: 1,
-          ),
-        ),
+        border: Border(bottom: BorderSide(color: AppTheme.border, width: 1)),
         boxShadow: [
           BoxShadow(
             color: Color(0x0A000000),
@@ -174,7 +170,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       ),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: AppTheme.containerMaxWidth),
+          constraints: const BoxConstraints(
+            maxWidth: AppTheme.containerMaxWidth,
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
@@ -229,7 +227,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                             width: 32, // h-8
                             height: 32, // w-8
                             decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(25), // bg-primary/10
+                              color: AppTheme.primary.withAlpha(
+                                25,
+                              ), // bg-primary/10
                               shape: BoxShape.circle,
                             ),
                             child: Center(
@@ -260,13 +260,14 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   onTap: () async {
                     final guard = ref.read(navigationGuardProvider);
                     final canLeave = guard != null ? await guard() : true;
-                    if (canLeave && mounted) {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/',
-                        (route) => false,
-                      );
+                    if (!context.mounted || !canLeave) {
+                      return;
                     }
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/',
+                      (route) => false,
+                    );
                   },
                   child: MouseRegion(
                     cursor: SystemMouseCursors.click,

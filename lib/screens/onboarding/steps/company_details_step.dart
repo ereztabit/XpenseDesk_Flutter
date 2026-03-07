@@ -13,22 +13,22 @@ import '../../../widgets/step_guard_mixin.dart';
 /// Shared [InputDecorationTheme] used by every [DropdownMenu] on this screen
 /// so they look identical to the [TextFormField]s.
 InputDecorationTheme _dropdownInputTheme() => InputDecorationTheme(
-      filled: true,
-      fillColor: AppTheme.card,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        borderSide: const BorderSide(color: AppTheme.border),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        borderSide: const BorderSide(color: AppTheme.border),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-      ),
-    );
+  filled: true,
+  fillColor: AppTheme.card,
+  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+    borderSide: const BorderSide(color: AppTheme.border),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+    borderSide: const BorderSide(color: AppTheme.border),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+    borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+  ),
+);
 
 /// Step 2 — Company Details form.
 ///
@@ -94,18 +94,24 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       _selectedCountryCode = saved.countryCode;
       // Start from country defaults, then overlay any user overrides saved to
       // wizard state (i.e. the user changed a dropdown before navigating back).
-      final country = widget.refData.countries.where(
-        (c) => c.countryCode == saved.countryCode,
-      ).firstOrNull;
+      final country = widget.refData.countries
+          .where((c) => c.countryCode == saved.countryCode)
+          .firstOrNull;
       if (country != null) {
         _selectedCurrencyCode = country.defaultCurrencyCode;
         _selectedLanguageId = country.defaultLanguageId;
         _selectedTimeZoneId = country.defaultTimeZoneId;
       }
       // Overlay saved overrides (non-null wins over the defaults above)
-      if (saved.currencyCode != null) _selectedCurrencyCode = saved.currencyCode;
-      if (saved.languageId != null) _selectedLanguageId = saved.languageId;
-      if (saved.timeZoneId != null) _selectedTimeZoneId = saved.timeZoneId;
+      if (saved.currencyCode != null) {
+        _selectedCurrencyCode = saved.currencyCode;
+      }
+      if (saved.languageId != null) {
+        _selectedLanguageId = saved.languageId;
+      }
+      if (saved.timeZoneId != null) {
+        _selectedTimeZoneId = saved.timeZoneId;
+      }
     }
     if (saved.cutoverDay != null) {
       _selectedCutoverDay = saved.cutoverDay;
@@ -145,11 +151,17 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       orElse: () => widget.refData.countries.first,
     );
     if (_selectedCurrencyCode != null &&
-        _selectedCurrencyCode != country.defaultCurrencyCode) return true;
+        _selectedCurrencyCode != country.defaultCurrencyCode) {
+      return true;
+    }
     if (_selectedLanguageId != null &&
-        _selectedLanguageId != country.defaultLanguageId) return true;
+        _selectedLanguageId != country.defaultLanguageId) {
+      return true;
+    }
     if (_selectedTimeZoneId != null &&
-        _selectedTimeZoneId != country.defaultTimeZoneId) return true;
+        _selectedTimeZoneId != country.defaultTimeZoneId) {
+      return true;
+    }
     return false;
   }
 
@@ -160,7 +172,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
   void _handleBack() {
     // Persist whatever has been entered so the form is pre-filled if the user
     // returns to this step.
-    ref.read(onboardingStateProvider.notifier).saveCompanyDraft(
+    ref
+        .read(onboardingStateProvider.notifier)
+        .saveCompanyDraft(
           companyName: _companyNameController.text.trim(),
           countryCode: _selectedCountryCode,
           cutoverDay: _selectedCutoverDay,
@@ -212,7 +226,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       email: wizardState.email,
       fullName: wizardState.fullName,
       // Per spec: when blank, default to the owner's work email
-      accountantEmail: accountantEmailInput.isEmpty ? wizardState.email : accountantEmailInput,
+      accountantEmail: accountantEmailInput.isEmpty
+          ? wizardState.email
+          : accountantEmailInput,
       isMarketingConsent: wizardState.isMarketingConsent,
       currencyCode: _selectedCurrencyCode,
       languageId: _selectedLanguageId,
@@ -223,7 +239,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       final service = ref.read(onboardingServiceProvider);
       final otpKey = await service.submitCompany(request);
 
-      ref.read(onboardingStateProvider.notifier).setCompanyDetails(
+      ref
+          .read(onboardingStateProvider.notifier)
+          .setCompanyDetails(
             companyName: request.companyName,
             countryCode: request.countryCode,
             cutoverDay: request.cutoverDay,
@@ -241,7 +259,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       if (!mounted) return;
       if (e.statusCode == 409) {
         final l10n = AppLocalizations.of(context)!;
-        ref.read(onboardingStateProvider.notifier).setEmailConflictError(
+        ref
+            .read(onboardingStateProvider.notifier)
+            .setEmailConflictError(
               e.message.isNotEmpty ? e.message : l10n.onboardingEmailConflict,
             );
         widget.onBack();
@@ -297,7 +317,10 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
           const SizedBox(height: 16),
 
           // ── Country of Operation ──────────────────────────────────────────
-          FieldLabel(label: l10n.onboardingCountryOfOperation, isRequired: true),
+          FieldLabel(
+            label: l10n.onboardingCountryOfOperation,
+            isRequired: true,
+          ),
           const SizedBox(height: 6),
           DropdownMenu<String>(
             initialSelection: _selectedCountryCode,
@@ -305,10 +328,12 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
             inputDecorationTheme: _dropdownInputTheme(),
             hintText: '— Select —',
             dropdownMenuEntries: widget.refData.countries
-                .map((c) => DropdownMenuEntry(
-                      value: c.countryCode,
-                      label: c.countryName,
-                    ))
+                .map(
+                  (c) => DropdownMenuEntry(
+                    value: c.countryCode,
+                    label: c.countryName,
+                  ),
+                )
                 .toList(),
             onSelected: _onCountrySelected,
           ),
@@ -359,10 +384,13 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
             inputDecorationTheme: _dropdownInputTheme(),
             hintText: '— Select —',
             dropdownMenuEntries: const [1, 2, 10, 15]
-                .map((day) => DropdownMenuEntry(
-                      value: day,
-                      label: '${l10n.onboardingCycleDayPrefix} $day ${l10n.onboardingCycleDaySuffix}',
-                    ))
+                .map(
+                  (day) => DropdownMenuEntry(
+                    value: day,
+                    label:
+                        '${l10n.onboardingCycleDayPrefix} $day ${l10n.onboardingCycleDaySuffix}',
+                  ),
+                )
                 .toList(),
             onSelected: (v) => setState(() => _selectedCutoverDay = v),
           ),
@@ -380,10 +408,7 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
           const SizedBox(height: 4),
           Text(
             l10n.onboardingCycleDayHelper,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppTheme.amber,
-            ),
+            style: const TextStyle(fontSize: 12, color: AppTheme.amber),
           ),
 
           const SizedBox(height: 16),
@@ -471,7 +496,9 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
                       disabledBackgroundColor: AppTheme.muted,
                       disabledForegroundColor: AppTheme.mutedForeground,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.borderRadius,
+                        ),
                       ),
                     ),
                     child: _isSubmitting
@@ -547,7 +574,8 @@ class _DefaultsPanel extends StatelessWidget {
         .firstOrNull;
 
     final summaryParts = <String>[
-      if (currency != null) '${currency.currencySymbol} ${currency.currencyName}',
+      if (currency != null)
+        '${currency.currencySymbol} ${currency.currencyName}',
       if (language != null) language.languageName,
       if (showTimeZone && tz != null) tz.displayName,
     ];
@@ -631,10 +659,12 @@ class _DefaultsPanel extends StatelessWidget {
                       expandedInsets: EdgeInsets.zero,
                       inputDecorationTheme: _dropdownInputTheme(),
                       dropdownMenuEntries: refData.currencies
-                          .map((c) => DropdownMenuEntry(
-                                value: c.currencyCode,
-                                label: '${c.currencySymbol}  ${c.currencyName}',
-                              ))
+                          .map(
+                            (c) => DropdownMenuEntry(
+                              value: c.currencyCode,
+                              label: '${c.currencySymbol}  ${c.currencyName}',
+                            ),
+                          )
                           .toList(),
                       onSelected: onCurrencyChanged,
                     ),
@@ -649,10 +679,12 @@ class _DefaultsPanel extends StatelessWidget {
                       expandedInsets: EdgeInsets.zero,
                       inputDecorationTheme: _dropdownInputTheme(),
                       dropdownMenuEntries: refData.languages
-                          .map((lang) => DropdownMenuEntry(
-                                value: lang.languageId,
-                                label: lang.languageName,
-                              ))
+                          .map(
+                            (lang) => DropdownMenuEntry(
+                              value: lang.languageId,
+                              label: lang.languageName,
+                            ),
+                          )
                           .toList(),
                       onSelected: onLanguageChanged,
                     ),
@@ -668,10 +700,12 @@ class _DefaultsPanel extends StatelessWidget {
                         expandedInsets: EdgeInsets.zero,
                         inputDecorationTheme: _dropdownInputTheme(),
                         dropdownMenuEntries: refData.timeZones
-                            .map((tz) => DropdownMenuEntry(
-                                  value: tz.timeZoneId,
-                                  label: tz.displayName,
-                                ))
+                            .map(
+                              (tz) => DropdownMenuEntry(
+                                value: tz.timeZoneId,
+                                label: tz.displayName,
+                              ),
+                            )
                             .toList(),
                         onSelected: onTimeZoneChanged,
                       ),
@@ -696,7 +730,11 @@ class _DefaultsPanel extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, size: 14, color: AppTheme.amber),
+                  const Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: AppTheme.amber,
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(

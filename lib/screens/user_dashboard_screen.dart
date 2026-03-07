@@ -15,7 +15,8 @@ class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
 
   @override
-  ConsumerState<UserDashboardScreen> createState() => _UserDashboardScreenState();
+  ConsumerState<UserDashboardScreen> createState() =>
+      _UserDashboardScreenState();
 }
 
 class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
@@ -48,14 +49,13 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Padding(
+      error: (_, _) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Text(
           l10n.failedToLoadExpenses,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: AppTheme.destructive),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.destructive),
         ),
       ),
       data: (expenses) {
@@ -95,9 +95,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                       ? l10n.noApprovedExpenses
                       : l10n.noDeclinedExpenses,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        color: AppTheme.mutedForeground,
-                      ),
+                    fontSize: 14,
+                    color: AppTheme.mutedForeground,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -129,9 +129,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
         return Column(
           children: [
-            ...filtered.map(
-              (expense) => MobileExpenseCard(expense: expense),
-            ),
+            ...filtered.map((expense) => MobileExpenseCard(expense: expense)),
             if (_selectedStatusId == 2 && approvedTotal > 0)
               TotalApprovedBadge(
                 label: l10n.totalApproved,
@@ -143,7 +141,11 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     );
   }
 
-  String _formatSummaryAmount(double total, String? currencyCode, String companyLocale) {
+  String _formatSummaryAmount(
+    double total,
+    String? currencyCode,
+    String companyLocale,
+  ) {
     if (currencyCode != null) {
       return total.toCurrency(companyLocale, currencyCode);
     }
@@ -154,13 +156,13 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     AppLocalizations l10n,
     List<ExpenseSummary> allExpenses,
   ) {
-    final pending =
-        allExpenses.where((e) => e.expenseStatusId == 1).toList();
-    final processed =
-        allExpenses.where((e) => e.expenseStatusId != 1).toList();
+    final pending = allExpenses.where((e) => e.expenseStatusId == 1).toList();
+    final processed = allExpenses.where((e) => e.expenseStatusId != 1).toList();
 
     final pendingTotal = pending.fold<double>(
-        0, (sum, e) => sum + (e.amount ?? 0));
+      0,
+      (sum, e) => sum + (e.amount ?? 0),
+    );
     final approvedTotal = processed
         .where((e) => e.expenseStatusId == 2)
         .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
@@ -212,10 +214,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
             child: Center(
               child: Text(
                 l10n.noProcessedExpenses,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppTheme.mutedForeground),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.mutedForeground,
+                ),
               ),
             ),
           ),
@@ -236,7 +237,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     final allExpenses = expensesAsync.when(
       data: (data) => data,
       loading: () => const <ExpenseSummary>[],
-      error: (_, __) => const <ExpenseSummary>[],
+      error: (_, _) => const <ExpenseSummary>[],
     );
     final counts = {
       1: allExpenses.where((e) => e.expenseStatusId == 1).length,
@@ -262,7 +263,10 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                         padding: const EdgeInsets.only(bottom: 16),
                         decoration: const BoxDecoration(
                           border: Border(
-                            bottom: BorderSide(color: AppTheme.borderMedium, width: 1),
+                            bottom: BorderSide(
+                              color: AppTheme.borderMedium,
+                              width: 1,
+                            ),
                           ),
                         ),
                         child: Row(
@@ -271,13 +275,15 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                           children: [
                             Text(
                               l10n.myExpenses,
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              style: Theme.of(context).textTheme.headlineMedium
+                                  ?.copyWith(
                                     fontSize: context.isMobile ? 18 : 24,
                                   ),
                             ),
                             FilledButton.icon(
-                              onPressed: () => Navigator.of(context)
-                                  .pushNamed('/employee/new-expense'),
+                              onPressed: () => Navigator.of(
+                                context,
+                              ).pushNamed('/employee/new-expense'),
                               icon: const Icon(Icons.add, size: 18),
                               label: Text(l10n.newExpense),
                             ),
@@ -290,7 +296,12 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                       if (context.isDesktop)
                         _buildDesktopLayout(l10n, expensesAsync, allExpenses)
                       else
-                        _buildMobileLayout(l10n, expensesAsync, allExpenses, counts),
+                        _buildMobileLayout(
+                          l10n,
+                          expensesAsync,
+                          allExpenses,
+                          counts,
+                        ),
                     ],
                   ),
                 ),
@@ -313,14 +324,13 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => Padding(
+      error: (_, _) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Text(
           l10n.failedToLoadExpenses,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: AppTheme.destructive),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppTheme.destructive),
         ),
       ),
       data: (_) => _buildDesktopContent(l10n, allExpenses),

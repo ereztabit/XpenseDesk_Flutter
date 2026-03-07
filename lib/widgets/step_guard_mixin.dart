@@ -10,7 +10,7 @@ import '../providers/navigation_guard_provider.dart';
 /// before discarding unsaved input.
 ///
 /// Usage:
-///   class _MyStepState extends ConsumerState<MyStep> with StepGuardMixin {
+///   class _MyStepState extends ConsumerState`<MyStep>` with StepGuardMixin {
 ///     @override
 ///     bool get hasUnsavedChanges => _controller.text.isNotEmpty;
 ///   }
@@ -48,8 +48,9 @@ mixin StepGuardMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(navigationGuardProvider.notifier).setGuard(
-            () async => confirmDiscard());
+        ref
+            .read(navigationGuardProvider.notifier)
+            .setGuard(() async => confirmDiscard());
       }
     });
   }

@@ -9,10 +9,7 @@ import '../tag_input.dart';
 class InviteUsersDialog extends ConsumerStatefulWidget {
   final int remainingSlots;
 
-  const InviteUsersDialog({
-    super.key,
-    required this.remainingSlots,
-  });
+  const InviteUsersDialog({super.key, required this.remainingSlots});
 
   @override
   ConsumerState<InviteUsersDialog> createState() => _InviteUsersDialogState();
@@ -28,9 +25,7 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
     final userStats = ref.watch(userStatsProvider);
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500),
         padding: const EdgeInsets.all(24),
@@ -41,13 +36,10 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
             // Title
             Text(
               l10n.inviteNewUsers,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            
+
             // Subtitle
             Text(
               '${l10n.usersCount}${userStats.utilized} ${l10n.outOf} ${userStats.capacity}',
@@ -57,14 +49,16 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Email tag input
             TagInput(
               tags: _emailList,
               onChanged: (tags) {
                 setState(() {
                   // Limit to remaining slots and max 20 per batch
-                  final maxEmails = widget.remainingSlots < 20 ? widget.remainingSlots : 20;
+                  final maxEmails = widget.remainingSlots < 20
+                      ? widget.remainingSlots
+                      : 20;
                   _emailList = tags.take(maxEmails).toList();
                 });
               },
@@ -87,7 +81,7 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
               },
             ),
             const SizedBox(height: 24),
-            
+
             // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -98,7 +92,9 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
                 ),
                 const SizedBox(width: 12),
                 FilledButton(
-                  onPressed: _emailList.isEmpty || _isLoading ? null : _handleInvite,
+                  onPressed: _emailList.isEmpty || _isLoading
+                      ? null
+                      : _handleInvite,
                   child: _isLoading
                       ? const SizedBox(
                           width: 16,
@@ -129,6 +125,8 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
       // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
+      if (!mounted) return;
+
       // Show success message
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,20 +140,17 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
       Navigator.pop(context);
     } on UsersException catch (e) {
       if (!mounted) return;
-      
+
       setState(() => _isLoading = false);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() => _isLoading = false);
-      
+
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -53,7 +53,12 @@ class UserListCard extends ConsumerWidget {
                 if (filteredUsers.isEmpty) {
                   return _buildEmptyState(context, ref);
                 }
-                return _buildUserList(context, ref, filteredUsers, currentUser?.email);
+                return _buildUserList(
+                  context,
+                  ref,
+                  filteredUsers,
+                  currentUser?.email,
+                );
               },
               loading: () => _buildLoadingState(),
               error: (err, stack) => _buildErrorState(context, err),
@@ -72,7 +77,8 @@ class UserListCard extends ConsumerWidget {
   ) {
     return ListView.separated(
       itemCount: users.length,
-      separatorBuilder: (context, index) => const Divider(height: 1, color: AppTheme.border),
+      separatorBuilder: (context, index) =>
+          const Divider(height: 1, color: AppTheme.border),
       itemBuilder: (context, index) {
         final user = users[index];
         final isCurrentUser = user.email == currentUserEmail;
@@ -91,7 +97,7 @@ class UserListCard extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
     final searchQuery = ref.read(userSearchQueryProvider);
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(48),
@@ -119,10 +125,7 @@ class UserListCard extends ConsumerWidget {
               searchQuery.isEmpty
                   ? 'Invite users to get started'
                   : 'Try a different search term',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -141,18 +144,14 @@ class UserListCard extends ConsumerWidget {
 
   Widget _buildErrorState(BuildContext context, Object error) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(48),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
             const SizedBox(height: 16),
             Text(
               l10n.failedToLoadUsers,
@@ -165,10 +164,7 @@ class UserListCard extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               error.toString(),
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
           ],
@@ -177,7 +173,11 @@ class UserListCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _handlePromote(BuildContext context, WidgetRef ref, UserListItem user) async {
+  Future<void> _handlePromote(
+    BuildContext context,
+    WidgetRef ref,
+    UserListItem user,
+  ) async {
     final confirmed = await _showRoleChangeConfirmation(
       context,
       user,
@@ -197,6 +197,8 @@ class UserListCard extends ConsumerWidget {
       // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.userPromotedSuccess),
@@ -205,16 +207,13 @@ class UserListCard extends ConsumerWidget {
       );
     } on UsersException catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
@@ -224,7 +223,11 @@ class UserListCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleDemote(BuildContext context, WidgetRef ref, UserListItem user) async {
+  Future<void> _handleDemote(
+    BuildContext context,
+    WidgetRef ref,
+    UserListItem user,
+  ) async {
     final confirmed = await _showRoleChangeConfirmation(
       context,
       user,
@@ -244,6 +247,8 @@ class UserListCard extends ConsumerWidget {
       // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.userDemotedSuccess),
@@ -252,16 +257,13 @@ class UserListCard extends ConsumerWidget {
       );
     } on UsersException catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
@@ -271,7 +273,11 @@ class UserListCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleDisable(BuildContext context, WidgetRef ref, UserListItem user) async {
+  Future<void> _handleDisable(
+    BuildContext context,
+    WidgetRef ref,
+    UserListItem user,
+  ) async {
     final confirmed = await _showDisableConfirmation(context, user);
 
     if (!confirmed || !context.mounted) return;
@@ -287,6 +293,8 @@ class UserListCard extends ConsumerWidget {
       // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.userDisabledSuccess),
@@ -295,16 +303,13 @@ class UserListCard extends ConsumerWidget {
       );
     } on UsersException catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
@@ -314,7 +319,11 @@ class UserListCard extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleEnable(BuildContext context, WidgetRef ref, UserListItem user) async {
+  Future<void> _handleEnable(
+    BuildContext context,
+    WidgetRef ref,
+    UserListItem user,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
 
     try {
@@ -326,6 +335,8 @@ class UserListCard extends ConsumerWidget {
       // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.userEnabledSuccess),
@@ -334,16 +345,13 @@ class UserListCard extends ConsumerWidget {
       );
     } on UsersException catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
       if (!context.mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
@@ -355,33 +363,34 @@ class UserListCard extends ConsumerWidget {
 
   Future<bool> _showRoleChangeConfirmation(
     BuildContext context,
-    UserListItem user,
-    {required bool isPromotion}
-  ) async {
+    UserListItem user, {
+    required bool isPromotion,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final userName = user.fullName.isEmpty ? user.email : user.fullName;
 
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.changeRoleTitle),
-        content: Text(
-          isPromotion 
-            ? '${l10n.promoteConfirmPrefix}$userName ${l10n.promoteConfirmSuffix}'
-            : '${l10n.demoteConfirmPrefix}$userName ${l10n.demoteConfirmSuffix}',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.changeRoleTitle),
+            content: Text(
+              isPromotion
+                  ? '${l10n.promoteConfirmPrefix}$userName ${l10n.promoteConfirmSuffix}'
+                  : '${l10n.demoteConfirmPrefix}$userName ${l10n.demoteConfirmSuffix}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(l10n.confirm),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.confirm),
-          ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 
   Future<bool> _showDisableConfirmation(
@@ -392,24 +401,25 @@ class UserListCard extends ConsumerWidget {
     final userName = user.fullName.isEmpty ? user.email : user.fullName;
 
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.disableUserTitle),
-        content: Text('${l10n.disableConfirmPrefix}$userName${l10n.disableConfirmSuffix}'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.disableUserTitle),
+            content: Text(
+              '${l10n.disableConfirmPrefix}$userName${l10n.disableConfirmSuffix}',
             ),
-            child: Text(l10n.disable),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                child: Text(l10n.disable),
+              ),
+            ],
           ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 }

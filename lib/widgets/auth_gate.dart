@@ -18,11 +18,7 @@ class AuthGate extends ConsumerWidget {
   final AuthGateMode mode;
   final Widget child;
 
-  const AuthGate({
-    super.key,
-    required this.mode,
-    required this.child,
-  });
+  const AuthGate({super.key, required this.mode, required this.child});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +30,7 @@ class AuthGate extends ConsumerWidget {
         backgroundColor: AppTheme.background,
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, __) => _Redirector(route: '/'),
+      error: (_, _) => _Redirector(route: '/'),
       data: (_) {
         final redirectRoute = _resolveRedirect(mode, userInfo);
         if (redirectRoute != null) {
@@ -61,7 +57,9 @@ class AuthGate extends ConsumerWidget {
       case AuthGateMode.employeeOnboardedOnly:
         if (userInfo == null) return '/';
         if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);
-        return userInfo.termsConsentDate == null ? '/employee/onboarding' : null;
+        return userInfo.termsConsentDate == null
+            ? '/employee/onboarding'
+            : null;
       case AuthGateMode.employeePendingOnboardingOnly:
         if (userInfo == null) return '/';
         if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);

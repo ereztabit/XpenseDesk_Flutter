@@ -17,15 +17,16 @@ class ExpenseService {
   final AuthService _authService;
 
   ExpenseService({ApiService? apiService, AuthService? authService})
-      : _apiService = apiService ?? ApiService(),
-        _authService = authService ?? AuthService();
+    : _apiService = apiService ?? ApiService(),
+      _authService = authService ?? AuthService();
 
   void _validateResponse(
-      Map<String, dynamic> response, String defaultErrorMessage) {
+    Map<String, dynamic> response,
+    String defaultErrorMessage,
+  ) {
     final success = response['success'] as bool? ?? false;
     if (!success) {
-      final message =
-          response['message'] as String? ?? defaultErrorMessage;
+      final message = response['message'] as String? ?? defaultErrorMessage;
       throw ExpenseException(message);
     }
   }
@@ -57,8 +58,7 @@ class ExpenseService {
     }
 
     return data
-        .map((json) =>
-            ExpenseSummary.fromJson(json as Map<String, dynamic>))
+        .map((json) => ExpenseSummary.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 
@@ -76,5 +76,62 @@ class ExpenseService {
     );
 
     _validateResponse(response, 'Failed to delete expense');
+  }
+
+  /// Create a new pending expense for the authenticated user.
+  Future<void> createExpense({
+    required DateTime expenseDate,
+    required int categoryId,
+    double? amount,
+    String? currencyCode,
+    String? merchantName,
+    String? note,
+    String? receiptRef,
+    String? imageUrl,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{
+      'expenseDate': expenseDate.toIso8601String().split('T').first,
+      'categoryId': categoryId,
+    };
+
+    if (amount != null) {
+      body['amount'] = amount;
+    }
+
+    final trimmedCurrencyCode = currencyCode?.trim();
+    if (trimmedCurrencyCode != null && trimmedCurrencyCode.isNotEmpty) {
+      body['currencyCode'] = trimmedCurrencyCode.toUpperCase();
+    }
+
+    final trimmedMerchantName = merchantName?.trim();
+    if (trimmedMerchantName != null && trimmedMerchantName.isNotEmpty) {
+      body['merchantName'] = trimmedMerchantName;
+    }
+
+    final trimmedNote = note?.trim();
+    if (trimmedNote != null && trimmedNote.isNotEmpty) {
+      body['note'] = trimmedNote;
+    }
+
+    final trimmedReceiptRef = receiptRef?.trim();
+    if (trimmedReceiptRef != null && trimmedReceiptRef.isNotEmpty) {
+      body['receiptRef'] = trimmedReceiptRef;
+    }
+
+    final trimmedImageUrl = imageUrl?.trim();
+    if (trimmedImageUrl != null && trimmedImageUrl.isNotEmpty) {
+      body['imageUrl'] = trimmedImageUrl;
+    }
+
+    final response = await _apiService.post(
+      '/api/expenses',
+      body,
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to create expense');
   }
 }

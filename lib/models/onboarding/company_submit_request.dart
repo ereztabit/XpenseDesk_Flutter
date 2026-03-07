@@ -6,10 +6,12 @@ class CompanySubmitRequest {
   final String email;
   final String fullName;
   final String? accountantEmail;
+
   /// Only sent when the user explicitly overrides the country default.
   final String? currencyCode;
   final int? languageId;
   final int? timeZoneId;
+
   /// Whether the user opted into marketing communications.
   final bool isMarketingConsent;
 
@@ -35,9 +37,9 @@ class CompanySubmitRequest {
       'fullName': fullName,
       'accountantEmail': accountantEmail ?? email,
       'isMarketingConsent': isMarketingConsent,
-      if (currencyCode != null) 'currencyCode': currencyCode!,
-      if (languageId != null) 'languageId': languageId!,
-      if (timeZoneId != null) 'timeZoneId': timeZoneId!,
+      ...?currencyCode != null ? {'currencyCode': currencyCode!} : null,
+      ...?languageId != null ? {'languageId': languageId!} : null,
+      ...?timeZoneId != null ? {'timeZoneId': timeZoneId!} : null,
     };
   }
 }
