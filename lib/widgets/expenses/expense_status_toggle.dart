@@ -28,12 +28,12 @@ class ExpenseStatusToggle extends StatelessWidget {
       (id: 3, label: l10n.declined),
     ];
     return Container(
-      height: 44,
+      height: 36,
       decoration: BoxDecoration(
         color: AppTheme.muted,
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(3),
       child: Row(
         children: statuses.map((s) {
           final isSelected = s.id == selectedStatusId;
@@ -64,7 +64,7 @@ class ExpenseStatusToggle extends StatelessWidget {
                       Text(
                         s.label,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: isSelected
                               ? AppTheme.primaryForeground

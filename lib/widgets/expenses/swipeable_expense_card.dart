@@ -3,9 +3,9 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
 import 'delete_expense_dialog.dart';
-import 'expense_card.dart';
+import 'mobile_expense_card.dart';
 
-/// Wraps an [ExpenseCard] with a horizontal swipe-to-delete gesture.
+/// Wraps a [MobileExpenseCard] with a horizontal swipe-to-delete gesture.
 ///
 /// Swiping toward the trailing edge (left in LTR, right in RTL) reveals a
 /// red 100px delete panel. Releasing past 80px snaps the card open; tapping
@@ -24,6 +24,7 @@ class SwipeableExpenseCard extends StatefulWidget {
   final ValueNotifier<String?> openCardNotifier;
   final bool autoPeek;
   final VoidCallback? onPeekPlayed;
+  final VoidCallback? onEdit;
 
   const SwipeableExpenseCard({
     super.key,
@@ -31,6 +32,7 @@ class SwipeableExpenseCard extends StatefulWidget {
     required this.openCardNotifier,
     this.autoPeek = false,
     this.onPeekPlayed,
+    this.onEdit,
   });
 
   @override
@@ -39,10 +41,10 @@ class SwipeableExpenseCard extends StatefulWidget {
 
 class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
     with SingleTickerProviderStateMixin {
-  static const double _openWidth = 100.0;
+  static const double _openWidth = 80.0;
   static const double _snapThreshold = 80.0;
 
-  static const int _durationMs = 500;
+  static const int _durationMs = 300;
   static const double _resistance = 0.7;
 
   late AnimationController _controller;
@@ -199,32 +201,31 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
                   ignoring: !_isOpen,
                   child: ColoredBox(
                   color: AppTheme.destructive,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: GestureDetector(
                         onTap: _handleTapDelete,
-                        child: SizedBox(
-                          width: _openWidth,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.delete_outline,
-                                  color: Colors.white, size: 22),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.delete,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.delete_outline,
+                                color: Colors.white, size: 20),
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.delete,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
                 ),
@@ -232,8 +233,9 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
               // ── Card — only the Transform rebuilds during drag ──────
               ValueListenableBuilder<double>(
                 valueListenable: _offsetNotifier,
-                child: ExpenseCard(
+                child: MobileExpenseCard(
                   expense: widget.expense,
+                  onEdit: widget.onEdit,
                   margin: EdgeInsets.zero,
                 ),
                 builder: (_, offset, card) => Transform.translate(

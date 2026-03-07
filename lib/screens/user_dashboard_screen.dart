@@ -4,11 +4,12 @@ import '../providers/expense_provider.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
-import '../widgets/expenses/expense_card.dart';
+import '../widgets/expenses/mobile_expense_card.dart';
 import '../widgets/expenses/swipeable_expense_card.dart';
 import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
+import '../widgets/expenses/total_approved_badge.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -54,6 +55,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
   Widget _buildMobileExpenseList(AppLocalizations l10n) {
     final expensesAsync = ref.watch(expenseSearchProvider);
+    final companyLocale = ref.watch(companyLocaleProvider);
+    final userInfo = ref.watch(userInfoProvider);
 
     return expensesAsync.when(
       loading: () => const Padding(
@@ -74,17 +77,44 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
         final filtered = expenses
             .where((e) => e.expenseStatusId == _selectedStatusId)
             .toList();
+        final approvedTotal = expenses
+            .where((e) => e.expenseStatusId == 2)
+            .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
+        final approvedTotalText = _formatSummaryAmount(
+          approvedTotal,
+          userInfo?.currencyCode,
+          companyLocale,
+        );
 
         if (filtered.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 32),
-            child: Center(
-              child: Text(
-                l10n.noExpensesFound,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppTheme.mutedForeground),
+          if (_selectedStatusId == 1) {
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 16),
+              child: ExpensesEmptyState(
+                title: l10n.noPendingExpensesTitle,
+                subtitle: l10n.noPendingExpensesSubtitle,
+                onNewExpense: () =>
+                    Navigator.of(context).pushNamed('/employee/new-expense'),
+                newExpenseLabel: l10n.newExpense,
+              ),
+            );
+          }
+
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Center(
+                child: Text(
+                  _selectedStatusId == 2
+                      ? l10n.noApprovedExpenses
+                      : l10n.noDeclinedExpenses,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 14,
+                        color: AppTheme.mutedForeground,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           );
@@ -103,15 +133,26 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                 onPeekPlayed: isFirst
                     ? () => setState(() => _mobilePeekPlayed = true)
                     : null,
+                onEdit: () {
+                  // Edit flow lands in Step 6. Keep the action visible now so the
+                  // mobile card matches the approved layout.
+                },
               );
             }).toList(),
           );
         }
 
         return Column(
-          children: filtered
-              .map((expense) => ExpenseCard(expense: expense))
-              .toList(),
+          children: [
+            ...filtered.map(
+              (expense) => MobileExpenseCard(expense: expense),
+            ),
+            if (_selectedStatusId == 2 && approvedTotal > 0)
+              TotalApprovedBadge(
+                label: l10n.totalApproved,
+                amountText: approvedTotalText,
+              ),
+          ],
         );
       },
     );
@@ -273,7 +314,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                           children: [
                             Text(
                               l10n.myExpenses,
-                              style: Theme.of(context).textTheme.headlineMedium,
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                    fontSize: context.isMobile ? 18 : 24,
+                                  ),
                             ),
                             FilledButton.icon(
                               onPressed: () => Navigator.of(context)

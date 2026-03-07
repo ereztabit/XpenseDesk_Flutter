@@ -14,6 +14,7 @@ class ExpenseSummary {
   final double? amount;
   final String? currencyCode;
   final String? receiptRef;
+  final String? note;
   final int expenseStatusId;
   final String statusAlias;
   final String? reviewedByUserId;
@@ -33,6 +34,7 @@ class ExpenseSummary {
     this.amount,
     this.currencyCode,
     this.receiptRef,
+    this.note,
     required this.expenseStatusId,
     required this.statusAlias,
     this.reviewedByUserId,
@@ -54,6 +56,7 @@ class ExpenseSummary {
       amount: (json['amount'] as num?)?.toDouble(),
       currencyCode: json['currencyCode'] as String?,
       receiptRef: json['receiptRef'] as String?,
+      note: json['note'] as String?,
       expenseStatusId: json['expenseStatusId'] as int,
       statusAlias: json['statusAlias'] as String,
       reviewedByUserId: json['reviewedByUserId'] as String?,
