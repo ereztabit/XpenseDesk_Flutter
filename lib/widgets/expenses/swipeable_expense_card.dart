@@ -99,8 +99,12 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
     if (_isOpen &&
         widget.openCardNotifier.value != widget.expense.expenseId) {
       _cancelAutoClose();
+      if (mounted) {
+        setState(() => _isOpen = false);
+      } else {
+        _isOpen = false;
+      }
       _animateTo(0);
-      _isOpen = false;
     }
   }
 
@@ -113,7 +117,7 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
     _cancelAutoClose();
     _autoCloseTimer = Timer(_autoCloseDelay, () {
       if (!mounted || !_isOpen) return;
-      _isOpen = false;
+      setState(() => _isOpen = false);
       widget.openCardNotifier.value = null;
       _animateTo(0);
       _rawOffset = 0;
@@ -173,12 +177,14 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
   void _onDragEnd(DragEndDetails _) {
     final rawMagnitude = _rawOffset * _openDir;
     if (rawMagnitude >= _snapThreshold) {
-      _isOpen = true;
+      setState(() => _isOpen = true);
       widget.openCardNotifier.value = widget.expense.expenseId;
       _animateTo(_openDir * _openWidth);
       _scheduleAutoClose();
     } else {
-      _isOpen = false;
+      if (_isOpen) {
+        setState(() => _isOpen = false);
+      }
       _animateTo(0);
       _cancelAutoClose();
     }
@@ -187,8 +193,10 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
 
   Future<void> _handleTapDelete() async {
     _cancelAutoClose();
+    if (_isOpen) {
+      setState(() => _isOpen = false);
+    }
     _animateTo(0);
-    _isOpen = false;
     if (mounted) {
       await DeleteExpenseDialog.show(context, widget.expense.expenseId);
     }
@@ -227,35 +235,38 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
               Positioned.fill(
                 child: IgnorePointer(
                   ignoring: !_isOpen,
-                  child: ColoredBox(
-                  color: AppTheme.destructive,
-                  child: Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: GestureDetector(
-                        onTap: _handleTapDelete,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.delete_outline,
-                                color: Colors.white, size: 20),
-                            const SizedBox(height: 4),
-                            Text(
-                              l10n.delete,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _handleTapDelete,
+                    child: ColoredBox(
+                      color: AppTheme.destructive,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: SizedBox(
+                          width: _openWidth,
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.only(end: 12),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.delete_outline,
+                                    color: Colors.white, size: 20),
+                                const SizedBox(height: 4),
+                                Text(
+                                  l10n.delete,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 ),
               ),
               // ── Card — only the Transform rebuilds during drag ──────
