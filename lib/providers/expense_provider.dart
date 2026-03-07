@@ -27,4 +27,3 @@ final expenseSearchProvider =
     toDate: '${now.year}-12-31',
   );
 });
-
