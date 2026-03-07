@@ -1,4 +1,5 @@
 import 'screen_imports.dart';
+import '../models/expense_currency.dart';
 import '../providers/expense_provider.dart';
 import '../services/expense_service.dart';
 import '../widgets/expenses/expense_form.dart';
@@ -12,31 +13,45 @@ class NewExpenseScreen extends ConsumerStatefulWidget {
 
 class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     with FormBehaviorMixin {
+  static final RegExp _receiptRefPattern = RegExp(
+    r'^[a-zA-Z0-9\u0590-\u05FF /\\-]+$',
+  );
+
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  final _currencyCodeController = TextEditingController();
   final _merchantNameController = TextEditingController();
   final _noteController = TextEditingController();
   final _receiptRefController = TextEditingController();
 
   DateTime? _selectedExpenseDate;
   int? _selectedCategoryId;
+  String? _selectedCurrencyCode;
   bool _isLoading = false;
   String? _errorMessage;
-  String _initialCurrencyCode = '';
+  String? _initialCurrencyCode;
+
+  DateTime get _latestExpenseDate {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DateTime get _earliestExpenseDate {
+    final latest = _latestExpenseDate;
+    return DateTime(latest.year, latest.month - 6, latest.day);
+  }
 
   @override
   void initState() {
     super.initState();
     final userInfo = ref.read(userInfoProvider);
-    _initialCurrencyCode = userInfo?.currencyCode?.trim().toUpperCase() ?? '';
-    _currencyCodeController.text = _initialCurrencyCode;
+    final defaultCurrency = ExpenseCurrency.fromCode(userInfo?.currencyCode);
+    _initialCurrencyCode = defaultCurrency?.code;
+    _selectedCurrencyCode = defaultCurrency?.code;
   }
 
   @override
   void dispose() {
     _amountController.dispose();
-    _currencyCodeController.dispose();
     _merchantNameController.dispose();
     _noteController.dispose();
     _receiptRefController.dispose();
@@ -48,21 +63,44 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     return _selectedExpenseDate != null ||
         _selectedCategoryId != null ||
         _amountController.text.trim().isNotEmpty ||
-        _currencyCodeController.text.trim().toUpperCase() !=
-            _initialCurrencyCode ||
+        _selectedCurrencyCode != _initialCurrencyCode ||
         _merchantNameController.text.trim().isNotEmpty ||
         _noteController.text.trim().isNotEmpty ||
         _receiptRefController.text.trim().isNotEmpty;
   }
 
+  String? _validateExpenseDate(DateTime? value) {
+    final l10n = AppLocalizations.of(context)!;
+    if (value == null) {
+      return l10n.expenseDateRequired;
+    }
+
+    final normalizedValue = DateTime(value.year, value.month, value.day);
+    if (normalizedValue.isAfter(_latestExpenseDate)) {
+      return l10n.expenseDateFutureNotAllowed;
+    }
+
+    if (normalizedValue.isBefore(_earliestExpenseDate)) {
+      return l10n.expenseDateOlderThanSixMonths;
+    }
+
+    return null;
+  }
+
   String? _validateAmount(String? value) {
     final l10n = AppLocalizations.of(context)!;
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null;
+    if (trimmed.isEmpty) {
+      return l10n.amountRequired;
+    }
 
     final parsed = double.tryParse(trimmed.replaceAll(',', ''));
-    if (parsed == null || parsed <= 0) {
+    if (parsed == null || parsed < 1) {
       return l10n.amountMustBePositive;
+    }
+
+    if (parsed > 10000) {
+      return l10n.amountMaxValue;
     }
 
     return null;
@@ -71,7 +109,9 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   String? _validateCurrencyCode(String? value) {
     final l10n = AppLocalizations.of(context)!;
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return null;
+    if (trimmed.isEmpty) {
+      return l10n.currencyRequired;
+    }
 
     if (!RegExp(r'^[a-zA-Z]{3}$').hasMatch(trimmed)) {
       return l10n.currencyCodeInvalid;
@@ -86,13 +126,47 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     return double.tryParse(trimmed.replaceAll(',', ''));
   }
 
+  String? _validateMerchantName(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return l10n.merchantRequired;
+    }
+    if (trimmed.length > 20) {
+      return l10n.merchantMaxLength;
+    }
+    return null;
+  }
+
+  String? _validateReceiptRef(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return l10n.receiptRefRequired;
+    }
+    if (trimmed.length > 20) {
+      return l10n.receiptRefMaxLength;
+    }
+    if (!_receiptRefPattern.hasMatch(trimmed)) {
+      return l10n.receiptRefInvalidCharacters;
+    }
+    return null;
+  }
+
+  String? _validateNote(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+    if (value != null && value.length > 100) {
+      return l10n.notesMaxLength;
+    }
+    return null;
+  }
+
   Future<void> _selectExpenseDate() async {
-    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedExpenseDate ?? now,
-      firstDate: DateTime(now.year - 5),
-      lastDate: DateTime(now.year + 1),
+      initialDate: _selectedExpenseDate ?? _latestExpenseDate,
+      firstDate: _earliestExpenseDate,
+      lastDate: _latestExpenseDate,
     );
 
     if (picked != null && mounted) {
@@ -123,32 +197,37 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         expenseDate: expenseDate,
         categoryId: categoryId,
         amount: _parseAmount(),
-        currencyCode: _currencyCodeController.text.trim(),
+        currencyCode: _selectedCurrencyCode,
         merchantName: _merchantNameController.text.trim(),
         note: _noteController.text.trim(),
         receiptRef: _receiptRefController.text.trim(),
       );
-
-      ref.invalidate(expenseSearchProvider);
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l10n.expenseCreatedSuccess)));
-
-      Navigator.of(context).pushReplacementNamed('/user/dashboard');
     } on ExpenseException catch (e) {
       if (!mounted) return;
-      setState(() => _errorMessage = e.message);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.message;
+      });
+      return;
     } catch (_) {
       if (!mounted) return;
-      setState(() => _errorMessage = l10n.failedToCreateExpense);
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      setState(() {
+        _isLoading = false;
+        _errorMessage = l10n.failedToCreateExpense;
+      });
+      return;
     }
+
+    if (!mounted) return;
+
+    ref.invalidate(expenseSearchProvider);
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.expenseCreatedSuccess)));
+
+    setState(() => _isLoading = false);
+    Navigator.of(context).pushReplacementNamed('/user/dashboard');
   }
 
   @override
@@ -191,8 +270,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                         formKey: _formKey,
                         selectedExpenseDate: _selectedExpenseDate,
                         selectedCategoryId: _selectedCategoryId,
+                        selectedCurrencyCode: _selectedCurrencyCode,
                         amountController: _amountController,
-                        currencyCodeController: _currencyCodeController,
                         merchantNameController: _merchantNameController,
                         noteController: _noteController,
                         receiptRefController: _receiptRefController,
@@ -201,9 +280,16 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                         onCategorySelected: (value) {
                           setState(() => _selectedCategoryId = value);
                         },
+                        onCurrencySelected: (value) {
+                          setState(() => _selectedCurrencyCode = value);
+                        },
                         onSubmit: _handleSubmit,
+                        expenseDateValidator: _validateExpenseDate,
                         amountValidator: _validateAmount,
                         currencyCodeValidator: _validateCurrencyCode,
+                        merchantNameValidator: _validateMerchantName,
+                        receiptRefValidator: _validateReceiptRef,
+                        noteValidator: _validateNote,
                       ),
                     ],
                   ),

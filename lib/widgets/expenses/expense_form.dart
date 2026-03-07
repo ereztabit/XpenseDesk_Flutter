@@ -1,47 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_category.dart';
+import '../../models/expense_currency.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/expense_amount_input_formatter.dart';
 import '../../utils/responsive_utils.dart';
 import '../form_behavior_mixin.dart';
 
 class ExpenseForm extends ConsumerWidget {
+  static final RegExp _receiptRefInputPattern = RegExp(
+    r'[a-zA-Z0-9\u0590-\u05FF /\\-]',
+  );
+
   const ExpenseForm({
     super.key,
     required this.formKey,
     required this.selectedExpenseDate,
     required this.selectedCategoryId,
+    required this.selectedCurrencyCode,
     required this.amountController,
-    required this.currencyCodeController,
     required this.merchantNameController,
     required this.noteController,
     required this.receiptRefController,
     required this.isLoading,
     required this.onSelectExpenseDate,
     required this.onCategorySelected,
+    required this.onCurrencySelected,
     required this.onSubmit,
+    required this.expenseDateValidator,
     required this.amountValidator,
     required this.currencyCodeValidator,
+    required this.merchantNameValidator,
+    required this.receiptRefValidator,
+    required this.noteValidator,
   });
 
   final GlobalKey<FormState> formKey;
   final DateTime? selectedExpenseDate;
   final int? selectedCategoryId;
+  final String? selectedCurrencyCode;
   final TextEditingController amountController;
-  final TextEditingController currencyCodeController;
   final TextEditingController merchantNameController;
   final TextEditingController noteController;
   final TextEditingController receiptRefController;
   final bool isLoading;
   final Future<void> Function() onSelectExpenseDate;
   final ValueChanged<int?> onCategorySelected;
+  final ValueChanged<String?> onCurrencySelected;
   final VoidCallback onSubmit;
+  final String? Function(DateTime?) expenseDateValidator;
   final String? Function(String?) amountValidator;
   final String? Function(String?) currencyCodeValidator;
+  final String? Function(String?) merchantNameValidator;
+  final String? Function(String?) receiptRefValidator;
+  final String? Function(String?) noteValidator;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,8 +80,7 @@ class ExpenseForm extends ConsumerWidget {
               FormField<DateTime>(
                 key: ValueKey(selectedExpenseDate),
                 initialValue: selectedExpenseDate,
-                validator: (value) =>
-                    value == null ? l10n.expenseDateRequired : null,
+                validator: expenseDateValidator,
                 builder: (field) {
                   final borderColor = field.hasError
                       ? AppTheme.destructive
@@ -176,7 +192,7 @@ class ExpenseForm extends ConsumerWidget {
                 },
               ),
               const SizedBox(height: 20),
-              FieldLabel(label: l10n.amountLabel),
+              FieldLabel(label: l10n.amountLabel, isRequired: true),
               const SizedBox(height: 8),
               TextFormField(
                 controller: amountController,
@@ -184,34 +200,84 @@ class ExpenseForm extends ConsumerWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
+                inputFormatters: [ExpenseAmountInputFormatter()],
                 validator: amountValidator,
                 decoration: const InputDecoration(),
               ),
-              const SizedBox(height: 20),
-              FieldLabel(label: l10n.currencyLabel),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: currencyCodeController,
-                enabled: !isLoading,
-                textCapitalization: TextCapitalization.characters,
-                maxLength: 3,
-                validator: currencyCodeValidator,
-                decoration: const InputDecoration(counterText: ''),
+              const SizedBox(height: 6),
+              Text(
+                l10n.amountRangeHelper,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 12,
+                  color: AppTheme.mutedForeground,
+                ),
               ),
               const SizedBox(height: 20),
-              FieldLabel(label: l10n.merchantLabel),
+              FieldLabel(label: l10n.currencyLabel, isRequired: true),
+              const SizedBox(height: 8),
+              FormField<String>(
+                key: ValueKey(selectedCurrencyCode),
+                initialValue: selectedCurrencyCode,
+                validator: currencyCodeValidator,
+                builder: (field) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownMenu<String>(
+                        key: ValueKey(selectedCurrencyCode),
+                        initialSelection: selectedCurrencyCode,
+                        enabled: !isLoading,
+                        expandedInsets: EdgeInsets.zero,
+                        hintText: l10n.currencyPlaceholder,
+                        inputDecorationTheme: _dropdownTheme(field.hasError),
+                        dropdownMenuEntries: ExpenseCurrency.values
+                            .map(
+                              (currency) => DropdownMenuEntry<String>(
+                                value: currency.code,
+                                label: currency.displayLabel,
+                              ),
+                            )
+                            .toList(),
+                        onSelected: (value) {
+                          field.didChange(value);
+                          onCurrencySelected(value);
+                        },
+                      ),
+                      if (field.hasError) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          field.errorText!,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppTheme.destructive),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              FieldLabel(label: l10n.merchantLabel, isRequired: true),
               const SizedBox(height: 8),
               TextFormField(
                 controller: merchantNameController,
                 enabled: !isLoading,
+                maxLength: 20,
+                inputFormatters: [LengthLimitingTextInputFormatter(20)],
+                validator: merchantNameValidator,
                 decoration: const InputDecoration(),
               ),
               const SizedBox(height: 20),
-              FieldLabel(label: l10n.receiptRefLabel),
+              FieldLabel(label: l10n.receiptRefLabel, isRequired: true),
               const SizedBox(height: 8),
               TextFormField(
                 controller: receiptRefController,
                 enabled: !isLoading,
+                maxLength: 20,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(20),
+                  FilteringTextInputFormatter.allow(_receiptRefInputPattern),
+                ],
+                validator: receiptRefValidator,
                 decoration: const InputDecoration(),
               ),
               const SizedBox(height: 20),
@@ -220,8 +286,13 @@ class ExpenseForm extends ConsumerWidget {
               TextFormField(
                 controller: noteController,
                 enabled: !isLoading,
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.newline,
                 maxLines: 4,
                 minLines: 4,
+                maxLength: 100,
+                validator: noteValidator,
+                inputFormatters: [LengthLimitingTextInputFormatter(100)],
                 decoration: const InputDecoration(alignLabelWithHint: true),
               ),
               const SizedBox(height: 24),
