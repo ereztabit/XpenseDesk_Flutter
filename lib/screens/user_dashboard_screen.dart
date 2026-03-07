@@ -5,6 +5,7 @@ import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/expense_card.dart';
+import '../widgets/expenses/swipeable_expense_card.dart';
 import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
@@ -23,6 +24,12 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
   /// Currently selected filter: 1=Pending, 2=Approved, 3=Declined
   int _selectedStatusId = 1;
 
+  /// Notifier shared across all swipeable pending cards so only one stays open.
+  final _openCardNotifier = ValueNotifier<String?>(null);
+
+  /// True after the first-card auto-peek has started; prevents replays.
+  bool _mobilePeekPlayed = false;
+
   @override
   bool get hasUnsavedChanges => false;
 
@@ -30,6 +37,12 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
   void initState() {
     super.initState();
     _initializeSession();
+  }
+
+  @override
+  void dispose() {
+    _openCardNotifier.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeSession() async {
@@ -74,6 +87,24 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                     ?.copyWith(color: AppTheme.mutedForeground),
               ),
             ),
+          );
+        }
+
+        // Pending tab: wrap each card in the swipeable delete gesture.
+        // Other tabs: plain read-only card.
+        if (_selectedStatusId == 1) {
+          return Column(
+            children: filtered.asMap().entries.map((entry) {
+              final isFirst = entry.key == 0;
+              return SwipeableExpenseCard(
+                expense: entry.value,
+                openCardNotifier: _openCardNotifier,
+                autoPeek: isFirst && !_mobilePeekPlayed,
+                onPeekPlayed: isFirst
+                    ? () => setState(() => _mobilePeekPlayed = true)
+                    : null,
+              );
+            }).toList(),
           );
         }
 
@@ -307,7 +338,10 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
         ExpenseStatusToggle(
           selectedStatusId: _selectedStatusId,
           counts: counts,
-          onChanged: (id) => setState(() => _selectedStatusId = id),
+          onChanged: (id) => setState(() {
+            _selectedStatusId = id;
+            _openCardNotifier.value = null; // close any open swipeable card
+          }),
         ),
         const SizedBox(height: 16),
         _buildMobileExpenseList(l10n),

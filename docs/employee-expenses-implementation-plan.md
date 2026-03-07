@@ -142,36 +142,7 @@ Each step produces a working end-to-end slice you can verify on both Desktop and
 
 ---
 
-## Step 4 — Billing Cycle Banner
-
-**Goal:** Show the billing cycle countdown banner on both layouts.
-
-### What to build
-
-1. **ARB keys:**
-   - `daysUntilCycleEnd` (e.g. "12d until cycle end")
-   - Hebrew translation
-
-2. **Billing cycle calculation utility** (`lib/utils/billing_cycle_utils.dart`)
-   - Takes `cutoverDay` from `CompanyInfo` model
-   - Calculates days remaining until next cycle end date
-   - Returns days remaining + formatted end date
-
-3. **Desktop banner** — Card with light primary-tinted background, calendar-clock icon, countdown text. Placed between header row and collapsible sections.
-
-4. **Mobile banner** — Single centered line pinned to bottom of content area (below cards/badge). Smaller font, muted color.
-
-5. **Provider/data access** — Read `cutoverDay` from `CompanyInfo` (check if company provider already exposes this).
-
-### What to test
-
-> **Desktop:** Banner card appears between title row and Pending section. Shows days remaining + cycle end date. Primary-tinted background with calendar icon.
->
-> **Mobile:** Small muted line at bottom of content. Same countdown info, smaller size.
-
----
-
-## Step 5 — New Expense Form (Create)
+## Step 4 — New Expense Form (Create)
 
 **Goal:** Build the expense creation form in the existing `NewExpenseScreen` shell.
 
@@ -215,7 +186,7 @@ Each step produces a working end-to-end slice you can verify on both Desktop and
 
 ---
 
-## Step 6 — Receipt AI Scan (Analyze Receipt)
+## Step 5 — Receipt AI Scan (Analyze Receipt)
 
 **Goal:** Add receipt photo upload with AI extraction to pre-fill the expense form.
 
@@ -248,7 +219,7 @@ Each step produces a working end-to-end slice you can verify on both Desktop and
 
 ---
 
-## Step 7 — Expense Detail View (Read-Only)
+## Step 6 — Expense Detail View (Read-Only)
 
 **Goal:** Tapping the eye icon (desktop processed) or "Receipt" button (mobile processed) shows the full expense detail.
 
@@ -286,7 +257,7 @@ Each step produces a working end-to-end slice you can verify on both Desktop and
 
 ---
 
-## Step 8 — Polish and Edge Cases
+## Step 7 — Polish and Edge Cases
 
 **Goal:** Final pass to match all spec details, handle edge cases, and verify RTL.
 
@@ -332,21 +303,19 @@ Each step produces a working end-to-end slice you can verify on both Desktop and
 ## Summary — Step Dependencies
 
 ```
-Step 1  Desktop sections + tables + delete
+Step 1   Desktop sections + tables + delete
    ↓
-Step 2  Mobile tabs + cards + detail model
+Step 2   Mobile tabs + cards + detail model
    ↓
-Step 3  Mobile swipe-to-delete
+Step 3   Mobile swipe-to-delete
    ↓
-Step 4  Billing cycle banner (both layouts)
+Step 4   New Expense form (create)
    ↓
-Step 5  New Expense form (create)
+Step 5   Receipt AI scan
    ↓
-Step 6  Receipt AI scan
+Step 6   Expense detail view + lightbox
    ↓
-Step 7  Expense detail view + lightbox
-   ↓
-Step 8  Polish, RTL, edge cases
+Step 7   Polish, RTL, edge cases
 ```
 
 Steps 1-3 transform the dashboard. Steps 4-7 add new capabilities. Step 8 hardens everything.

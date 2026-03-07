@@ -1,6 +1,6 @@
 api:
   isBackendOnSameMachine: false
-  baseUrl: https://tabit-erez.local:7223
+  baseUrl: https://127.0.0.1:7223
 
 app:
   name: XpenseDesk Dev

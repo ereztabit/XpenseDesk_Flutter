@@ -11,8 +11,14 @@ import '../../utils/format_utils.dart';
 class ExpenseCard extends ConsumerWidget {
   final ExpenseSummary expense;
   final VoidCallback? onTap;
+  final EdgeInsetsGeometry margin;
 
-  const ExpenseCard({super.key, required this.expense, this.onTap});
+  const ExpenseCard({
+    super.key,
+    required this.expense,
+    this.onTap,
+    this.margin = const EdgeInsets.symmetric(vertical: 4),
+  });
 
   Color _statusColor() {
     return switch (expense.expenseStatusId) {
@@ -49,7 +55,7 @@ class ExpenseCard extends ConsumerWidget {
             : '—';
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: margin,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
