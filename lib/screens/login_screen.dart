@@ -24,27 +24,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _errorMessage;
   String? _successMessage;
-  bool _isCheckingSession = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkExistingSession();
-  }
-
-  Future<void> _checkExistingSession() async {
-    await ref.read(userInfoProvider.notifier).loadFromSession();
-    if (!mounted) return;
-
-    final userInfo = ref.read(userInfoProvider);
-    if (userInfo != null) {
-      final route = userInfo.roleId == 1 ? '/dashboard' : '/user/dashboard';
-      Navigator.of(context).pushReplacementNamed(route);
-      return;
-    }
-
-    setState(() => _isCheckingSession = false);
-  }
 
   @override
   void dispose() {
@@ -112,12 +91,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isCheckingSession) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     final l10n = AppLocalizations.of(context)!;
     final isEmailEmpty = _emailController.text.trim().isEmpty;
 

@@ -61,7 +61,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
     _accountantEmailFocusNode.addListener(() {
       if (!_accountantEmailFocusNode.hasFocus) _formKey.currentState?.validate();
     });
-    // loadFromSession() is handled automatically by FormBehaviorMixin.initState
+    // Session restore is preloaded from MyApp during app startup.
   }
 
   @override

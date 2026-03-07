@@ -20,8 +20,6 @@ class UserDashboardScreen extends ConsumerStatefulWidget {
 
 class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     with FormBehaviorMixin {
-  bool _isLoading = true;
-
   /// Currently selected filter: 1=Pending, 2=Approved, 3=Declined
   int _selectedStatusId = 1;
 
@@ -35,28 +33,15 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
   bool get hasUnsavedChanges => false;
 
   @override
-  void initState() {
-    super.initState();
-    _initializeSession();
-  }
-
-  @override
   void dispose() {
     _openCardNotifier.dispose();
     super.dispose();
   }
 
-  Future<void> _initializeSession() async {
-    await ref.read(userInfoProvider.notifier).loadFromSession();
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
-  }
-
   Widget _buildMobileExpenseList(AppLocalizations l10n) {
     final expensesAsync = ref.watch(expenseSearchProvider);
     final companyLocale = ref.watch(companyLocaleProvider);
-    final userInfo = ref.watch(userInfoProvider);
+    final userInfo = ref.watch(userInfoProvider)!;
 
     return expensesAsync.when(
       loading: () => const Padding(
@@ -82,7 +67,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
             .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
         final approvedTotalText = _formatSummaryAmount(
           approvedTotal,
-          userInfo?.currencyCode,
+          userInfo.currencyCode,
           companyLocale,
         );
 
@@ -244,13 +229,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final userInfo = ref.watch(userInfoProvider);
     final l10n = AppLocalizations.of(context)!;
     final expensesAsync = ref.watch(expenseSearchProvider);
 
@@ -265,27 +243,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
       2: allExpenses.where((e) => e.expenseStatusId == 2).length,
       3: allExpenses.where((e) => e.expenseStatusId == 3).length,
     };
-
-    if (userInfo == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed('/');
-      });
-      return const SizedBox.shrink();
-    }
-
-    if (userInfo.roleId == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed('/dashboard');
-      });
-      return const SizedBox.shrink();
-    }
-
-    if (userInfo.termsConsentDate == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed('/employee/onboarding');
-      });
-      return const SizedBox.shrink();
-    }
 
     return buildWithNavigationGuard(
       child: Scaffold(

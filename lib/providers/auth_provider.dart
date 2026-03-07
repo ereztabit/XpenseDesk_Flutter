@@ -11,6 +11,9 @@ final authServiceProvider = Provider<AuthService>((ref) {
 
 /// Provider for current authenticated user info
 class UserInfoNotifier extends Notifier<UserInfo?> {
+  Future<void>? _sessionRestoreFuture;
+  bool _hasAttemptedSessionRestore = false;
+
   @override
   UserInfo? build() => null;
 
@@ -27,22 +30,41 @@ class UserInfoNotifier extends Notifier<UserInfo?> {
   }
 
   /// Load user info from API using stored session
-  Future<void> loadFromSession() async {
-    if (state != null) return; // Already loaded
-    
+  Future<void> loadFromSession() {
+    if (state != null || _hasAttemptedSessionRestore) {
+      return Future.value();
+    }
+
+    final inFlightRestore = _sessionRestoreFuture;
+    if (inFlightRestore != null) {
+      return inFlightRestore;
+    }
+
+    final future = _loadFromSessionInternal();
+    _sessionRestoreFuture = future;
+    return future;
+  }
+
+  Future<void> _loadFromSessionInternal() async {
     final authService = ref.read(authServiceProvider);
-    
+
     try {
       final hasToken = await authService.hasSessionToken();
-      if (hasToken) {
-        final userInfo = await authService.getUserInfo();
-        state = userInfo;
-        _setLocaleFromUserInfo(userInfo);
+      if (!hasToken) {
+        state = null;
+        return;
       }
+
+      final userInfo = await authService.getUserInfo();
+      state = userInfo;
+      _setLocaleFromUserInfo(userInfo);
     } catch (e) {
       // Session expired or invalid - clear it
       await authService.clearSessionToken();
       state = null;
+    } finally {
+      _hasAttemptedSessionRestore = true;
+      _sessionRestoreFuture = null;
     }
   }
 
@@ -68,6 +90,11 @@ class UserInfoNotifier extends Notifier<UserInfo?> {
 final userInfoProvider = NotifierProvider<UserInfoNotifier, UserInfo?>(
   UserInfoNotifier.new,
 );
+
+/// Completes when the app's initial session restore attempt has finished.
+final authBootstrapProvider = FutureProvider<void>((ref) async {
+  await ref.read(userInfoProvider.notifier).loadFromSession();
+});
 
 /// Derived provider: company locale string for date/currency formatting.
 /// Falls back to 'en' if no user is logged in.

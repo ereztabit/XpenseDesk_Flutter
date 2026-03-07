@@ -36,6 +36,8 @@ class _MyAppState extends ConsumerState<MyApp> {
   @override
   void initState() {
     super.initState();
+    ref.read(authBootstrapProvider);
+
     // Wire up the global 401 handler: clear in-memory session state,
     // clear the stored token, then hard-navigate to the login page.
     ApiService.onUnauthorized = () {

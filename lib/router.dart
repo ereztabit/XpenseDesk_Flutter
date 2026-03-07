@@ -11,6 +11,7 @@ import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
 import 'screens/new_expense_screen.dart';
+import 'widgets/auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   final uri = Uri.parse(settings.name ?? '/');
@@ -36,7 +37,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case '/':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const LoginScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.guestOnly,
+          child: LoginScreen(),
+        ),
       );
 
     // --- Company onboarding ---
@@ -50,62 +54,92 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case '/dashboard':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const DashboardScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: DashboardScreen(),
+        ),
       );
 
     case '/manager/profile':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const ProfileScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: ProfileScreen(),
+        ),
       );
 
     case '/manager/users':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const UsersScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: UsersScreen(),
+        ),
       );
 
     case '/manager/history':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const SpendHistoryScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: SpendHistoryScreen(),
+        ),
       );
 
     case '/manager/company-config':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const CompanyConfigScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: CompanyConfigScreen(),
+        ),
       );
 
     // --- Employee ---
     case '/user/dashboard':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const UserDashboardScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.employeeOnboardedOnly,
+          child: UserDashboardScreen(),
+        ),
       );
 
     case '/employee/onboarding':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const EmployeeOnboardingScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.employeePendingOnboardingOnly,
+          child: EmployeeOnboardingScreen(),
+        ),
       );
 
     case '/employee/profile':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const ProfileScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.employeeOnly,
+          child: ProfileScreen(),
+        ),
       );
 
     case '/employee/history':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const SpendHistoryScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.employeeOnboardedOnly,
+          child: SpendHistoryScreen(),
+        ),
       );
 
     case '/employee/new-expense':
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const NewExpenseScreen(),
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.employeeOnboardedOnly,
+          child: NewExpenseScreen(),
+        ),
       );
 
     default:
