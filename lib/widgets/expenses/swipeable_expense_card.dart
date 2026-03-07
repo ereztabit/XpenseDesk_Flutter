@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
@@ -43,6 +45,8 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
     with SingleTickerProviderStateMixin {
   static const double _openWidth = 80.0;
   static const double _snapThreshold = 80.0;
+  static const Duration _autoCloseDelay = Duration(milliseconds: 1800);
+  static const Duration _peekAutoCloseDelay = Duration(milliseconds: 1000);
 
   static const int _durationMs = 300;
   static const double _resistance = 0.7;
@@ -62,6 +66,7 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
   double _animFrom = 0;
   double _animTarget = 0;
   bool _isOpen = false;
+  Timer? _autoCloseTimer;
 
   /// -1.0 for LTR (swipe left opens delete on the right).
   /// +1.0 for RTL (swipe right opens delete on the left).
@@ -93,9 +98,26 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
   void _onNotifierChanged() {
     if (_isOpen &&
         widget.openCardNotifier.value != widget.expense.expenseId) {
+      _cancelAutoClose();
       _animateTo(0);
       _isOpen = false;
     }
+  }
+
+  void _cancelAutoClose() {
+    _autoCloseTimer?.cancel();
+    _autoCloseTimer = null;
+  }
+
+  void _scheduleAutoClose() {
+    _cancelAutoClose();
+    _autoCloseTimer = Timer(_autoCloseDelay, () {
+      if (!mounted || !_isOpen) return;
+      _isOpen = false;
+      widget.openCardNotifier.value = null;
+      _animateTo(0);
+      _rawOffset = 0;
+    });
   }
 
   void _schedulePeek() {
@@ -103,8 +125,9 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
       if (!mounted || _isOpen) return;
       widget.onPeekPlayed?.call();
       _animateTo(_openDir * 60, onDone: () {
-        Future.delayed(const Duration(milliseconds: 800), () {
-          if (!mounted || _isOpen) _animateTo(0);
+        Future.delayed(_peekAutoCloseDelay, () {
+          if (!mounted || _isOpen) return;
+          _animateTo(0);
         });
       });
     });
@@ -126,6 +149,7 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
   }
 
   void _onDragStart(DragStartDetails _) {
+    _cancelAutoClose();
     if (_controller.isAnimating) {
       _controller.stop();
     }
@@ -152,14 +176,17 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
       _isOpen = true;
       widget.openCardNotifier.value = widget.expense.expenseId;
       _animateTo(_openDir * _openWidth);
+      _scheduleAutoClose();
     } else {
       _isOpen = false;
       _animateTo(0);
+      _cancelAutoClose();
     }
     _rawOffset = _isOpen ? _openDir * _openWidth : 0;
   }
 
   Future<void> _handleTapDelete() async {
+    _cancelAutoClose();
     _animateTo(0);
     _isOpen = false;
     if (mounted) {
@@ -170,6 +197,7 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
   @override
   void dispose() {
     widget.openCardNotifier.removeListener(_onNotifierChanged);
+    _cancelAutoClose();
     _controller.dispose();
     _offsetNotifier.dispose();
     super.dispose();

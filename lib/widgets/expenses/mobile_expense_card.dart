@@ -230,7 +230,7 @@ class _DetailRow extends StatelessWidget {
       textAlign: TextAlign.end,
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w400,
             color: AppTheme.foreground,
             fontFamily: monospace ? 'monospace' : null,
           ),
