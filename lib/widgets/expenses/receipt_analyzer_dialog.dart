@@ -83,9 +83,8 @@ class _ReceiptAnalyzerDialogState extends ConsumerState<ReceiptAnalyzerDialog> {
       final capturedUrl = pdfBlobUrl;
       ui_web.platformViewRegistry.registerViewFactory(
         pdfViewType,
-        (int id) => web.HTMLEmbedElement()
-          ..src = capturedUrl
-          ..type = 'application/pdf'
+        (int id) => web.HTMLIFrameElement()
+          ..src = '$capturedUrl#toolbar=0&navpanes=0&scrollbar=0&view=FitH'
           ..setAttribute('style', 'width:100%;height:100%;border:none;'),
       );
     }

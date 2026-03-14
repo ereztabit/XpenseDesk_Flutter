@@ -282,6 +282,8 @@
   "newExpenseUploadFormats": "JPG, PNG or PDF",
   "newExpenseExpandImage": "Expand",
   "newExpenseDownloadReceipt": "Download",
+  "newExpenseAnalyzeButton": "Analyze Receipt",
+  "newExpenseReplaceFile": "Replace file",
   "newExpenseAnalyzing": "Analyzing receipt...",
   "newExpenseAiApplied": "AI analysis applied",
   "newExpenseAiFailed": "AI analysis failed",

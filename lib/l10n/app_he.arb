@@ -282,6 +282,8 @@
   "newExpenseUploadFormats": "JPG, PNG או PDF",
   "newExpenseExpandImage": "הרחב",
   "newExpenseDownloadReceipt": "הורד",
+  "newExpenseAnalyzeButton": "נתח קבלה",
+  "newExpenseReplaceFile": "החלף קובץ",
   "newExpenseAnalyzing": "מנתח קבלה...",
   "newExpenseAiApplied": "ניתוח AI הוחל",
   "newExpenseAiFailed": "ניתוח AI נכשל",
