@@ -260,5 +260,13 @@
   "receiptRefInvalidCharacters": "מספר חשבונית/קבלה יכול להכיל רק אותיות, מספרים, רווחים, והתווים - / \\",
   "notesMaxLength": "ההערה חייבת להיות עד 100 תווים",
   "expenseCreatedSuccess": "ההוצאה נוצרה בהצלחה",
-  "failedToCreateExpense": "יצירת ההוצאה נכשלה"
+  "failedToCreateExpense": "יצירת ההוצאה נכשלה",
+
+  "receiptAnalyzerTitle": "ניתוח קבלה",
+  "receiptAnalyzerPickImage": "בחר תמונה",
+  "receiptAnalyzerAnalyze": "נתח קבלה",
+  "receiptAnalyzerNoFileSelected": "לא נבחר קובץ",
+  "receiptAnalyzerResult": "תוצאה",
+  "receiptAnalyzerAnalyzing": "מנתח...",
+  "receiptAnalyzerError": "שגיאה"
 }

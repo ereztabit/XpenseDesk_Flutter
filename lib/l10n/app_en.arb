@@ -260,5 +260,13 @@
   "receiptRefInvalidCharacters": "Receipt # can only contain letters, numbers, spaces, and - / \\",
   "notesMaxLength": "Notes must be 100 characters or less",
   "expenseCreatedSuccess": "Expense created successfully",
-  "failedToCreateExpense": "Failed to create expense"
+  "failedToCreateExpense": "Failed to create expense",
+
+  "receiptAnalyzerTitle": "Receipt Analyzer",
+  "receiptAnalyzerPickImage": "Pick Image",
+  "receiptAnalyzerAnalyze": "Analyze Receipt",
+  "receiptAnalyzerNoFileSelected": "No file selected",
+  "receiptAnalyzerResult": "Result",
+  "receiptAnalyzerAnalyzing": "Analyzing...",
+  "receiptAnalyzerError": "Error"
 }
