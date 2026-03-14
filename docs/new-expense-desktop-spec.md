@@ -1,5 +1,179 @@
 # XpenseDesk - New Expense Screen (Desktop) UX Specification
 
+---
+
+## Implementation Plan
+
+Each step is a self-contained increment. After each step: **`flutter build web` → fix errors → send screenshot**.
+ARB keys are added as part of whichever step first uses them — never as a standalone step.
+
+> **Real AI:** Uses `expenseService.analyzeReceipt(bytes, filename)` → `POST /api/expenses/analyze-receipt`.
+> Returns `{ amount, currencyCode, merchantName, expenseDate, categoryId, categoryName }` (any field may be null).
+> **Fast track** = API call succeeded (even with partial nulls). **Fail path** = API threw an exception.
+> No Dev Tools panel needed.
+
+---
+
+### Step 1 — Scaffold + Step Indicator + Routing
+**Goal:** New screen shell visible with correct layout and functional step indicator.
+
+**Deliverables:**
+- All ARB keys for the entire screen added upfront to `app_en.arb` + `app_he.arb`, `flutter pub get` run
+- `new_expense_screen.dart` rewritten: `AppHeader` → `Expanded(SingleChildScrollView(ConstrainedContent(...)))` → `AppFooter`
+- Page structure: Back to Dashboard ghost button (outside card) + `Card` containing `CardHeader` (step indicator) + empty `CardContent` placeholder
+- `ExpenseStepIndicator` widget (`lib/widgets/expenses/expense_step_indicator.dart`) wired in, hardcoded to step 0
+  - Circle 32px: Active = `AppTheme.primary`, Completed = primary `withAlpha(51)`, Inactive = `AppTheme.muted`
+  - Connector 48px × 1px: Completed = primary `withAlpha(102)`, Incomplete = `AppTheme.border`
+  - Labels 12px medium: Active = `AppTheme.foreground`, Inactive = `AppTheme.mutedForeground`
+- Route `/employee/new-expense` confirmed in `router.dart`
+
+**Screenshot prompt:** Navigate to `/employee/new-expense`. Send a screenshot showing: header/footer, Back button, card with 3-step indicator ("Upload" active, "Details" and "Approval" muted).
+
+**Status:** ☐ Not started
+
+---
+
+### Step 2 — Upload Zone + File Picker + Image/PDF Preview
+**Goal:** Step 1 content fully functional: upload zone, native file picker, preview for both image and PDF files.
+
+**File type support:** `.jpg`, `.jpeg`, `.png`, `.pdf` (mirrors `receipt_analyzer_dialog.dart`)
+
+**File picker:** Use `package:web/web.dart` (`web.HTMLInputElement`), NOT `dart:html`. Accept: `'.jpg,.jpeg,.png,.pdf'`. Pattern already established in `receipt_analyzer_dialog.dart` — reuse verbatim.
+
+**Deliverables:**
+- Upload zone in `CardContent`: 256px height, 2px dashed `AppTheme.border`, hover → primary border + muted bg @50%, 200ms transition
+- Center content: cloud-upload icon 48px muted-foreground, "Upload Receipt" 16px medium, subtitle 14px muted, secondary line: "JPG, PNG or PDF"
+- On file selected: store `_fileBytes`, `_filename`, `_fileSizeKb`
+- **Image path** (jpg/png): decode dimensions via `ui.decodeImageFromList`; preview as `Image.memory`, max-height 288px, object-fit contain
+- **PDF path**: create blob URL via `web.URL.createObjectURL`, register `HtmlElementView` platform view factory (unique view type per upload, counter-based); render via `HtmlElementView` at 288px height; revoke blob URL on dispose / on new file picked
+- Preview container: rounded 8px, bg muted, overflow hidden
+- Preview overlay (top-end, absolute, gap 4px): Expand button + Download button (both 32×32, secondary, bg+blur) — Expand only shown for images (not PDF); Download visible on desktop only
+- No scanning yet — file selected → preview shown immediately
+
+**Screenshot prompt:** 1) Empty upload zone. 2) Select an image → image preview with overlay buttons. 3) Select a PDF → PDF embedded viewer visible.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 3 — Real AI Analysis: Scanning Animation + API Call + State Transition
+**Goal:** Selecting a file triggers the scanning animation while the real API call runs, then transitions to step 2.
+
+**Service layer (before UI):**
+- Add `ReceiptAnalysisResult` model to `lib/models/receipt_analysis_result.dart`:
+  ```dart
+  class ReceiptAnalysisResult {
+    final double? amount;
+    final String? currencyCode;
+    final String? merchantName;
+    final String? expenseDate; // YYYY-MM-DD
+    final int? categoryId;
+    final String? categoryName;
+    factory ReceiptAnalysisResult.fromJson(Map<String, dynamic> json) { ... }
+  }
+  ```
+- Add `analyzeReceiptParsed(Uint8List bytes, String filename) → Future<ReceiptAnalysisResult>` to `ExpenseService`:
+  - Calls existing `postMultipart`, parses `response['data']` into `ReceiptAnalysisResult`
+  - Throws `ExpenseException` on API error (uses existing `_validateResponse`)
+
+**UI deliverables:**
+- On file selected: scanning animation overlay appears on the image preview **while the API call is in flight**:
+  - Semi-transparent bg (`AppTheme.background` @60%), backdrop blur, rounded 8px
+  - Scan line: full-width 4px gradient (transparent→primary→transparent), animates top 0→100% in 1500ms infinite
+  - Corner brackets: 4 corners, 32×32, 2px border on two sides, `AppTheme.primary`
+  - Center: Sparkles icon 40px pulsing + ping ring + "Analyzing receipt..." 14px + 3 bouncing dots (150ms stagger)
+- On API success: populate `_analysisResult`, advance `_currentStep = 1`, show toast "AI analysis applied"
+- On API error: set `_aiFailed = true`, advance `_currentStep = 1`, show error toast
+- Step indicator: step 0 → completed, step 1 → active
+
+**Screenshot prompt:** 1) Take screenshot while scanning animation is showing (before API responds). 2) After transition to step 2: step indicator shows step 0 completed + step 1 active. Send both.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 4 — Step 2 Layout + Receipt Image Panel
+**Goal:** Step 2 shows the two-column layout with the receipt image panel fully rendered on the right.
+
+**Deliverables:**
+- `CardContent` switches to `Row` when `_currentStep == 1`: left column `Expanded`, right column `width = 50%`, gap 24px, right column max-height 400px
+- Right column — receipt image panel (`lib/widgets/expenses/receipt_image_panel.dart`):
+  - Image full width+height, object-fit contain, bg muted
+  - AI badge (top-start, Sparkles 12px + "AI" label, primary@90% bg) — visible only when `!_aiFailed`
+  - Top-end overlay: Info icon button (32×32) placeholder + Expand button + Download button (desktop only)
+  - Bottom-start overlay: Replace Receipt button (secondary small, ArrowLeftCircle 14px icon, bg+blur) — resets to step 0, clears `_analysisResult`; AI Fail Badge (destructive, AlertTriangle 12px + label) — visible only when `_aiFailed`
+- Left column: `Text(l10n.formPlaceholder)` placeholder
+
+**Screenshot prompt:** After real API scan — send 2 screenshots: one from a successful scan (AI badge visible, no fail badge), one from a failed/error scan (AI badge hidden, red Fail badge visible). Also confirm Replace Receipt resets to upload step.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 5 — Fast Track Form + Full Form (Both AI Paths)
+**Goal:** Left column renders the correct form for each AI path, pre-populated from real API data.
+
+**Deliverables — Fast Track (API success, `_analysisResult != null`):**
+- Category `DropdownMenu`: pre-selected from `_analysisResult.categoryId` if non-null; user can change
+- Note `TextFormField` (multiline, optional, always empty — not returned by AI)
+- AI Detected Details panel (rounded 8px, border, muted@30% bg, padding 16px):
+  - Header: AI badge + "Detected Details" + "Modify" ghost button (Pencil icon, toggles `_isModifying`)
+  - Read-only summary (2-col grid): shows real API values — Amount+currency, Date, Merchant; null fields show "—"
+  - Editable view (when `_isModifying`): Amount+Currency+Date 3-col grid; Merchant full width; pre-filled from `_analysisResult`
+
+**Deliverables — Full Form (API error, `_aiFailed=true`):**
+- All fields empty and editable: Amount+Currency+Date (3-col grid), Merchant, Category, Note
+- AI Fail Badge click opens popover: "Scanning Tips" title + 3 bullet points (good lighting, file < 10MB, crop tightly)
+
+**Deliverables — Action buttons (both paths):**
+- `Row` below form, each button `Expanded`, gap 12px
+- Submit (primary, Send icon): enabled only when amount + category + merchant all non-empty; on submit: call real `expenseService.createExpense(...)`, show toast, navigate `/employee/dashboard`
+- Discard (outline): always enabled, navigates immediately
+
+**Screenshot prompt:** 1) AI Success: detected panel with real values from API. 2) Click "Modify" → editable fields pre-filled. 3) AI Fail: full empty form. 4) Click AI Fail badge → scanning tips popover. 5) Submit button disabled vs enabled state.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 6 — Lightbox + Receipt Info Popover + RTL Audit
+**Goal:** Polish: expand dialog, info popover, and full RTL/string correctness pass.
+
+**Deliverables — Lightbox:**
+- Expand button → `showDialog` near full-screen (98vw × 98vh), "Receipt" title, image object-fit contain, Download button overlay (top-end), footer: file size + "·" separator + dimensions
+
+**Deliverables — Info popover:**
+- Info icon button (top-end overlay, next to Expand): opens popover showing file size (KB or MB) and pixel dimensions (W × H px)
+
+**Deliverables — RTL audit:**
+- [ ] Zero hardcoded English strings — all via `l10n`
+- [ ] `EdgeInsets.only(left/right)` → `EdgeInsetsDirectional.only(start/end)`
+- [ ] All overlay positioning uses `Alignment.topStart`/`topEnd`/`bottomStart` (not `topLeft` etc.)
+- [ ] `CrossAxisAlignment.start` on all `Column` widgets
+- [ ] Back button uses `Icons.arrow_back` (auto-flips)
+- [ ] Hebrew strings complete in `app_he.arb`
+
+**Screenshot prompt:** 1) Click expand → lightbox dialog open. 2) Click info icon → popover with file metadata. 3) Switch app to Hebrew → full screen in Hebrew with mirrored layout.
+
+**Status:** ☐ Not started
+
+---
+
+### Audit Checklist (run after each step)
+
+| Item | Check |
+|---|---|
+| `flutter build web` 0 errors | ☐ |
+| No `Color.withOpacity()` | ☐ |
+| No `MediaQuery.of(context).size.width` directly | ☐ |
+| No `DropdownButtonFormField` | ☐ |
+| No hardcoded English strings | ☐ |
+| `AppTheme` tokens only (no `.surface`, `.white`) | ☐ |
+| `ConstrainedContent` wraps page content | ☐ |
+
+---
+
+
 Target: Flutter Web, viewport >= 768px.
 This document is a build-ready engineering spec for Claude Code.
 
