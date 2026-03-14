@@ -149,6 +149,6 @@ class ExpenseService {
       authToken: sessionToken,
     );
 
-    return jsonEncode(response);
+    return const JsonEncoder.withIndent('  ').convert(response);
   }
 }

@@ -271,5 +271,6 @@
   "receiptAnalyzerError": "שגיאה",
   "receiptAnalyzerSize": "גודל",
   "receiptAnalyzerDimensions": "מידות",
-  "receiptAnalyzerPdfDocument": "מסמך PDF"
+  "receiptAnalyzerPdfDocument": "מסמך PDF",
+  "receiptAnalyzerExpandImage": "לחץ להגדלה"
 }

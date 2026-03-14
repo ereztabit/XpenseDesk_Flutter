@@ -271,5 +271,6 @@
   "receiptAnalyzerError": "Error",
   "receiptAnalyzerSize": "Size",
   "receiptAnalyzerDimensions": "Dimensions",
-  "receiptAnalyzerPdfDocument": "PDF Document"
+  "receiptAnalyzerPdfDocument": "PDF Document",
+  "receiptAnalyzerExpandImage": "Tap to expand"
 }
