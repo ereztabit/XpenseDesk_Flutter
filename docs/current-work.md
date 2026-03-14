@@ -10,7 +10,7 @@ Full redesign per spec: upload zone → AI scanning animation → two-column ste
 - Old form-only implementation: [employee-expenses-implementation-plan.md](employee-expenses-implementation-plan.md) (superseded)
 - Design notes: [Exmployee-expenses-design.md](Exmployee-expenses-design.md)
 
-**Current step:** Step 1 — Scaffold + Step Indicator + Routing (not started)
+**Current step:** Step 2 — Upload Zone + File Picker + Image/PDF Preview (not started)
 
 ---
 

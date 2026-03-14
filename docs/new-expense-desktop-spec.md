@@ -29,7 +29,7 @@ ARB keys are added as part of whichever step first uses them — never as a stan
 
 **Screenshot prompt:** Navigate to `/employee/new-expense`. Send a screenshot showing: header/footer, Back button, card with 3-step indicator ("Upload" active, "Details" and "Approval" muted).
 
-**Status:** ☐ Not started
+**Status:** ✅ Done
 
 ---
 
