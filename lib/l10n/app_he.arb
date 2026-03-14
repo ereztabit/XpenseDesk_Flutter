@@ -268,5 +268,8 @@
   "receiptAnalyzerNoFileSelected": "לא נבחר קובץ",
   "receiptAnalyzerResult": "תוצאה",
   "receiptAnalyzerAnalyzing": "מנתח...",
-  "receiptAnalyzerError": "שגיאה"
+  "receiptAnalyzerError": "שגיאה",
+  "receiptAnalyzerSize": "גודל",
+  "receiptAnalyzerDimensions": "מידות",
+  "receiptAnalyzerPdfDocument": "מסמך PDF"
 }
