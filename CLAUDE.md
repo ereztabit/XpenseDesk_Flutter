@@ -199,6 +199,22 @@ if (context.isMobile) { /* < 768px — reduced padding */  }
 - 60% → `withAlpha(153)`, 80% → `withAlpha(204)`
 - Formula: `(opacity% * 2.55).round()`
 
+### AppTheme Color Tokens — Complete List
+
+**ALWAYS read `lib/theme/app_theme.dart` before using any color token. Never guess a token name.**
+
+Defined static colors: `background`, `foreground`, `card`, `cardForeground`, `primary`, `primaryForeground`, `muted`, `mutedForeground`, `border`, `destructive`, `accent`, `success`, `primaryTint`, `primaryDark`, `teal`, `borderMedium`, `amber`.
+
+Common mistakes:
+- `AppTheme.surface` — **does not exist**. Use `AppTheme.card` for white surfaces.
+- `AppTheme.white` — **does not exist**. Use `AppTheme.card` or `Colors.white`.
+
+### Button Types — Themed vs Unthemed
+
+`app_theme.dart` defines explicit styles for: `ElevatedButton`, `FilledButton`, `TextButton`.
+
+**`OutlinedButton` has NO theme defined** — it renders with Material 3 defaults which may be low-visibility against the app background. Prefer the themed button types. If `OutlinedButton` is needed, apply an explicit `style:` override.
+
 ### Dropdown Widgets
 
 Use `DropdownMenu` (Material 3). **Do not use `DropdownButtonFormField`** (deprecated).
@@ -220,6 +236,18 @@ Extract repeated validation patterns into private helper methods (e.g., `_valida
 ### Header Building
 
 Centralize header construction via a private `_buildHeaders({String? authToken})` method in `ApiService`. Single source of truth for authentication header format.
+
+### ApiService is the Only HTTP Layer
+
+**NEVER use `http.*` directly inside service classes.** All HTTP calls — including multipart uploads — must go through a method on `ApiService`. If a new HTTP pattern is needed (e.g. `postMultipart`), add the method to `ApiService` first, then call it from the service.
+
+```dart
+// ❌ Wrong — raw http in service class
+final request = http.MultipartRequest('POST', uri);
+
+// ✅ Correct — delegate to ApiService
+final response = await _apiService.postMultipart('/api/...', files, authToken: token);
+```
 
 ---
 
@@ -388,6 +416,8 @@ case '/employee/my-new-screen':
   );
 ```
 
+**Every app route must be wrapped in `AuthGate`.** A bare route without `AuthGate` will redirect to login on direct URL access because `AppHeader` detects no session. Dev/utility tools should be dialogs opened from within authenticated screens — not standalone routes.
+
 ### Step 4 — Add import to screen_imports.dart if needed
 
 Only if the screen introduces a new shared export.
@@ -481,11 +511,16 @@ From `lib/widgets/file.dart`:
 - Theme: `import '../theme/app_theme.dart'`
 - Models: `import '../models/model_name.dart'`
 - Providers: `import '../providers/provider_name.dart'`
+- **L10n: `import '../generated/l10n/app_localizations.dart'`** — widgets cannot use `screen_imports.dart`
 
 From `lib/widgets/header/file.dart`:
 - Theme: `import '../../theme/app_theme.dart'`
 - Models: `import '../../models/model_name.dart'`
+- **L10n: `import '../../generated/l10n/app_localizations.dart'`**
 - Sibling: `import 'sibling_widget.dart'`
+
+From `lib/screens/file.dart`:
+- L10n comes via `screen_imports.dart` (already re-exported — do not add a separate import)
 
 Each directory level up requires one more `../`.
 
