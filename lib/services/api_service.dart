@@ -110,6 +110,25 @@ class ApiService {
     return _decode(response);
   }
 
+  /// Make a multipart POST request (file uploads).
+  /// Returns the decoded JSON response body.
+  Future<Map<String, dynamic>> postMultipart(
+    String endpoint,
+    List<http.MultipartFile> files, {
+    String? authToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final request = http.MultipartRequest('POST', uri);
+    if (authToken != null) {
+      request.headers['Authorization'] = 'Bearer $authToken';
+    }
+    request.files.addAll(files);
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    return _decode(response);
+  }
+
   /// Make a DELETE request with optional authorization token
   Future<Map<String, dynamic>> delete(
     String endpoint, {

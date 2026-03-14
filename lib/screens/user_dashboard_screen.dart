@@ -10,6 +10,7 @@ import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/total_approved_badge.dart';
+import '../widgets/expenses/receipt_analyzer_dialog.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -280,12 +281,23 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                                     fontSize: context.isMobile ? 18 : 24,
                                   ),
                             ),
-                            FilledButton.icon(
-                              onPressed: () => Navigator.of(
-                                context,
-                              ).pushNamed('/employee/new-expense'),
-                              icon: const Icon(Icons.add, size: 18),
-                              label: Text(l10n.newExpense),
+                            Row(
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: () =>
+                                      ReceiptAnalyzerDialog.show(context),
+                                  icon: const Icon(Icons.receipt_long, size: 18),
+                                  label: Text(l10n.receiptAnalyzerTitle),
+                                ),
+                                const SizedBox(width: 8),
+                                FilledButton.icon(
+                                  onPressed: () => Navigator.of(
+                                    context,
+                                  ).pushNamed('/employee/new-expense'),
+                                  icon: const Icon(Icons.add, size: 18),
+                                  label: Text(l10n.newExpense),
+                                ),
+                              ],
                             ),
                           ],
                         ),

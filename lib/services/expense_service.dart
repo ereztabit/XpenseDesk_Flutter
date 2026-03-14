@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/expense_summary.dart';
@@ -133,5 +136,19 @@ class ExpenseService {
     );
 
     _validateResponse(response, 'Failed to create expense');
+  }
+
+  /// Upload a receipt image to the AI analyzer and return the raw JSON response.
+  Future<String> analyzeReceipt(Uint8List imageBytes, String filename) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.postMultipart(
+      '/api/expenses/analyze-receipt',
+      [http.MultipartFile.fromBytes('receiptImage', imageBytes, filename: filename)],
+      authToken: sessionToken,
+    );
+
+    return jsonEncode(response);
   }
 }

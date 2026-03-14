@@ -11,6 +11,7 @@ import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
 import 'screens/new_expense_screen.dart';
+import 'screens/receipt_analyzer_screen.dart';
 import 'widgets/auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -31,6 +32,12 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const PingScreen(),
+      );
+
+    case '/dev/receipt-analyzer':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const ReceiptAnalyzerScreen(),
       );
 
     // --- Auth ---
