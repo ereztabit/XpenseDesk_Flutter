@@ -18,14 +18,17 @@ Full redesign per spec: upload zone → AI scanning animation → two-column ste
 
 ## general enviorment
 - [ ] move the recipt analyzer to the footer only for desktop
-- [ ] create the cycle widget by cycle-widget-spec.md
+- [ ] create the cycle widget  as described on file :  cycle-widget-spec.md
 - [ ] Move language selection to the nav bar on mobile
 - [ ] there is a flatter load animation by default - remove it.
+- [ ] create a real privacy policy
+- [ ] create a real terms and conditions
  
  ## user expenses report 
 - [ ] add merchant name to the expenses report
 - [ ] when i try to delete pending expense - the buttons are not aligned in size
 - [ ] user : edit the pending expense
+- [ ] user : mobile view of new expense - as described on file :  new-expense-mobile-spec.md
 - [ ] mobile view of new and edit expense
 - [ ] warn before getting the same recipt as you had in the past
 - [ ] in desktop the user expenses report - remove the recipt #
@@ -37,6 +40,10 @@ Full redesign per spec: upload zone → AI scanning animation → two-column ste
 
 ## managment screens
 - [ ] always LTR in the emails invite window
+- [ ] manager - do you want to get email for every pending expense 
+- [ ] user - do you want to be notified in email when expense is approved? declined?
+- [ ] user - do you want to get an email in the end of the month about your expenses?
+
 
 ## proceeses & other stuff
 - [ ] process for cycle closure

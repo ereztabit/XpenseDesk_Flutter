@@ -13,7 +13,6 @@ class ReceiptImagePanel extends StatelessWidget {
   final VoidCallback? onExpand; // null hides the expand button
   final VoidCallback onDownload;
   final VoidCallback onReplace;
-  final VoidCallback? onFailBadgeTap;
   final bool hideAiBadge;
 
   const ReceiptImagePanel({
@@ -25,7 +24,6 @@ class ReceiptImagePanel extends StatelessWidget {
     required this.onExpand,
     required this.onDownload,
     required this.onReplace,
-    this.onFailBadgeTap,
     this.hideAiBadge = false,
   });
 
@@ -75,17 +73,12 @@ class ReceiptImagePanel extends StatelessWidget {
                   horizontal: 8, vertical: 6),
               child: Row(
                 children: [
-                  // Start: replace + fail badge
                   if (isDesktop) _buildReplaceButton(l10n),
-                  if (aiFailed) ...[
-                    if (isDesktop) const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: onFailBadgeTap,
-                      child: _buildAiFailBadge(l10n),
-                    ),
-                  ],
                   const Spacer(),
-                  // End: AI badge + expand + download
+                  if (aiFailed) ...[
+                    _buildAiFailButton(l10n),
+                    const SizedBox(width: 4),
+                  ],
                   if (!aiFailed && !hideAiBadge) ...[
                     _buildAiBadgeInline(l10n),
                     const SizedBox(width: 8),
@@ -140,14 +133,11 @@ class ReceiptImagePanel extends StatelessWidget {
               child: Row(
                 children: [
                   if (isDesktop) _buildReplaceButton(l10n),
-                  if (aiFailed) ...[
-                    if (isDesktop) const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: onFailBadgeTap,
-                      child: _buildAiFailBadge(l10n),
-                    ),
-                  ],
                   const Spacer(),
+                  if (aiFailed) ...[
+                    _buildAiFailButton(l10n),
+                    const SizedBox(width: 4),
+                  ],
                   if (!aiFailed && !hideAiBadge) ...[
                     _buildAiBadgeInline(l10n),
                     const SizedBox(width: 8),
@@ -262,37 +252,26 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
-  Widget _buildAiFailBadge(AppLocalizations l10n) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-        child: Container(
-          height: 28,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            color: AppTheme.destructive.withAlpha(230),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                size: 12,
-                color: Colors.white,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                l10n.newExpenseAiFailed,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ],
+  Widget _buildAiFailButton(AppLocalizations l10n) {
+    return Tooltip(
+      message: l10n.newExpenseAiFailedTooltip,
+      child: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: const Color(0xFFDC2626),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        alignment: Alignment.center,
+        child: const Text(
+          'AI',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            decoration: TextDecoration.lineThrough,
+            decorationColor: Colors.white,
+            decorationThickness: 2,
           ),
         ),
       ),

@@ -299,5 +299,9 @@
   "newExpenseScanningTipsTitle": "טיפים לסריקה",
   "newExpenseScanningTip1": "השתמש בתאורה טובה ללכידת טקסט ברורה",
   "newExpenseScanningTip2": "שמור על גודל קובץ מתחת ל-10MB",
-  "newExpenseScanningTip3": "חתוך את התמונה בצמוד לקבלה"
+  "newExpenseScanningTip3": "חתוך את התמונה בצמוד לקבלה",
+  "newExpenseAiFailedTooltip": "לא ניתן היה לזהות את הקבלה. אנא הזן פרטים ידנית.",
+  "expenseDateInvalidFormat": "תאריך לא תקין. הפורמט הנדרש:",
+  "expenseDateTooOld": "התאריך ישן מדי",
+  "expenseDateInFuture": "לא ניתן להזין תאריך עתידי"
 }

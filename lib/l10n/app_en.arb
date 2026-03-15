@@ -299,5 +299,9 @@
   "newExpenseScanningTipsTitle": "Scanning Tips",
   "newExpenseScanningTip1": "Use good lighting to capture text clearly",
   "newExpenseScanningTip2": "Keep file size under 10MB",
-  "newExpenseScanningTip3": "Crop the image tightly to the receipt"
+  "newExpenseScanningTip3": "Crop the image tightly to the receipt",
+  "newExpenseAiFailedTooltip": "Receipt couldn't be detected. Please enter details manually.",
+  "expenseDateInvalidFormat": "Invalid date. Expected:",
+  "expenseDateTooOld": "Date is too far in the past",
+  "expenseDateInFuture": "Date cannot be in the future"
 }

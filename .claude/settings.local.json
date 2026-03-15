@@ -3,7 +3,8 @@
     "allow": [
       "Bash(flutter pub:*)",
       "Bash(flutter gen-l10n:*)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

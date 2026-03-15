@@ -59,6 +59,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   late final TextEditingController _noteController;
   late final TextEditingController _dateController;
   late final TextEditingController _receiptRefController;
+  late final FocusNode _dateFocusNode;
+  String? _dateInputError;
 
   @override
   void initState() {
@@ -76,6 +78,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     _noteController = TextEditingController();
     _dateController = TextEditingController();
     _receiptRefController = TextEditingController();
+    _dateFocusNode = FocusNode()
+      ..addListener(() {
+        if (!_dateFocusNode.hasFocus) _validateDateInput();
+      });
     _amountController.addListener(_onFormChanged);
     _merchantController.addListener(_onFormChanged);
     _dateController.addListener(_onFormChanged);
@@ -90,6 +96,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     _merchantController.dispose();
     _noteController.dispose();
     _dateController.dispose();
+    _dateFocusNode.dispose();
     _receiptRefController.dispose();
     _revokePdfBlob();
     super.dispose();
@@ -105,7 +112,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _selectedCategoryId != null &&
       _merchantController.text.trim().isNotEmpty &&
       _dateController.text.trim().isNotEmpty &&
-      _receiptRefController.text.trim().isNotEmpty;
+      _dateInputError == null;
 
   // ── File handling ──────────────────────────────────────────────────────────
 
@@ -242,7 +249,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _selectedDate = result.expenseDate != null
           ? DateTime.tryParse(result.expenseDate!)
           : null;
-      _dateController.text = result.expenseDate ?? '';
+      _dateController.text = result.expenseDate != null
+          ? _isoToDisplayDate(
+              result.expenseDate!, ref.read(companyLocaleProvider))
+          : '';
       _amountController.text =
           result.amount != null ? result.amount!.toStringAsFixed(2) : '';
       _merchantController.text = result.merchantName ?? '';
@@ -281,7 +291,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             ? DateTime.tryParse(result.expenseDate!)
             : null;
         if (result.expenseDate != null) {
-          _dateController.text = result.expenseDate!;
+          _dateController.text = _isoToDisplayDate(
+              result.expenseDate!, ref.read(companyLocaleProvider));
         }
         if (result.amount != null) {
           _amountController.text = result.amount!.toStringAsFixed(2);
@@ -377,58 +388,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           ),
         ],
       ),
-    );
-  }
-
-  void _showScanningTips(BuildContext context, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(l10n.newExpenseScanningTipsTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTipRow(l10n.newExpenseScanningTip1),
-            const SizedBox(height: 8),
-            _buildTipRow(l10n.newExpenseScanningTip2),
-            const SizedBox(height: 8),
-            _buildTipRow(l10n.newExpenseScanningTip3),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.close),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTipRow(String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          margin: const EdgeInsetsDirectional.only(top: 6, end: 8),
-          decoration: const BoxDecoration(
-            color: AppTheme.mutedForeground,
-            shape: BoxShape.circle,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppTheme.mutedForeground,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -1061,7 +1020,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         ),
         const SizedBox(height: 12),
         // Date full width
-        _buildDateField(context, l10n),
+        _buildDateField(context, l10n, companyLocale),
         const SizedBox(height: 12),
         // Merchant full width
         _requiredLabel(l10n.merchantLabel),
@@ -1087,6 +1046,16 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Receipt Reference — first field
+        _requiredLabel(l10n.receiptRefLabel),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _receiptRefController,
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          decoration: const InputDecoration(),
+        ),
+        const SizedBox(height: 16),
+
         // Amount + Currency
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1098,7 +1067,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         ),
         const SizedBox(height: 16),
         // Date full width
-        _buildDateField(context, l10n),
+        _buildDateField(context, l10n, companyLocale),
         const SizedBox(height: 16),
 
         // Merchant
@@ -1160,16 +1129,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           maxLines: 3,
           minLines: 3,
           maxLength: 200,
-          decoration: const InputDecoration(),
-        ),
-        const SizedBox(height: 16),
-
-        // Receipt Reference
-        _requiredLabel(l10n.receiptRefLabel),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _receiptRefController,
-          inputFormatters: [LengthLimitingTextInputFormatter(50)],
           decoration: const InputDecoration(),
         ),
       ],
@@ -1243,8 +1202,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       ..min = fmt(sixMonthsAgo)
       ..max = fmt(today);
 
-    if (_dateController.text.isNotEmpty) {
-      input.value = _dateController.text;
+    if (_selectedDate != null) {
+      input.value = fmt(_selectedDate!);
     }
 
     input.onChange.first.then((_) {
@@ -1252,8 +1211,12 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (value.isNotEmpty && mounted) {
         final picked = DateTime.tryParse(value);
         if (picked != null) {
-          _dateController.text = value;
-          setState(() => _selectedDate = picked);
+          final companyLocale = ref.read(companyLocaleProvider);
+          _dateController.text = _isoToDisplayDate(value, companyLocale);
+          setState(() {
+            _selectedDate = picked;
+            _dateInputError = null;
+          });
         }
       }
     });
@@ -1261,7 +1224,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     input.click();
   }
 
-  Widget _buildDateField(BuildContext context, AppLocalizations l10n) {
+  Widget _buildDateField(
+      BuildContext context, AppLocalizations l10n, String companyLocale) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1269,21 +1233,93 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         const SizedBox(height: 8),
         TextFormField(
           controller: _dateController,
+          focusNode: _dateFocusNode,
           keyboardType: TextInputType.datetime,
+          inputFormatters: [
+            _DateAutoFormatInputFormatter(companyLocale),
+          ],
           decoration: InputDecoration(
-            hintText: 'YYYY-MM-DD',
+            hintText: _dateFormatHint(companyLocale),
+            errorText: _dateInputError,
             suffixIcon: IconButton(
               icon: const Icon(Icons.calendar_today_outlined, size: 18),
               onPressed: _pickDateNative,
             ),
           ),
           onChanged: (value) {
-            final parsed = DateTime.tryParse(value);
+            final parsed = _parseDateInput(value, companyLocale);
             if (parsed != null) setState(() => _selectedDate = parsed);
           },
         ),
       ],
     );
+  }
+
+  void _validateDateInput() {
+    if (!mounted) return;
+    final value = _dateController.text.trim();
+    if (value.isEmpty) {
+      setState(() => _dateInputError = null);
+      return;
+    }
+    final companyLocale = ref.read(companyLocaleProvider);
+    final parsed = _parseDateInput(value, companyLocale);
+    final l10n = AppLocalizations.of(context)!;
+    String? error;
+    if (parsed == null) {
+      error =
+          '${l10n.expenseDateInvalidFormat} ${_dateFormatHint(companyLocale)}';
+    } else {
+      final today = DateTime.now();
+      final sixMonthsAgo =
+          DateTime(today.year, today.month - 6, today.day);
+      if (parsed.isAfter(today)) {
+        error = l10n.expenseDateInFuture;
+      } else if (parsed.isBefore(sixMonthsAgo)) {
+        error = l10n.expenseDateTooOld;
+      }
+    }
+    setState(() {
+      _dateInputError = error;
+      if (parsed != null) _selectedDate = parsed;
+    });
+  }
+
+  DateTime? _parseDateInput(String value, String companyLocale) {
+    // Try ISO YYYY-MM-DD first
+    final iso = DateTime.tryParse(value);
+    if (iso != null) return iso;
+    // Try locale-specific format
+    final parts = value.split(RegExp(r'[\-./]'));
+    if (parts.length != 3) return null;
+    final nums = parts.map((p) => int.tryParse(p)).toList();
+    if (nums.any((n) => n == null)) return null;
+    final isHebrew = companyLocale.startsWith('he');
+    // Hebrew: DD.MM.YYYY  |  English: MM/DD/YYYY
+    final day = isHebrew ? nums[0]! : nums[1]!;
+    final month = isHebrew ? nums[1]! : nums[0]!;
+    final year = nums[2]!;
+    if (year < 1900 || year > DateTime.now().year + 1) return null;
+    try {
+      return DateTime(year, month, day);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _dateFormatHint(String companyLocale) =>
+      companyLocale.startsWith('he') ? 'DD.MM.YYYY' : 'MM/DD/YYYY';
+
+  String _isoToDisplayDate(String isoDate, String companyLocale) {
+    final d = DateTime.tryParse(isoDate);
+    if (d == null) return isoDate;
+    final sep = companyLocale.startsWith('he') ? '.' : '/';
+    final day = d.day.toString().padLeft(2, '0');
+    final month = d.month.toString().padLeft(2, '0');
+    final year = d.year.toString();
+    return companyLocale.startsWith('he')
+        ? '$day$sep$month$sep$year'
+        : '$month$sep$day$sep$year';
   }
 
   Widget _buildActionButtons(AppLocalizations l10n) {
@@ -1479,8 +1515,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                                 context),
                                         onDownload: _downloadFile,
                                         onReplace: _resetToUpload,
-                                        onFailBadgeTap: () =>
-                                            _showScanningTips(context, l10n),
                                       ),
                                     ),
                                   ],
@@ -1598,4 +1632,37 @@ class _DashedBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_DashedBorderPainter old) => old.color != color;
+}
+
+/// Auto-inserts locale-specific date separators as the user types digits.
+/// Hebrew: DD.MM.YYYY  |  English: MM/DD/YYYY
+class _DateAutoFormatInputFormatter extends TextInputFormatter {
+  final String companyLocale;
+  _DateAutoFormatInputFormatter(this.companyLocale);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Strip everything except digits
+    final digits =
+        newValue.text.replaceAll(RegExp(r'[^\d]'), '').substring(
+            0,
+            newValue.text
+                    .replaceAll(RegExp(r'[^\d]'), '')
+                    .length
+                    .clamp(0, 8));
+    final sep = companyLocale.startsWith('he') ? '.' : '/';
+    final buf = StringBuffer();
+    for (int i = 0; i < digits.length; i++) {
+      if (i == 2 || i == 4) buf.write(sep);
+      buf.write(digits[i]);
+    }
+    final formatted = buf.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
 }
