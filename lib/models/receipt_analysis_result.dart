@@ -5,6 +5,8 @@ class ReceiptAnalysisResult {
   final String? expenseDate; // YYYY-MM-DD
   final int? categoryId;
   final String? categoryName;
+  final String? receiptNumber;
+  final String? imageUrl;
 
   const ReceiptAnalysisResult({
     this.amount,
@@ -13,16 +15,20 @@ class ReceiptAnalysisResult {
     this.expenseDate,
     this.categoryId,
     this.categoryName,
+    this.receiptNumber,
+    this.imageUrl,
   });
 
   factory ReceiptAnalysisResult.fromJson(Map<String, dynamic> json) {
     return ReceiptAnalysisResult(
       amount: (json['amount'] as num?)?.toDouble(),
-      currencyCode: json['currencyCode'] as String?,
-      merchantName: json['merchantName'] as String?,
-      expenseDate: json['expenseDate'] as String?,
+      currencyCode: json['currency'] as String?,
+      merchantName: json['merchant'] as String?,
+      expenseDate: json['date'] as String?,
       categoryId: json['categoryId'] as int?,
-      categoryName: json['categoryName'] as String?,
+      categoryName: json['category'] as String?,
+      receiptNumber: json['receipt_number'] as String?,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 }

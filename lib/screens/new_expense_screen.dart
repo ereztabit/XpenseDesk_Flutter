@@ -2,14 +2,19 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui_web' as ui_web;
+import 'package:flutter/services.dart';
 import 'package:web/web.dart' as web;
 import 'dart:js_interop';
 import 'screen_imports.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/format_utils.dart';
+import '../utils/expense_amount_input_formatter.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
 import '../widgets/expenses/receipt_image_panel.dart';
 import '../providers/expense_provider.dart';
 import '../models/receipt_analysis_result.dart';
+import '../models/expense_category.dart';
+import '../models/expense_currency.dart';
 
 class NewExpenseScreen extends ConsumerStatefulWidget {
   const NewExpenseScreen({super.key});
@@ -22,6 +27,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     with FormBehaviorMixin, TickerProviderStateMixin {
   static int _pdfViewTypeCounter = 0;
 
+  // Step 1 — upload/preview state
   int _currentStep = 0;
   Uint8List? _fileBytes;
   String? _filename;
@@ -36,8 +42,23 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   ReceiptAnalysisResult? _analysisResult;
   bool _aiFailed = false;
 
+  // Step 2 — form state
+  int? _selectedCategoryId;
+  String? _selectedCurrencyCode;
+  DateTime? _selectedDate;
+  bool _isModifying = false;
+  bool _isSubmitting = false;
+  bool _isAiData = false;
+  bool _hasAttemptedSubmit = false;
+  String? _aiImageUrl;
+
   late final AnimationController _scanController;
   late final AnimationController _pulseController;
+  late final TextEditingController _amountController;
+  late final TextEditingController _merchantController;
+  late final TextEditingController _noteController;
+  late final TextEditingController _dateController;
+  late final TextEditingController _receiptRefController;
 
   @override
   void initState() {
@@ -50,18 +71,43 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
+    _amountController = TextEditingController();
+    _merchantController = TextEditingController();
+    _noteController = TextEditingController();
+    _dateController = TextEditingController();
+    _receiptRefController = TextEditingController();
+    _amountController.addListener(_onFormChanged);
+    _merchantController.addListener(_onFormChanged);
+    _dateController.addListener(_onFormChanged);
+    _receiptRefController.addListener(_onFormChanged);
   }
 
   @override
   void dispose() {
     _scanController.dispose();
     _pulseController.dispose();
+    _amountController.dispose();
+    _merchantController.dispose();
+    _noteController.dispose();
+    _dateController.dispose();
+    _receiptRefController.dispose();
     _revokePdfBlob();
     super.dispose();
   }
 
+  void _onFormChanged() => setState(() {});
+
   @override
   bool get hasUnsavedChanges => false;
+
+  bool get _canSubmit =>
+      _amountController.text.trim().isNotEmpty &&
+      _selectedCategoryId != null &&
+      _merchantController.text.trim().isNotEmpty &&
+      _dateController.text.trim().isNotEmpty &&
+      _receiptRefController.text.trim().isNotEmpty;
+
+  // ── File handling ──────────────────────────────────────────────────────────
 
   void _revokePdfBlob() {
     if (_pdfBlobUrl != null) {
@@ -156,6 +202,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   void _resetToUpload() {
     _revokePdfBlob();
+    _amountController.clear();
+    _merchantController.clear();
+    _noteController.clear();
+    _dateController.clear();
+    _receiptRefController.clear();
     setState(() {
       _fileBytes = null;
       _filename = null;
@@ -167,8 +218,39 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _currentStep = 0;
       _analysisResult = null;
       _aiFailed = false;
+      _selectedCategoryId = null;
+      _selectedCurrencyCode = null;
+      _selectedDate = null;
+      _isModifying = false;
+      _isSubmitting = false;
+      _isAiData = false;
+      _hasAttemptedSubmit = false;
+      _aiImageUrl = null;
     });
   }
+
+  void _undoAiModify() {
+    final result = _analysisResult;
+    if (result == null) {
+      setState(() => _isModifying = false);
+      return;
+    }
+    setState(() {
+      _isModifying = false;
+      _selectedCategoryId = result.categoryId;
+      _selectedCurrencyCode = result.currencyCode ?? 'ILS';
+      _selectedDate = result.expenseDate != null
+          ? DateTime.tryParse(result.expenseDate!)
+          : null;
+      _dateController.text = result.expenseDate ?? '';
+      _amountController.text =
+          result.amount != null ? result.amount!.toStringAsFixed(2) : '';
+      _merchantController.text = result.merchantName ?? '';
+      _receiptRefController.text = result.receiptNumber ?? '';
+    });
+  }
+
+  // ── AI analysis ────────────────────────────────────────────────────────────
 
   Future<void> _analyze() async {
     final bytes = _fileBytes;
@@ -193,6 +275,25 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _analysisResult = result;
         _isAnalyzing = false;
         _currentStep = 1;
+        _selectedCategoryId = result.categoryId;
+        _selectedCurrencyCode = result.currencyCode ?? 'ILS';
+        _selectedDate = result.expenseDate != null
+            ? DateTime.tryParse(result.expenseDate!)
+            : null;
+        if (result.expenseDate != null) {
+          _dateController.text = result.expenseDate!;
+        }
+        if (result.amount != null) {
+          _amountController.text = result.amount!.toStringAsFixed(2);
+        }
+        if (result.merchantName != null) {
+          _merchantController.text = result.merchantName!;
+        }
+        if (result.receiptNumber != null) {
+          _receiptRefController.text = result.receiptNumber!;
+        }
+        _aiImageUrl = result.imageUrl;
+        _isAiData = true;
       });
     } catch (_) {
       if (!mounted) return;
@@ -202,9 +303,53 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _aiFailed = true;
         _isAnalyzing = false;
         _currentStep = 1;
+        _selectedCurrencyCode = 'ILS';
       });
     }
   }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+
+  Future<void> _submit() async {
+    setState(() => _hasAttemptedSubmit = true);
+    final amount = double.tryParse(_amountController.text.trim());
+    final categoryId = _selectedCategoryId;
+    final merchant = _merchantController.text.trim();
+    final currency = _selectedCurrencyCode;
+    final date = _selectedDate ?? DateTime.now();
+    final note = _noteController.text.trim().isEmpty
+        ? null
+        : _noteController.text.trim();
+    final receiptRef = _receiptRefController.text.trim().isEmpty
+        ? null
+        : _receiptRefController.text.trim();
+
+    if (amount == null || categoryId == null || merchant.isEmpty) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final expenseService = ref.read(expenseServiceProvider);
+      await expenseService.createExpense(
+        expenseDate: date,
+        categoryId: categoryId,
+        amount: amount,
+        currencyCode: currency,
+        merchantName: merchant,
+        note: note,
+        receiptRef: receiptRef,
+        imageUrl: _aiImageUrl,
+        isAiData: _isAiData,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/user/dashboard');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  // ── Dialogs ───────────────────────────────────────────────────────────────
 
   void _showFullScreenImage(BuildContext context) {
     final bytes = _fileBytes;
@@ -234,6 +379,60 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       ),
     );
   }
+
+  void _showScanningTips(BuildContext context, AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(l10n.newExpenseScanningTipsTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTipRow(l10n.newExpenseScanningTip1),
+            const SizedBox(height: 8),
+            _buildTipRow(l10n.newExpenseScanningTip2),
+            const SizedBox(height: 8),
+            _buildTipRow(l10n.newExpenseScanningTip3),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipRow(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          margin: const EdgeInsetsDirectional.only(top: 6, end: 8),
+          decoration: const BoxDecoration(
+            color: AppTheme.mutedForeground,
+            shape: BoxShape.circle,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.mutedForeground,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Step 1 widgets ─────────────────────────────────────────────────────────
 
   Widget _buildUploadZone(AppLocalizations l10n, double height) {
     return MouseRegion(
@@ -351,7 +550,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             height: height,
             child: Stack(
               children: [
-                // image background (for non-PDF)
                 if (!_isPdf)
                   Positioned.fill(
                     child: Container(
@@ -368,8 +566,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                   Positioned.fill(
                     child: Container(color: AppTheme.muted),
                   ),
-
-                // semi-transparent blur overlay
                 Positioned.fill(
                   child: BackdropFilter(
                     filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
@@ -378,15 +574,13 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                     ),
                   ),
                 ),
-
-                // scan line
                 Positioned(
                   left: 0,
                   right: 0,
                   top: scanPos * (height - 4),
                   child: Container(
                     height: 4,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
@@ -397,11 +591,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                     ),
                   ),
                 ),
-
-                // corner brackets
                 ..._cornerBrackets(),
-
-                // center content
                 Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -409,7 +599,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          // ping ring
                           Container(
                             width: 40 + 24 * _pulseController.value,
                             height: 40 + 24 * _pulseController.value,
@@ -423,7 +612,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                               ),
                             ),
                           ),
-                          // sparkles icon
                           Transform.scale(
                             scale: pulseScale,
                             child: const Icon(
@@ -481,10 +669,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     const double thickness = 2;
     final color = AppTheme.primary;
 
-    Widget bracket({
-      required bool top,
-      required bool start,
-    }) {
+    Widget bracket({required bool top, required bool start}) {
       return PositionedDirectional(
         top: top ? inset : null,
         bottom: top ? null : inset,
@@ -523,7 +708,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       children: [
         if (_isAnalyzing)
           _buildScanningOverlay(previewHeight)
-        // PDF: plain container, no Stack — HtmlElementView can't be in a Stack
         else if (_isPdf)
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -537,7 +721,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                   : const SizedBox.shrink(),
             ),
           )
-        // Image: Stack so overlay buttons render correctly
         else
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -619,9 +802,577 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
+  // ── Step 2 form ───────────────────────────────────────────────────────────
+
+  Widget _buildStep2Form(
+      BuildContext context, AppLocalizations l10n, String companyLocale) {
+    return _aiFailed
+        ? _buildFullForm(context, l10n, companyLocale)
+        : _buildFastTrackForm(context, l10n, companyLocale);
+  }
+
+  Widget _buildFastTrackForm(
+      BuildContext context, AppLocalizations l10n, String companyLocale) {
+    final uiLocale = Localizations.localeOf(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Category
+        _requiredLabel(l10n.categoryLabel),
+        const SizedBox(height: 8),
+        DropdownMenu<int>(
+          key: ValueKey(_selectedCategoryId),
+          initialSelection: _selectedCategoryId,
+          expandedInsets: EdgeInsets.zero,
+          hintText: l10n.selectCategory,
+          inputDecorationTheme: _dropdownTheme(),
+          dropdownMenuEntries: ExpenseCategory.orderedValues
+              .map((c) => DropdownMenuEntry<int>(
+                    value: c.id,
+                    label: c.labelForLocale(uiLocale),
+                  ))
+              .toList(),
+          onSelected: (v) => setState(() => _selectedCategoryId = v),
+        ),
+        if (_hasAttemptedSubmit && _selectedCategoryId == null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+            child: Text(
+              l10n.categoryRequired,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+        const SizedBox(height: 16),
+
+        // Note
+        Text(
+          l10n.noteLabel,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.foreground,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _noteController,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          maxLines: 3,
+          minLines: 3,
+          maxLength: 200,
+          decoration: const InputDecoration(),
+        ),
+        const SizedBox(height: 16),
+
+        // AI Detected Details panel
+        _buildAiDetectedPanel(context, l10n, companyLocale),
+      ],
+    );
+  }
+
+  Widget _buildAiDetectedPanel(
+      BuildContext context, AppLocalizations l10n, String companyLocale) {
+    final result = _analysisResult;
+    final uiLocale = Localizations.localeOf(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.muted.withAlpha(77),
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              if (!_isModifying) ...[
+                _buildAiBadgeSmall(l10n),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                child: Text(
+                  l10n.newExpenseDetectedDetails,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.foreground,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: _isModifying
+                    ? _undoAiModify
+                    : () => setState(() => _isModifying = true),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isModifying ? Icons.undo : Icons.edit_outlined,
+                      size: 12,
+                      color: AppTheme.mutedForeground,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _isModifying
+                          ? l10n.newExpenseUndoAi
+                          : l10n.newExpenseModify,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          if (!_isModifying)
+            // Read-only 2-col summary
+            _buildDetectedSummary(l10n, result, companyLocale)
+          else
+            // Editable fields
+            _buildDetectedEditable(l10n, result, companyLocale, uiLocale),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: AppTheme.border),
+          const SizedBox(height: 12),
+          // Receipt # — read-only summary or editable matching AI detected pattern
+          if (!_isModifying) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.receiptRefLabel,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppTheme.mutedForeground,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _receiptRefController.text.isEmpty
+                      ? '—'
+                      : _receiptRefController.text,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.foreground,
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            _requiredLabel(l10n.receiptRefLabel),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _receiptRefController,
+              inputFormatters: [LengthLimitingTextInputFormatter(50)],
+              decoration: const InputDecoration(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetectedSummary(
+      AppLocalizations l10n,
+      ReceiptAnalysisResult? result,
+      String companyLocale) {
+    final amountText = result?.amount != null && result?.currencyCode != null
+        ? '${result!.amount!.toStringAsFixed(2)} ${result.currencyCode}'
+        : result?.amount != null
+            ? result!.amount!.toStringAsFixed(2)
+            : '—';
+    final dateText = result?.expenseDate != null
+        ? DateTime.tryParse(result!.expenseDate!)
+                ?.toCompanyDate(companyLocale) ??
+            result.expenseDate!
+        : '—';
+    final merchantText = result?.merchantName ?? '—';
+
+    Widget cell(String label, String value) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.mutedForeground,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.foreground,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: cell(l10n.amountLabel, amountText)),
+            const SizedBox(width: 12),
+            Expanded(child: cell(l10n.expenseDate, dateText)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: cell(l10n.merchantLabel, merchantText)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetectedEditable(
+      AppLocalizations l10n,
+      ReceiptAnalysisResult? result,
+      String companyLocale,
+      Locale uiLocale) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Amount + Currency
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildAmountField(l10n)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildCurrencyDropdown(l10n)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // Date full width
+        _buildDateField(context, l10n),
+        const SizedBox(height: 12),
+        // Merchant full width
+        _requiredLabel(l10n.merchantLabel),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _merchantController,
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          decoration: InputDecoration(
+            errorText: _hasAttemptedSubmit &&
+                    _merchantController.text.trim().isEmpty
+                ? l10n.merchantRequired
+                : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFullForm(
+      BuildContext context, AppLocalizations l10n, String companyLocale) {
+    final uiLocale = Localizations.localeOf(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Amount + Currency
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildAmountField(l10n)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildCurrencyDropdown(l10n)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        // Date full width
+        _buildDateField(context, l10n),
+        const SizedBox(height: 16),
+
+        // Merchant
+        _requiredLabel(l10n.merchantLabel),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _merchantController,
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          decoration: InputDecoration(
+            errorText: _hasAttemptedSubmit &&
+                    _merchantController.text.trim().isEmpty
+                ? l10n.merchantRequired
+                : null,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Category
+        _requiredLabel(l10n.categoryLabel),
+        const SizedBox(height: 8),
+        DropdownMenu<int>(
+          key: ValueKey(_selectedCategoryId),
+          initialSelection: _selectedCategoryId,
+          expandedInsets: EdgeInsets.zero,
+          hintText: l10n.selectCategory,
+          inputDecorationTheme: _dropdownTheme(),
+          dropdownMenuEntries: ExpenseCategory.orderedValues
+              .map((c) => DropdownMenuEntry<int>(
+                    value: c.id,
+                    label: c.labelForLocale(uiLocale),
+                  ))
+              .toList(),
+          onSelected: (v) => setState(() => _selectedCategoryId = v),
+        ),
+        if (_hasAttemptedSubmit && _selectedCategoryId == null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+            child: Text(
+              l10n.categoryRequired,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+        const SizedBox(height: 16),
+
+        // Note
+        Text(
+          l10n.noteLabel,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.foreground,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _noteController,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          maxLines: 3,
+          minLines: 3,
+          maxLength: 200,
+          decoration: const InputDecoration(),
+        ),
+        const SizedBox(height: 16),
+
+        // Receipt Reference
+        _requiredLabel(l10n.receiptRefLabel),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _receiptRefController,
+          inputFormatters: [LengthLimitingTextInputFormatter(50)],
+          decoration: const InputDecoration(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmountField(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _requiredLabel(l10n.amountLabel),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _amountController,
+          keyboardType:
+              const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [ExpenseAmountInputFormatter()],
+          decoration: InputDecoration(
+            errorText: _hasAttemptedSubmit &&
+                    _amountController.text.trim().isEmpty
+                ? l10n.amountRequired
+                : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCurrencyDropdown(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.currencyLabel,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.foreground,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownMenu<String>(
+          key: ValueKey(_selectedCurrencyCode),
+          initialSelection: _selectedCurrencyCode,
+          expandedInsets: EdgeInsets.zero,
+          hintText: l10n.currencyPlaceholder,
+          inputDecorationTheme: _dropdownTheme(),
+          dropdownMenuEntries: ExpenseCurrency.values
+              .map((c) => DropdownMenuEntry<String>(
+                    value: c.code,
+                    label: c.code,
+                  ))
+              .toList(),
+          onSelected: (v) => setState(() => _selectedCurrencyCode = v),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateField(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _requiredLabel(l10n.expenseDate),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _dateController,
+          keyboardType: TextInputType.datetime,
+          decoration: InputDecoration(
+            hintText: 'YYYY-MM-DD',
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.calendar_today_outlined, size: 18),
+              onPressed: () async {
+                final today = DateTime.now();
+                final sixMonthsAgo =
+                    DateTime(today.year, today.month - 6, today.day);
+                final initial = DateTime.tryParse(_dateController.text) ??
+                    _selectedDate ??
+                    today;
+                final clamped = initial.isBefore(sixMonthsAgo)
+                    ? sixMonthsAgo
+                    : initial.isAfter(today)
+                        ? today
+                        : initial;
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: clamped,
+                  firstDate: sixMonthsAgo,
+                  lastDate: today,
+                );
+                if (picked != null && mounted) {
+                  final formatted =
+                      '${picked.year.toString().padLeft(4, '0')}-'
+                      '${picked.month.toString().padLeft(2, '0')}-'
+                      '${picked.day.toString().padLeft(2, '0')}';
+                  _dateController.text = formatted;
+                  setState(() => _selectedDate = picked);
+                }
+              },
+            ),
+          ),
+          onChanged: (value) {
+            final parsed = DateTime.tryParse(value);
+            if (parsed != null) setState(() => _selectedDate = parsed);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(AppLocalizations l10n) {
+    return Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: ElevatedButton(
+        onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _canSubmit ? AppTheme.success : null,
+          foregroundColor: _canSubmit ? Colors.white : null,
+        ),
+        child: _isSubmitting
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(l10n.finish),
+      ),
+    );
+  }
+
+  Widget _requiredLabel(String label) {
+    return RichText(
+      text: TextSpan(
+        text: label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.foreground,
+        ),
+        children: const [
+          TextSpan(
+            text: ' *',
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAiBadgeSmall(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withAlpha(230),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.auto_awesome, size: 10, color: Colors.white),
+          const SizedBox(width: 3),
+          Text(
+            l10n.newExpenseAiBadgeLabel,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  InputDecorationTheme _dropdownTheme() {
+    const borderSide = BorderSide(color: AppTheme.border);
+    return InputDecorationTheme(
+      filled: true,
+      fillColor: AppTheme.card,
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        borderSide: borderSide,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        borderSide: borderSide,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+      ),
+      hintStyle: const TextStyle(color: AppTheme.mutedForeground),
+    );
+  }
+
+  // ── build ─────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final companyLocale = ref.watch(companyLocaleProvider);
     final contentHeight =
         (MediaQuery.of(context).size.height * 0.5).clamp(320.0, 600.0);
 
@@ -673,14 +1424,17 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                 if (_fileBytes == null)
                                   _buildUploadZone(l10n, contentHeight)
                                 else
-                                  _buildPreview(context, l10n, contentHeight),
+                                  _buildPreview(
+                                      context, l10n, contentHeight),
                                 if (!_isAnalyzing) ...[
                                   const SizedBox(height: 16),
                                   Align(
-                                    alignment: AlignmentDirectional.centerEnd,
+                                    alignment:
+                                        AlignmentDirectional.centerEnd,
                                     child: ElevatedButton(
-                                      onPressed:
-                                          _fileBytes != null ? _analyze : null,
+                                      onPressed: _fileBytes != null
+                                          ? _analyze
+                                          : null,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: _fileBytes != null
                                             ? AppTheme.success
@@ -693,31 +1447,41 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                     ),
                                   ),
                                 ],
-                              ] else
+                              ] else ...[
                                 Row(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                          l10n.newExpenseFormPlaceholder),
+                                      child: _buildStep2Form(
+                                          context, l10n, companyLocale),
                                     ),
                                     const SizedBox(width: 24),
                                     Expanded(
                                       child: ReceiptImagePanel(
                                         fileBytes: _fileBytes!,
                                         isPdf: _isPdf,
+                                        pdfViewType: _pdfViewType,
                                         aiFailed: _aiFailed,
+                                        hideAiBadge: _isModifying,
                                         onExpand: _isPdf
-                                            ? null
-                                            : () =>
-                                                _showFullScreenImage(context),
+                                            ? (_pdfBlobUrl != null
+                                                ? () => web.window.open(
+                                                    _pdfBlobUrl!, '_blank')
+                                                : null)
+                                            : () => _showFullScreenImage(
+                                                context),
                                         onDownload: _downloadFile,
                                         onReplace: _resetToUpload,
+                                        onFailBadgeTap: () =>
+                                            _showScanningTips(context, l10n),
                                       ),
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 16),
+                                _buildActionButtons(l10n),
+                              ],
                             ],
                           ),
                         ),
@@ -734,6 +1498,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 }
+
+// ── Painters ──────────────────────────────────────────────────────────────────
 
 class _CornerBracketPainter extends CustomPainter {
   final bool top;
