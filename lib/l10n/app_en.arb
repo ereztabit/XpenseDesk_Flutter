@@ -293,6 +293,7 @@
   "newExpenseFormPlaceholder": "Form content will appear here",
   "newExpenseDetectedDetails": "Detected Details",
   "newExpenseModify": "Modify",
+  "newExpenseUndoAi": "Undo AI",
   "newExpenseSubmitButton": "Submit",
   "newExpenseDiscardButton": "Discard",
   "newExpenseScanningTipsTitle": "Scanning Tips",

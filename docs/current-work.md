@@ -16,7 +16,11 @@ Full redesign per spec: upload zone → AI scanning animation → two-column ste
 
 ## TODO (Backlog)
 
-- [ ] Move cycle widget to the app header
+- [ ] create the cycle widget by cycle-widget-spec.md
 - [ ] Move language selection to the nav bar on mobile
-
+- [ ] add merchant name to the expenses report
+- [ ] user : edit the pending expense
+- [ ] mobile view of new and edit expense
+- [ ] always LTR in the emails invite window
+- [ ] move the recipt analyzer to the footer only for desktop
 ---

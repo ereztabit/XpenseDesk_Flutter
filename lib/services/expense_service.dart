@@ -92,6 +92,7 @@ class ExpenseService {
     String? note,
     String? receiptRef,
     String? imageUrl,
+    bool? isAiData,
   }) async {
     final sessionToken = await _authService.getSessionToken();
     _validateSessionToken(sessionToken);
@@ -128,6 +129,10 @@ class ExpenseService {
     final trimmedImageUrl = imageUrl?.trim();
     if (trimmedImageUrl != null && trimmedImageUrl.isNotEmpty) {
       body['imageUrl'] = trimmedImageUrl;
+    }
+
+    if (isAiData != null) {
+      body['isAiData'] = isAiData;
     }
 
     final response = await _apiService.post(

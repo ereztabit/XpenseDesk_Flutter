@@ -293,6 +293,7 @@
   "newExpenseFormPlaceholder": "תוכן הטופס יופיע כאן",
   "newExpenseDetectedDetails": "פרטים שזוהו",
   "newExpenseModify": "ערוך",
+  "newExpenseUndoAi": "בטל AI",
   "newExpenseSubmitButton": "שלח",
   "newExpenseDiscardButton": "בטל",
   "newExpenseScanningTipsTitle": "טיפים לסריקה",
