@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/expense_summary.dart';
+import '../models/receipt_analysis_result.dart';
 
 /// Exception thrown when expense operations fail.
 class ExpenseException implements Exception {
@@ -138,8 +139,34 @@ class ExpenseService {
     _validateResponse(response, 'Failed to create expense');
   }
 
+  /// Upload a receipt image to the AI analyzer and return a parsed result.
+  Future<ReceiptAnalysisResult> analyzeReceiptParsed(
+    Uint8List bytes,
+    String filename,
+  ) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.postMultipart(
+      '/api/expenses/analyze-receipt',
+      [http.MultipartFile.fromBytes('receiptImage', bytes, filename: filename)],
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to analyze receipt');
+
+    final data = response['data'];
+    if (data == null) return const ReceiptAnalysisResult();
+
+    return ReceiptAnalysisResult.fromJson(data as Map<String, dynamic>);
+  }
+
   /// Upload a receipt image to the AI analyzer and return the raw JSON response.
-  Future<String> analyzeReceipt(Uint8List imageBytes, String filename) async {
+  Future<String> analyzeReceipt(
+    Uint8List imageBytes,
+    String filename, {
+    bool forceGpt = false,
+  }) async {
     final sessionToken = await _authService.getSessionToken();
     _validateSessionToken(sessionToken);
 
@@ -147,6 +174,7 @@ class ExpenseService {
       '/api/expenses/analyze-receipt',
       [http.MultipartFile.fromBytes('receiptImage', imageBytes, filename: filename)],
       authToken: sessionToken,
+      fields: {'forceGpt': forceGpt.toString()},
     );
 
     return const JsonEncoder.withIndent('  ').convert(response);

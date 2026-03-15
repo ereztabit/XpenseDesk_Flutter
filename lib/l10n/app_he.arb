@@ -273,6 +273,7 @@
   "receiptAnalyzerDimensions": "מידות",
   "receiptAnalyzerPdfDocument": "מסמך PDF",
   "receiptAnalyzerExpandImage": "לחץ להגדלה",
+  "receiptAnalyzerForceGpt": "כפה GPT",
 
   "newExpenseStepUpload": "העלאה",
   "newExpenseStepDetails": "פרטים",

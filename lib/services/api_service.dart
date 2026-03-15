@@ -116,12 +116,14 @@ class ApiService {
     String endpoint,
     List<http.MultipartFile> files, {
     String? authToken,
+    Map<String, String>? fields,
   }) async {
     final uri = Uri.parse('$baseUrl$endpoint');
     final request = http.MultipartRequest('POST', uri);
     if (authToken != null) {
       request.headers['Authorization'] = 'Bearer $authToken';
     }
+    if (fields != null) request.fields.addAll(fields);
     request.files.addAll(files);
 
     final streamed = await request.send();

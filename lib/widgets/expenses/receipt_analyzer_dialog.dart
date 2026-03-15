@@ -36,6 +36,7 @@ class _ReceiptAnalyzerDialogState extends ConsumerState<ReceiptAnalyzerDialog> {
   String? _pdfBlobUrl;
   String? _pdfViewType;
   bool _isLoading = false;
+  bool _forceGpt = false;
   String? _result;
   bool _isError = false;
 
@@ -128,7 +129,7 @@ class _ReceiptAnalyzerDialogState extends ConsumerState<ReceiptAnalyzerDialog> {
 
     try {
       final expenseService = ref.read(expenseServiceProvider);
-      final json = await expenseService.analyzeReceipt(bytes, filename);
+      final json = await expenseService.analyzeReceipt(bytes, filename, forceGpt: _forceGpt);
       if (!mounted) return;
       setState(() {
         _result = json;
@@ -290,6 +291,22 @@ class _ReceiptAnalyzerDialogState extends ConsumerState<ReceiptAnalyzerDialog> {
               ),
               _buildPreview(l10n),
               const SizedBox(height: 12),
+              Row(
+                children: [
+                  Switch(
+                    value: _forceGpt,
+                    onChanged: _isLoading
+                        ? null
+                        : (v) => setState(() => _forceGpt = v),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.receiptAnalyzerForceGpt,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: (_selectedBytes != null && !_isLoading)
                     ? _analyze

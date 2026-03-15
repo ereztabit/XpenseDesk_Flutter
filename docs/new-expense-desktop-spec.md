@@ -52,7 +52,7 @@ ARB keys are added as part of whichever step first uses them — never as a stan
 
 **Screenshot prompt:** 1) Empty upload zone. 2) Select an image → image preview with overlay buttons. 3) Select a PDF → PDF embedded viewer visible.
 
-**Status:** ☐ Not started
+**Status:** ✅ Done
 
 ---
 

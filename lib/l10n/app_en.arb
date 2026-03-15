@@ -273,6 +273,7 @@
   "receiptAnalyzerDimensions": "Dimensions",
   "receiptAnalyzerPdfDocument": "PDF Document",
   "receiptAnalyzerExpandImage": "Tap to expand",
+  "receiptAnalyzerForceGpt": "Force GPT",
 
   "newExpenseStepUpload": "Upload",
   "newExpenseStepDetails": "Details",

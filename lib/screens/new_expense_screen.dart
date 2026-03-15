@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui_web' as ui_web;
@@ -6,6 +7,9 @@ import 'dart:js_interop';
 import 'screen_imports.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
+import '../widgets/expenses/receipt_image_panel.dart';
+import '../providers/expense_provider.dart';
+import '../models/receipt_analysis_result.dart';
 
 class NewExpenseScreen extends ConsumerStatefulWidget {
   const NewExpenseScreen({super.key});
@@ -15,7 +19,7 @@ class NewExpenseScreen extends ConsumerStatefulWidget {
 }
 
 class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
-    with FormBehaviorMixin {
+    with FormBehaviorMixin, TickerProviderStateMixin {
   static int _pdfViewTypeCounter = 0;
 
   int _currentStep = 0;
@@ -28,15 +32,36 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   int? _imageWidth;
   int? _imageHeight;
   bool _isHovering = false;
+  bool _isAnalyzing = false;
+  ReceiptAnalysisResult? _analysisResult;
+  bool _aiFailed = false;
+
+  late final AnimationController _scanController;
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scanController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+  }
 
   @override
   void dispose() {
+    _scanController.dispose();
+    _pulseController.dispose();
     _revokePdfBlob();
     super.dispose();
   }
 
   @override
-  bool get hasUnsavedChanges => false; // Step 5 will set this when form has data
+  bool get hasUnsavedChanges => false;
 
   void _revokePdfBlob() {
     if (_pdfBlobUrl != null) {
@@ -129,8 +154,57 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     web.URL.revokeObjectURL(url);
   }
 
-  // Stub: wired up in Step 3 to trigger AI scan
-  Future<void> _analyze() async {}
+  void _resetToUpload() {
+    _revokePdfBlob();
+    setState(() {
+      _fileBytes = null;
+      _filename = null;
+      _fileSizeKb = null;
+      _isPdf = false;
+      _pdfViewType = null;
+      _imageWidth = null;
+      _imageHeight = null;
+      _currentStep = 0;
+      _analysisResult = null;
+      _aiFailed = false;
+    });
+  }
+
+  Future<void> _analyze() async {
+    final bytes = _fileBytes;
+    final filename = _filename;
+    if (bytes == null || filename == null) return;
+
+    setState(() {
+      _isAnalyzing = true;
+      _analysisResult = null;
+      _aiFailed = false;
+    });
+    _scanController.repeat();
+    _pulseController.repeat();
+
+    try {
+      final expenseService = ref.read(expenseServiceProvider);
+      final result = await expenseService.analyzeReceiptParsed(bytes, filename);
+      if (!mounted) return;
+      _scanController.stop();
+      _pulseController.stop();
+      setState(() {
+        _analysisResult = result;
+        _isAnalyzing = false;
+        _currentStep = 1;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      _scanController.stop();
+      _pulseController.stop();
+      setState(() {
+        _aiFailed = true;
+        _isAnalyzing = false;
+        _currentStep = 1;
+      });
+    }
+  }
 
   void _showFullScreenImage(BuildContext context) {
     final bytes = _fileBytes;
@@ -257,15 +331,200 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
-  Widget _buildPreview(BuildContext context, AppLocalizations l10n, double previewHeight) {
+  Widget _buildScanningOverlay(double height) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_scanController, _pulseController]),
+      builder: (context, _) {
+        final scanPos = _scanController.value;
+        final pulseScale =
+            0.85 + 0.3 * (0.5 + 0.5 * sin(_pulseController.value * 2 * pi));
+
+        double dotOffset(int index) {
+          final t = ((_pulseController.value + index * 0.167) % 1.0);
+          return -8.0 * sin(t * pi).clamp(0.0, 1.0);
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: SizedBox(
+            width: double.infinity,
+            height: height,
+            child: Stack(
+              children: [
+                // image background (for non-PDF)
+                if (!_isPdf)
+                  Positioned.fill(
+                    child: Container(
+                      color: AppTheme.muted,
+                      alignment: Alignment.center,
+                      child: Image.memory(
+                        _fileBytes!,
+                        fit: BoxFit.contain,
+                        height: height,
+                      ),
+                    ),
+                  )
+                else
+                  Positioned.fill(
+                    child: Container(color: AppTheme.muted),
+                  ),
+
+                // semi-transparent blur overlay
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Container(
+                      color: AppTheme.background.withAlpha(153),
+                    ),
+                  ),
+                ),
+
+                // scan line
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: scanPos * (height - 4),
+                  child: Container(
+                    height: 4,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          AppTheme.primary,
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // corner brackets
+                ..._cornerBrackets(),
+
+                // center content
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // ping ring
+                          Container(
+                            width: 40 + 24 * _pulseController.value,
+                            height: 40 + 24 * _pulseController.value,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppTheme.primary.withAlpha(
+                                  (77 * (1 - _pulseController.value)).round(),
+                                ),
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          // sparkles icon
+                          Transform.scale(
+                            scale: pulseScale,
+                            child: const Icon(
+                              Icons.auto_awesome,
+                              size: 40,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        AppLocalizations.of(context)!.newExpenseAnalyzing,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.foreground,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(3, (i) {
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 3),
+                            child: Transform.translate(
+                              offset: Offset(0, dotOffset(i)),
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> _cornerBrackets() {
+    const double size = 32;
+    const double inset = 16;
+    const double thickness = 2;
+    final color = AppTheme.primary;
+
+    Widget bracket({
+      required bool top,
+      required bool start,
+    }) {
+      return PositionedDirectional(
+        top: top ? inset : null,
+        bottom: top ? null : inset,
+        start: start ? inset : null,
+        end: start ? null : inset,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: CustomPaint(
+            painter: _CornerBracketPainter(
+              top: top,
+              start: start,
+              color: color,
+              thickness: thickness,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return [
+      bracket(top: true, start: true),
+      bracket(top: true, start: false),
+      bracket(top: false, start: true),
+      bracket(top: false, start: false),
+    ];
+  }
+
+  Widget _buildPreview(
+      BuildContext context, AppLocalizations l10n, double previewHeight) {
     final bytes = _fileBytes!;
     final isDesktop = context.isDesktop;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (_isAnalyzing)
+          _buildScanningOverlay(previewHeight)
         // PDF: plain container, no Stack — HtmlElementView can't be in a Stack
-        if (_isPdf)
+        else if (_isPdf)
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Container(
@@ -322,38 +581,40 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
               ],
             ),
           ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                _fileSizeKb != null
-                    ? '$_filename  ·  $_fileSizeKb KB'
-                    : _filename ?? '',
-                style: Theme.of(context).textTheme.bodyMedium,
-                overflow: TextOverflow.ellipsis,
+        if (!_isAnalyzing) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _fileSizeKb != null
+                      ? '$_filename  ·  $_fileSizeKb KB'
+                      : _filename ?? '',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            if (_imageWidth != null && _imageHeight != null) ...[
-              Text(
-                '$_imageWidth × $_imageHeight px',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(width: 8),
-            ],
-            if (isDesktop && _isPdf)
+              if (_imageWidth != null && _imageHeight != null) ...[
+                Text(
+                  '$_imageWidth × $_imageHeight px',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (isDesktop && _isPdf)
+                TextButton.icon(
+                  onPressed: _downloadFile,
+                  icon: const Icon(Icons.download_outlined, size: 16),
+                  label: Text(l10n.newExpenseDownloadReceipt),
+                ),
               TextButton.icon(
-                onPressed: _downloadFile,
-                icon: const Icon(Icons.download_outlined, size: 16),
-                label: Text(l10n.newExpenseDownloadReceipt),
+                onPressed: _pickFile,
+                icon: const Icon(Icons.swap_horiz, size: 16),
+                label: Text(l10n.newExpenseReplaceFile),
               ),
-            TextButton.icon(
-              onPressed: _pickFile,
-              icon: const Icon(Icons.swap_horiz, size: 16),
-              label: Text(l10n.newExpenseReplaceFile),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -408,19 +669,55 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                               ExpenseStepIndicator(
                                   currentStep: _currentStep),
                               const SizedBox(height: 32),
-                              if (_fileBytes == null)
-                                _buildUploadZone(l10n, contentHeight)
-                              else ...[
-                                _buildPreview(context, l10n, contentHeight),
-                                const SizedBox(height: 16),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: _analyze,
-                                    child: Text(l10n.newExpenseAnalyzeButton),
+                              if (_currentStep == 0) ...[
+                                if (_fileBytes == null)
+                                  _buildUploadZone(l10n, contentHeight)
+                                else
+                                  _buildPreview(context, l10n, contentHeight),
+                                if (!_isAnalyzing) ...[
+                                  const SizedBox(height: 16),
+                                  Align(
+                                    alignment: AlignmentDirectional.centerEnd,
+                                    child: ElevatedButton(
+                                      onPressed:
+                                          _fileBytes != null ? _analyze : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: _fileBytes != null
+                                            ? AppTheme.success
+                                            : null,
+                                        foregroundColor: _fileBytes != null
+                                            ? Colors.white
+                                            : null,
+                                      ),
+                                      child: Text(l10n.continueButton),
+                                    ),
                                   ),
+                                ],
+                              ] else
+                                Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                          l10n.newExpenseFormPlaceholder),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    Expanded(
+                                      child: ReceiptImagePanel(
+                                        fileBytes: _fileBytes!,
+                                        isPdf: _isPdf,
+                                        aiFailed: _aiFailed,
+                                        onExpand: _isPdf
+                                            ? null
+                                            : () =>
+                                                _showFullScreenImage(context),
+                                        onDownload: _downloadFile,
+                                        onReplace: _resetToUpload,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
                             ],
                           ),
                         ),
@@ -436,6 +733,50 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       ),
     );
   }
+}
+
+class _CornerBracketPainter extends CustomPainter {
+  final bool top;
+  final bool start;
+  final Color color;
+  final double thickness;
+
+  const _CornerBracketPainter({
+    required this.top,
+    required this.start,
+    required this.color,
+    required this.thickness,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = thickness
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square;
+
+    final w = size.width;
+    final h = size.height;
+
+    if (top && start) {
+      canvas.drawLine(Offset(0, 0), Offset(w, 0), paint);
+      canvas.drawLine(Offset(0, 0), Offset(0, h), paint);
+    } else if (top && !start) {
+      canvas.drawLine(Offset(0, 0), Offset(w, 0), paint);
+      canvas.drawLine(Offset(w, 0), Offset(w, h), paint);
+    } else if (!top && start) {
+      canvas.drawLine(Offset(0, h), Offset(w, h), paint);
+      canvas.drawLine(Offset(0, 0), Offset(0, h), paint);
+    } else {
+      canvas.drawLine(Offset(0, h), Offset(w, h), paint);
+      canvas.drawLine(Offset(w, 0), Offset(w, h), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CornerBracketPainter old) =>
+      old.color != color || old.top != top || old.start != start;
 }
 
 class _DashedBorderPainter extends CustomPainter {
