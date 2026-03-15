@@ -1229,6 +1229,38 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
+  void _pickDateNative() {
+    final today = DateTime.now();
+    final sixMonthsAgo = DateTime(today.year, today.month - 6, today.day);
+
+    String fmt(DateTime d) =>
+        '${d.year.toString().padLeft(4, '0')}-'
+        '${d.month.toString().padLeft(2, '0')}-'
+        '${d.day.toString().padLeft(2, '0')}';
+
+    final input = web.HTMLInputElement()
+      ..type = 'date'
+      ..min = fmt(sixMonthsAgo)
+      ..max = fmt(today);
+
+    if (_dateController.text.isNotEmpty) {
+      input.value = _dateController.text;
+    }
+
+    input.onChange.first.then((_) {
+      final value = input.value;
+      if (value.isNotEmpty && mounted) {
+        final picked = DateTime.tryParse(value);
+        if (picked != null) {
+          _dateController.text = value;
+          setState(() => _selectedDate = picked);
+        }
+      }
+    });
+
+    input.click();
+  }
+
   Widget _buildDateField(BuildContext context, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1242,33 +1274,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             hintText: 'YYYY-MM-DD',
             suffixIcon: IconButton(
               icon: const Icon(Icons.calendar_today_outlined, size: 18),
-              onPressed: () async {
-                final today = DateTime.now();
-                final sixMonthsAgo =
-                    DateTime(today.year, today.month - 6, today.day);
-                final initial = DateTime.tryParse(_dateController.text) ??
-                    _selectedDate ??
-                    today;
-                final clamped = initial.isBefore(sixMonthsAgo)
-                    ? sixMonthsAgo
-                    : initial.isAfter(today)
-                        ? today
-                        : initial;
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: clamped,
-                  firstDate: sixMonthsAgo,
-                  lastDate: today,
-                );
-                if (picked != null && mounted) {
-                  final formatted =
-                      '${picked.year.toString().padLeft(4, '0')}-'
-                      '${picked.month.toString().padLeft(2, '0')}-'
-                      '${picked.day.toString().padLeft(2, '0')}';
-                  _dateController.text = formatted;
-                  setState(() => _selectedDate = picked);
-                }
-              },
+              onPressed: _pickDateNative,
             ),
           ),
           onChanged: (value) {
