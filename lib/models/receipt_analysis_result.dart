@@ -28,7 +28,7 @@ class ReceiptAnalysisResult {
       categoryId: json['categoryId'] as int?,
       categoryName: json['category'] as String?,
       receiptNumber: json['receipt_number'] as String?,
-      imageUrl: json['imageUrl'] as String?,
+      imageUrl: json['altered_image_url'] as String?,
     );
   }
 }
