@@ -33,14 +33,14 @@ class ReceiptImagePanel extends StatelessWidget {
     final isDesktop = context.isDesktop;
 
     return isPdf
-        ? _buildPdfLayout(l10n, isDesktop)
-        : _buildImageLayout(l10n, isDesktop);
+        ? _buildPdfLayout(context, l10n, isDesktop)
+        : _buildImageLayout(context, l10n, isDesktop);
   }
 
   // ── PDF layout ─────────────────────────────────────────────────────────────
   // HtmlElementView cannot be inside a Stack, so controls go in a bar below.
 
-  Widget _buildPdfLayout(AppLocalizations l10n, bool isDesktop) {
+  Widget _buildPdfLayout(BuildContext context, AppLocalizations l10n, bool isDesktop) {
     return SizedBox(
       width: double.infinity,
       height: 400,
@@ -73,7 +73,7 @@ class ReceiptImagePanel extends StatelessWidget {
                   horizontal: 8, vertical: 6),
               child: Row(
                 children: [
-                  if (isDesktop) _buildReplaceButton(l10n),
+                  if (isDesktop) _buildReplaceButton(context, l10n),
                   const Spacer(),
                   if (aiFailed) ...[
                     _buildAiFailButton(l10n),
@@ -108,7 +108,7 @@ class ReceiptImagePanel extends StatelessWidget {
 
   // ── Image layout — Column with controls bar below (mirrors PDF layout) ──────
 
-  Widget _buildImageLayout(AppLocalizations l10n, bool isDesktop) {
+  Widget _buildImageLayout(BuildContext context, AppLocalizations l10n, bool isDesktop) {
     return SizedBox(
       width: double.infinity,
       height: 400,
@@ -132,7 +132,7 @@ class ReceiptImagePanel extends StatelessWidget {
                   horizontal: 8, vertical: 6),
               child: Row(
                 children: [
-                  if (isDesktop) _buildReplaceButton(l10n),
+                  if (isDesktop) _buildReplaceButton(context, l10n),
                   const Spacer(),
                   if (aiFailed) ...[
                     _buildAiFailButton(l10n),
@@ -212,7 +212,7 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
-  Widget _buildReplaceButton(AppLocalizations l10n) {
+  Widget _buildReplaceButton(BuildContext context, AppLocalizations l10n) {
     return GestureDetector(
       onTap: onReplace,
       child: ClipRRect(
@@ -230,8 +230,10 @@ class ReceiptImagePanel extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.arrow_circle_left_outlined,
+                Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? Icons.arrow_circle_right_outlined
+                      : Icons.arrow_circle_left_outlined,
                   size: 14,
                   color: AppTheme.foreground,
                 ),

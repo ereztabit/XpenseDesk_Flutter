@@ -2,15 +2,21 @@
 
 ## Currently Working On
 
-**New Expense Screen — Desktop Redesign** (`NewExpenseScreen`)
+### 1. New Expense Screen — RTL Audit
+Formal RTL pass on `new_expense_screen.dart` and related widgets:
+- [ ] Zero hardcoded English strings — all via `l10n`
+- [ ] `EdgeInsets.only(left/right)` → `EdgeInsetsDirectional.only(start/end)`
+- [ ] All overlay positioning uses `Alignment.topStart/topEnd/bottomStart` (not `topLeft` etc.)
+- [ ] `CrossAxisAlignment.start` on all `Column` widgets
+- [ ] Hebrew strings complete in `app_he.arb`
 
-Full redesign per spec: upload zone → AI scanning animation → two-column step 2 (form + receipt image).
+### 2. Expenses Screen — Fixes
+After a successful new expense submission, reload the expenses list.
 
-- **Spec + Implementation Plan:** [new-expense-desktop-spec.md](new-expense-desktop-spec.md) — plan is at the top of the file
-- Old form-only implementation: [employee-expenses-implementation-plan.md](employee-expenses-implementation-plan.md) (superseded)
-- Design notes: [Exmployee-expenses-design.md](Exmployee-expenses-design.md)
-
-**Current step:** Step 3 — Real AI Analysis: Scanning Animation + API Call + State Transition (not started)
+Expenses table (desktop):
+- [ ] Delete pending expense — buttons not aligned in size
+- [ ] Remove Receipt # column
+- [ ] Add Merchant Name column: fixed width, ellipsis overflow, full name tooltip on hover (desktop)
 
 ---
 
@@ -23,24 +29,21 @@ Full redesign per spec: upload zone → AI scanning animation → two-column ste
 - [ ] there is a flatter load animation by default - remove it.
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
- 
- ## user expenses report 
-- [ ] add merchant name to the expenses report
-- [ ] when i try to delete pending expense - the buttons are not aligned in size
+
+ ## user expenses report
 - [ ] user : edit the pending expense
 - [ ] user : mobile view of new expense - as described on file :  new-expense-mobile-spec.md
 - [ ] mobile view of new and edit expense
 - [ ] warn before getting the same recipt as you had in the past
-- [ ] in desktop the user expenses report - remove the recipt #
 - [ ] multi currency expenses
 
-## manager expenses reprot 
+## manager expenses reprot
 - [ ] manager - ui to approve/decline expense
 - [ ] emails for approve / decline / pending
 
 ## managment screens
 - [ ] always LTR in the emails invite window
-- [ ] manager - do you want to get email for every pending expense 
+- [ ] manager - do you want to get email for every pending expense
 - [ ] user - do you want to be notified in email when expense is approved? declined?
 - [ ] user - do you want to get an email in the end of the month about your expenses?
 

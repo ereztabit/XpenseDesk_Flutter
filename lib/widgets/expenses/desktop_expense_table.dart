@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/expense_category.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
@@ -135,9 +135,10 @@ class DesktopExpenseTable extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
+    final uiLocale = Localizations.localeOf(context);
 
     final columns = [
-      SectionTableColumn(label: l10n.receiptNumber, flex: 3),
+      SectionTableColumn(label: l10n.merchant, flex: 4),
       SectionTableColumn(label: l10n.date, flex: 4),
       SectionTableColumn(label: l10n.amount, flex: 3),
       SectionTableColumn(label: l10n.category, flex: 4),
@@ -147,13 +148,17 @@ class DesktopExpenseTable extends ConsumerWidget {
 
     final rows = expenses.map((expense) {
       return [
-        // Receipt #
-        Text(
-          expense.receiptRef ?? '—',
-          style: GoogleFonts.robotoMono(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppTheme.foreground,
+        // Merchant — ellipsis with end-padding so it doesn't touch the next column
+        Padding(
+          padding: const EdgeInsetsDirectional.only(end: 12),
+          child: Tooltip(
+            message: expense.merchantName ?? '',
+            child: Text(
+              expense.merchantName ?? '—',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
+            ),
           ),
         ),
         // Date
@@ -173,9 +178,11 @@ class DesktopExpenseTable extends ConsumerWidget {
             ),
           ),
         ),
-        // Category
+        // Category — localized label from in-app enum, fallback to API name
         Text(
-          expense.categoryName,
+          ExpenseCategory.fromId(expense.categoryId)
+                  ?.labelForLocale(uiLocale) ??
+              expense.categoryName,
           style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
         ),
         // Status badge

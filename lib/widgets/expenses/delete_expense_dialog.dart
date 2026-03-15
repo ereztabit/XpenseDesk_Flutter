@@ -75,8 +75,15 @@ class _DeleteExpenseDialogState extends ConsumerState<DeleteExpenseDialog> {
         ),
       ),
       actions: [
-        OutlinedButton(
+        TextButton(
           onPressed: _isDeleting ? null : () => Navigator.of(context).pop(false),
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+            ),
+            minimumSize: const Size(0, 50),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
           child: Text(l10n.cancel),
         ),
         FilledButton(

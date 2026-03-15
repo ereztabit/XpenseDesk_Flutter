@@ -353,6 +353,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         isAiData: _isAiData,
       );
       if (!mounted) return;
+      ref.invalidate(expenseSearchProvider);
       Navigator.of(context).pushReplacementNamed('/user/dashboard');
     } catch (_) {
       if (!mounted) return;
