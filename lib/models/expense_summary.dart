@@ -20,6 +20,7 @@ class ExpenseSummary {
   final String? reviewedByUserId;
   final String? reviewedBy;
   final DateTime? reviewedAt;
+  final bool isAiData;
 
   const ExpenseSummary({
     required this.expenseId,
@@ -40,6 +41,7 @@ class ExpenseSummary {
     this.reviewedByUserId,
     this.reviewedBy,
     this.reviewedAt,
+    this.isAiData = false,
   });
 
   factory ExpenseSummary.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,7 @@ class ExpenseSummary {
       reviewedAt: json['reviewedAt'] != null
           ? DateTime.parse(json['reviewedAt'] as String)
           : null,
+      isAiData: json['isAiData'] as bool? ?? false,
     );
   }
 }

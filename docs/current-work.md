@@ -2,28 +2,16 @@
 
 ## Currently Working On
 
-### 1. New Expense Screen — RTL Audit
-Formal RTL pass on `new_expense_screen.dart` and related widgets:
-- [ ] Zero hardcoded English strings — all via `l10n`
-- [ ] `EdgeInsets.only(left/right)` → `EdgeInsetsDirectional.only(start/end)`
-- [ ] All overlay positioning uses `Alignment.topStart/topEnd/bottomStart` (not `topLeft` etc.)
-- [ ] `CrossAxisAlignment.start` on all `Column` widgets
-- [ ] Hebrew strings complete in `app_he.arb`
+**New Expense Screen — Mobile View — DONE**
 
-### 2. Expenses Screen — Fixes
-After a successful new expense submission, reload the expenses list.
-
-Expenses table (desktop):
-- [ ] Delete pending expense — buttons not aligned in size
-- [ ] Remove Receipt # column
-- [ ] Add Merchant Name column: fixed width, ellipsis overflow, full name tooltip on hover (desktop)
+Spec + plan: [new-expense-mobile-spec.md](new-expense-mobile-spec.md)
+All 4 steps complete. Build verified clean.
 
 ---
 
 ## TODO (Backlog)
 
 ## general enviorment
-- [ ] move the recipt analyzer to the footer only for desktop
 - [ ] create the cycle widget  as described on file :  cycle-widget-spec.md
 - [ ] Move language selection to the nav bar on mobile
 - [ ] there is a flatter load animation by default - remove it.
@@ -31,9 +19,8 @@ Expenses table (desktop):
 - [ ] create a real terms and conditions
 
  ## user expenses report
-- [ ] user : edit the pending expense
-- [ ] user : mobile view of new expense - as described on file :  new-expense-mobile-spec.md
-- [ ] mobile view of new and edit expense
+- [ ] user : edit the pending expense - as described on file : edit-expense-spec.md
+- [x] user : mobile view of new expense - as described on file :  new-expense-mobile-spec.md
 - [ ] warn before getting the same recipt as you had in the past
 - [ ] multi currency expenses
 

@@ -283,13 +283,16 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                             ),
                             Row(
                               children: [
-                                OutlinedButton.icon(
-                                  onPressed: () =>
-                                      ReceiptAnalyzerDialog.show(context),
-                                  icon: const Icon(Icons.receipt_long, size: 18),
-                                  label: Text(l10n.receiptAnalyzerTitle),
-                                ),
-                                const SizedBox(width: 8),
+                                if (context.isDesktop) ...[
+                                  OutlinedButton.icon(
+                                    onPressed: () =>
+                                        ReceiptAnalyzerDialog.show(context),
+                                    icon: const Icon(
+                                        Icons.receipt_long, size: 18),
+                                    label: Text(l10n.receiptAnalyzerTitle),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
                                 FilledButton.icon(
                                   onPressed: () => Navigator.of(
                                     context,

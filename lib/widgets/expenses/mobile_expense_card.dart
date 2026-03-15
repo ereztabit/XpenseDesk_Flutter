@@ -90,7 +90,10 @@ class MobileExpenseCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ExpenseStatusBadge(expenseStatusId: expense.expenseStatusId),
+                ExpenseStatusBadge(
+                  expenseStatusId: expense.expenseStatusId,
+                  isAiData: expense.isAiData,
+                ),
               ],
             ),
             const SizedBox(height: 12),

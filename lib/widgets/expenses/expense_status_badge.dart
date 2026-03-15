@@ -7,10 +7,16 @@ import '../../theme/app_theme.dart';
 /// Pending = amber background, white text.
 /// Approved = green background, white text.
 /// Declined = red background, white text.
+/// When [isAiData] is true and status is pending, an AI chip is shown alongside.
 class ExpenseStatusBadge extends StatelessWidget {
   final int expenseStatusId;
+  final bool isAiData;
 
-  const ExpenseStatusBadge({super.key, required this.expenseStatusId});
+  const ExpenseStatusBadge({
+    super.key,
+    required this.expenseStatusId,
+    this.isAiData = false,
+  });
 
   Color _backgroundColor() => switch (expenseStatusId) {
         2 => AppTheme.success,
@@ -28,7 +34,7 @@ class ExpenseStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Container(
+    final statusPill = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
         color: _backgroundColor(),
@@ -42,6 +48,39 @@ class ExpenseStatusBadge extends StatelessWidget {
           color: Colors.white,
         ),
       ),
+    );
+
+    if (!isAiData || expenseStatusId != 1) return statusPill;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        statusPill,
+        const SizedBox(height: 4),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withAlpha(230),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.auto_awesome, size: 10, color: Colors.white),
+              SizedBox(width: 3),
+              Text(
+                'AI',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -9,6 +9,7 @@ import 'desktop_menu.dart';
 import '../../models/menu_items.dart';
 import 'mobile_menu_sheet.dart';
 import '../language_switcher.dart';
+import '../expenses/receipt_analyzer_dialog.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 ///
@@ -122,6 +123,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         break;
       case 'user-management':
         if (mounted) Navigator.pushNamed(context, '/manager/users');
+        break;
+      case 'receipt-analyzer':
+        if (mounted) ReceiptAnalyzerDialog.show(context);
         break;
       case 'contact-support':
         final t = AppLocalizations.of(context)!;

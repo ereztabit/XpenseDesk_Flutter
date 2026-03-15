@@ -189,7 +189,10 @@ class DesktopExpenseTable extends ConsumerWidget {
         Align(
           alignment: AlignmentDirectional.centerStart,
           child:
-              ExpenseStatusBadge(expenseStatusId: expense.expenseStatusId),
+              ExpenseStatusBadge(
+                expenseStatusId: expense.expenseStatusId,
+                isAiData: expense.isAiData,
+              ),
         ),
         // Actions
         _buildActionCell(expense),

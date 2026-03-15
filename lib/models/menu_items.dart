@@ -10,6 +10,7 @@ class MenuItem {
   final bool requiresManagerRole;
   final bool isDestructive;
   final bool isAction;
+  final bool desktopOnly;
 
   const MenuItem({
     required this.id,
@@ -18,6 +19,7 @@ class MenuItem {
     this.requiresManagerRole = false,
     this.isDestructive = false,
     this.isAction = false,
+    this.desktopOnly = false,
   });
 }
 
@@ -45,6 +47,13 @@ class MenuItems {
         icon: Icons.people_outline,
         label: t.userManagement,
         requiresManagerRole: true,
+      ),
+      MenuItem(
+        id: 'receipt-analyzer',
+        icon: Icons.receipt_long,
+        label: t.receiptAnalyzerTitle,
+        isAction: true,
+        desktopOnly: true,
       ),
       MenuItem(
         id: 'logout',

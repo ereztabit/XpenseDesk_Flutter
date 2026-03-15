@@ -12,6 +12,7 @@ import '../utils/expense_amount_input_formatter.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
 import '../widgets/expenses/receipt_image_panel.dart';
 import '../providers/expense_provider.dart';
+import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/expense_category.dart';
 import '../models/expense_currency.dart';
@@ -48,6 +49,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   DateTime? _selectedDate;
   bool _isModifying = false;
   bool _isSubmitting = false;
+  String? _submitError;
   bool _isAiData = false;
   bool _hasAttemptedSubmit = false;
   String? _aiImageUrl;
@@ -230,6 +232,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _selectedDate = null;
       _isModifying = false;
       _isSubmitting = false;
+      _submitError = null;
       _isAiData = false;
       _hasAttemptedSubmit = false;
       _aiImageUrl = null;
@@ -337,7 +340,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
     if (amount == null || categoryId == null || merchant.isEmpty) return;
 
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      _submitError = null;
+    });
 
     try {
       final expenseService = ref.read(expenseServiceProvider);
@@ -355,9 +361,18 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (!mounted) return;
       ref.invalidate(expenseSearchProvider);
       Navigator.of(context).pushReplacementNamed('/user/dashboard');
-    } catch (_) {
+    } on ExpenseException catch (e) {
       if (!mounted) return;
-      setState(() => _isSubmitting = false);
+      setState(() {
+        _isSubmitting = false;
+        _submitError = e.message;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _submitError = e.toString();
+      });
     }
   }
 
@@ -868,7 +883,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
               GestureDetector(
                 onTap: _isModifying
                     ? _undoAiModify
-                    : () => setState(() => _isModifying = true),
+                    : () => setState(() {
+                        _isModifying = true;
+                        _isAiData = false;
+                      }),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1010,18 +1028,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Amount + Currency
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _buildAmountField(l10n)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildCurrencyDropdown(l10n)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        // Date full width
-        _buildDateField(context, l10n, companyLocale),
+        // Amount + Currency + Date
+        _buildAmountCurrencyDateRow(context, l10n, companyLocale),
         const SizedBox(height: 12),
         // Merchant full width
         _requiredLabel(l10n.merchantLabel),
@@ -1057,18 +1065,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         ),
         const SizedBox(height: 16),
 
-        // Amount + Currency
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _buildAmountField(l10n)),
-            const SizedBox(width: 12),
-            Expanded(child: _buildCurrencyDropdown(l10n)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Date full width
-        _buildDateField(context, l10n, companyLocale),
+        // Amount + Currency + Date
+        _buildAmountCurrencyDateRow(context, l10n, companyLocale),
         const SizedBox(height: 16),
 
         // Merchant
@@ -1132,6 +1130,32 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           maxLength: 200,
           decoration: const InputDecoration(),
         ),
+      ],
+    );
+  }
+
+  Widget _buildAmountCurrencyDateRow(
+      BuildContext context, AppLocalizations l10n, String companyLocale) {
+    if (context.isNarrow) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildAmountField(l10n),
+          const SizedBox(height: 16),
+          _buildCurrencyDropdown(l10n),
+          const SizedBox(height: 16),
+          _buildDateField(context, l10n, companyLocale),
+        ],
+      );
+    }
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _buildAmountField(l10n)),
+        const SizedBox(width: 12),
+        Expanded(child: _buildCurrencyDropdown(l10n)),
+        const SizedBox(width: 12),
+        Expanded(child: _buildDateField(context, l10n, companyLocale)),
       ],
     );
   }
@@ -1323,23 +1347,58 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         : '$month$sep$day$sep$year';
   }
 
-  Widget _buildActionButtons(AppLocalizations l10n) {
-    return Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: ElevatedButton(
-        onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _canSubmit ? AppTheme.success : null,
-          foregroundColor: _canSubmit ? Colors.white : null,
-        ),
-        child: _isSubmitting
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(l10n.finish),
+  Widget _buildActionButtons(AppLocalizations l10n, BuildContext context) {
+    final submitButton = ElevatedButton(
+      onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _canSubmit ? AppTheme.success : null,
+        foregroundColor: _canSubmit ? Colors.white : null,
       ),
+      child: _isSubmitting
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Text(l10n.finish),
+    );
+
+    final errorRow = _submitError != null
+        ? Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline,
+                    size: 16, color: AppTheme.destructive),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    _submitError!,
+                    style: const TextStyle(
+                        fontSize: 13, color: AppTheme.destructive),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : const SizedBox.shrink();
+
+    if (context.isNarrow) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          errorRow,
+          submitButton,
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        errorRow,
+        submitButton,
+      ],
     );
   }
 
@@ -1387,6 +1446,64 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
+  Widget _buildCollapsedReceiptRow(
+      BuildContext context, AppLocalizations l10n) {
+    final icon = _isPdf ? Icons.picture_as_pdf : Icons.image_outlined;
+    final label = _filename ?? (_isPdf ? 'PDF' : l10n.newExpenseUploadTitle);
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: AppTheme.border),
+        borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+        color: AppTheme.card,
+      ),
+      padding: const EdgeInsetsDirectional.only(
+          start: 12, end: 4, top: 8, bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppTheme.mutedForeground),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 13, color: AppTheme.mutedForeground),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.open_in_full, size: 18),
+            tooltip: l10n.newExpenseExpandImage,
+            onPressed: _isPdf
+                ? (_pdfBlobUrl != null
+                    ? () => web.window.open(_pdfBlobUrl!, '_blank')
+                    : null)
+                : () => _showFullScreenImage(context),
+            color: AppTheme.mutedForeground,
+            padding: const EdgeInsets.all(8),
+          ),
+          const SizedBox(width: 4),
+          OutlinedButton(
+            onPressed: _resetToUpload,
+            style: OutlinedButton.styleFrom(
+              shape: const StadiumBorder(),
+              side: const BorderSide(color: AppTheme.border),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12),
+              minimumSize: const Size(0, 30),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              l10n.newExpenseReplaceFile,
+              style: const TextStyle(
+                  fontSize: 12, color: AppTheme.foreground),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   InputDecorationTheme _dropdownTheme() {
     const borderSide = BorderSide(color: AppTheme.border);
     return InputDecorationTheme(
@@ -1416,9 +1533,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.watch(companyLocaleProvider);
-    final contentHeight =
-        (MediaQuery.of(context).size.height * 0.5).clamp(320.0, 600.0);
-
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
@@ -1426,7 +1540,21 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           children: [
             const AppHeader(),
             Expanded(
-              child: SingleChildScrollView(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableHeight = constraints.maxHeight;
+                  // chrome: scrollPad(48)+backBtn(36)+gap(8)+cardBorder(2)+
+                  //         cardPad(32)+stepIndicator(46)+stepGap(32)+continueArea(66)
+                  const mobileChrome = 270.0;
+                  // fileInfo row adds ~44px in preview state
+                  final uploadHeight = context.isMobile
+                      ? ((availableHeight - mobileChrome) * 0.85)
+                          .clamp(120.0, 600.0)
+                      : (availableHeight * 0.6).clamp(320.0, 600.0);
+                  // Same height as upload zone — avoids jarring resize on file select.
+                  // File-info row + Continue button extend below (tiny scroll acceptable).
+                  final previewHeight = uploadHeight;
+                  return SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ConstrainedContent(
                   child: Column(
@@ -1442,12 +1570,15 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                               const EdgeInsets.symmetric(horizontal: 8),
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.newExpense,
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 24),
+                      if (context.isDesktop) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.newExpense,
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: 24),
+                      ] else
+                        const SizedBox(height: 8),
                       Card(
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -1456,7 +1587,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                           side: const BorderSide(color: AppTheme.border),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: EdgeInsets.all(context.isMobile ? 16 : 24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -1465,10 +1596,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                               const SizedBox(height: 32),
                               if (_currentStep == 0) ...[
                                 if (_fileBytes == null)
-                                  _buildUploadZone(l10n, contentHeight)
+                                  _buildUploadZone(l10n, uploadHeight)
                                 else
                                   _buildPreview(
-                                      context, l10n, contentHeight),
+                                      context, l10n, previewHeight),
                                 if (!_isAnalyzing) ...[
                                   const SizedBox(height: 16),
                                   Align(
@@ -1490,7 +1621,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                     ),
                                   ),
                                 ],
-                              ] else ...[
+                              ] else if (context.isDesktop) ...[
                                 Row(
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
@@ -1521,7 +1652,14 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-                                _buildActionButtons(l10n),
+                                _buildActionButtons(l10n, context),
+                              ] else ...[
+                                _buildCollapsedReceiptRow(context, l10n),
+                                const SizedBox(height: 16),
+                                _buildStep2Form(
+                                    context, l10n, companyLocale),
+                                const SizedBox(height: 16),
+                                _buildActionButtons(l10n, context),
                               ],
                             ],
                           ),
@@ -1530,6 +1668,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                     ],
                   ),
                 ),
+              );
+                },
               ),
             ),
             const AppFooter(),

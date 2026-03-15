@@ -120,7 +120,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
     final sheetWidth = (context.screenWidth * 0.75).clamp(0.0, 384.0);
 
-    final menuItems = MenuItems.getItems(t, isManager);
+    final menuItems = MenuItems.getItems(t, isManager)
+        .where((item) => !item.desktopOnly)
+        .toList();
     
     // Determine slide direction based on text direction
     // In LTR: hamburger is on left, slide from left

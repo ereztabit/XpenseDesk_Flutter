@@ -14,6 +14,7 @@ class ReceiptImagePanel extends StatelessWidget {
   final VoidCallback onDownload;
   final VoidCallback onReplace;
   final bool hideAiBadge;
+  final double imageHeight;
 
   const ReceiptImagePanel({
     super.key,
@@ -25,6 +26,7 @@ class ReceiptImagePanel extends StatelessWidget {
     required this.onDownload,
     required this.onReplace,
     this.hideAiBadge = false,
+    this.imageHeight = 400,
   });
 
   @override
@@ -37,18 +39,19 @@ class ReceiptImagePanel extends StatelessWidget {
         : _buildImageLayout(context, l10n, isDesktop);
   }
 
-  // ── PDF layout ─────────────────────────────────────────────────────────────
+  // ── PDF layout ──────────────────────────────────────────────────────────────
   // HtmlElementView cannot be inside a Stack, so controls go in a bar below.
+  // On mobile: bar only shows expand; on desktop: full controls.
 
-  Widget _buildPdfLayout(BuildContext context, AppLocalizations l10n, bool isDesktop) {
+  Widget _buildPdfLayout(
+      BuildContext context, AppLocalizations l10n, bool isDesktop) {
     return SizedBox(
       width: double.infinity,
-      height: 400,
+      height: imageHeight,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Column(
           children: [
-            // PDF iframe fills the upper portion
             Expanded(
               child: Container(
                 color: AppTheme.muted,
@@ -63,7 +66,7 @@ class ReceiptImagePanel extends StatelessWidget {
                       ),
               ),
             ),
-            // Controls bar below the iframe
+            // Controls bar — full on desktop, expand-only on mobile
             Container(
               decoration: const BoxDecoration(
                 color: AppTheme.card,
@@ -75,11 +78,11 @@ class ReceiptImagePanel extends StatelessWidget {
                 children: [
                   if (isDesktop) _buildReplaceButton(context, l10n),
                   const Spacer(),
-                  if (aiFailed) ...[
+                  if (isDesktop && aiFailed) ...[
                     _buildAiFailButton(l10n),
                     const SizedBox(width: 4),
                   ],
-                  if (!aiFailed && !hideAiBadge) ...[
+                  if (isDesktop && !aiFailed && !hideAiBadge) ...[
                     _buildAiBadgeInline(l10n),
                     const SizedBox(width: 8),
                   ],
@@ -106,12 +109,17 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
-  // ── Image layout — Column with controls bar below (mirrors PDF layout) ──────
+  // ── Image layout ────────────────────────────────────────────────────────────
+  // Desktop: Column (image + controls bar).
+  // Mobile: Stack (image with badge + expand overlay; no bar).
 
-  Widget _buildImageLayout(BuildContext context, AppLocalizations l10n, bool isDesktop) {
+  Widget _buildImageLayout(
+      BuildContext context, AppLocalizations l10n, bool isDesktop) {
+    if (!isDesktop) return _buildImageLayoutMobile(context, l10n);
+
     return SizedBox(
       width: double.infinity,
-      height: 400,
+      height: imageHeight,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Column(
@@ -132,7 +140,7 @@ class ReceiptImagePanel extends StatelessWidget {
                   horizontal: 8, vertical: 6),
               child: Row(
                 children: [
-                  if (isDesktop) _buildReplaceButton(context, l10n),
+                  _buildReplaceButton(context, l10n),
                   const Spacer(),
                   if (aiFailed) ...[
                     _buildAiFailButton(l10n),
@@ -150,12 +158,11 @@ class ReceiptImagePanel extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                   ],
-                  if (isDesktop)
-                    _buildBarButton(
-                      icon: Icons.download_outlined,
-                      tooltip: l10n.newExpenseDownloadReceipt,
-                      onTap: onDownload,
-                    ),
+                  _buildBarButton(
+                    icon: Icons.download_outlined,
+                    tooltip: l10n.newExpenseDownloadReceipt,
+                    onTap: onDownload,
+                  ),
                 ],
               ),
             ),
@@ -165,9 +172,47 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
+  Widget _buildImageLayoutMobile(
+      BuildContext context, AppLocalizations l10n) {
+    return SizedBox(
+      width: double.infinity,
+      height: imageHeight,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Image fills container
+            Container(
+              color: AppTheme.muted,
+              child: Image.memory(fileBytes, fit: BoxFit.contain),
+            ),
+            // AI badge — top-start (only when AI succeeded)
+            if (!aiFailed && !hideAiBadge)
+              PositionedDirectional(
+                top: 8,
+                start: 8,
+                child: _buildAiBadgeInline(l10n),
+              ),
+            // Expand button — top-end
+            if (onExpand != null)
+              PositionedDirectional(
+                top: 8,
+                end: 8,
+                child: _buildOverlayIconButton(
+                  icon: Icons.open_in_full,
+                  tooltip: l10n.newExpenseExpandImage,
+                  onTap: onExpand!,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Shared helpers ─────────────────────────────────────────────────────────
 
-  //
   Widget _buildAiBadgeInline(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
@@ -193,7 +238,6 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
-  //
   Widget _buildBarButton({
     required IconData icon,
     required String tooltip,
@@ -207,6 +251,36 @@ class ReceiptImagePanel extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(5),
           child: Icon(icon, size: 18, color: AppTheme.mutedForeground),
+        ),
+      ),
+    );
+  }
+
+  // 32×32 frosted glass icon button — used as image overlay on mobile
+  Widget _buildOverlayIconButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppTheme.background.withAlpha(204),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 16, color: AppTheme.foreground),
+            ),
+          ),
         ),
       ),
     );

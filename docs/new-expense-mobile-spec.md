@@ -6,6 +6,102 @@ Companion to: new-expense-desktop-spec.md (desktop >= 768px).
 
 ---
 
+## Implementation Plan
+
+All changes are layout-only. Fields, validation, state, and API calls are sealed — do not touch them.
+
+Breakpoints in use:
+- `context.isNarrow` → < 600px
+- `context.isMobile` → < 768px
+- `context.isDesktop` → >= 768px
+
+After each step: `flutter build web` → fix errors → send screenshot → wait for approval.
+
+---
+
+### Step 1 — Step 2 Layout Switch + Image Panel Mobile Adaptation
+
+**Goal:** On mobile, Step 2 renders as a single-column vertical stack (image first, form below) instead of the desktop side-by-side Row. Image height is 192px on mobile vs 400px on desktop.
+
+**Files:** `lib/screens/new_expense_screen.dart`, `lib/widgets/expenses/receipt_image_panel.dart`
+
+**Deliverables:**
+
+`receipt_image_panel.dart`:
+- Add `imageHeight` named parameter (`double imageHeight = 400`) — replaces hardcoded `SizedBox(height: 400)` in both `_buildPdfLayout` and `_buildImageLayout`
+- On mobile (`!isDesktop`): hide the entire controls bar (the `Container` with Replace, AI fail badge, expand, download). Instead render a compact overlay directly on the image — a small `Positioned`-style `IconButton` (32×32) for expand in the top-end corner, visible only when `onExpand != null`
+- AI fail badge: hidden on mobile (already gated by controls bar hiding)
+- Download: hidden on mobile (already gated by `if (isDesktop)`)
+
+`new_expense_screen.dart` (step 2 section, lines ~1493–1524):
+- Wrap in `context.isDesktop ? Row(...) : Column(...)`:
+  - Desktop: current `Row` — form left `Expanded`, gap 24, image right `Expanded`
+  - Mobile: `Column` — `ReceiptImagePanel` first (pass `imageHeight: context.isMobile ? 192.0 : 400.0`), gap 16, then `_buildStep2Form`
+- Card padding: `EdgeInsets.all(context.isMobile ? 16 : 24)`
+
+**Screenshot prompt:** On mobile viewport: Step 2 shows image (192px) stacked above the form. On desktop: unchanged side-by-side layout.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 2 — Amount / Currency / Date Responsive Grid
+
+**Goal:** Below 600px (isNarrow), the Amount + Currency + Date fields stack as full-width single-column inputs. At 600px+ they remain a 3-column Row.
+
+**Files:** `lib/screens/new_expense_screen.dart`
+
+**Affected locations:**
+1. `_buildFullForm` — the `Row([_buildAmountField, SizedBox(12), _buildCurrencyDropdown])` + separate `_buildDateField`
+2. `_buildAiDetectedPanel` modify mode — the same 3-field row inside the editable section
+
+**Deliverable:**
+- Extract a `_buildAmountCurrencyDateRow(context, l10n, companyLocale)` helper that returns:
+  - `context.isNarrow` → `Column([amount, gap 16, currency, gap 16, date])`
+  - otherwise → `Row([Expanded(amount), gap 12, Expanded(currency), gap 12, Expanded(date)])`
+- Replace both inline Row occurrences with this helper
+
+**Screenshot prompt:** On narrow mobile (< 600px): Amount, Currency, Date stacked vertically. On wider (600-767px) and desktop: shown as 3-column row.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 3 — Action Buttons: Add Discard + Responsive Layout
+
+**Goal:** Both Submit and Discard buttons are present. On mobile (< 600px) they stack full-width. On 600px+ they sit side-by-side.
+
+**Files:** `lib/screens/new_expense_screen.dart`
+
+**Deliverables:**
+- Update `_buildActionButtons(AppLocalizations l10n, BuildContext context)`:
+  - Discard button: `TextButton` (styled with `borderRadius: 12, minimumSize: Size(0, 50)`), always enabled, calls `handleBackNavigation('/user/dashboard')`
+  - Submit button: current `ElevatedButton` logic unchanged
+  - `context.isNarrow` → `Column(crossAxis: stretch, [submit, gap 12, discard])` — full width, submit first
+  - otherwise → `Row(mainAxis: end, [discard, gap 12, submit])`
+- Update all call sites to pass `context` to `_buildActionButtons`
+
+**Screenshot prompt:** Mobile: two full-width stacked buttons (Submit on top, Discard below). Desktop/wide: side-by-side right-aligned.
+
+**Status:** ☐ Not started
+
+---
+
+### Step 4 — Build Verification + RTL Check
+
+**Goal:** Clean build, no regressions, RTL-safe on all new mobile layouts.
+
+**Checklist:**
+- [ ] `flutter build web` passes with zero errors
+- [ ] All new `EdgeInsets` use `EdgeInsetsDirectional` (start/end, not left/right)
+- [ ] Column layouts use `CrossAxisAlignment.start`
+- [ ] Expand overlay button uses `AlignmentDirectional.topEnd`
+- [ ] No hardcoded strings added
+
+**Status:** ☐ Not started
+
+---
+
 ## 1. Design Scheme
 
 ### 1.1 Color Palette
