@@ -8,22 +8,26 @@ import '../providers/navigation_guard_provider.dart';
 /// - Navigation guard with confirmation dialog
 /// - Validation mode management
 mixin FormBehaviorMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
+  // Cached notifier reference — avoids any context/ProviderScope lookup in
+  // dispose(), where the element is already deactivated and ancestor lookups
+  // throw "Looking up a deactivated widget's ancestor is unsafe".
+  NavigationGuardNotifier? _guardNotifier;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // Register this screen's unsaved-changes guard so AppHeader logo
-      // navigation can check it before leaving.
-      ref.read(navigationGuardProvider.notifier).setGuard(
-          () async => confirmDiscard());
+      // Cache the notifier here while the context is still valid.
+      _guardNotifier = ref.read(navigationGuardProvider.notifier);
+      _guardNotifier!.setGuard(() async => confirmDiscard());
     });
   }
 
   @override
   void dispose() {
-    // Unregister guard so the next screen starts clean.
-    ref.read(navigationGuardProvider.notifier).setGuard(null);
+    // Use the cached reference — no context/ProviderScope lookup needed.
+    _guardNotifier?.setGuard(null);
     super.dispose();
   }
   /// Override this getter to indicate if the form has unsaved changes

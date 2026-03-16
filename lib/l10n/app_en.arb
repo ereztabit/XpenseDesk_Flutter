@@ -303,5 +303,18 @@
   "newExpenseAiFailedTooltip": "Receipt couldn't be detected. Please enter details manually.",
   "expenseDateInvalidFormat": "Invalid date. Expected:",
   "expenseDateTooOld": "Date is too far in the past",
-  "expenseDateInFuture": "Date cannot be in the future"
+  "expenseDateInFuture": "Date cannot be in the future",
+
+  "expenseDetail": "Expense Detail",
+  "updateExpenseDetails": "Update Expense Details",
+  "changesSaved": "Changes saved",
+  "expenseApproved": "Expense approved",
+  "expenseDeclined": "Expense declined",
+  "noReceipt": "No receipt",
+  "uploadReceipt": "Upload Receipt",
+  "approve": "Approve",
+  "decline": "Decline",
+  "expenseNotFound": "Expense not found",
+  "failedToUpdateExpense": "Failed to update expense",
+  "expenseClosedError": "This expense is already closed and cannot be updated."
 }

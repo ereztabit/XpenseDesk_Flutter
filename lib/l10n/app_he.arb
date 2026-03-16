@@ -303,5 +303,18 @@
   "newExpenseAiFailedTooltip": "לא ניתן היה לזהות את הקבלה. אנא הזן פרטים ידנית.",
   "expenseDateInvalidFormat": "תאריך לא תקין. הפורמט הנדרש:",
   "expenseDateTooOld": "התאריך ישן מדי",
-  "expenseDateInFuture": "לא ניתן להזין תאריך עתידי"
+  "expenseDateInFuture": "לא ניתן להזין תאריך עתידי",
+
+  "expenseDetail": "פרטי הוצאה",
+  "updateExpenseDetails": "עדכן פרטי הוצאה",
+  "changesSaved": "השינויים נשמרו",
+  "expenseApproved": "ההוצאה אושרה",
+  "expenseDeclined": "ההוצאה נדחתה",
+  "noReceipt": "אין קבלה",
+  "uploadReceipt": "העלה קבלה",
+  "approve": "אשר",
+  "decline": "דחה",
+  "expenseNotFound": "ההוצאה לא נמצאה",
+  "failedToUpdateExpense": "עדכון ההוצאה נכשל",
+  "expenseClosedError": "הוצאה זו סגורה ולא ניתן לעדכן אותה."
 }

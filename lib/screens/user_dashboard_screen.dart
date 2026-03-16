@@ -11,6 +11,7 @@ import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/total_approved_badge.dart';
 import '../widgets/expenses/receipt_analyzer_dialog.dart';
+import '../widgets/expenses/mobile_expense_modal.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
   const UserDashboardScreen({super.key});
@@ -119,10 +120,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                 onPeekPlayed: isFirst
                     ? () => setState(() => _mobilePeekPlayed = true)
                     : null,
-                onEdit: () {
-                  // Edit flow lands in Step 6. Keep the action visible now so the
-                  // mobile card matches the approved layout.
-                },
+                onEdit: () => showMobileExpenseModal(context, entry.value),
               );
             }).toList(),
           );
@@ -191,9 +189,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                 Navigator.of(context).pushNamed('/employee/new-expense'),
             newExpenseLabel: l10n.newExpense,
           ),
-          onEdit: (expense) {
-            // TODO: Navigate to edit in a later step
-          },
+          onEdit: (expense) => Navigator.of(context)
+              .pushNamed('/employee/expense/${expense.expenseId}'),
           onDelete: (expense) async {
             await DeleteExpenseDialog.show(context, expense.expenseId);
           },
@@ -221,9 +218,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
               ),
             ),
           ),
-          onView: (expense) {
-            // TODO: Navigate to detail in a later step
-          },
+          onView: (expense) => Navigator.of(context)
+              .pushNamed('/employee/expense/${expense.expenseId}'),
         ),
       ],
     );

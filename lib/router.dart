@@ -12,6 +12,8 @@ import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
 import 'screens/new_expense_screen.dart';
 import 'screens/receipt_analyzer_screen.dart';
+import 'screens/employee_expense_detail_screen.dart';
+import 'screens/manager_expense_detail_screen.dart';
 import 'widgets/auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -149,7 +151,31 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
+    // --- Expense detail ---
     default:
+      // /employee/expense/:id
+      if (uri.path.startsWith('/employee/expense/')) {
+        final id = uri.pathSegments.last;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => AuthGate(
+            mode: AuthGateMode.employeeOnboardedOnly,
+            child: EmployeeExpenseDetailScreen(expenseId: id),
+          ),
+        );
+      }
+      // /manager/expense/:id
+      if (uri.path.startsWith('/manager/expense/')) {
+        final id = uri.pathSegments.last;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => AuthGate(
+            mode: AuthGateMode.managerOnly,
+            child: ManagerExpenseDetailScreen(expenseId: id),
+          ),
+        );
+      }
+
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const LoginScreen(),

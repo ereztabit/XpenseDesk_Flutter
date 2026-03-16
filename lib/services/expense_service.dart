@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
+import '../models/expense_detail.dart';
 import '../models/expense_summary.dart';
 import '../models/receipt_analysis_result.dart';
+import '../models/update_expense_request.dart';
 
 /// Exception thrown when expense operations fail.
 class ExpenseException implements Exception {
@@ -13,6 +15,16 @@ class ExpenseException implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// Thrown when the expense no longer exists (404).
+class ExpenseNotFoundException implements Exception {
+  const ExpenseNotFoundException();
+}
+
+/// Thrown when trying to update a closed (non-pending) expense (409).
+class ExpenseClosedException implements Exception {
+  const ExpenseClosedException();
 }
 
 /// Service for the XpenseDesk Expense API.
@@ -142,6 +154,82 @@ class ExpenseService {
     );
 
     _validateResponse(response, 'Failed to create expense');
+  }
+
+  /// Fetch full details for a single expense.
+  ///
+  /// Throws [ExpenseNotFoundException] if the expense does not exist.
+  Future<ExpenseDetail> getExpenseById(String expenseId) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/expenses/$expenseId',
+      authToken: sessionToken,
+    );
+
+    if (response['success'] != true) {
+      throw const ExpenseNotFoundException();
+    }
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) throw const ExpenseNotFoundException();
+
+    return ExpenseDetail.fromJson(data);
+  }
+
+  /// Update a pending expense's fields.
+  ///
+  /// Throws [ExpenseNotFoundException] on 404.
+  /// Throws [ExpenseClosedException] on 409.
+  /// Throws [ExpenseException] on other failures.
+  Future<void> updateExpense(
+    String expenseId,
+    UpdateExpenseRequest request,
+  ) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final result = await _apiService.putWithStatus(
+      '/api/expenses/$expenseId',
+      request.toJson(),
+      authToken: sessionToken,
+    );
+
+    if (result.statusCode == 404) throw const ExpenseNotFoundException();
+    if (result.statusCode == 409) throw const ExpenseClosedException();
+    if (result.body['success'] != true) {
+      final message = result.body['message'] as String? ?? 'Failed to update expense';
+      throw ExpenseException(message);
+    }
+  }
+
+  /// Approve a pending expense (manager only).
+  Future<void> approveExpense(String expenseId) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/expenses/$expenseId/approve',
+      {},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to approve expense');
+  }
+
+  /// Decline a pending expense (manager only).
+  Future<void> declineExpense(String expenseId) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/expenses/$expenseId/decline',
+      {},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to decline expense');
   }
 
   /// Upload a receipt image to the AI analyzer and return a parsed result.

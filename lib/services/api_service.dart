@@ -110,6 +110,29 @@ class ApiService {
     return _decode(response);
   }
 
+  /// Make a PUT request and return both the HTTP status code and the decoded body.
+  /// Use this when you need to differentiate error types by status code (e.g. 404 vs 409).
+  Future<({int statusCode, Map<String, dynamic> body})> putWithStatus(
+    String endpoint,
+    Map<String, dynamic> body, {
+    String? authToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+
+    final response = await http.put(
+      uri,
+      headers: _buildHeaders(authToken: authToken),
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+      throw const UnauthorizedException();
+    }
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    return (statusCode: response.statusCode, body: decoded);
+  }
+
   /// Make a multipart POST request (file uploads).
   /// Returns the decoded JSON response body.
   Future<Map<String, dynamic>> postMultipart(
