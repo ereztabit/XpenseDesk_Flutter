@@ -10,6 +10,8 @@ import '../../models/menu_items.dart';
 import 'mobile_menu_sheet.dart';
 import '../language_switcher.dart';
 import '../expenses/receipt_analyzer_dialog.dart';
+import '../cycle/cycle_compact_badge.dart';
+import '../../providers/cycle_provider.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 ///
@@ -25,7 +27,9 @@ class AppHeader extends ConsumerStatefulWidget {
 
 class _AppHeaderState extends ConsumerState<AppHeader> {
   OverlayEntry? _overlayEntry;
+  OverlayEntry? _cycleOverlayEntry;
   final GlobalKey _avatarKey = GlobalKey();
+  final GlobalKey _cyclePillKey = GlobalKey();
   bool _isMenuOpen = false;
 
   /// Check if user is a manager
@@ -141,15 +145,86 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     }
   }
 
+  void _toggleCyclePopover() {
+    if (_cycleOverlayEntry != null) {
+      _closeCyclePopover();
+    } else {
+      _openCyclePopover();
+    }
+  }
+
+  void _openCyclePopover() {
+    final renderBox =
+        _cyclePillKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final pillSize = renderBox.size;
+
+    _cycleOverlayEntry = OverlayEntry(
+      builder: (ctx) {
+        const badgeWidth = 220.0;
+        final screenWidth = MediaQuery.sizeOf(ctx).width;
+        final left = (offset.dx + pillSize.width / 2 - badgeWidth / 2)
+            .clamp(8.0, screenWidth - badgeWidth - 8);
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: _closeCyclePopover,
+                behavior: HitTestBehavior.opaque,
+                child: const ColoredBox(color: Colors.transparent),
+              ),
+            ),
+            Positioned(
+              top: offset.dy + pillSize.height + 8,
+              left: left,
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.card,
+                    border: Border.all(color: AppTheme.border),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: const CycleCompactBadge(),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    Overlay.of(context).insert(_cycleOverlayEntry!);
+    setState(() {});
+  }
+
+  void _closeCyclePopover() {
+    _cycleOverlayEntry?.remove();
+    _cycleOverlayEntry = null;
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
     _closeMenu();
+    _closeCyclePopover();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final userInfo = ref.watch(userInfoProvider);
+    final cycle = ref.watch(cycleContextProvider);
     final isMobile = context.isMobile;
 
     // This widget should only be used on authenticated pages
@@ -179,7 +254,13 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Desktop: cycle badge centered in the header (non-interactive)
+                if (!isMobile && cycle != null)
+                  const IgnorePointer(child: CycleCompactBadge()),
+                Row(
               children: [
                 // Menu Button - Hamburger on mobile, Avatar on desktop
                 if (isMobile)
@@ -259,6 +340,44 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                 // Spacer
                 const Spacer(),
 
+                // Mobile: cycle pill (desktop uses the centered Stack badge)
+                if (isMobile && cycle != null) ...[
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      key: _cyclePillKey,
+                      onTap: _toggleCyclePopover,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _cycleOverlayEntry != null
+                              ? AppTheme.primary.withAlpha(51)
+                              : AppTheme.primary.withAlpha(25),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.calendar_today_outlined,
+                                size: 14, color: AppTheme.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${cycle.daysRemaining} ${l10n.cycleDays}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+
                 // Logo
                 GestureDetector(
                   onTap: () async {
@@ -282,6 +401,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                     ),
                   ),
                 ),
+              ],
+            ),
               ],
             ),
           ),

@@ -319,5 +319,9 @@
   "expenseClosedError": "This expense is already closed and cannot be updated.",
 
   "allEmployees": "All Employees",
-  "done": "Done"
+  "done": "Done",
+
+  "cycleDays": "days",
+  "cycleEndsOn": "Cycle ends on",
+  "activeUsers": "Active Users"
 }

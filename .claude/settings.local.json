@@ -6,7 +6,8 @@
       "Bash(flutter build:*)",
       "Bash(grep -v \"^$\")",
       "Bash(grep -n \"Text\\(\\\\|EdgeInsets\\\\.only\\\\|Alignment\\\\.\\\\\\(topLeft\\\\|topRight\\\\|bottomLeft\\\\|bottomRight\\\\\\)\" /c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/widgets/expenses/*.dart)",
-      "Bash(grep -n \"TextAlign\\\\.\\\\|textAlign:\" /c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/screens/new_expense_screen.dart /c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/widgets/expenses/*.dart)"
+      "Bash(grep -n \"TextAlign\\\\.\\\\|textAlign:\" /c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/screens/new_expense_screen.dart /c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/widgets/expenses/*.dart)",
+      "Bash(flutter analyze:*)"
     ]
   }
 }

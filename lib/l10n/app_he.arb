@@ -319,5 +319,9 @@
   "expenseClosedError": "הוצאה זו סגורה ולא ניתן לעדכן אותה.",
 
   "allEmployees": "כל העובדים",
-  "done": "סיום"
+  "done": "סיום",
+
+  "cycleDays": "ימים",
+  "cycleEndsOn": "המחזור מסתיים ב",
+  "activeUsers": "משתמשים פעילים"
 }

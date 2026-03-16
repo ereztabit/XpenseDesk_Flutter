@@ -12,11 +12,12 @@ All 4 steps complete. Build verified clean.
 ## TODO (Backlog)
 
 ## general enviorment
-- [ ] create the cycle widget  as described on file :  cycle-widget-spec.md
+- [x] create the cycle widget  as described on file :  cycle-widget-spec.md
 - [ ] Move language selection to the nav bar on mobile
 - [ ] there is a flatter load animation by default - remove it.
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
+- [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
 
  ## user expenses report
 - [x] user : edit the pending expense - as described on file : edit-expense-spec.md
@@ -28,6 +29,7 @@ All 4 steps complete. Build verified clean.
 ## manager expenses reprot
 - [x] manager - ui to approve/decline expense - described at : manager-dashboard-spec.md
 - [ ] emails for approve / decline / pending
+- [ ] create the cycle expenses report - cycle-expenses-report-spec.md
 
 ## managment screens
 - [ ] always LTR in the emails invite window
