@@ -2,8 +2,7 @@
 
 ## Currently Working On
 
-**Bug: PDF upload doesn't store/post imageUrl**
-Backlog ref: `user expenses report` → pdf doesnt store imageUrl
+*(nothing in progress)*
 
 ---
 
@@ -19,7 +18,7 @@ Backlog ref: `user expenses report` → pdf doesnt store imageUrl
 ## user expenses report
 - [ ] warn before getting the same receipt as you had in the past
 - [ ] multi currency expenses
-- [ ] bug - pdf doesnt store imageUrl
+- [ ] bug - pdf receipt not displaying in expense detail — **backend issue** (imageUrl stored correctly, server must return a renderable URL for PDFs)
 
 ## manager expenses report
 - [ ] emails for approve / decline / pending
