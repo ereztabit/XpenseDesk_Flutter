@@ -13,6 +13,22 @@ This Flutter application is **XpenseDesk** — an AI-powered expense approval to
 
 **These documents are the source of truth for what we're building.** All implementation decisions should align with the MVP definition and user journeys described in these specifications.
 
+## Work Tracking — current-work.md
+
+**ALWAYS read `docs/current-work.md` at the start of every conversation.**
+
+When starting work on any feature or task:
+1. Move it from the backlog to a `## Currently Working On` section in `docs/current-work.md`
+2. Mark it as in-progress (remove the `[ ]` and note it there)
+3. When done, mark the backlog item `[x]` and remove it from "Currently Working On"
+
+**Never start implementing without updating `current-work.md` first.**
+
+When the user asks to "clean up" `current-work.md`:
+- Remove all `[x]` completed items entirely (do not keep them as history)
+- Remove any stale "Currently Working On" entries that are marked DONE
+- Fix any typos in section headers while you're there
+
 ## How to Work With Me
 
 - Talk to me like a senior engineer, not a student
