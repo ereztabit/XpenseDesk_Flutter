@@ -120,7 +120,6 @@ class _EmployeeExpenseDetailScreenState
 
     // Capture context-dependent values before any await.
     final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
     try {
@@ -142,9 +141,8 @@ class _EmployeeExpenseDetailScreenState
         ),
       );
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.changesSaved)));
-      navigator.pop();
       ref.invalidate(expenseSearchProvider);
+      navigator.pop();
     } on ExpenseClosedException {
       if (mounted) {
         setState(() {

@@ -25,7 +25,7 @@ All 4 steps complete. Build verified clean.
 - [ ] multi currency expenses
 
 ## manager expenses reprot
-- [ ] manager - ui to approve/decline expense
+- [ ] manager - ui to approve/decline expense - described at : manager-dashboard-spec.md
 - [ ] emails for approve / decline / pending
 
 ## managment screens

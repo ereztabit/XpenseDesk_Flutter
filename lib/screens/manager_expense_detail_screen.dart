@@ -119,9 +119,9 @@ class _ManagerExpenseDetailScreenState
       }
       await service.approveExpense(widget.expenseId);
       if (!mounted) return;
+      ref.invalidate(expenseSearchProvider);
       messenger.showSnackBar(SnackBar(content: Text(l10n.expenseApproved)));
       navigator.pop();
-      ref.invalidate(expenseSearchProvider);
     } on ExpenseNotFoundException {
       if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
     } on ExpenseException catch (e) {
@@ -144,12 +144,12 @@ class _ManagerExpenseDetailScreenState
       final service = ref.read(expenseServiceProvider);
       await service.declineExpense(widget.expenseId);
       if (!mounted) return;
+      ref.invalidate(expenseSearchProvider);
       messenger.showSnackBar(SnackBar(
         content: Text(l10n.expenseDeclined),
         backgroundColor: AppTheme.destructive,
       ));
       navigator.pop();
-      ref.invalidate(expenseSearchProvider);
     } on ExpenseNotFoundException {
       if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
     } on ExpenseException catch (e) {

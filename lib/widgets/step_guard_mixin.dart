@@ -15,6 +15,10 @@ import '../providers/navigation_guard_provider.dart';
 ///     bool get hasUnsavedChanges => _controller.text.isNotEmpty;
 ///   }
 mixin StepGuardMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
+  // Cached to avoid context/ProviderScope lookup in dispose() where the
+  // element is already deactivated and ancestor lookups are unsafe.
+  NavigationGuardNotifier? _guardNotifier;
+
   /// Return true when the step has input the user would lose on navigation.
   bool get hasUnsavedChanges;
 
@@ -47,17 +51,15 @@ mixin StepGuardMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ref
-            .read(navigationGuardProvider.notifier)
-            .setGuard(() async => confirmDiscard());
-      }
+      if (!mounted) return;
+      _guardNotifier = ref.read(navigationGuardProvider.notifier);
+      _guardNotifier!.setGuard(() async => confirmDiscard());
     });
   }
 
   @override
   void dispose() {
-    ref.read(navigationGuardProvider.notifier).setGuard(null);
+    _guardNotifier?.setGuard(null);
     super.dispose();
   }
 }
