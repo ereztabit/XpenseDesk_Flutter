@@ -18,11 +18,11 @@ import '../../utils/expense_amount_input_formatter.dart';
 ///
 /// Only opened for pending expenses. Non-pending expenses navigate to
 /// [EmployeeExpenseDetailScreen] instead.
-void showMobileExpenseModal(
+Future<void> showMobileExpenseModal(
   BuildContext context,
   ExpenseSummary expense,
 ) {
-  showModalBottomSheet(
+  return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

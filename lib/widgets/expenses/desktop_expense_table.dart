@@ -15,8 +15,13 @@ import 'expense_status_badge.dart';
 /// delegates all layout/styling to the generic [SectionTable] widget.
 ///
 /// [isPending] controls action buttons:
-///   - true  → edit + delete buttons
+///   - true  → edit + delete buttons (employee) or approve + decline + edit (manager)
 ///   - false → view (eye) button
+///
+/// [isManagerMode] switches to the manager column/action layout:
+///   - Employee column replaces Merchant
+///   - Receipt # column added
+///   - Approve + Decline + Edit for pending; View for processed
 class DesktopExpenseTable extends ConsumerWidget {
   final String title;
   final int count;
@@ -25,9 +30,12 @@ class DesktopExpenseTable extends ConsumerWidget {
   final bool initiallyExpanded;
   final List<ExpenseSummary> expenses;
   final bool isPending;
+  final bool isManagerMode;
   final void Function(ExpenseSummary expense)? onEdit;
   final void Function(ExpenseSummary expense)? onDelete;
   final void Function(ExpenseSummary expense)? onView;
+  final void Function(ExpenseSummary expense)? onApprove;
+  final void Function(ExpenseSummary expense)? onDecline;
   final Widget? emptyState;
 
   const DesktopExpenseTable({
@@ -39,10 +47,13 @@ class DesktopExpenseTable extends ConsumerWidget {
     this.initiallyExpanded = true,
     required this.expenses,
     this.isPending = true,
+    this.isManagerMode = false,
     this.emptyState,
     this.onEdit,
     this.onDelete,
     this.onView,
+    this.onApprove,
+    this.onDecline,
   });
 
   String _formatAmount(double? amount, String? currencyCode, String locale) {
@@ -84,6 +95,53 @@ class DesktopExpenseTable extends ConsumerWidget {
   }
 
   Widget _buildActionCell(ExpenseSummary expense) {
+    if (isManagerMode && isPending) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: IconButton(
+              onPressed: () => onApprove?.call(expense),
+              icon: const Icon(Icons.check, size: 16),
+              padding: EdgeInsets.zero,
+              style: IconButton.styleFrom(
+                foregroundColor: AppTheme.success,
+                shape: const CircleBorder(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: IconButton(
+              onPressed: () => onDecline?.call(expense),
+              icon: const Icon(Icons.close, size: 16),
+              padding: EdgeInsets.zero,
+              style: IconButton.styleFrom(
+                foregroundColor: AppTheme.destructive,
+                shape: const CircleBorder(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: IconButton(
+              onPressed: () => onEdit?.call(expense),
+              icon: const Icon(Icons.edit_outlined, size: 16),
+              padding: EdgeInsets.zero,
+              style: IconButton.styleFrom(shape: const CircleBorder()),
+              color: AppTheme.foreground,
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: isPending
@@ -137,16 +195,88 @@ class DesktopExpenseTable extends ConsumerWidget {
     final locale = ref.watch(companyLocaleProvider);
     final uiLocale = Localizations.localeOf(context);
 
-    final columns = [
-      SectionTableColumn(label: l10n.merchant, flex: 4),
-      SectionTableColumn(label: l10n.date, flex: 4),
-      SectionTableColumn(label: l10n.amount, flex: 3),
-      SectionTableColumn(label: l10n.category, flex: 4),
-      SectionTableColumn(label: l10n.status, flex: 3),
-      SectionTableColumn(label: l10n.actions, flex: 3),
-    ];
+    final List<SectionTableColumn> columns = isManagerMode
+        ? [
+            SectionTableColumn(label: l10n.employee, flex: 3),
+            SectionTableColumn(label: l10n.receiptNumber, flex: 3),
+            SectionTableColumn(label: l10n.date, flex: 3),
+            SectionTableColumn(label: l10n.amount, flex: 3),
+            SectionTableColumn(label: l10n.category, flex: 3),
+            SectionTableColumn(label: l10n.actions, flex: isPending ? 6 : 3),
+          ]
+        : [
+            SectionTableColumn(label: l10n.merchant, flex: 4),
+            SectionTableColumn(label: l10n.date, flex: 4),
+            SectionTableColumn(label: l10n.amount, flex: 3),
+            SectionTableColumn(label: l10n.category, flex: 4),
+            SectionTableColumn(label: l10n.status, flex: 3),
+            SectionTableColumn(label: l10n.actions, flex: 3),
+          ];
 
     final rows = expenses.map((expense) {
+      final amountCell = Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Text(
+            _formatAmount(expense.amount, expense.currencyCode, locale),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.foreground,
+            ),
+          ),
+        ),
+      );
+      final categoryCell = Text(
+        ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
+            expense.categoryName,
+        style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
+      );
+      final statusCell = Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: ExpenseStatusBadge(
+          expenseStatusId: expense.expenseStatusId,
+          isAiData: expense.isAiData,
+        ),
+      );
+
+      if (isManagerMode) {
+        return [
+          // Employee name
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: Text(
+              expense.createdByName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.foreground,
+              ),
+            ),
+          ),
+          // Receipt #
+          Text(
+            expense.receiptRef?.isNotEmpty == true ? expense.receiptRef! : '—',
+            style: const TextStyle(
+              fontSize: 14,
+              fontFamily: 'monospace',
+              color: AppTheme.foreground,
+            ),
+          ),
+          // Date
+          _buildDateCell(expense, locale, l10n),
+          // Amount
+          amountCell,
+          // Category
+          categoryCell,
+          // Actions
+          _buildActionCell(expense),
+        ];
+      }
+
       return [
         // Merchant — ellipsis with end-padding so it doesn't touch the next column
         Padding(
@@ -163,37 +293,12 @@ class DesktopExpenseTable extends ConsumerWidget {
         ),
         // Date
         _buildDateCell(expense, locale, l10n),
-        // Amount — start-aligned (left in LTR, right in RTL); LTR forces symbol-left rendering
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Text(
-              _formatAmount(expense.amount, expense.currencyCode, locale),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.foreground,
-              ),
-            ),
-          ),
-        ),
-        // Category — localized label from in-app enum, fallback to API name
-        Text(
-          ExpenseCategory.fromId(expense.categoryId)
-                  ?.labelForLocale(uiLocale) ??
-              expense.categoryName,
-          style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
-        ),
-        // Status badge
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child:
-              ExpenseStatusBadge(
-                expenseStatusId: expense.expenseStatusId,
-                isAiData: expense.isAiData,
-              ),
-        ),
+        // Amount
+        amountCell,
+        // Category
+        categoryCell,
+        // Status
+        statusCell,
         // Actions
         _buildActionCell(expense),
       ];

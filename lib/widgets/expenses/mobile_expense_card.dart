@@ -16,12 +16,16 @@ class MobileExpenseCard extends ConsumerWidget {
     this.onEdit,
     this.onViewReceipt,
     this.margin = const EdgeInsets.symmetric(vertical: 6),
+    this.showEmployeeName = false,
+    this.hideStatusBadge = false,
   });
 
   final ExpenseSummary expense;
   final VoidCallback? onEdit;
   final VoidCallback? onViewReceipt;
   final EdgeInsetsGeometry margin;
+  final bool showEmployeeName;
+  final bool hideStatusBadge;
 
   bool get _isPending => expense.expenseStatusId == 1;
   bool get _isProcessed => expense.expenseStatusId == 2 || expense.expenseStatusId == 3;
@@ -58,6 +62,17 @@ class MobileExpenseCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (showEmployeeName) ...[
+              Text(
+                expense.createdByName,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.mutedForeground,
+                    ),
+              ),
+              const SizedBox(height: 6),
+            ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -90,10 +105,11 @@ class MobileExpenseCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ExpenseStatusBadge(
-                  expenseStatusId: expense.expenseStatusId,
-                  isAiData: expense.isAiData,
-                ),
+                if (!hideStatusBadge)
+                  ExpenseStatusBadge(
+                    expenseStatusId: expense.expenseStatusId,
+                    isAiData: expense.isAiData,
+                  ),
               ],
             ),
             const SizedBox(height: 12),

@@ -19,13 +19,14 @@ All 4 steps complete. Build verified clean.
 - [ ] create a real terms and conditions
 
  ## user expenses report
-- [ ] user : edit the pending expense - as described on file : edit-expense-spec.md
+- [x] user : edit the pending expense - as described on file : edit-expense-spec.md
 - [x] user : mobile view of new expense - as described on file :  new-expense-mobile-spec.md
 - [ ] warn before getting the same recipt as you had in the past
 - [ ] multi currency expenses
+- [ ] bug - pdf doesnt store imageUrl
 
 ## manager expenses reprot
-- [ ] manager - ui to approve/decline expense - described at : manager-dashboard-spec.md
+- [x] manager - ui to approve/decline expense - described at : manager-dashboard-spec.md
 - [ ] emails for approve / decline / pending
 
 ## managment screens

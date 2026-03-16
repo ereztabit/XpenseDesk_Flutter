@@ -316,5 +316,8 @@
   "decline": "Decline",
   "expenseNotFound": "Expense not found",
   "failedToUpdateExpense": "Failed to update expense",
-  "expenseClosedError": "This expense is already closed and cannot be updated."
+  "expenseClosedError": "This expense is already closed and cannot be updated.",
+
+  "allEmployees": "All Employees",
+  "done": "Done"
 }

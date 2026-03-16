@@ -316,5 +316,8 @@
   "decline": "דחה",
   "expenseNotFound": "ההוצאה לא נמצאה",
   "failedToUpdateExpense": "עדכון ההוצאה נכשל",
-  "expenseClosedError": "הוצאה זו סגורה ולא ניתן לעדכן אותה."
+  "expenseClosedError": "הוצאה זו סגורה ולא ניתן לעדכן אותה.",
+
+  "allEmployees": "כל העובדים",
+  "done": "סיום"
 }

@@ -120,7 +120,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                 onPeekPlayed: isFirst
                     ? () => setState(() => _mobilePeekPlayed = true)
                     : null,
-                onEdit: () => showMobileExpenseModal(context, entry.value),
+                onEdit: () => showMobileExpenseModal(context, entry.value)
+                    .then((_) => ref.invalidate(expenseSearchProvider)),
               );
             }).toList(),
           );
@@ -190,7 +191,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
             newExpenseLabel: l10n.newExpense,
           ),
           onEdit: (expense) => Navigator.of(context)
-              .pushNamed('/employee/expense/${expense.expenseId}'),
+              .pushNamed('/employee/expense/${expense.expenseId}')
+              .then((_) => ref.invalidate(expenseSearchProvider)),
           onDelete: (expense) async {
             await DeleteExpenseDialog.show(context, expense.expenseId);
           },
@@ -219,7 +221,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
             ),
           ),
           onView: (expense) => Navigator.of(context)
-              .pushNamed('/employee/expense/${expense.expenseId}'),
+              .pushNamed('/employee/expense/${expense.expenseId}')
+              .then((_) => ref.invalidate(expenseSearchProvider)),
         ),
       ],
     );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'screens/ping_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/login_callback_screen.dart';
-import 'screens/dashboard_screen.dart';
 import 'screens/user_dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
@@ -13,7 +12,7 @@ import 'screens/employee_onboarding_screen.dart';
 import 'screens/new_expense_screen.dart';
 import 'screens/receipt_analyzer_screen.dart';
 import 'screens/employee_expense_detail_screen.dart';
-import 'screens/manager_expense_detail_screen.dart';
+import 'screens/manager_dashboard_screen.dart';
 import 'widgets/auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -65,7 +64,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings: settings,
         builder: (_) => const AuthGate(
           mode: AuthGateMode.managerOnly,
-          child: DashboardScreen(),
+          child: ManagerDashboardScreen(),
         ),
       );
 
@@ -171,7 +170,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           settings: settings,
           builder: (_) => AuthGate(
             mode: AuthGateMode.managerOnly,
-            child: ManagerExpenseDetailScreen(expenseId: id),
+            child: EmployeeExpenseDetailScreen(expenseId: id, isManagerMode: true),
           ),
         );
       }

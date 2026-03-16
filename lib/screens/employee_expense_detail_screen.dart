@@ -12,8 +12,13 @@ import '../utils/expense_amount_input_formatter.dart';
 
 class EmployeeExpenseDetailScreen extends ConsumerStatefulWidget {
   final String expenseId;
+  final bool isManagerMode;
 
-  const EmployeeExpenseDetailScreen({super.key, required this.expenseId});
+  const EmployeeExpenseDetailScreen({
+    super.key,
+    required this.expenseId,
+    this.isManagerMode = false,
+  });
 
   @override
   ConsumerState<EmployeeExpenseDetailScreen> createState() =>
@@ -44,7 +49,13 @@ class _EmployeeExpenseDetailScreenState
   bool _isSaving = false;
   String? _saveError;
 
-  bool get _isEditable => _expense?.isPending == true && !_isClosed;
+  /// Manager-mode: fields start locked; toggled by the Edit button.
+  bool _isEditingEnabled = false;
+
+  bool get _isEditable {
+    if (widget.isManagerMode) return _isEditingEnabled && !_isClosed;
+    return _expense?.isPending == true && !_isClosed;
+  }
 
   bool get _canSave =>
       _amountController.text.trim().isNotEmpty &&
@@ -151,6 +162,64 @@ class _EmployeeExpenseDetailScreenState
           _saveError = l10n.expenseClosedError;
         });
       }
+    } on ExpenseNotFoundException {
+      if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
+    } on ExpenseException catch (e) {
+      if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
+    } catch (e) {
+      if (mounted) setState(() { _isSaving = false; _saveError = e.toString(); });
+    }
+  }
+
+  Future<void> _approve() async {
+    if (_isSaving) return;
+    setState(() { _isSaving = true; _saveError = null; });
+
+    final navigator = Navigator.of(context);
+
+    try {
+      final service = ref.read(expenseServiceProvider);
+      await service.updateExpense(
+        widget.expenseId,
+        UpdateExpenseRequest(
+          expenseDate: _selectedDate!.toIso8601String().split('T').first,
+          categoryId: _selectedCategoryId!,
+          merchantName: _merchantController.text.trim().isEmpty
+              ? null : _merchantController.text.trim(),
+          note: _noteController.text.trim().isEmpty
+              ? null : _noteController.text.trim(),
+          amount: double.tryParse(_amountController.text.replaceAll(',', '')),
+          currencyCode: _selectedCurrencyCode,
+          receiptRef: _receiptRefController.text.trim().isEmpty
+              ? null : _receiptRefController.text.trim(),
+          isAiData: _isAiData,
+        ),
+      );
+      await service.approveExpense(widget.expenseId);
+      if (!mounted) return;
+      ref.invalidate(expenseSearchProvider);
+      navigator.pop();
+    } on ExpenseNotFoundException {
+      if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
+    } on ExpenseException catch (e) {
+      if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
+    } catch (e) {
+      if (mounted) setState(() { _isSaving = false; _saveError = e.toString(); });
+    }
+  }
+
+  Future<void> _decline() async {
+    if (_isSaving) return;
+    setState(() { _isSaving = true; _saveError = null; });
+
+    final navigator = Navigator.of(context);
+
+    try {
+      final service = ref.read(expenseServiceProvider);
+      await service.declineExpense(widget.expenseId);
+      if (!mounted) return;
+      ref.invalidate(expenseSearchProvider);
+      navigator.pop();
     } on ExpenseNotFoundException {
       if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
     } on ExpenseException catch (e) {
@@ -485,15 +554,129 @@ class _EmployeeExpenseDetailScreenState
         const SizedBox(height: 16),
         _buildCategoryDropdown(l10n, uiLocale, enabled: enabled),
         const SizedBox(height: 16),
+        // Manager cannot edit notes
         _buildTextField(l10n.noteLabel, _noteController,
-            maxLines: 3, enabled: enabled),
+            maxLines: 3,
+            enabled: widget.isManagerMode ? false : enabled),
+      ],
+    );
+  }
+
+  Widget _buildManagerInfoHeader(AppLocalizations l10n, String companyLocale) {
+    final expense = _expense;
+    if (expense == null) return const SizedBox.shrink();
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                expense.createdByName,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.foreground,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                expense.createdAt.toCompanyDate(companyLocale),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.mutedForeground,
+                ),
+              ),
+            ],
+          ),
+        ),
+        TextButton.icon(
+          onPressed: () => setState(() => _isEditingEnabled = !_isEditingEnabled),
+          icon: Icon(
+            _isEditingEnabled ? Icons.lock_open_outlined : Icons.edit_outlined,
+            size: 14,
+          ),
+          label: Text(_isEditingEnabled ? l10n.done : l10n.edit),
+          style: TextButton.styleFrom(
+            textStyle: const TextStyle(fontSize: 13),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildActionButtons(AppLocalizations l10n) {
-    if (!_isEditable) return const SizedBox.shrink();
+    if (!_isEditable && !widget.isManagerMode) return const SizedBox.shrink();
     final isNarrow = context.isNarrow;
+
+    final errorRow = _saveError != null
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 16, color: AppTheme.destructive),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(_saveError!,
+                        style: const TextStyle(
+                            fontSize: 13, color: AppTheme.destructive)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          )
+        : null;
+
+    if (widget.isManagerMode) {
+      final statusId = _expense?.expenseStatusId ?? 1;
+      final showApprove = statusId != 2; // not already approved
+      final showDecline = statusId != 3; // not already declined
+      final spinner = SizedBox(
+        width: 14, height: 14,
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+      );
+      final approveBtn = FilledButton.icon(
+        onPressed: _isSaving ? null : _approve,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppTheme.success,
+          foregroundColor: Colors.white,
+        ),
+        icon: _isSaving ? spinner : const Icon(Icons.check, size: 16),
+        label: Text(l10n.approve),
+      );
+      final declineBtn = FilledButton.icon(
+        onPressed: _isSaving ? null : _decline,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppTheme.destructive,
+          foregroundColor: Colors.white,
+        ),
+        icon: const Icon(Icons.close, size: 16),
+        label: Text(l10n.decline),
+      );
+
+      final buttons = [
+        if (showApprove) Expanded(child: approveBtn),
+        if (showApprove && showDecline) const SizedBox(width: 12),
+        if (showDecline) Expanded(child: declineBtn),
+      ];
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (errorRow != null) errorRow,
+          if (isNarrow) ...[
+            if (showApprove) ...[approveBtn, const SizedBox(height: 8)],
+            if (showDecline) declineBtn,
+          ] else
+            Row(children: buttons),
+        ],
+      );
+    }
 
     final saveBtn = FilledButton.icon(
       onPressed: _canSave && !_isSaving ? _save : null,
@@ -505,7 +688,6 @@ class _EmployeeExpenseDetailScreenState
           : const Icon(Icons.save_outlined, size: 16),
       label: Text(l10n.updateExpenseDetails),
     );
-
     final discardBtn = OutlinedButton(
       onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
       child: Text(l10n.discard),
@@ -514,21 +696,7 @@ class _EmployeeExpenseDetailScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_saveError != null) ...[
-          Row(
-            children: [
-              const Icon(Icons.error_outline,
-                  size: 16, color: AppTheme.destructive),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(_saveError!,
-                    style: const TextStyle(
-                        fontSize: 13, color: AppTheme.destructive)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
+        if (errorRow != null) errorRow,
         if (isNarrow) ...[
           saveBtn,
           const SizedBox(height: 8),
@@ -609,8 +777,8 @@ class _EmployeeExpenseDetailScreenState
               ],
             ),
           ),
-          // Replace receipt (desktop + pending only)
-          if (_isEditable && context.isDesktop)
+          // Replace receipt (desktop + pending only, not for manager)
+          if (_isEditable && context.isDesktop && !widget.isManagerMode)
             PositionedDirectional(
               bottom: 8,
               start: 8,
@@ -790,6 +958,10 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildDesktopLayout(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {
+    final form = widget.isManagerMode || !(_isAiData && _isEditable)
+        ? _buildFullForm(l10n, companyLocale, uiLocale)
+        : _buildFastTrackForm(l10n, companyLocale, uiLocale);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -797,9 +969,13 @@ class _EmployeeExpenseDetailScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _isAiData && _isEditable
-                  ? _buildFastTrackForm(l10n, companyLocale, uiLocale)
-                  : _buildFullForm(l10n, companyLocale, uiLocale),
+              if (widget.isManagerMode) ...[
+                _buildManagerInfoHeader(l10n, companyLocale),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+              ],
+              form,
               const SizedBox(height: 24),
               _buildActionButtons(l10n),
             ],
@@ -813,14 +989,22 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildMobileLayout(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {
+    final form = widget.isManagerMode || !(_isAiData && _isEditable)
+        ? _buildFullForm(l10n, companyLocale, uiLocale)
+        : _buildFastTrackForm(l10n, companyLocale, uiLocale);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildReceiptSection(l10n, height: 192),
         const SizedBox(height: 16),
-        _isAiData && _isEditable
-            ? _buildFastTrackForm(l10n, companyLocale, uiLocale)
-            : _buildFullForm(l10n, companyLocale, uiLocale),
+        if (widget.isManagerMode) ...[
+          _buildManagerInfoHeader(l10n, companyLocale),
+          const SizedBox(height: 16),
+          const Divider(),
+          const SizedBox(height: 16),
+        ],
+        form,
         const SizedBox(height: 24),
         _buildActionButtons(l10n),
       ],
