@@ -24,6 +24,7 @@ class LanguageSwitcher extends ConsumerWidget {
       offset: const Offset(0, 40),
       elevation: 8,
       tooltip: '', // Disable tooltip
+      useRootNavigator: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: const BorderSide(color: AppTheme.border),

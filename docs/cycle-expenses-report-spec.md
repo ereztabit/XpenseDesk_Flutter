@@ -503,8 +503,164 @@ Example request body for future Excel export:
 Expected response behavior:
 - When `format` is `rawdata`, the API returns the result rows for the current cycle and filters.
 - The raw data payload includes both detail rows and a dedicated total row for that exact result set.
-- When `format` is `excel`, the API returns the export payload/file response for spreadsheet download.
+- When `format` is `excel`, the API returns the export file response for spreadsheet download.
+- The Excel response uses `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`.
 - The client renders the rows as received and displays the returned total without attempting to infer totals outside the API response.
+
+Example `rawdata` response:
+
+```json
+{
+  "success": true,
+  "message": "Expenses report retrieved successfully.",
+  "data": [
+    {
+      "rowId": 1,
+      "isTotal": false,
+      "expenseDate": "2026-02-12T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "אומנויות חילוץ",
+      "categoryName": "FoodNMeals",
+      "amount": 12650.00,
+      "currencyCode": "ILS",
+      "status": "Approved",
+      "reviewedAt": "2026-03-16T06:54:45.183",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "3019",
+      "note": "הערה שכתבתי כאן222",
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_065308_867_4c31926fc1b84049b65137fde983c418_processed.jpg"
+    },
+    {
+      "rowId": 2,
+      "isTotal": false,
+      "expenseDate": "2024-12-12T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "י.שדד המרכז לבניה בע\"מ",
+      "categoryName": "FoodNMeals",
+      "amount": 160.00,
+      "currencyCode": "ILS",
+      "status": "Pending",
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "receiptRef": "514596",
+      "note": null,
+      "imageUrl": null
+    },
+    {
+      "rowId": 3,
+      "isTotal": false,
+      "expenseDate": "2024-12-08T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "ויטנוף חן",
+      "categoryName": "FoodNMeals",
+      "amount": 468.00,
+      "currencyCode": "ILS",
+      "status": "Approved",
+      "reviewedAt": "2026-03-16T10:45:40.513",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "2455",
+      "note": null,
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_100327_248_4e9afd566ecb41ab85fc3276f65b2b45_processed.jpg"
+    },
+    {
+      "rowId": 4,
+      "isTotal": false,
+      "expenseDate": "2024-12-08T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "ויטנוף חן כעג",
+      "categoryName": "FoodNMeals",
+      "amount": 1468.00,
+      "currencyCode": "ILS",
+      "status": "Approved",
+      "reviewedAt": "2026-03-16T06:47:19.97",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "2455",
+      "note": null,
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_061442_860_ed1377c5a3f94209b13257d295df2e42_processed.jpg"
+    },
+    {
+      "rowId": 5,
+      "isTotal": false,
+      "expenseDate": "2024-12-08T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "וילונות חן",
+      "categoryName": "Supplies",
+      "amount": 1468.00,
+      "currencyCode": "ILS",
+      "status": "Declined",
+      "reviewedAt": "2026-03-16T06:47:48.587",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "2455",
+      "note": null,
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_061210_447_7dc20d04f2d4421d9a86e191d45bb3e4_processed.jpg"
+    },
+    {
+      "rowId": 6,
+      "isTotal": false,
+      "expenseDate": "2024-12-08T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "וילונות חן2",
+      "categoryName": "FoodNMeals",
+      "amount": 5.00,
+      "currencyCode": "ILS",
+      "status": "Approved",
+      "reviewedAt": "2026-03-16T06:59:33.59",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "2455",
+      "note": null,
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_054433_351_0cb61a0fef16482db85f7004e835d72e_processed.jpg"
+    },
+    {
+      "rowId": 7,
+      "isTotal": false,
+      "expenseDate": "2019-04-26T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "פיתחת סתימות במיכשור חדיש",
+      "categoryName": "Other",
+      "amount": 2500.00,
+      "currencyCode": "ILS",
+      "status": "Approved",
+      "reviewedAt": "2026-03-16T14:23:10.72",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "024048753",
+      "note": null,
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_141043_784_485c748530214fcdac6ed2c13ac6c95a_processed.jpg"
+    },
+    {
+      "rowId": 8,
+      "isTotal": false,
+      "expenseDate": "2019-04-26T00:00:00",
+      "employeeName": "erez employee",
+      "merchantName": "פיתחת סתימות במיכשור חדיש",
+      "categoryName": "Supplies",
+      "amount": 12650.00,
+      "currencyCode": "ILS",
+      "status": "Approved",
+      "reviewedAt": "2026-03-16T07:10:45.24",
+      "reviewedBy": "ארז בן דוד",
+      "receiptRef": "3019",
+      "note": "משהו חדש",
+      "imageUrl": "https://temperezlearn.blob.core.windows.net/receipt-dumps/dumpfiles/3036b993-a22e-446f-abb9-7d4ef6311f58/receipt_20260316_071005_245_cb2abab54e744786a39bfe6d332f43a5_processed.jpg"
+    },
+    {
+      "rowId": 0,
+      "isTotal": true,
+      "expenseDate": null,
+      "employeeName": "TOTAL",
+      "merchantName": null,
+      "categoryName": null,
+      "amount": 31369.00,
+      "currencyCode": null,
+      "status": null,
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "receiptRef": null,
+      "note": null,
+      "imageUrl": null
+    }
+  ]
+}
+```
 
 Raw data response shape:
 
@@ -619,6 +775,7 @@ The Export button is present in the UI, but export behavior is out of scope for 
 |---|---|
 | Button visibility | Always shown in the page header |
 | Backend contract | The report API supports `format: "excel"` using the same request body shape as the report, but this screen does not call it in the current phase |
+| Excel response content type | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
 | Interaction | Visual button only; no XLSX generation, download logic, or backend call in this phase |
 | Future scope | Export format and implementation can be specified later without blocking the report UI |
 

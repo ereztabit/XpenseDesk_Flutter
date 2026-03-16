@@ -55,12 +55,18 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   }
 
   void _openMobileMenu() {
-    _overlayEntry = OverlayEntry(
-      builder: (context) => MobileMenuSheet(onClose: _closeMenu),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
+    // Push as a proper Navigator route so any PopupMenuButton opened from
+    // within the sheet will be routed above it in the Navigator stack.
     setState(() => _isMenuOpen = true);
+    Navigator.of(context).push(
+      PageRouteBuilder<void>(
+        opaque: false,
+        barrierColor: Colors.transparent,
+        pageBuilder: (ctx, _, _) => MobileMenuSheet(onClose: _closeMenu),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
 
   void _openDesktopMenu() {
@@ -334,8 +340,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   ),
                 const SizedBox(width: 12),
 
-                // Language Switcher
-                const LanguageSwitcher(),
+                // Language Switcher — desktop only; mobile shows it in the slide-out menu
+                if (!isMobile) const LanguageSwitcher(),
 
                 // Spacer
                 const Spacer(),

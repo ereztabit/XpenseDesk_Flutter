@@ -9,7 +9,6 @@
 ## TODO (Backlog)
 
 ## general environment
-- [ ] Move language selection to the nav bar on mobile - described at : mobile-language-switcher-spec.md
 - [ ] there is a flutter load animation by default - remove it.
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
@@ -18,7 +17,6 @@
 ## user expenses report
 - [ ] warn before getting the same receipt as you had in the past
 - [ ] multi currency expenses
-- [ ] bug - pdf receipt not displaying in expense detail — **backend issue** (imageUrl stored correctly, server must return a renderable URL for PDFs)
 
 ## manager expenses report
 - [ ] emails for approve / decline / pending

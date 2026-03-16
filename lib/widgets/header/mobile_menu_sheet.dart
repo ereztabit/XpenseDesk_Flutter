@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
 import '../../utils/responsive_utils.dart';
+import '../language_switcher.dart';
 
 class MobileMenuSheet extends ConsumerStatefulWidget {
   final VoidCallback onClose;
@@ -52,7 +53,8 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
   Future<void> _close() async {
     await _controller.reverse();
-    widget.onClose();
+    if (mounted) Navigator.of(context).pop();
+    widget.onClose(); // notifies AppHeader to reset _isMenuOpen
   }
 
   void _handleMenuItemSelected(String value) async {
@@ -187,35 +189,42 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                     // User info section
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Avatar
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primary.withAlpha(25),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                MenuItems.getInitials(
-                                  userInfo?.fullName,
-                                  userInfo?.email ?? '',
+                          Row(
+                            children: [
+                              // Avatar
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withAlpha(25),
+                                  shape: BoxShape.circle,
                                 ),
-                                style: const TextStyle(
-                                  color: AppTheme.primary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
+                                child: Center(
+                                  child: Text(
+                                    MenuItems.getInitials(
+                                      userInfo?.fullName,
+                                      userInfo?.email ?? '',
+                                    ),
+                                    style: const TextStyle(
+                                      color: AppTheme.primary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 12),
+                              // User details
+                              Expanded(
+                                child: MenuItems.buildUserInfo(userInfo, t),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          // User details
-                          Expanded(
-                            child: MenuItems.buildUserInfo(userInfo, t),
-                          ),
+                          const SizedBox(height: 12),
+                          const LanguageSwitcher(),
                         ],
                       ),
                     ),
@@ -224,51 +233,89 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
 
                     // Menu items
                     Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: menuItems.length,
-                        itemBuilder: (context, index) {
-                          final item = menuItems[index];
-                          final isPrevItemAction = index > 0 && menuItems[index - 1].isAction;
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
 
-                          return Column(
-                            children: [
-                              if ((item.isAction && !isPrevItemAction) || item.id == 'contact-support')
-                                const Divider(height: 1),
-                              InkWell(
-                                onTap: () => _handleMenuItemSelected(item.id),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 16,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        item.icon,
-                                        size: 20,
-                                        color: AppTheme.mutedForeground,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          item.label,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            color: item.isAction
-                                                ? AppTheme.mutedForeground
-                                                : AppTheme.foreground,
-                                          ),
+                            // Nav items (non-action)
+                            ...menuItems
+                                .where((item) => !item.isAction)
+                                .map((item) => InkWell(
+                                      onTap: () =>
+                                          _handleMenuItemSelected(item.id),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 16,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(item.icon,
+                                                size: 20,
+                                                color: AppTheme.mutedForeground),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                item.label,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: AppTheme.foreground,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+                                    )),
+
+                            const Divider(height: 1),
+
+                            // Action items (logout, contact-support)
+                            ...menuItems
+                                .where((item) => item.isAction)
+                                .map((item) => Column(
+                                      children: [
+                                        if (item.id == 'contact-support')
+                                          const Divider(height: 1),
+                                        InkWell(
+                                          onTap: () =>
+                                              _handleMenuItemSelected(item.id),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 20,
+                                              vertical: 16,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(item.icon,
+                                                    size: 20,
+                                                    color:
+                                                        AppTheme.mutedForeground),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Text(
+                                                    item.label,
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w500,
+                                                      color:
+                                                          AppTheme.mutedForeground,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )),
+
+                            const SizedBox(height: 8),
+                          ],
+                        ),
                       ),
                     ),
                   ],
