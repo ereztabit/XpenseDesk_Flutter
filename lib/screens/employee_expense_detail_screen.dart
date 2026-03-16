@@ -116,10 +116,18 @@ class _EmployeeExpenseDetailScreenState
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
+    // Managers can review/correct old expenses — use a 5-year window.
+    final firstDate = widget.isManagerMode
+        ? now.subtract(const Duration(days: 1825))
+        : now.subtract(const Duration(days: 180));
+    // Guard: initialDate must not be before firstDate (release builds skip asserts).
+    final initialDate = _selectedDate != null && _selectedDate!.isAfter(firstDate)
+        ? _selectedDate!
+        : firstDate;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now,
-      firstDate: now.subtract(const Duration(days: 180)),
+      initialDate: initialDate,
+      firstDate: firstDate,
       lastDate: now,
     );
     if (picked != null && mounted) setState(() => _selectedDate = picked);
@@ -179,22 +187,25 @@ class _EmployeeExpenseDetailScreenState
 
     try {
       final service = ref.read(expenseServiceProvider);
-      await service.updateExpense(
-        widget.expenseId,
-        UpdateExpenseRequest(
-          expenseDate: _selectedDate!.toIso8601String().split('T').first,
-          categoryId: _selectedCategoryId!,
-          merchantName: _merchantController.text.trim().isEmpty
-              ? null : _merchantController.text.trim(),
-          note: _noteController.text.trim().isEmpty
-              ? null : _noteController.text.trim(),
-          amount: double.tryParse(_amountController.text.replaceAll(',', '')),
-          currencyCode: _selectedCurrencyCode,
-          receiptRef: _receiptRefController.text.trim().isEmpty
-              ? null : _receiptRefController.text.trim(),
-          isAiData: _isAiData,
-        ),
-      );
+      // Only save form edits if the manager actively enabled editing
+      if (_isEditingEnabled) {
+        await service.updateExpense(
+          widget.expenseId,
+          UpdateExpenseRequest(
+            expenseDate: _selectedDate!.toIso8601String().split('T').first,
+            categoryId: _selectedCategoryId!,
+            merchantName: _merchantController.text.trim().isEmpty
+                ? null : _merchantController.text.trim(),
+            note: _noteController.text.trim().isEmpty
+                ? null : _noteController.text.trim(),
+            amount: double.tryParse(_amountController.text.replaceAll(',', '')),
+            currencyCode: _selectedCurrencyCode,
+            receiptRef: _receiptRefController.text.trim().isEmpty
+                ? null : _receiptRefController.text.trim(),
+            isAiData: _isAiData,
+          ),
+        );
+      }
       await service.approveExpense(widget.expenseId);
       if (!mounted) return;
       ref.invalidate(expenseSearchProvider);
@@ -591,24 +602,99 @@ class _EmployeeExpenseDetailScreenState
             ],
           ),
         ),
-        TextButton.icon(
-          onPressed: () => setState(() => _isEditingEnabled = !_isEditingEnabled),
-          icon: Icon(
-            _isEditingEnabled ? Icons.lock_open_outlined : Icons.edit_outlined,
-            size: 14,
+        if (!_isEditingEnabled)
+          TextButton.icon(
+            onPressed: () => setState(() => _isEditingEnabled = true),
+            icon: const Icon(Icons.edit_outlined, size: 14),
+            label: Text(l10n.edit),
+            style: TextButton.styleFrom(
+              textStyle: const TextStyle(fontSize: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
           ),
-          label: Text(_isEditingEnabled ? l10n.done : l10n.edit),
-          style: TextButton.styleFrom(
-            textStyle: const TextStyle(fontSize: 13),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+      ],
+    );
+  }
+
+  /// Approve / Decline buttons — manager only. Always right-aligned.
+  Widget _buildManagerApproveDeclineRow(AppLocalizations l10n) {
+    final expense = _expense;
+    if (expense == null) return const SizedBox.shrink();
+    final statusId = expense.expenseStatusId;
+    final showApprove = statusId != 2;
+    final showDecline = statusId != 3;
+    if (!showApprove && !showDecline) return const SizedBox.shrink();
+
+    const spinner = SizedBox(
+      width: 14, height: 14,
+      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (_saveError != null) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const Icon(Icons.error_outline, size: 16, color: AppTheme.destructive),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(_saveError!,
+                    style: const TextStyle(fontSize: 13, color: AppTheme.destructive)),
+              ),
+            ],
           ),
+          const SizedBox(height: 8),
+        ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (showApprove)
+              FilledButton.icon(
+                onPressed: _isSaving ? null : _approve,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.success,
+                  foregroundColor: Colors.white,
+                ),
+                icon: _isSaving ? spinner : const Icon(Icons.check, size: 16),
+                label: Text(l10n.approve),
+              ),
+            if (showApprove && showDecline) const SizedBox(width: 12),
+            if (showDecline)
+              FilledButton.icon(
+                onPressed: _isSaving ? null : _decline,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.destructive,
+                  foregroundColor: Colors.white,
+                ),
+                icon: const Icon(Icons.close, size: 16),
+                label: Text(l10n.decline),
+              ),
+          ],
         ),
       ],
     );
   }
 
   Widget _buildActionButtons(AppLocalizations l10n) {
-    if (!_isEditable && !widget.isManagerMode) return const SizedBox.shrink();
+    // Manager: Update button shown only when editing is enabled
+    if (widget.isManagerMode) {
+      if (!_isEditingEnabled) return const SizedBox.shrink();
+      return FilledButton.icon(
+        onPressed: _canSave && !_isSaving ? _save : null,
+        icon: _isSaving
+            ? const SizedBox(
+                width: 14, height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Icon(Icons.save_outlined, size: 16),
+        label: Text(l10n.updateExpenseDetails),
+      );
+    }
+
+    if (!_isEditable) return const SizedBox.shrink();
     final isNarrow = context.isNarrow;
 
     final errorRow = _saveError != null
@@ -631,52 +717,6 @@ class _EmployeeExpenseDetailScreenState
             ],
           )
         : null;
-
-    if (widget.isManagerMode) {
-      final statusId = _expense?.expenseStatusId ?? 1;
-      final showApprove = statusId != 2; // not already approved
-      final showDecline = statusId != 3; // not already declined
-      final spinner = SizedBox(
-        width: 14, height: 14,
-        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-      );
-      final approveBtn = FilledButton.icon(
-        onPressed: _isSaving ? null : _approve,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppTheme.success,
-          foregroundColor: Colors.white,
-        ),
-        icon: _isSaving ? spinner : const Icon(Icons.check, size: 16),
-        label: Text(l10n.approve),
-      );
-      final declineBtn = FilledButton.icon(
-        onPressed: _isSaving ? null : _decline,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppTheme.destructive,
-          foregroundColor: Colors.white,
-        ),
-        icon: const Icon(Icons.close, size: 16),
-        label: Text(l10n.decline),
-      );
-
-      final buttons = [
-        if (showApprove) Expanded(child: approveBtn),
-        if (showApprove && showDecline) const SizedBox(width: 12),
-        if (showDecline) Expanded(child: declineBtn),
-      ];
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (errorRow != null) errorRow,
-          if (isNarrow) ...[
-            if (showApprove) ...[approveBtn, const SizedBox(height: 8)],
-            if (showDecline) declineBtn,
-          ] else
-            Row(children: buttons),
-        ],
-      );
-    }
 
     final saveBtn = FilledButton.icon(
       onPressed: _canSave && !_isSaving ? _save : null,
@@ -962,28 +1002,43 @@ class _EmployeeExpenseDetailScreenState
         ? _buildFullForm(l10n, companyLocale, uiLocale)
         : _buildFastTrackForm(l10n, companyLocale, uiLocale);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (widget.isManagerMode) ...[
-                _buildManagerInfoHeader(l10n, companyLocale),
-                const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 16),
+    // IntrinsicHeight lets the right column stretch to the left column's
+    // height so the Spacer can push approve/decline to the bottom-right.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.isManagerMode) ...[
+                  _buildManagerInfoHeader(l10n, companyLocale),
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                ],
+                form,
+                const SizedBox(height: 24),
+                _buildActionButtons(l10n),
               ],
-              form,
-              const SizedBox(height: 24),
-              _buildActionButtons(l10n),
-            ],
+            ),
           ),
-        ),
-        const SizedBox(width: 24),
-        Expanded(child: _buildReceiptSection(l10n)),
-      ],
+          const SizedBox(width: 24),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _buildReceiptSection(l10n),
+                if (widget.isManagerMode) ...[
+                  const Spacer(),
+                  _buildManagerApproveDeclineRow(l10n),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -997,6 +1052,10 @@ class _EmployeeExpenseDetailScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildReceiptSection(l10n, height: 192),
+        if (widget.isManagerMode) ...[
+          const SizedBox(height: 16),
+          _buildManagerApproveDeclineRow(l10n),
+        ],
         const SizedBox(height: 16),
         if (widget.isManagerMode) ...[
           _buildManagerInfoHeader(l10n, companyLocale),
