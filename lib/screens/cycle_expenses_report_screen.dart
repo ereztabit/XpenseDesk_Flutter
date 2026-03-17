@@ -10,6 +10,7 @@ import '../utils/cycle_utils.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/multi_select_filter.dart';
+import '../widgets/category/category_selector.dart';
 import '../widgets/cycle/cycle_selector.dart';
 import 'employee_expense_detail_screen.dart';
 
@@ -512,17 +513,10 @@ class _CycleExpensesReportScreenState
       },
     );
 
-    final categoryFilter = MultiSelectFilter<String>(
-      sectionLabel: l10n.byCategory,
-      dialogTitle: l10n.byCategory,
-      buttonLabel: _selectedCategories.isEmpty
-          ? l10n.allCategories
-          : '${_selectedCategories.length} selected',
-      allItems:
-          ExpenseCategory.orderedValues.map((c) => c.apiValue).toList(),
-      itemLabel: (apiVal) => _getCategoryLabel(apiVal, locale),
-      selected: _selectedCategories,
+    final categoryFilter = CategorySelector(
+      selectedCategoryAliases: _selectedCategories,
       enabled: !_loading,
+      sectionLabel: l10n.byCategory,
       onChanged: (newSet) => setState(() => _selectedCategories = newSet),
     );
 

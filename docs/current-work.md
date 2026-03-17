@@ -4,7 +4,7 @@
 
 ### reusable category selector widget
 
-Independent multi-select category selector widget created from `category-selector-spec.md` and ready for validation.
+Independent multi-select category selector widget created from `category-selector-spec.md`, connected to the cycle expenses report, and ready for validation.
 
 ---
 
