@@ -234,7 +234,39 @@ Common mistakes:
 ### Dropdown Widgets
 
 Use `DropdownMenu` (Material 3). **Do not use `DropdownButtonFormField`** (deprecated).
-Key differences: `initialSelection`, `dropdownMenuEntries`, `onSelected`, `inputDecorationTheme`, `expandedInsets: EdgeInsets.zero`.
+Key differences: `initialSelection`, `dropdownMenuEntries`, `onSelected`, `inputDecorationTheme`.
+
+**`DropdownMenu` — two crash/visual pitfalls:**
+
+**1. Never use `expandedInsets: EdgeInsets.zero` when the dropdown has an explicit `width`.**
+
+`expandedInsets: EdgeInsets.zero` tells the dropdown overlay panel to expand to fill the parent's width.
+On Flutter web this causes a `child._parent == this` assertion crash (`rendering/object.dart`) on window
+resize — the overlay recalculates layout against a parent that has already been torn down.
+
+- Only use `expandedInsets` for a true full-width dropdown with no explicit `width`.
+- For any fixed-width dropdown (`width: 180`), **omit `expandedInsets` entirely**.
+
+**2. Always set `isCollapsed: true` when constraining height.**
+
+Without it, Flutter's `InputDecoration` reserves vertical space for the label above the content line,
+pushing the trailing arrow icon below vertical center even when `maxHeight` is capped.
+Pair it with explicit `contentPadding` to re-center the text.
+
+**Correct template for a fixed-height, fixed-width `DropdownMenu`:**
+```dart
+DropdownMenu<String?>(
+  width: 180,
+  inputDecorationTheme: InputDecorationTheme(
+    isCollapsed: true,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+    constraints: const BoxConstraints(minHeight: 36, maxHeight: 36),
+    border: OutlineInputBorder(...),
+    enabledBorder: OutlineInputBorder(...),
+  ),
+  // expandedInsets — omit when width is explicit
+)
+```
 
 ---
 

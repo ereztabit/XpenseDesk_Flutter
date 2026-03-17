@@ -98,7 +98,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   void _closeMenu() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    setState(() => _isMenuOpen = false);
+    if (mounted) setState(() => _isMenuOpen = false);
   }
 
   void _handleMenuItemSelected(String value) async {

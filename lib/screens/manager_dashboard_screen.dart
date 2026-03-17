@@ -3,11 +3,11 @@ import '../models/expense_summary.dart';
 import '../providers/expense_provider.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
+import '../widgets/dashboard/spend_overview_widget.dart';
+import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/manager_swipeable_expense_card.dart';
-import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/mobile_expense_modal.dart';
-import '../widgets/dashboard/spend_overview_widget.dart';
 
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});
@@ -20,7 +20,6 @@ class ManagerDashboardScreen extends ConsumerStatefulWidget {
 class _ManagerDashboardScreenState
     extends ConsumerState<ManagerDashboardScreen>
     with FormBehaviorMixin {
-  /// null = "All Employees"
   String? _selectedEmployee;
   int _selectedStatusId = 1;
   final _openCardNotifier = ValueNotifier<String?>(null);
@@ -35,8 +34,6 @@ class _ManagerDashboardScreenState
     super.dispose();
   }
 
-  // ── Filtering ────────────────────────────────────────────────────────────
-
   List<ExpenseSummary> _filterByEmployee(List<ExpenseSummary> all) {
     if (_selectedEmployee == null) return all;
     return all.where((e) => e.createdByName == _selectedEmployee).toList();
@@ -47,16 +44,12 @@ class _ManagerDashboardScreenState
     return names;
   }
 
-  // ── Actions ───────────────────────────────────────────────────────────────
-
   Future<void> _handleApprove(ExpenseSummary expense) async {
     final service = ref.read(expenseServiceProvider);
     try {
       await service.approveExpense(expense.expenseId);
       ref.invalidate(expenseSearchProvider);
-    } catch (_) {
-      // silently ignore — UI already optimistically removed the card
-    }
+    } catch (_) {}
   }
 
   Future<void> _handleDecline(ExpenseSummary expense) async {
@@ -67,10 +60,6 @@ class _ManagerDashboardScreenState
     } catch (_) {}
   }
 
-  // ── Receipt lightbox ──────────────────────────────────────────────────────
-
-  // ── Desktop ───────────────────────────────────────────────────────────────
-
   Widget _buildDesktopContent(
     AppLocalizations l10n,
     List<ExpenseSummary> allExpenses,
@@ -79,8 +68,7 @@ class _ManagerDashboardScreenState
     final pending = filtered.where((e) => e.expenseStatusId == 1).toList();
     final processed = filtered.where((e) => e.expenseStatusId != 1).toList();
 
-    final pendingTotal = pending.fold<double>(
-        0, (sum, e) => sum + (e.amount ?? 0));
+    final pendingTotal = pending.fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
     final approvedTotal = processed
         .where((e) => e.expenseStatusId == 2)
         .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
@@ -155,11 +143,7 @@ class _ManagerDashboardScreenState
                 color: AppTheme.primary.withAlpha(25),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.access_time_outlined,
-                size: 32,
-                color: AppTheme.primary,
-              ),
+              child: Icon(Icons.access_time_outlined, size: 32, color: AppTheme.primary),
             ),
             const SizedBox(height: 12),
             Text(
@@ -182,8 +166,6 @@ class _ManagerDashboardScreenState
     );
   }
 
-  // ── Mobile ────────────────────────────────────────────────────────────────
-
   Widget _buildMobileContent(
     AppLocalizations l10n,
     List<ExpenseSummary> allExpenses,
@@ -205,8 +187,7 @@ class _ManagerDashboardScreenState
     );
   }
 
-  Widget _buildMobileList(
-      AppLocalizations l10n, List<ExpenseSummary> allExpenses) {
+  Widget _buildMobileList(AppLocalizations l10n, List<ExpenseSummary> allExpenses) {
     final filtered = _filterByEmployee(allExpenses)
         .where((e) => e.expenseStatusId == _selectedStatusId)
         .toList();
@@ -256,7 +237,6 @@ class _ManagerDashboardScreenState
       );
     }
 
-    // Approved / Declined tabs — plain cards with receipt button
     return Column(
       children: filtered
           .map((expense) => ManagerSwipeableExpenseCard(
@@ -265,19 +245,17 @@ class _ManagerDashboardScreenState
                 onApprove: () => _handleApprove(expense),
                 onDecline: () => _handleDecline(expense),
                 onEdit: () => showMobileExpenseModal(context, expense)
-                .then((_) => ref.invalidate(expenseSearchProvider)),
+                    .then((_) => ref.invalidate(expenseSearchProvider)),
               ))
           .toList(),
     );
   }
 
-  // ── Header row ────────────────────────────────────────────────────────────
-
-  Widget _buildHeaderRow(
-      AppLocalizations l10n, List<ExpenseSummary> allExpenses) {
+  Widget _buildHeaderRow(AppLocalizations l10n, List<ExpenseSummary> allExpenses) {
     final employeeOptions = _employeeOptions(allExpenses);
 
     return Container(
+      width: double.maxFinite,
       padding: const EdgeInsets.only(bottom: 16),
       decoration: const BoxDecoration(
         border: Border(
@@ -299,20 +277,19 @@ class _ManagerDashboardScreenState
               selected: _selectedEmployee,
               options: employeeOptions,
               allLabel: l10n.allEmployees,
-              onChanged: (name) =>
-                  setState(() => _selectedEmployee = name),
+              onChanged: (name) => setState(() => _selectedEmployee = name),
             ),
         ],
       ),
     );
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final expensesAsync = ref.watch(expenseSearchProvider);
+    ref.watch(companyLocaleProvider);
+    ref.watch(userInfoProvider);
 
     final allExpenses = expensesAsync.when(
       data: (d) => d,
@@ -320,15 +297,9 @@ class _ManagerDashboardScreenState
       error: (_, _) => const <ExpenseSummary>[],
     );
     final counts = {
-      1: _filterByEmployee(allExpenses)
-          .where((e) => e.expenseStatusId == 1)
-          .length,
-      2: _filterByEmployee(allExpenses)
-          .where((e) => e.expenseStatusId == 2)
-          .length,
-      3: _filterByEmployee(allExpenses)
-          .where((e) => e.expenseStatusId == 3)
-          .length,
+      1: _filterByEmployee(allExpenses).where((e) => e.expenseStatusId == 1).length,
+      2: _filterByEmployee(allExpenses).where((e) => e.expenseStatusId == 2).length,
+      3: _filterByEmployee(allExpenses).where((e) => e.expenseStatusId == 3).length,
     };
 
     return buildWithNavigationGuard(
@@ -406,9 +377,9 @@ class _EmployeeFilterDropdown extends StatelessWidget {
       width: 180,
       textStyle: const TextStyle(fontSize: 12),
       inputDecorationTheme: InputDecorationTheme(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        constraints: BoxConstraints.tight(const Size.fromHeight(36)),
+        isCollapsed: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        constraints: const BoxConstraints(minHeight: 36, maxHeight: 36),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.borderRadius),
           borderSide: const BorderSide(color: AppTheme.border),
@@ -423,7 +394,6 @@ class _EmployeeFilterDropdown extends StatelessWidget {
         size: 14,
         color: AppTheme.mutedForeground,
       ),
-      expandedInsets: EdgeInsets.zero,
       onSelected: onChanged,
       dropdownMenuEntries: [
         DropdownMenuEntry<String?>(
@@ -450,4 +420,3 @@ class _EmployeeFilterDropdown extends StatelessWidget {
     );
   }
 }
-

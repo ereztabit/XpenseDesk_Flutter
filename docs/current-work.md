@@ -2,10 +2,6 @@
 
 ## Currently Working On
 
-### spend overview widget
-
-`SpendOverviewWidget` built and wired into `ManagerDashboardScreen`. Collapsed by default. Ready for validation.
-
 ---
 
 ## TODO (Backlog)
@@ -18,6 +14,8 @@
 
 
 ## general environment
+- [x] add workspace `/clear-run` prompt and `flutter pub get` pre-launch workflow
+- [x] tune `/clear-run` to rely on launch pre-task and keep output minimal
 - [ ] remove the default Flutter web startup loader and replace it with no loader or a minimal branded startup state - see docs/web-startup-loader-spec.md
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
@@ -42,7 +40,7 @@
 - [ ] build the spend overview widget for manager and employee spend-overview-spec.md
 
 ## management screens
-- [ ] bug : always LTR in the emails invite window
+- [x] bug : always LTR in the emails invite window
 - [ ] manager - do you want to get email for every pending expense
 - [ ] user - do you want to be notified in email when expense is approved? declined?
 - [ ] user - do you want to get an email in the end of the month about your expenses?
