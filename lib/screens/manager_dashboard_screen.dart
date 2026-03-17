@@ -7,6 +7,7 @@ import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/manager_swipeable_expense_card.dart';
 import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/mobile_expense_modal.dart';
+import '../widgets/dashboard/spend_overview_widget.dart';
 
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});
@@ -343,6 +344,12 @@ class _ManagerDashboardScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      SpendOverviewWidget(
+                        expenses: allExpenses,
+                        locale: ref.watch(companyLocaleProvider),
+                        currencyCode: ref.watch(userInfoProvider)?.currencyCode,
+                      ),
+                      const SizedBox(height: 16),
                       _buildHeaderRow(l10n, allExpenses),
                       const SizedBox(height: 24),
                       expensesAsync.when(

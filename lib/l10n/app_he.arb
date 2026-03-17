@@ -349,5 +349,7 @@
   "reportColReceipt": "אסמכתא",
   "reportColApprovedAt": "ת.אישור",
   "reportCyclePrefix": "מחזור",
-  "reportCycleDateRange": "בין התאריכים"
+  "reportCycleDateRange": "בין התאריכים",
+  "spendOverview": "סקירת הוצאות",
+  "viewMore": "הצג עוד"
 }

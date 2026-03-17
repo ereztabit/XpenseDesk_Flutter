@@ -8,6 +8,7 @@ class CycleExpenseRow {
   final bool isTotal;
   final String? expenseId;
   final String? expenseDate;
+  final String? createdByUserId;
   final String? employeeName;
   final String? merchantName;
   final String? categoryName;
@@ -25,6 +26,7 @@ class CycleExpenseRow {
     required this.isTotal,
     this.expenseId,
     this.expenseDate,
+    this.createdByUserId,
     this.employeeName,
     this.merchantName,
     this.categoryName,
@@ -47,6 +49,7 @@ class CycleExpenseRow {
       isTotal: isTotal,
       expenseId: json['expenseId'] as String?,
       expenseDate: json['expenseDate'] as String?,
+      createdByUserId: json['createdByUserId'] as String?,
       employeeName: json['employeeName'] as String?,
       merchantName: json['merchantName'] as String?,
       categoryName: json['categoryName'] as String?,

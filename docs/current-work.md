@@ -2,9 +2,9 @@
 
 ## Currently Working On
 
-### cycles load once (report bug #3)
+### spend overview widget
 
-Cycles should load only once when company loads, not on every render of the report screen.
+`SpendOverviewWidget` built and wired into `ManagerDashboardScreen`. Collapsed by default. Ready for validation.
 
 ---
 
@@ -14,7 +14,6 @@ Cycles should load only once when company loads, not on every render of the repo
 - [ ] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
 
 ## report bugs (pending)
-- [ ] 1 - filters should be smaller
 - [ ] 4 - report mobile view
 
 
@@ -32,6 +31,7 @@ Cycles should load only once when company loads, not on every render of the repo
 - [ ] we need to create an enviorment in azure
 - [ ] we need to add api tests
 - [ ] we need to translate better to hebrew
+- [ ] deep linking after login - try to get to the dashboard from outside, login, and then fall into the report
 
 ## user expenses report
 - [ ] warn before getting the same receipt as you had in the past - bakcend feature

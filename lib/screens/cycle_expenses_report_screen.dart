@@ -34,6 +34,9 @@ class _CycleExpensesReportScreenState
   List<ExpenseCycle> _cycles = [];
   String? _selectedCycleId;
   List<CycleExpenseRow> _allRows = [];
+  // Populated only on unfiltered loads so the employee dropdown
+  // always shows the full list regardless of active filter.
+  List<String> _availableEmployeeNames = [];
   bool _loading = true;
   bool _isExporting = false;
   String? _error;
@@ -81,42 +84,14 @@ class _CycleExpensesReportScreenState
           ? _allRows.firstWhere((r) => r.isTotal)
           : null;
 
-  List<String> get _allEmployeeNames => _detailRows
-      .map((r) => r.employeeName ?? '')
-      .where((n) => n.isNotEmpty)
-      .toSet()
-      .toList()
-    ..sort();
-
+  // Server pre-filters by employee/category; client only applies sorting.
   List<CycleExpenseRow> get _filteredRows {
-    var rows = _detailRows;
-    if (_selectedEmployees.isNotEmpty) {
-      rows = rows
-          .where((r) => _selectedEmployees.contains(r.employeeName))
-          .toList();
-    }
-    if (_selectedCategories.isNotEmpty) {
-      rows = rows
-          .where((r) => _selectedCategories.contains(r.categoryName))
-          .toList();
-    }
-    if (_sortField != null) {
-      rows = _applySorting(rows);
-    }
-    return rows;
+    final rows = _detailRows;
+    return _sortField != null ? _applySorting(rows) : rows;
   }
 
-  CycleExpenseRow? get _displayTotalRow {
-    if (_selectedEmployees.isEmpty && _selectedCategories.isEmpty) {
-      return _serverTotalRow;
-    }
-    final sum = _filteredRows.fold(0.0, (s, r) => s + (r.amount ?? 0));
-    final currency = _filteredRows.isNotEmpty
-        ? _filteredRows.first.currencyCode
-        : _serverTotalRow?.currencyCode;
-    return CycleExpenseRow(
-        rowId: 0, isTotal: true, amount: sum, currencyCode: currency);
-  }
+  // Server always returns the correct total row for the active filter set.
+  CycleExpenseRow? get _displayTotalRow => _serverTotalRow;
 
   String _getCurrencyCode() =>
       _detailRows
@@ -139,6 +114,10 @@ class _CycleExpensesReportScreenState
     final urlCategories = uri.queryParameters['categories'];
     if (urlCategories != null && urlCategories.isNotEmpty) {
       setState(() => _selectedCategories = urlCategories.split(',').toSet());
+    }
+    final urlEmployees = uri.queryParameters['employees'];
+    if (urlEmployees != null && urlEmployees.isNotEmpty) {
+      setState(() => _selectedEmployees = urlEmployees.split(',').toSet());
     }
     // If cyclesProvider is already cached (e.g. navigating back), use it now.
     ref.read(cyclesProvider).whenData(_onCyclesLoaded);
@@ -174,10 +153,26 @@ class _CycleExpensesReportScreenState
     });
     try {
       final service = ref.read(expenseServiceProvider);
-      final rows = await service.searchExpensesReport(expenseCycleId: cycleId);
+      final rows = await service.searchExpensesReport(
+        expenseCycleId: cycleId,
+        employeeNames:
+            _selectedEmployees.isEmpty ? null : _selectedEmployees.toList(),
+        categoriesAlias:
+            _selectedCategories.isEmpty ? null : _selectedCategories.toList(),
+      );
       if (!mounted) return;
       setState(() {
         _allRows = rows;
+        // Only update the available employee list on a full unfiltered load
+        // so the dropdown always shows the complete set of employees.
+        if (_selectedEmployees.isEmpty && _selectedCategories.isEmpty) {
+          _availableEmployeeNames = rows
+              .where((r) => !r.isTotal && (r.employeeName ?? '').isNotEmpty)
+              .map((r) => r.employeeName!)
+              .toSet()
+              .toList()
+            ..sort();
+        }
         _loading = false;
       });
     } catch (e) {
@@ -194,8 +189,13 @@ class _CycleExpensesReportScreenState
     setState(() => _isExporting = true);
     try {
       final service = ref.read(expenseServiceProvider);
-      final bytes =
-          await service.exportExpensesExcel(expenseCycleId: _selectedCycleId!);
+      final bytes = await service.exportExpensesExcel(
+        expenseCycleId: _selectedCycleId!,
+        employeeNames:
+            _selectedEmployees.isEmpty ? null : _selectedEmployees.toList(),
+        categoriesAlias:
+            _selectedCategories.isEmpty ? null : _selectedCategories.toList(),
+      );
       _triggerDownload(bytes, 'expenses-report.xlsx');
     } catch (e) {
       if (!mounted) return;
@@ -413,7 +413,7 @@ class _CycleExpensesReportScreenState
                 children: [
                   _buildPageHeader(context, l10n, locale),
                   const SizedBox(height: 12),
-                  _buildFilterCard(context, l10n, locale),
+                  _buildFilterCard(context, l10n),
                   const SizedBox(height: 12),
                   Expanded(child: _buildTableCard(context, l10n, locale)),
                 ],
@@ -458,13 +458,11 @@ class _CycleExpensesReportScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // issue #9: expensesDetailReport title
               Text(l10n.expensesDetailReport,
                   style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.foreground)),
-              // issue #10: cycle date range subtitle
               Text(
                 _buildSubtitle(l10n, locale),
                 style: const TextStyle(
@@ -494,8 +492,7 @@ class _CycleExpensesReportScreenState
   }
 
   // ── filter card ────────────────────────────────────────────────────────────
-  Widget _buildFilterCard(
-      BuildContext context, AppLocalizations l10n, String locale) {
+  Widget _buildFilterCard(BuildContext context, AppLocalizations l10n) {
     final isMobile = context.isMobile;
 
     final cycleFilter = CycleSelector(
@@ -525,7 +522,7 @@ class _CycleExpensesReportScreenState
     final employeeFilter = widget.isManager
       ? EmployeeSelector(
         sectionLabel: l10n.byEmployee,
-        employees: _allEmployeeNames,
+        employees: _availableEmployeeNames,
         selectedEmployees: _selectedEmployees,
             enabled: !_loading,
             onChanged: (newSet) =>
@@ -593,13 +590,12 @@ class _CycleExpensesReportScreenState
       clipBehavior: Clip.antiAlias,
       child: LayoutBuilder(
         builder: (ctx, constraints) =>
-            _buildStickyTable(ctx, constraints, l10n, locale),
+            _buildStickyTable(constraints, l10n, locale),
       ),
     );
   }
 
   Widget _buildStickyTable(
-    BuildContext context,
     BoxConstraints constraints,
     AppLocalizations l10n,
     String locale,
@@ -648,7 +644,7 @@ class _CycleExpensesReportScreenState
                     thumbVisibility: true,
                     trackVisibility: true,
                     thickness: 8,
-                    child: _buildTableBody(context, l10n, locale),
+                    child: _buildTableBody(l10n, locale),
                   ),
                 ),
             ],
@@ -659,7 +655,6 @@ class _CycleExpensesReportScreenState
   }
 
   Widget _buildTableHeaderRow(AppLocalizations l10n) {
-    // issue #7: reportColDate  issue #8: reportColReceipt  issue #9: reportColApprovedAt
     final headers = [
       ('#', null, TextAlign.center),
       (l10n.reportColDate, 'date', TextAlign.start),
@@ -673,7 +668,6 @@ class _CycleExpensesReportScreenState
       (l10n.reportColApprovedAt, 'approvedAt', TextAlign.start),
     ];
 
-    // issue #2: header uses muted background to distinguish from rows
     return Container(
       color: AppTheme.muted,
       child: Row(
@@ -692,7 +686,6 @@ class _CycleExpensesReportScreenState
     );
   }
 
-  // issue #3: amount header right-aligned — icon on LEFT for end-aligned cols
   Widget _buildHeaderCell({
     required String label,
     required double width,
@@ -755,8 +748,7 @@ class _CycleExpensesReportScreenState
     );
   }
 
-  Widget _buildTableBody(
-      BuildContext context, AppLocalizations l10n, String locale) {
+  Widget _buildTableBody(AppLocalizations l10n, String locale) {
     final rows = _filteredRows;
     final totalRow = _displayTotalRow;
 
@@ -779,13 +771,12 @@ class _CycleExpensesReportScreenState
         if (i == rows.length && totalRow != null) {
           return _buildTotalRow(l10n, locale, totalRow, i + 1);
         }
-        return _buildDataRow(context, l10n, locale, i + 1, rows[i]);
+        return _buildDataRow(l10n, locale, i + 1, rows[i]);
       },
     );
   }
 
   Widget _buildDataRow(
-    BuildContext context,
     AppLocalizations l10n,
     String locale,
     int index,
@@ -793,7 +784,6 @@ class _CycleExpensesReportScreenState
   ) {
     final currency = row.currencyCode ?? _getCurrencyCode();
     final isEven = index % 2 == 0;
-    // issue #5: no '—' for empty text fields
     final hasExpenseId = row.expenseId != null && row.expenseId!.isNotEmpty;
 
     return Container(
@@ -816,7 +806,6 @@ class _CycleExpensesReportScreenState
                 style: const TextStyle(
                     fontSize: 12, color: AppTheme.foreground)),
           ),
-          // Employee — issue #5: '' instead of '—'
           _dataCell(
             width: _colWidths[2],
             child: Text(row.employeeName ?? '',
@@ -834,7 +823,6 @@ class _CycleExpensesReportScreenState
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          // Merchant — issue #5: '' instead of '—'
           _dataCell(
             width: _colWidths[4],
             child: Text(row.merchantName ?? '',
@@ -842,7 +830,6 @@ class _CycleExpensesReportScreenState
                     fontSize: 12, color: AppTheme.mutedForeground),
                 overflow: TextOverflow.ellipsis),
           ),
-          // Receipt # — issue #11: navigate when expenseId available
           _dataCell(
             width: _colWidths[5],
             child: hasExpenseId && row.receiptRef != null
@@ -886,7 +873,6 @@ class _CycleExpensesReportScreenState
               textAlign: TextAlign.right,
             ),
           ),
-          // Note — issue #5: '' instead of '—'
           _dataCell(
             width: _colWidths[7],
             child: Text(
@@ -897,7 +883,6 @@ class _CycleExpensesReportScreenState
               maxLines: 1,
             ),
           ),
-          // Approved By — issue #5: '' instead of '—'
           _dataCell(
             width: _colWidths[8],
             child: Text(row.reviewedBy ?? '',
@@ -905,7 +890,6 @@ class _CycleExpensesReportScreenState
                     fontSize: 12, color: AppTheme.mutedForeground),
                 overflow: TextOverflow.ellipsis),
           ),
-          // Approved At — date only, issue #5: '' for null
           _dataCell(
             width: _colWidths[9],
             child: Text(
@@ -920,7 +904,6 @@ class _CycleExpensesReportScreenState
     );
   }
 
-  // issue #1: same style as data rows + top separator border
   Widget _buildTotalRow(AppLocalizations l10n, String locale,
       CycleExpenseRow row, int index) {
     final currency = row.currencyCode ?? _getCurrencyCode();
@@ -939,7 +922,6 @@ class _CycleExpensesReportScreenState
           _dataCell(width: _colWidths[2], child: const SizedBox.shrink()),
           _dataCell(width: _colWidths[3], child: const SizedBox.shrink()),
           _dataCell(width: _colWidths[4], child: const SizedBox.shrink()),
-          // issue #15: "Total:" label
           _dataCell(
             width: _colWidths[5],
             child: Text(
@@ -985,12 +967,10 @@ class _CycleExpensesReportScreenState
             right: BorderSide(color: AppTheme.border, width: 0.5)),
       ),
       alignment: align == TextAlign.right
-          ? Alignment.centerRight          // physical right — RTL-safe for currency
-          : align == TextAlign.end
-              ? AlignmentDirectional.centerEnd
-              : align == TextAlign.center
-                  ? Alignment.center
-                  : AlignmentDirectional.centerStart,
+          ? Alignment.centerRight   // physical right — RTL-safe for currency
+          : align == TextAlign.center
+              ? Alignment.center
+              : AlignmentDirectional.centerStart,
       child: child,
     );
   }

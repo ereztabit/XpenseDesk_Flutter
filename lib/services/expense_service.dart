@@ -256,12 +256,12 @@ class ExpenseService {
 
   /// Fetch expense report rows for the given cycle and optional filters.
   ///
-  /// For the manager route, pass [userIds] to filter by specific employees.
-  /// For the employee route, omit [userIds] — the backend scopes to the auth user.
+  /// For the manager route, pass [employeeNames] to filter by specific employees.
+  /// For the employee route, omit [employeeNames] — the backend scopes to the auth user.
   /// Pass [categoriesAlias] to filter by category API values (e.g. "Travel", "Supplies").
   Future<List<CycleExpenseRow>> searchExpensesReport({
     required String expenseCycleId,
-    List<String>? userIds,
+    List<String>? employeeNames,
     List<String>? categoriesAlias,
   }) async {
     final sessionToken = await _authService.getSessionToken();
@@ -271,7 +271,9 @@ class ExpenseService {
       'expenseCycleId': expenseCycleId,
       'format': 'rawdata',
     };
-    if (userIds != null && userIds.isNotEmpty) body['userIds'] = userIds;
+    if (employeeNames != null && employeeNames.isNotEmpty) {
+      body['employeeNames'] = employeeNames;
+    }
     if (categoriesAlias != null && categoriesAlias.isNotEmpty) {
       body['categoriesAlias'] = categoriesAlias;
     }
@@ -296,7 +298,7 @@ class ExpenseService {
   /// Returns the raw Excel file bytes.
   Future<Uint8List> exportExpensesExcel({
     required String expenseCycleId,
-    List<String>? userIds,
+    List<String>? employeeNames,
     List<String>? categoriesAlias,
   }) async {
     final sessionToken = await _authService.getSessionToken();
@@ -305,7 +307,9 @@ class ExpenseService {
     final body = <String, dynamic>{
       'expenseCycleId': expenseCycleId,
     };
-    if (userIds != null && userIds.isNotEmpty) body['userIds'] = userIds;
+    if (employeeNames != null && employeeNames.isNotEmpty) {
+      body['employeeNames'] = employeeNames;
+    }
     if (categoriesAlias != null && categoriesAlias.isNotEmpty) {
       body['categoriesAlias'] = categoriesAlias;
     }

@@ -349,5 +349,7 @@
   "reportColReceipt": "Receipt #",
   "reportColApprovedAt": "Appr. At",
   "reportCyclePrefix": "Cycle",
-  "reportCycleDateRange": "between"
+  "reportCycleDateRange": "between",
+  "spendOverview": "Spend Overview",
+  "viewMore": "View More"
 }
