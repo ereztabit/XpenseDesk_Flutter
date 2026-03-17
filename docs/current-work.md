@@ -11,8 +11,7 @@
 - [ ] implement Expenses Analysis from `docs/expenses-analysis-spec.md`
 
 ## bugs
-- [x] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
-- [x] on mobile the cycle widget shoud be next to the side bar icon and not in the center
+ 
  
 
 ## report bugs (pending)
