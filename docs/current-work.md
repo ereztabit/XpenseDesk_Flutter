@@ -14,7 +14,7 @@
 - [ ] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
 
 ## report bugs (pending)
-- [ ] 4 - report mobile view
+- [ ] align the mobile cycle expenses report filter experience with the modal behavior defined in docs/cycle-expenses-report-mobile-spec.md
 
 
 ## general environment
