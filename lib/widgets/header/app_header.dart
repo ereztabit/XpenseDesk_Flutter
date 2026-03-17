@@ -352,13 +352,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   ),
                 const SizedBox(width: 12),
 
-                // Language Switcher — desktop only; mobile shows it in the slide-out menu
-                if (!isMobile) const LanguageSwitcher(),
-
-                // Spacer
-                const Spacer(),
-
-                // Mobile: cycle pill (desktop uses the centered Stack badge)
+                // Mobile: cycle pill — sits right beside the hamburger icon
                 if (isMobile && cycle != null) ...[
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
@@ -395,6 +389,12 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   ),
                   const SizedBox(width: 8),
                 ],
+
+                // Language Switcher — desktop only; mobile shows it in the slide-out menu
+                if (!isMobile) const LanguageSwitcher(),
+
+                // Spacer
+                const Spacer(),
 
                 // Logo
                 GestureDetector(

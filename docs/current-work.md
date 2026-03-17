@@ -8,22 +8,21 @@
 
 ## bugs
 - [ ] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
-- [ ] on mobile the cycle widget shoud be next to the side bar icon and not in the center
-- [x] sidebar menu always shows report item as selected regardless of current screen
+- [x] on mobile the cycle widget shoud be next to the side bar icon and not in the center
+ 
 
 ## report bugs (pending)
 
 
 ## general environment
 
-- [x] remove the default Flutter web startup loader and replace it with no loader or a minimal branded startup state - see docs/web-startup-loader-spec.md
+
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
 - [ ] need to replace the icon of the webpage
 - [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
 - [ ] login with google
 - [ ] get zehut for customers in IL
-- [x] add pull-to-refresh on mobile so pulling down from the top refreshes the current screen - see docs/pull-to-refresh-spec.md
 - [ ] we need to be able to impersonate a user
 - [ ] we need a admin view to see compaines usage
 - [ ] we need to connect google analytics / GTM
