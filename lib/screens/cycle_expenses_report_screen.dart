@@ -497,13 +497,22 @@ class _CycleExpensesReportScreenState
       (_, next) => next.whenData(_onCyclesLoaded),
     );
 
+    final body = _buildBody(context, l10n, locale);
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
         body: Column(
           children: [
             const AppHeader(),
-            Expanded(child: _buildBody(context, l10n, locale)),
+            Expanded(
+              child: context.isMobile
+                  ? RefreshIndicator(
+                      onRefresh: _loadReport,
+                      notificationPredicate: (_) => true,
+                      child: body,
+                    )
+                  : body,
+            ),
             const AppFooter(),
           ],
         ),
@@ -950,7 +959,7 @@ class _CycleExpensesReportScreenState
 
     return ListView.builder(
       controller: _verticalScrollController,
-      physics: const ClampingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
       itemCount: rows.length + (totalRow != null ? 1 : 0),
       itemBuilder: (_, i) {
         if (i == rows.length && totalRow != null) {

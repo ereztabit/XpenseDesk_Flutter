@@ -139,9 +139,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
           children: [
             const AppHeader(),
             Expanded(
-              child: ConstrainedContent(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+              child: RefreshableScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: ConstrainedContent(
                   child: Form(
                     key: _formKey,
                     child: Column(

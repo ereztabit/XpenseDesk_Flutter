@@ -144,9 +144,9 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
           children: [
             const AppHeader(),
             Expanded(
-              child: ConstrainedContent(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
+              child: RefreshableScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: ConstrainedContent(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

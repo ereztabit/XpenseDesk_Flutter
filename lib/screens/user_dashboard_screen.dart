@@ -252,7 +252,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
           children: [
             const AppHeader(),
             Expanded(
-              child: SingleChildScrollView(
+              child: RefreshableScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ConstrainedContent(
                   child: Column(

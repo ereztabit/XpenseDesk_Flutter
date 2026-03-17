@@ -24,7 +24,7 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
         children: [
           const AppHeader(),
           Expanded(
-            child: SingleChildScrollView(
+            child: RefreshableScrollView(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: ConstrainedContent(
                 child: Column(
