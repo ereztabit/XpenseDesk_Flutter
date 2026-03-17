@@ -37,29 +37,37 @@ class _SpendOverviewWidgetState extends State<SpendOverviewWidget> {
     final approved = _approved;
     if (approved.isEmpty) return [];
 
-    final Map<String, double> totals = {};
-    for (final e in approved) {
-      // filterKey is always the raw API value (employee name or category API value)
-      final key = _byEmployee ? e.createdByName : e.categoryName;
-      totals[key] = (totals[key] ?? 0) + (e.amount ?? 0);
-    }
-
-    final entries = totals.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    final maxSpend = entries.isEmpty ? 1.0 : entries.first.value;
-
-    return entries.map((entry) {
-      final displayLabel = _byEmployee
-          ? entry.key
-          : _categoryLabel(entry.key, widget.locale);
-      return _SpendItem(
-        label: displayLabel,
-        filterKey: entry.key, // raw value used for URL param
+    if (_byEmployee) {
+      final Map<String, double> totals = {};
+      final Map<String, String> idToName = {};
+      for (final e in approved) {
+        totals[e.createdByUserId] = (totals[e.createdByUserId] ?? 0) + (e.amount ?? 0);
+        idToName[e.createdByUserId] = e.createdByName;
+      }
+      final entries = totals.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      final maxSpend = entries.isEmpty ? 1.0 : entries.first.value;
+      return entries.map((entry) => _SpendItem(
+        label: idToName[entry.key] ?? entry.key,
+        filterKey: entry.key, // userId used for URL param
         total: entry.value,
         progress: entry.value / maxSpend.clamp(1.0, double.infinity),
-      );
-    }).toList();
+      )).toList();
+    } else {
+      final Map<String, double> totals = {};
+      for (final e in approved) {
+        totals[e.categoryName] = (totals[e.categoryName] ?? 0) + (e.amount ?? 0);
+      }
+      final entries = totals.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+      final maxSpend = entries.isEmpty ? 1.0 : entries.first.value;
+      return entries.map((entry) => _SpendItem(
+        label: _categoryLabel(entry.key, widget.locale),
+        filterKey: entry.key, // category alias used for URL param
+        total: entry.value,
+        progress: entry.value / maxSpend.clamp(1.0, double.infinity),
+      )).toList();
+    }
   }
 
   String _categoryLabel(String apiValue, String locale) {

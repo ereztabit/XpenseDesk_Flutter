@@ -18,20 +18,20 @@
 
 
 ## general environment
-- [ ] there is a flutter load animation by default - remove it.
+- [ ] remove the default Flutter web startup loader and replace it with no loader or a minimal branded startup state - see docs/web-startup-loader-spec.md
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
 - [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
 - [ ] login with google
 - [ ] get zehut for customers in IL
-- [ ] we want a local refersh by pinching
+- [ ] add pull-to-refresh on mobile so pulling down from the top refreshes the current screen - see docs/pull-to-refresh-spec.md
 - [ ] we need to be able to impersonate a user
 - [ ] we need a admin view to see compaines usage
 - [ ] we need to connect google analytics / GTM
 - [ ] we need to create an enviorment in azure
 - [ ] we need to add api tests
 - [ ] we need to translate better to hebrew
-- [ ] deep linking after login - try to get to the dashboard from outside, login, and then fall into the report
+- [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/post-login-deep-linking-spec.md
 
 ## user expenses report
 - [ ] warn before getting the same receipt as you had in the past - bakcend feature

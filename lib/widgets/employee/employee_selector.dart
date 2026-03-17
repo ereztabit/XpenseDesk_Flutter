@@ -4,16 +4,17 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 
 class EmployeeSelector extends StatelessWidget {
-  final Set<String> selectedEmployees;
+  /// Map of userId → displayName.
+  final Map<String, String> employees;
+  final Set<String> selectedIds;
   final ValueChanged<Set<String>> onChanged;
-  final List<String> employees;
   final double width;
   final bool enabled;
   final String? sectionLabel;
 
   const EmployeeSelector({
     super.key,
-    required this.selectedEmployees,
+    required this.selectedIds,
     required this.onChanged,
     required this.employees,
     this.width = 200,
@@ -64,7 +65,7 @@ class EmployeeSelector extends StatelessWidget {
                 child: Row(
                   children: [
                     TextButton(
-                      onPressed: isEnabled ? () => onChanged(employees.toSet()) : null,
+                      onPressed: isEnabled ? () => onChanged(employees.keys.toSet()) : null,
                       child: Text(l10n.selectAll),
                     ),
                     const SizedBox(width: 4),
@@ -76,16 +77,11 @@ class EmployeeSelector extends StatelessWidget {
                 ),
               ),
               const Divider(height: 1, thickness: 1, color: AppTheme.border),
-              ...employees.map(
-                (employee) => MenuItemButton(
+              ...employees.entries.map(
+                (entry) => MenuItemButton(
                   closeOnActivate: false,
                   onPressed: isEnabled
-                      ? () => onChanged(
-                            _toggleEmployee(
-                              current: selectedEmployees,
-                              employee: employee,
-                            ),
-                          )
+                      ? () => onChanged(_toggleId(current: selectedIds, id: entry.key))
                       : null,
                   style: ButtonStyle(
                     padding: const WidgetStatePropertyAll(
@@ -102,7 +98,7 @@ class EmployeeSelector extends StatelessWidget {
                       width: 18,
                       height: 18,
                       child: Checkbox(
-                        value: selectedEmployees.contains(employee),
+                        value: selectedIds.contains(entry.key),
                         onChanged: null,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         side: const BorderSide(color: AppTheme.borderMedium),
@@ -110,7 +106,7 @@ class EmployeeSelector extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    employee,
+                    entry.value,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 14,
@@ -143,29 +139,22 @@ class EmployeeSelector extends StatelessWidget {
   }
 
   String _summaryLabel(AppLocalizations l10n) {
-    if (selectedEmployees.isEmpty || selectedEmployees.length == employees.length) {
+    if (selectedIds.isEmpty || selectedIds.length == employees.length) {
       return l10n.allEmployees;
     }
-
-    if (selectedEmployees.length == 1) {
-      final selected = employees.where(selectedEmployees.contains);
-      if (selected.isNotEmpty) {
-        return selected.first;
-      }
+    if (selectedIds.length == 1) {
+      final name = employees[selectedIds.first];
+      if (name != null) return name;
     }
-
-    return '${selectedEmployees.length} ${l10n.selectedLabel}';
+    return '${selectedIds.length} ${l10n.selectedLabel}';
   }
 
-  Set<String> _toggleEmployee({
-    required Set<String> current,
-    required String employee,
-  }) {
+  Set<String> _toggleId({required Set<String> current, required String id}) {
     final next = Set<String>.from(current);
-    if (next.contains(employee)) {
-      next.remove(employee);
+    if (next.contains(id)) {
+      next.remove(id);
     } else {
-      next.add(employee);
+      next.add(id);
     }
     return next;
   }

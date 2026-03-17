@@ -36,7 +36,8 @@ class _CycleExpensesReportScreenState
   List<CycleExpenseRow> _allRows = [];
   // Populated only on unfiltered loads so the employee dropdown
   // always shows the full list regardless of active filter.
-  List<String> _availableEmployeeNames = [];
+  // Key = userId, value = displayName.
+  Map<String, String> _availableEmployees = {};
   bool _loading = true;
   bool _isExporting = false;
   String? _error;
@@ -153,12 +154,16 @@ class _CycleExpensesReportScreenState
     });
     try {
       final service = ref.read(expenseServiceProvider);
+      final allEmployeesSelected =
+          _selectedEmployees.isEmpty ||
+          _selectedEmployees.length == _availableEmployees.length;
+      final allCategoriesSelected =
+          _selectedCategories.isEmpty ||
+          _selectedCategories.length == ExpenseCategory.orderedValues.length;
       final rows = await service.searchExpensesReport(
         expenseCycleId: cycleId,
-        employeeNames:
-            _selectedEmployees.isEmpty ? null : _selectedEmployees.toList(),
-        categoriesAlias:
-            _selectedCategories.isEmpty ? null : _selectedCategories.toList(),
+        createdByUserIds: allEmployeesSelected ? null : _selectedEmployees.toList(),
+        categoriesAlias: allCategoriesSelected ? null : _selectedCategories.toList(),
       );
       if (!mounted) return;
       setState(() {
@@ -166,12 +171,17 @@ class _CycleExpensesReportScreenState
         // Only update the available employee list on a full unfiltered load
         // so the dropdown always shows the complete set of employees.
         if (_selectedEmployees.isEmpty && _selectedCategories.isEmpty) {
-          _availableEmployeeNames = rows
-              .where((r) => !r.isTotal && (r.employeeName ?? '').isNotEmpty)
-              .map((r) => r.employeeName!)
-              .toSet()
-              .toList()
-            ..sort();
+          final map = <String, String>{};
+          for (final r in rows) {
+            if (!r.isTotal &&
+                r.createdByUserId != null &&
+                (r.employeeName ?? '').isNotEmpty) {
+              map[r.createdByUserId!] = r.employeeName!;
+            }
+          }
+          final sorted = map.entries.toList()
+            ..sort((a, b) => a.value.compareTo(b.value));
+          _availableEmployees = Map.fromEntries(sorted);
         }
         _loading = false;
       });
@@ -189,12 +199,16 @@ class _CycleExpensesReportScreenState
     setState(() => _isExporting = true);
     try {
       final service = ref.read(expenseServiceProvider);
+      final allEmployeesSelected =
+          _selectedEmployees.isEmpty ||
+          _selectedEmployees.length == _availableEmployees.length;
+      final allCategoriesSelected =
+          _selectedCategories.isEmpty ||
+          _selectedCategories.length == ExpenseCategory.orderedValues.length;
       final bytes = await service.exportExpensesExcel(
         expenseCycleId: _selectedCycleId!,
-        employeeNames:
-            _selectedEmployees.isEmpty ? null : _selectedEmployees.toList(),
-        categoriesAlias:
-            _selectedCategories.isEmpty ? null : _selectedCategories.toList(),
+        createdByUserIds: allEmployeesSelected ? null : _selectedEmployees.toList(),
+        categoriesAlias: allCategoriesSelected ? null : _selectedCategories.toList(),
       );
       _triggerDownload(bytes, 'expenses-report.xlsx');
     } catch (e) {
@@ -521,14 +535,13 @@ class _CycleExpensesReportScreenState
 
     final employeeFilter = widget.isManager
       ? EmployeeSelector(
-        sectionLabel: l10n.byEmployee,
-        employees: _availableEmployeeNames,
-        selectedEmployees: _selectedEmployees,
-            enabled: !_loading,
-            onChanged: (newSet) =>
-                setState(() => _selectedEmployees = newSet),
-          )
-        : null;
+          sectionLabel: l10n.byEmployee,
+          employees: _availableEmployees,
+          selectedIds: _selectedEmployees,
+          enabled: !_loading,
+          onChanged: (newSet) => setState(() => _selectedEmployees = newSet),
+        )
+      : null;
 
     final searchButton = FilledButton(
       onPressed: _loading ? null : _loadReport,

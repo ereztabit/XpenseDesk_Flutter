@@ -256,12 +256,12 @@ class ExpenseService {
 
   /// Fetch expense report rows for the given cycle and optional filters.
   ///
-  /// For the manager route, pass [employeeNames] to filter by specific employees.
-  /// For the employee route, omit [employeeNames] — the backend scopes to the auth user.
+  /// For the manager route, pass [createdByUserIds] to filter by specific users.
+  /// For the employee route, omit [createdByUserIds] — the backend scopes to the auth user.
   /// Pass [categoriesAlias] to filter by category API values (e.g. "Travel", "Supplies").
   Future<List<CycleExpenseRow>> searchExpensesReport({
     required String expenseCycleId,
-    List<String>? employeeNames,
+    List<String>? createdByUserIds,
     List<String>? categoriesAlias,
   }) async {
     final sessionToken = await _authService.getSessionToken();
@@ -271,8 +271,8 @@ class ExpenseService {
       'expenseCycleId': expenseCycleId,
       'format': 'rawdata',
     };
-    if (employeeNames != null && employeeNames.isNotEmpty) {
-      body['employeeNames'] = employeeNames;
+    if (createdByUserIds != null && createdByUserIds.isNotEmpty) {
+      body['createdByUserIds'] = createdByUserIds;
     }
     if (categoriesAlias != null && categoriesAlias.isNotEmpty) {
       body['categoriesAlias'] = categoriesAlias;
@@ -298,7 +298,7 @@ class ExpenseService {
   /// Returns the raw Excel file bytes.
   Future<Uint8List> exportExpensesExcel({
     required String expenseCycleId,
-    List<String>? employeeNames,
+    List<String>? createdByUserIds,
     List<String>? categoriesAlias,
   }) async {
     final sessionToken = await _authService.getSessionToken();
@@ -307,8 +307,8 @@ class ExpenseService {
     final body = <String, dynamic>{
       'expenseCycleId': expenseCycleId,
     };
-    if (employeeNames != null && employeeNames.isNotEmpty) {
-      body['employeeNames'] = employeeNames;
+    if (createdByUserIds != null && createdByUserIds.isNotEmpty) {
+      body['createdByUserIds'] = createdByUserIds;
     }
     if (categoriesAlias != null && categoriesAlias.isNotEmpty) {
       body['categoriesAlias'] = categoriesAlias;
