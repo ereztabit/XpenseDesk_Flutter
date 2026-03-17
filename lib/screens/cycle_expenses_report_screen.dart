@@ -12,6 +12,7 @@ import '../utils/responsive_utils.dart';
 import '../widgets/category/category_selector.dart';
 import '../widgets/cycle/cycle_selector.dart';
 import '../widgets/employee/employee_selector.dart';
+import '../widgets/sticky_report_table.dart';
 import 'employee_expense_detail_screen.dart';
 
 class CycleExpensesReportScreen extends ConsumerStatefulWidget {
@@ -782,68 +783,14 @@ class _CycleExpensesReportScreenState
       BuildContext context, AppLocalizations l10n, String locale) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: LayoutBuilder(
-        builder: (ctx, constraints) =>
-            _buildStickyTable(constraints, l10n, locale),
-      ),
-    );
-  }
-
-  Widget _buildStickyTable(
-    BoxConstraints constraints,
-    AppLocalizations l10n,
-    String locale,
-  ) {
-    final tableWidth = constraints.maxWidth > _minTableWidth
-        ? constraints.maxWidth
-        : _minTableWidth;
-
-    // Header + body share the same horizontal SingleChildScrollView so they
-    // scroll in sync naturally. Native Scrollbar wraps each scrollable directly
-    // so scroll notifications bubble up correctly.
-    return Scrollbar(
-      controller: _horizScrollController,
-      thumbVisibility: true,
-      trackVisibility: true,
-      thickness: 8,
-      scrollbarOrientation: ScrollbarOrientation.bottom,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        controller: _horizScrollController,
-        child: SizedBox(
-          width: tableWidth,
-          height: constraints.maxHeight,
-          child: Column(
-            children: [
-              _buildTableHeaderRow(l10n),
-              const Divider(height: 1, thickness: 1, color: AppTheme.border),
-              if (_loading)
-                const Expanded(
-                    child: Center(child: CircularProgressIndicator()))
-              else if (_error != null)
-                Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(_error!,
-                          style:
-                              const TextStyle(color: AppTheme.destructive)),
-                    ),
-                  ),
-                )
-              else
-                Expanded(
-                  child: Scrollbar(
-                    controller: _verticalScrollController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    thickness: 8,
-                    child: _buildTableBody(l10n, locale),
-                  ),
-                ),
-            ],
-          ),
-        ),
+      child: StickyReportTable(
+        minWidth: _minTableWidth,
+        headerRow: _buildTableHeaderRow(l10n),
+        loading: _loading,
+        error: _error,
+        body: _buildTableBody(l10n, locale),
+        verticalScrollController: _verticalScrollController,
+        horizontalScrollController: _horizScrollController,
       ),
     );
   }

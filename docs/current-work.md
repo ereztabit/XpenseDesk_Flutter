@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-- Refine the Expenses Analysis UX/data contract spec and align it to implementation constraints - see `docs/expenses-analysis-spec.md`
+- Expenses Analysis Step 0: Extract `StickyReportTable` widget and refactor `CycleExpensesReportScreen` to use it — shared scroll infrastructure for Expenses Analysis reuse.
 
 ---
 
