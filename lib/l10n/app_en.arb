@@ -331,6 +331,7 @@
   "byEmployee": "By Employee",
   "byCategory": "By Category",
   "allCategories": "All Categories",
+  "selectedLabel": "selected",
   "selectAll": "Select All",
   "clear": "Clear",
   "export": "Export",

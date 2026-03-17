@@ -60,12 +60,13 @@ class _CycleExpensesReportScreenState
 
   static double get _minTableWidth => _colWidths.reduce((a, b) => a + b);
 
-  // ── vertical scroll controller (for Scrollbar) ────────────────────────────
   final _verticalScrollController = ScrollController();
+  final _horizScrollController = ScrollController();
 
   @override
   void dispose() {
     _verticalScrollController.dispose();
+    _horizScrollController.dispose();
     super.dispose();
   }
 
@@ -609,14 +610,18 @@ class _CycleExpensesReportScreenState
         ? constraints.maxWidth
         : _minTableWidth;
 
-    // Scrollbar OUTSIDE horizontal scroll — always visible at right edge of card.
+    // Header + body share the same horizontal SingleChildScrollView so they
+    // scroll in sync naturally. Native Scrollbar wraps each scrollable directly
+    // so scroll notifications bubble up correctly.
     return Scrollbar(
-      controller: _verticalScrollController,
+      controller: _horizScrollController,
       thumbVisibility: true,
       trackVisibility: true,
       thickness: 8,
+      scrollbarOrientation: ScrollbarOrientation.bottom,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
+        controller: _horizScrollController,
         child: SizedBox(
           width: tableWidth,
           height: constraints.maxHeight,
@@ -624,20 +629,30 @@ class _CycleExpensesReportScreenState
             children: [
               _buildTableHeaderRow(l10n),
               const Divider(height: 1, thickness: 1, color: AppTheme.border),
-              Expanded(
-                child: _loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _error != null
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Text(_error!,
-                                  style: const TextStyle(
-                                      color: AppTheme.destructive)),
-                            ),
-                          )
-                        : _buildTableBody(context, l10n, locale),
-              ),
+              if (_loading)
+                const Expanded(
+                    child: Center(child: CircularProgressIndicator()))
+              else if (_error != null)
+                Expanded(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(_error!,
+                          style:
+                              const TextStyle(color: AppTheme.destructive)),
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: Scrollbar(
+                    controller: _verticalScrollController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    thickness: 8,
+                    child: _buildTableBody(context, l10n, locale),
+                  ),
+                ),
             ],
           ),
         ),
@@ -982,3 +997,4 @@ class _CycleExpensesReportScreenState
     );
   }
 }
+

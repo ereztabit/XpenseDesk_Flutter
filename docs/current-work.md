@@ -2,16 +2,24 @@
 
 ## Currently Working On
 
+### reusable category selector widget
+
+Independent multi-select category selector widget created from `category-selector-spec.md` and ready for validation.
+
+---
+
 ### cycle expenses report — pending fixes
 
 | # | Issue | Status |
 |---|-------|--------|
 | 11 | Scrollbar: trackVisibility + thickness 8, outside horizontal scroll | ⏳ pending |
-| new | Cycle filter redesign to standard select box | ✅ validate |
 
 ---
 
 ## TODO (Backlog)
+
+## bugs
+- [ ] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
 
 ## report bugs (pending)
 - [ ] 1 - filters should be smaller

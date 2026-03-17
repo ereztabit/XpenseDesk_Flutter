@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "xpensedesk-flutter",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "chrome", "--dart-define=ENV=dev"],
+      "port": 8080
+    }
+  ]
+}

@@ -51,7 +51,6 @@ class CycleSelector extends StatelessWidget {
           child: MenuAnchor(
             crossAxisUnconstrained: false,
             style: MenuStyle(
-              fixedSize: WidgetStatePropertyAll(Size(width, 0)),
               minimumSize: WidgetStatePropertyAll(Size(width, 0)),
               maximumSize: WidgetStatePropertyAll(Size(width, 320)),
               backgroundColor: const WidgetStatePropertyAll(AppTheme.card),

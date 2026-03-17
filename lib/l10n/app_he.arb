@@ -331,6 +331,7 @@
   "byEmployee": "לפי עובד",
   "byCategory": "לפי קטגוריה",
   "allCategories": "כל הקטגוריות",
+  "selectedLabel": "נבחרו",
   "selectAll": "בחר הכל",
   "clear": "נקה",
   "export": "ייצוא",
