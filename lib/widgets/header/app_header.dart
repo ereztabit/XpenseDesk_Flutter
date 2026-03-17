@@ -57,12 +57,16 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
   void _openMobileMenu() {
     // Push as a proper Navigator route so any PopupMenuButton opened from
     // within the sheet will be routed above it in the Navigator stack.
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? '';
     setState(() => _isMenuOpen = true);
     Navigator.of(context).push(
       PageRouteBuilder<void>(
         opaque: false,
         barrierColor: Colors.transparent,
-        pageBuilder: (ctx, _, _) => MobileMenuSheet(onClose: _closeMenu),
+        pageBuilder: (ctx, _, _) => MobileMenuSheet(
+          onClose: _closeMenu,
+          currentRoute: currentRoute,
+        ),
         transitionDuration: Duration.zero,
         reverseTransitionDuration: Duration.zero,
       ),
@@ -79,6 +83,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
 
     final offset = renderBox.localToGlobal(Offset.zero);
     final size = renderBox.size;
+    final currentRoute = ModalRoute.of(context)?.settings.name ?? '';
 
     _overlayEntry = OverlayEntry(
       builder: (context) => DesktopMenu(
@@ -88,6 +93,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         isManager: _isManager(userInfo.roleId),
         onClose: _closeMenu,
         onMenuItemSelected: _handleMenuItemSelected,
+        currentRoute: currentRoute,
       ),
     );
 

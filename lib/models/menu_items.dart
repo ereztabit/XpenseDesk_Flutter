@@ -124,6 +124,16 @@ class MenuItems {
     return email.isNotEmpty ? email[0].toUpperCase() : '?';
   }
 
+  /// Returns the menu item id that corresponds to [route], or null if no match.
+  static String? activeIdForRoute(String route) {
+    if (route.endsWith('/profile')) return 'profile';
+    if (route.endsWith('/history/report')) return 'expenses-detail-report';
+    if (route.endsWith('/history')) return 'spend-history';
+    if (route == '/manager/company-config') return 'company-config';
+    if (route == '/manager/users') return 'user-management';
+    return null;
+  }
+
   static Future<void> launchContactSupport(
     UserInfo userInfo,
     AppLocalizations t,

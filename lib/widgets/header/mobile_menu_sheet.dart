@@ -9,10 +9,12 @@ import '../language_switcher.dart';
 
 class MobileMenuSheet extends ConsumerStatefulWidget {
   final VoidCallback onClose;
+  final String currentRoute;
 
   const MobileMenuSheet({
     super.key,
     required this.onClose,
+    this.currentRoute = '',
   });
 
   @override
@@ -248,10 +250,18 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                             // Nav items (non-action)
                             ...menuItems
                                 .where((item) => !item.isAction)
-                                .map((item) => InkWell(
+                                .map((item) {
+                                  final isActive = item.id ==
+                                      MenuItems.activeIdForRoute(widget.currentRoute);
+                                  return InkWell(
                                       onTap: () =>
                                           _handleMenuItemSelected(item.id),
-                                      child: Padding(
+                                      hoverColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      child: Container(
+                                        color: isActive
+                                            ? AppTheme.primary.withAlpha(25)
+                                            : null,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 20,
                                           vertical: 16,
@@ -260,22 +270,27 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                                           children: [
                                             Icon(item.icon,
                                                 size: 20,
-                                                color: AppTheme.mutedForeground),
+                                                color: isActive
+                                                    ? AppTheme.primary
+                                                    : AppTheme.mutedForeground),
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Text(
                                                 item.label,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w500,
-                                                  color: AppTheme.foreground,
+                                                  color: isActive
+                                                      ? AppTheme.primary
+                                                      : AppTheme.foreground,
                                                 ),
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    )),
+                                    );
+                                }),
 
                             const Divider(height: 1),
 

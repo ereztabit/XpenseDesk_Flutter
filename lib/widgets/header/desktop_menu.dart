@@ -13,6 +13,7 @@ class DesktopMenu extends ConsumerStatefulWidget {
   final bool isManager;
   final VoidCallback onClose;
   final Function(String) onMenuItemSelected;
+  final String currentRoute;
 
   const DesktopMenu({
     super.key,
@@ -22,6 +23,7 @@ class DesktopMenu extends ConsumerStatefulWidget {
     required this.isManager,
     required this.onClose,
     required this.onMenuItemSelected,
+    this.currentRoute = '',
   });
 
   @override
@@ -155,6 +157,8 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                                       label: item.label,
                                       onTap: () => widget.onMenuItemSelected(item.id),
                                       isAction: item.isAction,
+                                      isActive: !item.isAction &&
+                                          item.id == MenuItems.activeIdForRoute(widget.currentRoute),
                                     ),
                                   ),
                                 ],
@@ -239,31 +243,28 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
     required String label,
     required VoidCallback onTap,
     bool isAction = false,
+    bool isActive = false,
   }) {
+    final iconColor = isActive ? AppTheme.primary : AppTheme.mutedForeground;
+    final textColor = isActive
+        ? AppTheme.primary
+        : (isAction ? AppTheme.mutedForeground : AppTheme.foreground);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: InkWell(
         onTap: onTap,
-        hoverColor: AppTheme.muted.withAlpha(153), // hover:bg-muted/60
+        hoverColor: AppTheme.muted.withAlpha(153),
         splashColor: AppTheme.muted.withAlpha(102),
         highlightColor: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), // px-5 py-2.5
+        child: Container(
+          color: isActive ? AppTheme.primary.withAlpha(15) : null,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: 16, // h-4 w-4
-                color: AppTheme.mutedForeground, // text-muted-foreground for icons
-              ),
-              const SizedBox(width: 12), // gap-3
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14, // text-sm
-                  color: isAction ? AppTheme.mutedForeground : AppTheme.foreground,
-                ),
-              ),
+              Icon(icon, size: 16, color: iconColor),
+              const SizedBox(width: 12),
+              Text(label, style: TextStyle(fontSize: 14, color: textColor)),
             ],
           ),
         ),
