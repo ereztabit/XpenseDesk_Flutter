@@ -11,4 +11,4 @@ Steps:
    - `Flutter Prod (Chrome)` — Chrome, ENV=prod, port 8080
    - `Flutter Dev (Web Server - External)` — web-server 0.0.0.0:8080, ENV=dev
 7. If any step fails, stop immediately and report the failure. Do not continue.
-8. Keep output minimal. Do not narrate the plan or explain reasoning. Only report failures or a brief completion status.
+8. **Silent execution:** Output nothing unless there is a failure. No status messages, no caveats, no explanations. On success: say nothing.
