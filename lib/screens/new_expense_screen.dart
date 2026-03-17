@@ -1148,14 +1148,19 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         ],
       );
     }
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _buildAmountField(l10n)),
-        const SizedBox(width: 12),
-        Expanded(child: _buildCurrencyDropdown(l10n)),
-        const SizedBox(width: 12),
-        Expanded(child: _buildDateField(context, l10n, companyLocale)),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildAmountField(l10n)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildCurrencyDropdown(l10n)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildDateField(context, l10n, companyLocale),
       ],
     );
   }
@@ -1213,40 +1218,27 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
-  void _pickDateNative() {
+  Future<void> _pickDate(BuildContext context, String companyLocale) async {
     final today = DateTime.now();
     final sixMonthsAgo = DateTime(today.year, today.month - 6, today.day);
 
-    String fmt(DateTime d) =>
-        '${d.year.toString().padLeft(4, '0')}-'
-        '${d.month.toString().padLeft(2, '0')}-'
-        '${d.day.toString().padLeft(2, '0')}';
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? today,
+      firstDate: sixMonthsAgo,
+      lastDate: today,
+    );
 
-    final input = web.HTMLInputElement()
-      ..type = 'date'
-      ..min = fmt(sixMonthsAgo)
-      ..max = fmt(today);
+    if (picked == null || !mounted) return;
 
-    if (_selectedDate != null) {
-      input.value = fmt(_selectedDate!);
-    }
-
-    input.onChange.first.then((_) {
-      final value = input.value;
-      if (value.isNotEmpty && mounted) {
-        final picked = DateTime.tryParse(value);
-        if (picked != null) {
-          final companyLocale = ref.read(companyLocaleProvider);
-          _dateController.text = _isoToDisplayDate(value, companyLocale);
-          setState(() {
-            _selectedDate = picked;
-            _dateInputError = null;
-          });
-        }
-      }
+    final iso = '${picked.year.toString().padLeft(4, '0')}-'
+        '${picked.month.toString().padLeft(2, '0')}-'
+        '${picked.day.toString().padLeft(2, '0')}';
+    _dateController.text = _isoToDisplayDate(iso, companyLocale);
+    setState(() {
+      _selectedDate = picked;
+      _dateInputError = null;
     });
-
-    input.click();
   }
 
   Widget _buildDateField(
@@ -1268,7 +1260,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             errorText: _dateInputError,
             suffixIcon: IconButton(
               icon: const Icon(Icons.calendar_today_outlined, size: 18),
-              onPressed: _pickDateNative,
+              onPressed: () => _pickDate(context, companyLocale),
             ),
           ),
           onChanged: (value) {

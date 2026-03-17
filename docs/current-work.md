@@ -2,12 +2,16 @@
 
 ## Currently Working On
 
+- Refine the Expenses Analysis UX/data contract spec and align it to implementation constraints - see `docs/expenses-analysis-spec.md`
+
 ---
 
 ## TODO (Backlog)
 
+- [ ] implement Expenses Analysis from `docs/expenses-analysis-spec.md`
+
 ## bugs
-- [ ] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
+- [x] when ai failes to identify recipt - i cant enter manual date on desktop - cant see it
 - [x] on mobile the cycle widget shoud be next to the side bar icon and not in the center
  
 
@@ -34,6 +38,7 @@
 ## user expenses report
 - [ ] warn before getting the same receipt as you had in the past - bakcend feature
 - [ ] multi currency expenses - bakcend feature
+- [ ] the ai strike through when ai didnt recognize the image is not clear - add explicit warning
 
 ## manager expenses report
 - [ ] emails for approve / decline / pending - bakcend feature
