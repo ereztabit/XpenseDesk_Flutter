@@ -14,10 +14,20 @@ class EmployeeExpenseDetailScreen extends ConsumerStatefulWidget {
   final String expenseId;
   final bool isManagerMode;
 
+  /// When true: all fields are locked, all action buttons are hidden.
+  /// Use this when displaying the screen inside a modal from another screen.
+  final bool readOnly;
+
+  /// When true: renders only the expense content — no AppHeader, AppFooter,
+  /// or navigation guard. Use when embedding inside a Dialog.
+  final bool dialogMode;
+
   const EmployeeExpenseDetailScreen({
     super.key,
     required this.expenseId,
     this.isManagerMode = false,
+    this.readOnly = false,
+    this.dialogMode = false,
   });
 
   @override
@@ -53,6 +63,7 @@ class _EmployeeExpenseDetailScreenState
   bool _isEditingEnabled = false;
 
   bool get _isEditable {
+    if (widget.readOnly) return false;
     if (widget.isManagerMode) return _isEditingEnabled && !_isClosed;
     return _expense?.isPending == true && !_isClosed;
   }
@@ -602,7 +613,7 @@ class _EmployeeExpenseDetailScreenState
             ],
           ),
         ),
-        if (!_isEditingEnabled)
+        if (!_isEditingEnabled && !widget.readOnly)
           TextButton.icon(
             onPressed: () => setState(() => _isEditingEnabled = true),
             icon: const Icon(Icons.edit_outlined, size: 14),
@@ -618,6 +629,7 @@ class _EmployeeExpenseDetailScreenState
 
   /// Approve / Decline buttons — manager only. Always right-aligned.
   Widget _buildManagerApproveDeclineRow(AppLocalizations l10n) {
+    if (widget.readOnly) return const SizedBox.shrink();
     final expense = _expense;
     if (expense == null) return const SizedBox.shrink();
     final statusId = expense.expenseStatusId;
@@ -679,6 +691,7 @@ class _EmployeeExpenseDetailScreenState
   }
 
   Widget _buildActionButtons(AppLocalizations l10n) {
+    if (widget.readOnly) return const SizedBox.shrink();
     // Manager: Update button shown only when editing is enabled
     if (widget.isManagerMode) {
       if (!_isEditingEnabled) return const SizedBox.shrink();
@@ -923,11 +936,78 @@ class _EmployeeExpenseDetailScreenState
     );
   }
 
+  Widget _buildContent(AppLocalizations l10n, String companyLocale, Locale uiLocale) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+    if (_isNotFound) return _buildNotFound(l10n);
+    if (_loadError != null) return _buildError(l10n);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: ConstrainedContent(
+        maxWidth: 960,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!widget.dialogMode)
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back, size: 16),
+                label: Text(l10n.backToDashboard),
+              ),
+            if (!widget.dialogMode) const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: EdgeInsets.all(context.isMobile ? 16 : 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(l10n.expenseDetail,
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppTheme.mutedForeground)),
+                        ),
+                        if (widget.dialogMode)
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(Icons.close, size: 20),
+                            style: IconButton.styleFrom(
+                              foregroundColor: AppTheme.mutedForeground,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    if (context.isDesktop)
+                      _buildDesktopLayout(l10n, companyLocale, uiLocale)
+                    else
+                      _buildMobileLayout(l10n, companyLocale, uiLocale),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.watch(companyLocaleProvider);
     final uiLocale = Localizations.localeOf(context);
+
+    if (widget.dialogMode) {
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        body: _buildContent(l10n, companyLocale, uiLocale),
+      );
+    }
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -935,60 +1015,7 @@ class _EmployeeExpenseDetailScreenState
         body: Column(
           children: [
             const AppHeader(),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _isNotFound
-                      ? _buildNotFound(l10n)
-                      : _loadError != null
-                          ? _buildError(l10n)
-                          : SingleChildScrollView(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 24),
-                              child: ConstrainedContent(
-                                maxWidth: 960,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    TextButton.icon(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      icon: const Icon(Icons.arrow_back,
-                                          size: 16),
-                                      label: Text(l10n.backToDashboard),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Card(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(
-                                            context.isMobile ? 16 : 24),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(l10n.expenseDetail,
-                                                style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color:
-                                                        AppTheme.mutedForeground)),
-                                            const SizedBox(height: 12),
-                                            const Divider(),
-                                            const SizedBox(height: 16),
-                                            if (context.isDesktop)
-                                              _buildDesktopLayout(l10n,
-                                                  companyLocale, uiLocale)
-                                            else
-                                              _buildMobileLayout(l10n,
-                                                  companyLocale, uiLocale),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-            ),
+            Expanded(child: _buildContent(l10n, companyLocale, uiLocale)),
             const AppFooter(),
           ],
         ),

@@ -343,5 +343,10 @@
   "noReceiptShort": "No Receipt",
   "runReport": "Run",
   "search": "Search",
-  "total": "Total:"
+  "total": "Total:",
+  "reportColDate": "Exp. Date",
+  "reportColReceipt": "Receipt #",
+  "reportColApprovedAt": "Appr. At",
+  "reportCyclePrefix": "Cycle",
+  "reportCycleDateRange": "between"
 }

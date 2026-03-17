@@ -135,15 +135,19 @@ class MultiSelectFilter<T> extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
               foregroundColor: AppTheme.foreground,
-              alignment: AlignmentDirectional.centerStart,
             ),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(
-                buttonLabel,
-                style: const TextStyle(fontSize: 13),
-                overflow: TextOverflow.ellipsis,
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    buttonLabel,
+                    style: const TextStyle(fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(Icons.keyboard_arrow_down,
+                    size: 16, color: AppTheme.mutedForeground),
+              ],
             ),
           ),
         ),

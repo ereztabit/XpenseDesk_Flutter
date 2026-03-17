@@ -2,11 +2,22 @@
 
 ## Currently Working On
 
-- cycle expenses report - fixing round 2 issues (15 open) — see cycle-expenses-report-spec.md
+### cycle expenses report — pending fixes
+
+| # | Issue | Status |
+|---|-------|--------|
+| 11 | Scrollbar: trackVisibility + thickness 8, outside horizontal scroll | ⏳ pending |
+| new | Cycle filter redesign to standard select box | ✅ validate |
 
 ---
 
 ## TODO (Backlog)
+
+## report bugs (pending)
+- [ ] 1 - filters should be smaller
+- [ ] 3 - cycles should load only once when company loads (not on every render)
+- [ ] 4 - report mobile view
+- [ ] 5 - verify sticky header works
 
 ## general environment
 - [ ] there is a flutter load animation by default - remove it.
@@ -23,14 +34,12 @@
 - [ ] we need to add api tests
 - [ ] we need to translate better to hebrew
 
-
 ## user expenses report
 - [ ] warn before getting the same receipt as you had in the past - bakcend feature
-- [ ] multi currency expenses - - bakcend feature
+- [ ] multi currency expenses - bakcend feature
 
 ## manager expenses report
-- [ ] emails for approve / decline / pending - - bakcend feature
-[x] create the cycle expenses report - cycle-expenses-report-spec.md
+- [ ] emails for approve / decline / pending - bakcend feature
 - [ ] build the spend overview widget for manager and employee spend-overview-spec.md
 
 ## management screens

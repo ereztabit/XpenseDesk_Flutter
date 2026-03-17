@@ -326,7 +326,7 @@
   "activeUsers": "משתמשים פעילים",
 
   "cycleExpensesReport": "דוח הוצאות מחזור",
-  "expensesDetailReport": "דוח פירוט הוצאות",
+  "expensesDetailReport": "דו\"ח הוצאות מפורט",
   "currentCycle": "מחזור נוכחי",
   "byEmployee": "לפי עובד",
   "byCategory": "לפי קטגוריה",
@@ -343,5 +343,10 @@
   "noReceiptShort": "אין קבלה",
   "runReport": "הפעל",
   "search": "חפש",
-  "total": "סך הכל:"
+  "total": "סך הכל:",
+  "reportColDate": "ת.הוצאה",
+  "reportColReceipt": "אסמכתא",
+  "reportColApprovedAt": "ת.אישור",
+  "reportCyclePrefix": "מחזור",
+  "reportCycleDateRange": "בין התאריכים"
 }
