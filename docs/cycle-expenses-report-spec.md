@@ -170,7 +170,7 @@ Table cells have inner vertical borders for spreadsheet aesthetics:
 | Icon badge | `div` with `rounded-lg bg-primary/10` | Contains `FileText` icon (20px), `text-primary` |
 | Title | `h1` | "Cycle Expenses Report" (`t.cycleExpensesReport`) |
 | Subtitle | `p` | Dynamic: "{count} expenses • {total} total approved" |
-| Export button | `Button` (primary) | `Download` icon 16px + `t.export` label. Display-only in this phase; no XLSX implementation. |
+| Export button | `Button` (primary) | `Download` icon 16px + `t.export` label. Clicking downloads an Excel file using the report API with `format: "excel"`. |
 
 Layout: `flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3`.
 On mobile, title and export button stack vertically.
@@ -448,7 +448,7 @@ Request rules:
 - On the employee route, omit `userIds` from the request body because the backend already scopes results to the authenticated user.
 - Send `categoriesAlias` using the selected category aliases.
 - Send `format: "rawdata"` when fetching rows for on-screen rendering.
-- The same endpoint also supports `format: "excel"` for file export, but that flow is not implemented in this phase.
+- Send `format: "excel"` when the user clicks the Export button.
 - When no manager employee filter is applied, either omit `userIds` or send all selected user IDs according to backend expectations, but do not expose employee switching on the employee route.
 
 Example request body for the manager route:
@@ -769,15 +769,22 @@ Role-based access rules:
 
 ## 7. Export
 
-The Export button is present in the UI, but export behavior is out of scope for this implementation.
+The Export button is fully functional in this implementation and downloads an Excel file using the existing report API.
 
 | Property | Value |
 |---|---|
 | Button visibility | Always shown in the page header |
-| Backend contract | The report API supports `format: "excel"` using the same request body shape as the report, but this screen does not call it in the current phase |
+| Backend contract | The report API supports `format: "excel"` using the same request body shape as the on-screen report |
 | Excel response content type | `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` |
-| Interaction | Visual button only; no XLSX generation, download logic, or backend call in this phase |
-| Future scope | Export format and implementation can be specified later without blocking the report UI |
+| Interaction | Clicking the button sends the current filters to the report API with `format: "excel"` and triggers a file download |
+| Request parity | The export request must use the same `expenseCycleId`, `userIds`, and `categoriesAlias` values as the currently visible report filters |
+| File handling | The client treats the response as a binary Excel file and downloads it using the response body and content type |
+
+Export behavior rules:
+- Export must reflect the currently selected cycle and active filters.
+- Manager export includes selected `userIds` when applicable.
+- Employee export omits `userIds` and exports only the authenticated employee's scoped results.
+- The export action uses the same API endpoint and request body shape as the raw report, changing only `format` from `"rawdata"` to `"excel"`.
 
 ---
 

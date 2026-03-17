@@ -37,6 +37,11 @@ class MenuItems {
         label: t.spendHistory,
       ),
       MenuItem(
+        id: 'expenses-detail-report',
+        icon: Icons.description_outlined,
+        label: t.expensesDetailReport,
+      ),
+      MenuItem(
         id: 'company-config',
         icon: Icons.settings_outlined,
         label: t.companyConfiguration,

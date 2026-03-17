@@ -13,6 +13,7 @@ import 'screens/new_expense_screen.dart';
 import 'screens/receipt_analyzer_screen.dart';
 import 'screens/employee_expense_detail_screen.dart';
 import 'screens/manager_dashboard_screen.dart';
+import 'screens/cycle_expenses_report_screen.dart';
 import 'widgets/auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -104,6 +105,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
+    case '/manager/history/report':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: CycleExpensesReportScreen(isManager: true),
+        ),
+      );
+
     // --- Employee ---
     case '/user/dashboard':
       return MaterialPageRoute(
@@ -147,6 +157,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => const AuthGate(
           mode: AuthGateMode.employeeOnboardedOnly,
           child: NewExpenseScreen(),
+        ),
+      );
+
+    case '/employee/history/report':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.employeeOnboardedOnly,
+          child: CycleExpensesReportScreen(isManager: false),
         ),
       );
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/expense_cycle.dart';
 import '../models/expense_detail.dart';
 import '../models/expense_summary.dart';
 import '../models/user_info.dart';
@@ -33,4 +34,13 @@ final expenseDetailProvider =
 
   final service = ref.watch(expenseServiceProvider);
   return service.getExpenseById(expenseId);
+});
+
+/// Loads the list of all expense cycles for the authenticated user's company.
+final cyclesProvider = FutureProvider<List<ExpenseCycle>>((ref) async {
+  final UserInfo? userInfo = ref.watch(userInfoProvider);
+  if (userInfo == null) return [];
+
+  final service = ref.watch(expenseServiceProvider);
+  return service.getCycles();
 });

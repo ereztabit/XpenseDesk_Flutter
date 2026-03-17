@@ -323,5 +323,25 @@
 
   "cycleDays": "ימים",
   "cycleEndsOn": "המחזור מסתיים ב",
-  "activeUsers": "משתמשים פעילים"
+  "activeUsers": "משתמשים פעילים",
+
+  "cycleExpensesReport": "דוח הוצאות מחזור",
+  "expensesDetailReport": "דוח פירוט הוצאות",
+  "currentCycle": "מחזור נוכחי",
+  "byEmployee": "לפי עובד",
+  "byCategory": "לפי קטגוריה",
+  "allCategories": "כל הקטגוריות",
+  "selectAll": "בחר הכל",
+  "clear": "נקה",
+  "export": "ייצוא",
+  "approvedBy": "אושר על ידי",
+  "approvedAt": "אושר בתאריך",
+  "failedToLoadReport": "טעינת הדוח נכשלה",
+  "expensesWord": "הוצאות",
+  "totalApprovedLabel": "סה\"כ מאושר",
+  "activeLabel": "פעיל",
+  "noReceiptShort": "אין קבלה",
+  "runReport": "הפעל",
+  "search": "חפש",
+  "total": "סך הכל:"
 }

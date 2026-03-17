@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
@@ -152,6 +153,26 @@ class ApiService {
     final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
     return _decode(response);
+  }
+
+  /// Make a POST request and return the raw response bytes.
+  /// Use this for binary responses such as Excel file downloads.
+  Future<Uint8List> postBinary(
+    String endpoint,
+    Map<String, dynamic> body, {
+    String? authToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final response = await http.post(
+      uri,
+      headers: _buildHeaders(authToken: authToken),
+      body: jsonEncode(body),
+    );
+    if (response.statusCode == 401) {
+      onUnauthorized?.call();
+      throw const UnauthorizedException();
+    }
+    return response.bodyBytes;
   }
 
   /// Make a DELETE request with optional authorization token

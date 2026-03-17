@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
+import '../models/expense_cycle.dart';
+import '../models/cycle_expense_row.dart';
 import '../models/expense_detail.dart';
 import '../models/expense_summary.dart';
 import '../models/receipt_analysis_result.dart';
@@ -230,6 +232,89 @@ class ExpenseService {
     );
 
     _validateResponse(response, 'Failed to decline expense');
+  }
+
+  /// Fetch all expense cycles for the authenticated user's company.
+  Future<List<ExpenseCycle>> getCycles() async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/reports/cycles',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load cycles');
+
+    final data = response['data'] as List<dynamic>?;
+    if (data == null) return [];
+
+    return data
+        .map((json) => ExpenseCycle.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Fetch expense report rows for the given cycle and optional filters.
+  ///
+  /// For the manager route, pass [userIds] to filter by specific employees.
+  /// For the employee route, omit [userIds] — the backend scopes to the auth user.
+  /// Pass [categoriesAlias] to filter by category API values (e.g. "Travel", "Supplies").
+  Future<List<CycleExpenseRow>> searchExpensesReport({
+    required String expenseCycleId,
+    List<String>? userIds,
+    List<String>? categoriesAlias,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{
+      'expenseCycleId': expenseCycleId,
+      'format': 'rawdata',
+    };
+    if (userIds != null && userIds.isNotEmpty) body['userIds'] = userIds;
+    if (categoriesAlias != null && categoriesAlias.isNotEmpty) {
+      body['categoriesAlias'] = categoriesAlias;
+    }
+
+    final response = await _apiService.post(
+      '/api/reports/export-expenses-report',
+      body,
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load report');
+
+    final data = response['data'] as List<dynamic>?;
+    if (data == null) return [];
+
+    return data
+        .map((json) => CycleExpenseRow.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Download an Excel export for the given cycle and filters.
+  /// Returns the raw Excel file bytes.
+  Future<Uint8List> exportExpensesExcel({
+    required String expenseCycleId,
+    List<String>? userIds,
+    List<String>? categoriesAlias,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{
+      'expenseCycleId': expenseCycleId,
+    };
+    if (userIds != null && userIds.isNotEmpty) body['userIds'] = userIds;
+    if (categoriesAlias != null && categoriesAlias.isNotEmpty) {
+      body['categoriesAlias'] = categoriesAlias;
+    }
+
+    return _apiService.postBinary(
+      '/api/reports/export-expenses-report',
+      body,
+      authToken: sessionToken,
+    );
   }
 
   /// Upload a receipt image to the AI analyzer and return a parsed result.

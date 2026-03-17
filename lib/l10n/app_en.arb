@@ -323,5 +323,25 @@
 
   "cycleDays": "days",
   "cycleEndsOn": "Cycle ends on",
-  "activeUsers": "Active Users"
+  "activeUsers": "Active Users",
+
+  "cycleExpensesReport": "Cycle Expenses Report",
+  "expensesDetailReport": "Expenses Detail Report",
+  "currentCycle": "Current Cycle",
+  "byEmployee": "By Employee",
+  "byCategory": "By Category",
+  "allCategories": "All Categories",
+  "selectAll": "Select All",
+  "clear": "Clear",
+  "export": "Export",
+  "approvedBy": "Approved By",
+  "approvedAt": "Approved At",
+  "failedToLoadReport": "Failed to load report",
+  "expensesWord": "expenses",
+  "totalApprovedLabel": "total approved",
+  "activeLabel": "Active",
+  "noReceiptShort": "No Receipt",
+  "runReport": "Run",
+  "search": "Search",
+  "total": "Total:"
 }
