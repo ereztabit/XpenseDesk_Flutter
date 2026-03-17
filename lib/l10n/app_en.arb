@@ -351,5 +351,7 @@
   "reportCyclePrefix": "Cycle",
   "reportCycleDateRange": "between",
   "spendOverview": "Spend Overview",
-  "viewMore": "View More"
+  "viewMore": "View More",
+  "filtersTitle": "Filters",
+  "applyFilters": "Apply Filters"
 }

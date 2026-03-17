@@ -76,6 +76,20 @@ class _CycleExpensesReportScreenState
     super.dispose();
   }
 
+  // ── active filter count (for mobile badge) ────────────────────────────────
+  int get _activeFilterCount {
+    int count = 0;
+    if (_selectedEmployees.isNotEmpty) count++;
+    if (_selectedCategories.isNotEmpty) count++;
+    final currentCycleId = _cycles.currentCycle?.expenseCycleId;
+    if (_selectedCycleId != null &&
+        currentCycleId != null &&
+        _selectedCycleId != currentCycleId) {
+      count++;
+    }
+    return count;
+  }
+
   // ── derived ───────────────────────────────────────────────────────────────
   List<CycleExpenseRow> get _detailRows =>
       _allRows.where((r) => !r.isTotal).toList();
@@ -319,6 +333,98 @@ class _CycleExpensesReportScreenState
     }
   }
 
+  void _openFilterDialog(AppLocalizations l10n) {
+    var pendingEmployees = Set<String>.from(_selectedEmployees);
+    var pendingCategories = Set<String>.from(_selectedCategories);
+    var pendingCycleId = _selectedCycleId;
+
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          final cycleFilter = CycleSelector(
+            cycles: _cycles,
+            selectedCycleId: pendingCycleId,
+            enabled: !_loading && _cycles.isNotEmpty,
+            sectionLabel: l10n.currentCycle,
+            onChanged: (newId) => setDialogState(() {
+              if (newId != pendingCycleId) {
+                pendingCycleId = newId;
+                pendingEmployees = {};
+                pendingCategories = {};
+              }
+            }),
+          );
+
+          final categoryFilter = CategorySelector(
+            selectedCategoryAliases: pendingCategories,
+            enabled: !_loading,
+            sectionLabel: l10n.byCategory,
+            onChanged: (newSet) =>
+                setDialogState(() => pendingCategories = newSet),
+          );
+
+          final employeeFilter = widget.isManager
+              ? EmployeeSelector(
+                  sectionLabel: l10n.byEmployee,
+                  employees: _availableEmployees,
+                  selectedIds: pendingEmployees,
+                  enabled: !_loading,
+                  onChanged: (newSet) =>
+                      setDialogState(() => pendingEmployees = newSet),
+                )
+              : null;
+
+          return Dialog(
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.filtersTitle,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  cycleFilter,
+                  const SizedBox(height: 12),
+                  if (employeeFilter != null) ...[
+                    employeeFilter,
+                    const SizedBox(height: 12),
+                  ],
+                  categoryFilter,
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () {
+                        setState(() {
+                          _selectedCycleId = pendingCycleId;
+                          _selectedEmployees = pendingEmployees;
+                          _selectedCategories = pendingCategories;
+                        });
+                        Navigator.of(dialogContext).pop();
+                        _loadReport();
+                      },
+                      child: Text(l10n.applyFilters),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   void _navigateBack() {
     if (Navigator.canPop(context)) {
       Navigator.pop(context);
@@ -407,9 +513,10 @@ class _CycleExpensesReportScreenState
 
   Widget _buildBody(
       BuildContext context, AppLocalizations l10n, String locale) {
+    final isMobile = context.isMobile;
     return LayoutBuilder(
       builder: (ctx, constraints) {
-        final hPad = context.isMobile ? 12.0 : 24.0;
+        final hPad = isMobile ? 12.0 : 24.0;
         const vPad = 16.0;
         final contentHeight = constraints.maxHeight - vPad * 2;
         final contentWidth =
@@ -427,8 +534,10 @@ class _CycleExpensesReportScreenState
                 children: [
                   _buildPageHeader(context, l10n, locale),
                   const SizedBox(height: 12),
-                  _buildFilterCard(context, l10n),
-                  const SizedBox(height: 12),
+                  if (!isMobile) ...[
+                    _buildFilterCard(context, l10n),
+                    const SizedBox(height: 12),
+                  ],
                   Expanded(child: _buildTableCard(context, l10n, locale)),
                 ],
               ),
@@ -445,7 +554,7 @@ class _CycleExpensesReportScreenState
     final isMobile = context.isMobile;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -457,36 +566,98 @@ class _CycleExpensesReportScreenState
           ),
         ),
         const SizedBox(width: 10),
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withAlpha(25),
-            borderRadius: BorderRadius.circular(8),
+        if (!isMobile)
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withAlpha(25),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.description_outlined,
+                color: AppTheme.primary, size: 20),
           ),
-          child: const Icon(Icons.description_outlined,
-              color: AppTheme.primary, size: 20),
-        ),
-        const SizedBox(width: 10),
+        if (!isMobile) const SizedBox(width: 10),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(l10n.expensesDetailReport,
+          child: isMobile
+              ? Text(
+                  l10n.expensesDetailReport,
                   style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.foreground)),
-              Text(
-                _buildSubtitle(l10n, locale),
-                style: const TextStyle(
-                    fontSize: 13, color: AppTheme.mutedForeground),
+                      color: AppTheme.foreground),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.expensesDetailReport,
+                        style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.foreground)),
+                    Text(
+                      _buildSubtitle(l10n, locale),
+                      style: const TextStyle(
+                          fontSize: 13, color: AppTheme.mutedForeground),
+                    ),
+                  ],
+                ),
+        ),
+        if (isMobile) ...[
+          const SizedBox(width: 4),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.tune,
+                  color: _activeFilterCount > 0 ? AppTheme.primary : null,
+                ),
+                onPressed: () => _openFilterDialog(l10n),
+                tooltip: l10n.filtersTitle,
               ),
+              if (_activeFilterCount > 0)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$_activeFilterCount',
+                        style: const TextStyle(
+                          color: AppTheme.primaryForeground,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
-        ),
-        if (!isMobile) const SizedBox(width: 12),
-        if (!isMobile)
+          IconButton(
+            icon: _isExporting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.download, size: 16),
+            onPressed: (_loading || _isExporting || _selectedCycleId == null)
+                ? null
+                : _exportExcel,
+            tooltip: l10n.export,
+          ),
+        ] else ...[
+          const SizedBox(width: 12),
           FilledButton.icon(
             onPressed: (_loading || _isExporting || _selectedCycleId == null)
                 ? null
@@ -501,6 +672,7 @@ class _CycleExpensesReportScreenState
                 : const Icon(Icons.download, size: 16),
             label: Text(l10n.export),
           ),
+        ],
       ],
     );
   }

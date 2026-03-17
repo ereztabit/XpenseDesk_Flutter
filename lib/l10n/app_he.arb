@@ -351,5 +351,7 @@
   "reportCyclePrefix": "מחזור",
   "reportCycleDateRange": "בין התאריכים",
   "spendOverview": "סקירת הוצאות",
-  "viewMore": "הצג עוד"
+  "viewMore": "הצג עוד",
+  "filtersTitle": "סינון",
+  "applyFilters": "החל סינון"
 }

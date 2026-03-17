@@ -1,14 +1,22 @@
 Run a clean Flutter launch for this workspace.
 
 Steps:
-1. If there is an active VS Code debug session or active Flutter run for this workspace, stop it cleanly first (use the VS Code "Stop Debugging" command via the extension API, or send a SIGTERM to any running `flutter` process targeting this workspace).
-2. Launch the app **without debugging** using the VS Code extension API (`workbench.action.debug.run` or `flutter.runWithoutDebugging`).
-3. Do not run `flutter pub get` explicitly — the selected launch configuration already handles it via `preLaunchTask` in [.vscode/launch.json](.vscode/launch.json).
-4. Use the launch configuration name passed as the argument (`$ARGUMENTS`) when provided.
-5. If no argument is provided, use the currently active Flutter launch configuration. If that cannot be determined, default to **Flutter Dev (Chrome)**.
-6. Available configurations (from [.vscode/launch.json](.vscode/launch.json)):
-   - `Flutter Dev (Chrome)` — Chrome, ENV=dev, port 8080 (default)
-   - `Flutter Prod (Chrome)` — Chrome, ENV=prod, port 8080
-   - `Flutter Dev (Web Server - External)` — web-server 0.0.0.0:8080, ENV=dev
-7. If any step fails, stop immediately and report the failure. Do not continue.
-8. **Silent execution:** Output nothing unless there is a failure. No status messages, no caveats, no explanations. On success: say nothing.
+1. **Free port 8080**: Use PowerShell to find and kill any process holding port 8080:
+   ```
+   powershell -Command "Get-NetTCPConnection -LocalPort 8080 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }"
+   ```
+   Do not check whether anything was actually running — just run the kill command unconditionally.
+
+2. **Launch**: Run Flutter in the background (use `run_in_background: true`):
+   ```
+   cd "c:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter" && flutter run -d chrome --dart-define=ENV=dev --web-port=8080 --no-pub
+   ```
+   Do not wait for the background task to complete — it is a long-lived dev server.
+
+3. Use the launch configuration name passed as the argument (`$ARGUMENTS`) when provided.
+4. If no argument is provided, default to **Flutter Dev (Chrome)** (chrome, ENV=dev, port 8080).
+5. Available configurations (from [.vscode/launch.json](.vscode/launch.json)):
+   - `Flutter Dev (Chrome)` — `-d chrome --dart-define=ENV=dev --web-port=8080` (default)
+   - `Flutter Prod (Chrome)` — `-d chrome --dart-define=ENV=prod --web-port=8080`
+   - `Flutter Dev (Web Server - External)` — `-d web-server --web-hostname=0.0.0.0 --dart-define=ENV=dev --web-port=8080`
+6. **Silent execution:** Say nothing on success. Only speak if a step fails.
