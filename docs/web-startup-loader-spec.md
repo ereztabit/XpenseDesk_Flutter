@@ -17,6 +17,7 @@ Remove the default Flutter startup loading animation or loader experience shown 
 
 The goal is to avoid the generic Flutter loading state and replace it with one of these approved outcomes:
 
+- **selected: a simple spinner, centered on screen** — no branding needed, just a clean centered loader
 - no visible loader at all
 - a minimal blank startup state
 - a custom XpenseDesk-branded startup screen
@@ -53,7 +54,7 @@ Not included:
 
 - Remove reliance on the default visible Flutter loader behavior.
 - Ensure the app still boots correctly on web.
-- If a replacement loader is used, it must be lightweight and branded.
+- The replacement loader is a simple spinner, centered on screen, no branding required.
 - The loader must disappear as soon as the first app frame is ready.
 - The implementation must not introduce layout shift or leave stale loading markup on screen.
 

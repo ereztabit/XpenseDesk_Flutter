@@ -16,7 +16,7 @@
 
 ## general environment
 
-- [ ] remove the default Flutter web startup loader and replace it with no loader or a minimal branded startup state - see docs/web-startup-loader-spec.md
+- [x] remove the default Flutter web startup loader and replace it with no loader or a minimal branded startup state - see docs/web-startup-loader-spec.md
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
 - [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
