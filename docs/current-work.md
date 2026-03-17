@@ -2,17 +2,9 @@
 
 ## Currently Working On
 
-### reusable category selector widget
+### cycles load once (report bug #3)
 
-Independent multi-select category selector widget created from `category-selector-spec.md`, connected to the cycle expenses report, and ready for validation.
-
----
-
-### cycle expenses report — pending fixes
-
-| # | Issue | Status |
-|---|-------|--------|
-| 11 | Scrollbar: trackVisibility + thickness 8, outside horizontal scroll | ⏳ pending |
+Cycles should load only once when company loads, not on every render of the report screen.
 
 ---
 
@@ -23,9 +15,8 @@ Independent multi-select category selector widget created from `category-selecto
 
 ## report bugs (pending)
 - [ ] 1 - filters should be smaller
-- [ ] 3 - cycles should load only once when company loads (not on every render)
 - [ ] 4 - report mobile view
-- [ ] 5 - verify sticky header works
+
 
 ## general environment
 - [ ] there is a flutter load animation by default - remove it.

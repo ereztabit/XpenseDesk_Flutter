@@ -9,9 +9,9 @@ import '../providers/expense_provider.dart';
 import '../utils/cycle_utils.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
-import '../widgets/multi_select_filter.dart';
 import '../widgets/category/category_selector.dart';
 import '../widgets/cycle/cycle_selector.dart';
+import '../widgets/employee/employee_selector.dart';
 import 'employee_expense_detail_screen.dart';
 
 class CycleExpensesReportScreen extends ConsumerStatefulWidget {
@@ -30,6 +30,7 @@ class _CycleExpensesReportScreenState
   bool get hasUnsavedChanges => false;
 
   // ── data ──────────────────────────────────────────────────────────────────
+  String? _urlCycleId; // parsed from route once in _initialize
   List<ExpenseCycle> _cycles = [];
   String? _selectedCycleId;
   List<CycleExpenseRow> _allRows = [];
@@ -134,32 +135,26 @@ class _CycleExpensesReportScreenState
 
   Future<void> _initialize() async {
     final uri = Uri.parse(ModalRoute.of(context)?.settings.name ?? '');
-    final urlCycleId = uri.queryParameters['expenseCycleId'];
+    _urlCycleId = uri.queryParameters['expenseCycleId'];
     final urlCategories = uri.queryParameters['categories'];
     if (urlCategories != null && urlCategories.isNotEmpty) {
-      _selectedCategories = urlCategories.split(',').toSet();
+      setState(() => _selectedCategories = urlCategories.split(',').toSet());
     }
-    await _loadCycles(preferredCycleId: urlCycleId);
+    // If cyclesProvider is already cached (e.g. navigating back), use it now.
+    ref.read(cyclesProvider).whenData(_onCyclesLoaded);
   }
 
-  Future<void> _loadCycles({String? preferredCycleId}) async {
-    try {
-      final service = ref.read(expenseServiceProvider);
-      final cycles = await service.getCycles();
-      if (!mounted) return;
-      final defaultCycle = cycles.cycleById(preferredCycleId);
-      setState(() {
-        _cycles = cycles;
-        _selectedCycleId = defaultCycle?.expenseCycleId;
-      });
-      await _loadReport();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _loading = false;
-      });
-    }
+  // Called when cyclesProvider data is available — either from cache (via
+  // ref.read in _initialize) or from the network (via ref.listen in build).
+  // Guard prevents double-execution if both paths fire.
+  void _onCyclesLoaded(List<ExpenseCycle> cycles) {
+    if (!mounted || _cycles.isNotEmpty) return;
+    final defaultCycle = cycles.cycleById(_urlCycleId);
+    setState(() {
+      _cycles = cycles;
+      _selectedCycleId = defaultCycle?.expenseCycleId;
+    });
+    _loadReport();
   }
 
   Future<void> _loadReport() async {
@@ -375,6 +370,13 @@ class _CycleExpensesReportScreenState
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
 
+    // Fires when cyclesProvider completes after the screen is already mounted
+    // (network fetch case — cache miss on first load).
+    ref.listen<AsyncValue<List<ExpenseCycle>>>(
+      cyclesProvider,
+      (_, next) => next.whenData(_onCyclesLoaded),
+    );
+
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
@@ -521,15 +523,10 @@ class _CycleExpensesReportScreenState
     );
 
     final employeeFilter = widget.isManager
-        ? MultiSelectFilter<String>(
-            sectionLabel: l10n.byEmployee,
-            dialogTitle: l10n.byEmployee,
-            buttonLabel: _selectedEmployees.isEmpty
-                ? l10n.allEmployees
-                : '${_selectedEmployees.length} selected',
-            allItems: _allEmployeeNames,
-            itemLabel: (name) => name,
-            selected: _selectedEmployees,
+      ? EmployeeSelector(
+        sectionLabel: l10n.byEmployee,
+        employees: _allEmployeeNames,
+        selectedEmployees: _selectedEmployees,
             enabled: !_loading,
             onChanged: (newSet) =>
                 setState(() => _selectedEmployees = newSet),
@@ -565,17 +562,24 @@ class _CycleExpensesReportScreenState
                 ],
               )
             : Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Expanded(child: cycleFilter),
-                  const SizedBox(width: 10),
-                  if (employeeFilter != null) ...[
-                    Expanded(child: employeeFilter),
-                    const SizedBox(width: 10),
-                  ],
-                  Expanded(child: categoryFilter),
-                  const SizedBox(width: 10),
-                  searchButton,
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.end,
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          cycleFilter,
+                          if (employeeFilter != null) employeeFilter,
+                          categoryFilter,
+                          searchButton,
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
       ),

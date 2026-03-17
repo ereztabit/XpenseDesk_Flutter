@@ -1,24 +1,21 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/expense_category.dart';
 import '../../theme/app_theme.dart';
 
-class CategorySelector extends StatelessWidget {
-  final Set<String> selectedCategoryAliases;
+class EmployeeSelector extends StatelessWidget {
+  final Set<String> selectedEmployees;
   final ValueChanged<Set<String>> onChanged;
-  final List<ExpenseCategory> categories;
+  final List<String> employees;
   final double width;
   final bool enabled;
   final String? sectionLabel;
 
-  const CategorySelector({
+  const EmployeeSelector({
     super.key,
-    required this.selectedCategoryAliases,
+    required this.selectedEmployees,
     required this.onChanged,
-    this.categories = ExpenseCategory.orderedValues,
+    required this.employees,
     this.width = 200,
     this.enabled = true,
     this.sectionLabel,
@@ -27,14 +24,13 @@ class CategorySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context);
-    final isEnabled = enabled && categories.isNotEmpty;
+    final isEnabled = enabled && employees.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          (sectionLabel ?? l10n.byCategory).toUpperCase(),
+          (sectionLabel ?? l10n.byEmployee).toUpperCase(),
           style: const TextStyle(
             fontSize: 11,
             color: AppTheme.mutedForeground,
@@ -52,7 +48,9 @@ class CategorySelector extends StatelessWidget {
               maximumSize: WidgetStatePropertyAll(Size(width, 320)),
               backgroundColor: const WidgetStatePropertyAll(AppTheme.card),
               surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
-              padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 4)),
+              padding: const WidgetStatePropertyAll(
+                EdgeInsets.symmetric(vertical: 4),
+              ),
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -66,11 +64,7 @@ class CategorySelector extends StatelessWidget {
                 child: Row(
                   children: [
                     TextButton(
-                      onPressed: isEnabled
-                          ? () => onChanged(
-                              categories.map((category) => category.apiValue).toSet(),
-                            )
-                          : null,
+                      onPressed: isEnabled ? () => onChanged(employees.toSet()) : null,
                       child: Text(l10n.selectAll),
                     ),
                     const SizedBox(width: 4),
@@ -82,14 +76,14 @@ class CategorySelector extends StatelessWidget {
                 ),
               ),
               const Divider(height: 1, thickness: 1, color: AppTheme.border),
-              ...categories.map(
-                (category) => MenuItemButton(
+              ...employees.map(
+                (employee) => MenuItemButton(
                   closeOnActivate: false,
                   onPressed: isEnabled
                       ? () => onChanged(
-                            _toggleAlias(
-                              current: selectedCategoryAliases,
-                              alias: category.apiValue,
+                            _toggleEmployee(
+                              current: selectedEmployees,
+                              employee: employee,
                             ),
                           )
                       : null,
@@ -108,7 +102,7 @@ class CategorySelector extends StatelessWidget {
                       width: 18,
                       height: 18,
                       child: Checkbox(
-                        value: selectedCategoryAliases.contains(category.apiValue),
+                        value: selectedEmployees.contains(employee),
                         onChanged: null,
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         side: const BorderSide(color: AppTheme.borderMedium),
@@ -116,7 +110,7 @@ class CategorySelector extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    category.labelForLocale(locale),
+                    employee,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 14,
@@ -127,13 +121,10 @@ class CategorySelector extends StatelessWidget {
               ),
             ],
             builder: (context, controller, child) {
-              return _CategoryTrigger(
+              return _EmployeeTrigger(
                 width: width,
                 enabled: isEnabled,
-                label: _summaryLabel(
-                  l10n: l10n,
-                  locale: locale,
-                ),
+                label: _summaryLabel(l10n),
                 isOpen: controller.isOpen,
                 onTap: () {
                   if (!isEnabled) return;
@@ -151,49 +142,43 @@ class CategorySelector extends StatelessWidget {
     );
   }
 
-  String _summaryLabel({
-    required AppLocalizations l10n,
-    required Locale locale,
-  }) {
-    if (selectedCategoryAliases.isEmpty ||
-        selectedCategoryAliases.length == categories.length) {
-      return l10n.allCategories;
+  String _summaryLabel(AppLocalizations l10n) {
+    if (selectedEmployees.isEmpty || selectedEmployees.length == employees.length) {
+      return l10n.allEmployees;
     }
 
-    if (selectedCategoryAliases.length == 1) {
-      final selected = categories.where(
-        (category) => selectedCategoryAliases.contains(category.apiValue),
-      );
+    if (selectedEmployees.length == 1) {
+      final selected = employees.where(selectedEmployees.contains);
       if (selected.isNotEmpty) {
-        return selected.first.labelForLocale(locale);
+        return selected.first;
       }
     }
 
-    return '${selectedCategoryAliases.length} ${l10n.selectedLabel}';
+    return '${selectedEmployees.length} ${l10n.selectedLabel}';
   }
 
-  Set<String> _toggleAlias({
+  Set<String> _toggleEmployee({
     required Set<String> current,
-    required String alias,
+    required String employee,
   }) {
     final next = Set<String>.from(current);
-    if (next.contains(alias)) {
-      next.remove(alias);
+    if (next.contains(employee)) {
+      next.remove(employee);
     } else {
-      next.add(alias);
+      next.add(employee);
     }
     return next;
   }
 }
 
-class _CategoryTrigger extends StatelessWidget {
+class _EmployeeTrigger extends StatelessWidget {
   final double width;
   final bool enabled;
   final String label;
   final bool isOpen;
   final VoidCallback onTap;
 
-  const _CategoryTrigger({
+  const _EmployeeTrigger({
     required this.width,
     required this.enabled,
     required this.label,
