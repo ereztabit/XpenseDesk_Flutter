@@ -12,6 +12,7 @@ class TagInput extends StatefulWidget {
   final bool enabled;
   final int? maxTags;
   final String? Function(String)? validator;
+  final TextDirection? contentTextDirection;
 
   const TagInput({
     super.key,
@@ -23,6 +24,7 @@ class TagInput extends StatefulWidget {
     this.enabled = true,
     this.maxTags,
     this.validator,
+    this.contentTextDirection,
   });
 
   @override
@@ -83,6 +85,9 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final contentTextDirection =
+        widget.contentTextDirection ?? Directionality.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -126,46 +131,52 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
             child: SingleChildScrollView(
               controller: _scrollController,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: KeyboardListener(
-                focusNode: FocusNode(),
-                onKeyEvent: _handleKeyEvent,
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    ...List.generate(widget.tags.length, (index) {
-                      return _buildTag(
-                        widget.tags[index],
-                        index,
-                      );
-                    }),
-                    
-                    // Input field
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minWidth: 200,
-                        maxWidth: MediaQuery.of(context).size.width,
-                      ),
-                      child: TextField(
-                        controller: _textController,
-                        focusNode: _focusNode,
-                        enabled: widget.enabled && (widget.maxTags == null || widget.tags.length < widget.maxTags!),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        decoration: InputDecoration(
-                          hintText: widget.tags.isEmpty ? widget.hintText : null,
-                          border: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 6),
+              child: Directionality(
+                textDirection: contentTextDirection,
+                child: KeyboardListener(
+                  focusNode: FocusNode(),
+                  onKeyEvent: _handleKeyEvent,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      ...List.generate(widget.tags.length, (index) {
+                        return _buildTag(
+                          widget.tags[index],
+                          index,
+                          contentTextDirection,
+                        );
+                      }),
+
+                      // Input field
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minWidth: 200,
+                          maxWidth: MediaQuery.of(context).size.width,
                         ),
-                        onChanged: _onInputChanged,
-                        onSubmitted: (_) => _handleInputComplete(),
+                        child: TextField(
+                          controller: _textController,
+                          focusNode: _focusNode,
+                          enabled: widget.enabled && (widget.maxTags == null || widget.tags.length < widget.maxTags!),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textDirection: contentTextDirection,
+                          textAlign: TextAlign.start,
+                          decoration: InputDecoration(
+                            hintText: widget.tags.isEmpty ? widget.hintText : null,
+                            border: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                          ),
+                          onChanged: _onInputChanged,
+                          onSubmitted: (_) => _handleInputComplete(),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -192,7 +203,7 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTag(String tag, int index) {
+  Widget _buildTag(String tag, int index, TextDirection contentTextDirection) {
     final isSelected = _selectedTagIndex == index;
     
     // Get or create animation controller for this tag
@@ -243,6 +254,8 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
                 children: [
                   Text(
                     tag,
+                    textDirection: contentTextDirection,
+                    textAlign: TextAlign.start,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: isSelected
                           ? Colors.white

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:email_validator/email_validator.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/users_provider.dart';
 import '../../services/users_service.dart';
@@ -70,11 +71,11 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
                     ? '${l10n.separateWithSpaces} ($remaining ${l10n.slotsRemaining})'
                     : l10n.noSlotsRemaining;
               }(),
+              contentTextDirection: TextDirection.ltr,
               enabled: !_isLoading && widget.remainingSlots > 0,
               maxTags: widget.remainingSlots < 20 ? widget.remainingSlots : 20,
               validator: (email) {
-                final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-                if (!emailRegex.hasMatch(email)) {
+                if (!EmailValidator.validate(email)) {
                   return l10n.invalidEmail;
                 }
                 return null;
