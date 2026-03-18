@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* remove the analysis report from the user menu
+* the route history is not the right name for the purpose of the report - change route name
 
 ---
 
@@ -11,10 +11,7 @@
 ## report bugs (pending)
 
 expense analysis:
-* the route history is not the right name for the purpose of the report - change route name
-* remove the analysis report from the user menu
 * for the manager dashboard - the expense widget in the dashboard should move to the analysis report , also when selecting a certain employee or category or when click on view more
-* the caption in the menu for the analysis report is ניתוח הוצאות / Expense Analysis
 
 ## general environment
 

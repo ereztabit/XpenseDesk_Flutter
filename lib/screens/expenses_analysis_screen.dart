@@ -171,7 +171,7 @@ class _ExpensesAnalysisScreenState
     if (employeeId != null) params.write('&employees=$employeeId');
     if (categoryAlias != null) params.write('&categories=$categoryAlias');
     Navigator.of(context)
-        .pushNamed('/manager/history/report$params');
+        .pushNamed('/manager/analysis/report$params');
   }
 
   // ── excel export ──────────────────────────────────────────────────────────

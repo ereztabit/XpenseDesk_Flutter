@@ -71,11 +71,11 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         await _navigateToRoute('/manager/users');
         break;
       case 'expenses-analysis':
-        await _navigateToRoute('/manager/history');
+        await _navigateToRoute('/manager/analysis');
         break;
       case 'expenses-detail-report':
         final reportRoute = userInfo.roleId == 1
-            ? '/manager/history/report'
+            ? '/manager/analysis/report'
             : '/employee/history/report';
         await _navigateToRoute(reportRoute);
         break;

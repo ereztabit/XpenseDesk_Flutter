@@ -431,7 +431,7 @@ class _CycleExpensesReportScreenState
       Navigator.pop(context);
     } else {
       Navigator.pushReplacementNamed(
-          context, widget.isManager ? '/manager/history' : '/user/dashboard');
+          context, widget.isManager ? '/manager/analysis' : '/user/dashboard');
     }
   }
 

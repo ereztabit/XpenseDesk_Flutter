@@ -90,7 +90,7 @@ class _SpendOverviewWidgetState extends State<SpendOverviewWidget> {
     final query = params.isNotEmpty
         ? '?${params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}'
         : '';
-    Navigator.pushNamed(context, '/manager/history/report$query');
+    Navigator.pushNamed(context, '/manager/analysis/report$query');
   }
 
   // ── build ─────────────────────────────────────────────────────────────────

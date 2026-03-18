@@ -128,7 +128,7 @@ class MenuItems {
   /// Returns the menu item id that corresponds to [route], or null if no match.
   static String? activeIdForRoute(String route) {
     if (route.endsWith('/profile')) return 'profile';
-    if (route == '/manager/history') return 'expenses-analysis';
+    if (route == '/manager/analysis') return 'expenses-analysis';
     if (route.endsWith('/history/report')) return 'expenses-detail-report';
     if (route == '/manager/company-config') return 'company-config';
     if (route == '/manager/users') return 'user-management';

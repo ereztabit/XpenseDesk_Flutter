@@ -87,7 +87,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    case '/manager/history':
+    case '/manager/analysis':
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const AuthGate(
@@ -105,7 +105,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    case '/manager/history/report':
+    case '/manager/analysis/report':
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const AuthGate(
