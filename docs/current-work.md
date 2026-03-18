@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* it seems i dont have pull to refresh in the report
+* remove the analysis report from the user menu
 
 ---
 

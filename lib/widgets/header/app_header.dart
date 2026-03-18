@@ -128,11 +128,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         final role = _isManager(userInfo.roleId) ? 'manager' : 'employee';
         if (mounted) Navigator.pushNamed(context, '/$role/profile');
         break;
-      case 'spend-history':
-        final historyRoute = _isManager(userInfo.roleId)
-            ? '/manager/history'
-            : '/employee/history';
-        if (mounted) Navigator.pushNamed(context, historyRoute);
+      case 'expenses-analysis':
+        if (mounted) Navigator.pushNamed(context, '/manager/history');
         break;
       case 'expenses-detail-report':
         final reportRoute = _isManager(userInfo.roleId)

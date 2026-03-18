@@ -5,7 +5,6 @@ import 'screens/login_callback_screen.dart';
 import 'screens/user_dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
-import 'screens/spend_history_screen.dart';
 import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
@@ -140,15 +139,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => const AuthGate(
           mode: AuthGateMode.employeeOnly,
           child: ProfileScreen(),
-        ),
-      );
-
-    case '/employee/history':
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) => const AuthGate(
-          mode: AuthGateMode.employeeOnboardedOnly,
-          child: SpendHistoryScreen(),
         ),
       );
 

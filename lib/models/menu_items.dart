@@ -32,9 +32,10 @@ class MenuItems {
         label: t.myProfile,
       ),
       MenuItem(
-        id: 'spend-history',
-        icon: Icons.history,
-        label: t.spendHistory,
+        id: 'expenses-analysis',
+        icon: Icons.bar_chart,
+        label: t.expensesAnalysis,
+        requiresManagerRole: true,
       ),
       MenuItem(
         id: 'expenses-detail-report',
@@ -127,8 +128,8 @@ class MenuItems {
   /// Returns the menu item id that corresponds to [route], or null if no match.
   static String? activeIdForRoute(String route) {
     if (route.endsWith('/profile')) return 'profile';
+    if (route == '/manager/history') return 'expenses-analysis';
     if (route.endsWith('/history/report')) return 'expenses-detail-report';
-    if (route.endsWith('/history')) return 'spend-history';
     if (route == '/manager/company-config') return 'company-config';
     if (route == '/manager/users') return 'user-management';
     return null;
