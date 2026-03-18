@@ -10,7 +10,6 @@ import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expenses_empty_state.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/total_approved_badge.dart';
-import '../widgets/expenses/receipt_analyzer_dialog.dart';
 import '../widgets/expenses/mobile_expense_modal.dart';
 
 class UserDashboardScreen extends ConsumerStatefulWidget {
@@ -282,16 +281,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                             ),
                             Row(
                               children: [
-                                if (context.isDesktop) ...[
-                                  OutlinedButton.icon(
-                                    onPressed: () =>
-                                        ReceiptAnalyzerDialog.show(context),
-                                    icon: const Icon(
-                                        Icons.receipt_long, size: 18),
-                                    label: Text(l10n.receiptAnalyzerTitle),
-                                  ),
-                                  const SizedBox(width: 8),
-                                ],
                                 FilledButton.icon(
                                   onPressed: () => Navigator.of(
                                     context,
