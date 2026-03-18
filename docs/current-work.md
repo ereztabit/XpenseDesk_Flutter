@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* on the analysis report - when i do refresh i moved to the dashboard
+* it seems i dont have pull to refresh in the report
 
 ---
 
@@ -11,12 +11,7 @@
 ## report bugs (pending)
 
 expense analysis:
-* the route history is not suited for the purpose of the report
-* detail report header background similar to total, missing inline borders, there is a white gap on the far left (in RTL mode) + on mobile missing horizontal scroll
-* on mobile - the details horiz. bars need less margin from the number value
-* the run CTA button in hebrew should be "חפש" and the arrow on the other side and fliped. in english - its "search"
-* on the analysis report - when i do refresh i moved to the dashbaord
-* it seems i dont have pull to refresh in the report
+* the route history is not the right name for the purpose of the report - change route name
 * remove the analysis report from the user menu
 * for the manager dashboard - the expense widget in the dashboard should move to the analysis report , also when selecting a certain employee or category or when click on view more
 * the caption in the menu for the analysis report is ניתוח הוצאות / Expense Analysis

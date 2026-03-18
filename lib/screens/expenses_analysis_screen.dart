@@ -273,7 +273,10 @@ class _ExpensesAnalysisScreenState
           children: [
             const AppHeader(),
             Expanded(
-              child: SingleChildScrollView(
+              child: RefreshIndicator(
+                onRefresh: _runReport,
+                child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ConstrainedContent(
                   child: Column(
@@ -336,6 +339,7 @@ class _ExpensesAnalysisScreenState
                     ],
                   ),
                 ),
+              ),
               ),
             ),
             const AppFooter(),
