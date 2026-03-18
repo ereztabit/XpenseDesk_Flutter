@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* in hebrew - the master report should have yaxis on the right - the entire chart is reverse.
+* on both charts the chart selector widget - the selected mode should have a selected color also, the export button has a round hover inside a square shape it doesnt look good
 
 ---
 
@@ -11,7 +11,6 @@
 ## report bugs (pending)
 
 expense analysis:
-* in hebrew - the master report should have yaxis on the right - the entire chart is reverse.
 * on both charts the chart selector widget - the selected mode should have a selected color also, the export button has a round hover inside a square shape it doesnt look good
 * on mobile - the details table mode missing horizontal scroll.
 * on mobile - the details horiz. bars need less margin from the number value

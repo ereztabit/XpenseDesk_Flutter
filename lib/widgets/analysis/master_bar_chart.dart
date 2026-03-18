@@ -31,7 +31,8 @@ class MasterBarChart extends StatefulWidget {
 class _MasterBarChartState extends State<MasterBarChart> {
   int? _hoveredIndex; // 0-based index into widget.rows
 
-  bool get _isRtl => widget.locale == 'he';
+  bool _isRtl(BuildContext context) =>
+      Directionality.of(context) == TextDirection.rtl;
 
   Color _barColor(int rowIndex, bool selected) {
     if (selected) return AppTheme.primary;
@@ -41,8 +42,8 @@ class _MasterBarChartState extends State<MasterBarChart> {
 
   // LTR: spacer at x=0, real bars at x=1..N  → rowIndex = groupIndex - 1
   // RTL: real bars at x=0..N-1, spacer at x=N → rowIndex = groupIndex (invalid if == N)
-  int _toRowIndex(int groupIndex) =>
-      _isRtl ? groupIndex : groupIndex - 1;
+  int _toRowIndex(int groupIndex, bool isRtl) =>
+      isRtl ? groupIndex : groupIndex - 1;
 
   AxisTitles get _yAxisTitles => AxisTitles(
         sideTitles: SideTitles(
@@ -69,7 +70,7 @@ class _MasterBarChartState extends State<MasterBarChart> {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = _isRtl;
+    final isRtl = _isRtl(context);
     final maxValue =
         widget.rows.map((r) => r.totalApproved).fold(0.0, max);
     final groupCount = widget.rows.length + 1; // +1 for spacer
@@ -157,7 +158,7 @@ class _MasterBarChartState extends State<MasterBarChart> {
                         showTitles: true,
                         reservedSize: 64,
                         getTitlesWidget: (v, _) {
-                          final rowIndex = _toRowIndex(v.toInt());
+                          final rowIndex = _toRowIndex(v.toInt(), isRtl);
                           if (rowIndex < 0 ||
                               rowIndex >= widget.rows.length) {
                             return const SizedBox.shrink();
@@ -238,7 +239,7 @@ class _MasterBarChartState extends State<MasterBarChart> {
                       tooltipPadding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        final rowIndex = _toRowIndex(groupIndex);
+                        final rowIndex = _toRowIndex(groupIndex, isRtl);
                         if (rowIndex < 0 ||
                             rowIndex >= widget.rows.length) {
                           return null;
@@ -260,7 +261,7 @@ class _MasterBarChartState extends State<MasterBarChart> {
                       if (event is FlTapUpEvent) {
                         if (response?.spot == null) return;
                         final rowIndex = _toRowIndex(
-                            response!.spot!.touchedBarGroupIndex);
+                            response!.spot!.touchedBarGroupIndex, isRtl);
                         if (rowIndex >= 0 &&
                             rowIndex < widget.rows.length) {
                           widget.onSelectCycle(
@@ -272,7 +273,7 @@ class _MasterBarChartState extends State<MasterBarChart> {
                       if (event is FlPointerHoverEvent) {
                         final groupIndex =
                             response?.spot?.touchedBarGroupIndex ?? -1;
-                        final rowIndex = _toRowIndex(groupIndex);
+                        final rowIndex = _toRowIndex(groupIndex, isRtl);
                         final next =
                             (rowIndex >= 0 && rowIndex < widget.rows.length)
                                 ? rowIndex
