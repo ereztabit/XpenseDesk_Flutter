@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* the details report - should be vertical bars with yaxis, tooltip always visible
+* in hebrew - the master report should have yaxis on the right - the entire chart is reverse.
 
 ---
 
@@ -11,10 +11,11 @@
 ## report bugs (pending)
 
 expense analysis:
-* the details report - should be vertical bars with yaxis, tooltip always visible
 * in hebrew - the master report should have yaxis on the right - the entire chart is reverse.
+* on both charts the chart selector widget - the selected mode should have a selected color also, the export button has a round hover inside a square shape it doesnt look good
 * on mobile - the details table mode missing horizontal scroll.
 * on mobile - the details horiz. bars need less margin from the number value
+* the run CTA button in hebrew should be "חפש" and the arrow on the other side and fliped. in english - its "search"
 * remove the analysis report from the user menu
 * for the manager dashboard - the expense widget in the dashboard should move to the analysis report , also when selecting a certain employee or category or when click on view more
 * the caption in the menu for the analysis report is ניתוח הוצאות / Expense Analysis
