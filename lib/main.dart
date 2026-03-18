@@ -70,8 +70,13 @@ class _MyAppState extends ConsumerState<MyApp> {
         Locale('he'),
       ],
       
-      // Routes
+      // Routes — push only the single target route (no intermediate splits)
       initialRoute: '/',
+      onGenerateInitialRoutes: (_) {
+        final path = Uri.base.path +
+            (Uri.base.hasQuery ? '?${Uri.base.query}' : '');
+        return [generateRoute(RouteSettings(name: path))];
+      },
       onGenerateRoute: generateRoute,
     );
   }

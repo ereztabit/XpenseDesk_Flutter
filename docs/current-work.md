@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* the run CTA button in hebrew should be "חפש" and the arrow on the other side and flipped. in english - its "search"
+* on the analysis report - when i do refresh i moved to the dashboard
 
 ---
 
