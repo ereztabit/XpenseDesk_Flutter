@@ -2,18 +2,13 @@
 
 ## Currently Working On
 
-* expense dashboard - employee filter has transparent background and can hardly seen
+* expense dashboard - receipt number is too large font, it might be long - add ellipsis and a bit of cells padding in the table
 
 ---
 
 ## TODO (Backlog)
 
 ## report bugs (pending)
-
-expense analysis:
-* for the manager dashboard - the expense widget in the dashboard should move to the analysis report , also when selecting a certain employee or category or when click on view more
-* expense dashboard - employee filter has transparent background and can hardly seen.
-* expense dashboard - recipt number is too large font, it might be long - add elipsys and a bit of cells padding in the table 
 
 ## general environment
 

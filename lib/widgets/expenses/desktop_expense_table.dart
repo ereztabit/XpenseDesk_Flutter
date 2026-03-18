@@ -258,12 +258,17 @@ class DesktopExpenseTable extends ConsumerWidget {
             ),
           ),
           // Receipt #
-          Text(
-            expense.receiptRef?.isNotEmpty == true ? expense.receiptRef! : '—',
-            style: const TextStyle(
-              fontSize: 14,
-              fontFamily: 'monospace',
-              color: AppTheme.foreground,
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: Text(
+              expense.receiptRef?.isNotEmpty == true ? expense.receiptRef! : '—',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'monospace',
+                color: AppTheme.foreground,
+              ),
             ),
           ),
           // Date
