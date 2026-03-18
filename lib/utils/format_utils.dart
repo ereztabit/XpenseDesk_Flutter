@@ -29,4 +29,16 @@ extension CompanyCurrencyFormat on num {
   /// Plain number format (no currency symbol) using company locale.
   String toFormattedNumber(String companyLocale) =>
       NumberFormat('#,##0.00', companyLocale).format(this);
+
+  /// Compact currency label for chart value-above-bar annotations.
+  /// Uses K/M suffixes for amounts >= 1000 to keep labels short.
+  String toCompactCurrency(String companyLocale, String currencyCode) {
+    if (this == 0) return '';
+    final symbol = NumberFormat.simpleCurrency(locale: 'en', name: currencyCode)
+        .currencySymbol;
+    if (this >= 1000) {
+      return '$symbol${NumberFormat.compact(locale: companyLocale).format(this)}';
+    }
+    return toCurrency(companyLocale, currencyCode);
+  }
 }

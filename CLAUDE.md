@@ -143,6 +143,13 @@ YAML files bundled in assets, loaded at runtime. Must initialize async before fi
 - Named parameters for widget constructors
 - Extract widgets when build methods exceed ~100 lines
 
+**Screen decomposition — MANDATORY:**
+A screen file is an orchestrator: it owns state, providers, and top-level layout only. Every distinct visual section (card, chart, table, filter pane) must be a separate `StatelessWidget` or `ConsumerWidget` in `lib/widgets/<feature>/`. The screen passes data and callbacks down as constructor parameters — no business logic inside child widgets.
+
+- Screen file target: < 200 lines after extraction
+- Widget files: one primary widget per file, named after the widget class
+- Do not inline card/chart/table build methods as private `_build*` helpers on the screen state — extract them to real widget classes instead
+
 **State Management:**
 - Minimize `setState()`: Use Riverpod for anything shared
 - Immutable state: Always create new objects, never mutate
@@ -481,7 +488,16 @@ Only if the screen introduces a new shared export.
 | Icon direction | Use `Icons.arrow_back` not `Icons.arrow_back_ios` |
 | `EdgeInsets.only(left/right)` | Replace with `EdgeInsetsDirectional.only(start/end)` |
 
-### Step 6 — All widgets inside the screen must also:
+### Step 6 — Plan and create widget files before writing any widget code
+
+Before writing any UI code, look at the screen spec and identify every distinct visual section. Create each one as its own file under `lib/widgets/<feature-name>/` **first**, then compose them in the screen.
+
+- Each card, chart, table, and filter pane → separate `StatelessWidget` / `ConsumerWidget` created upfront
+- Screen file should stay < 200 lines — just state, providers, and layout
+- Never write `_build*` private helpers on the screen state class — if it's worth building, it's worth its own file
+- Widget files follow the same ARB / RTL rules as the screen
+
+### Step 7 — All widgets inside the screen must also:
 
 - Use `AppLocalizations.of(context)!` — no hardcoded strings
 - Use `CrossAxisAlignment.start` on columns
