@@ -65,13 +65,24 @@ class _MasterCardState extends State<MasterCard> {
               padding: EdgeInsets.all(48),
               child: Center(child: CircularProgressIndicator()),
             )
-          else if (widget.rows.isEmpty)
+          else if (widget.rows.isEmpty ||
+              widget.rows.every((r) => r.totalApproved == 0))
             Padding(
-              padding: const EdgeInsets.all(48),
+              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
               child: Center(
-                child: Text(widget.l10n.noApprovedExpenses,
-                    style: const TextStyle(
-                        color: AppTheme.mutedForeground, fontSize: 14)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.inbox_outlined,
+                        size: 40,
+                        color: AppTheme.mutedForeground.withAlpha(102)),
+                    const SizedBox(height: 12),
+                    Text(widget.l10n.analysisNoData,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: AppTheme.mutedForeground, fontSize: 14)),
+                  ],
+                ),
               ),
             )
           else if (_viewMode == MasterViewMode.chart)
@@ -121,7 +132,7 @@ class _MasterCardState extends State<MasterCard> {
             icon: const Icon(Icons.download, size: 14),
             label: Text(widget.l10n.export,
                 style: const TextStyle(fontSize: 12)),
-            onPressed: widget.rows.isEmpty ? null : widget.onExport,
+            onPressed: (widget.rows.isEmpty || widget.rows.every((r) => r.totalApproved == 0)) ? null : widget.onExport,
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               minimumSize: const Size(0, 36),

@@ -358,5 +358,6 @@
   "expensesAnalysis": "Expenses Analysis",
   "monthlyBreakdown": "Monthly Breakdown",
   "clearAll": "Clear All",
-  "selectMonth": "Click a month to analyze"
+  "selectMonth": "Click a month to analyze",
+  "analysisNoData": "No expense data found for the selected filters. Try adjusting the filters or check back once expenses have been submitted."
 }

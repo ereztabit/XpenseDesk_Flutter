@@ -98,11 +98,21 @@ class _DetailCardState extends State<DetailCard> {
             )
           else if (widget.detailState == null || widget.detailState!.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(48),
+              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
               child: Center(
-                child: Text(widget.l10n.noApprovedExpenses,
-                    style: const TextStyle(
-                        color: AppTheme.mutedForeground, fontSize: 14)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.inbox_outlined,
+                        size: 40,
+                        color: AppTheme.mutedForeground.withAlpha(102)),
+                    const SizedBox(height: 12),
+                    Text(widget.l10n.analysisNoData,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            color: AppTheme.mutedForeground, fontSize: 14)),
+                  ],
+                ),
               ),
             )
           else if (_viewMode == DetailViewMode.byCategory)

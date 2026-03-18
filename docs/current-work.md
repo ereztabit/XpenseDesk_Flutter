@@ -14,12 +14,15 @@
 * we dont want to see the recipt analyzer in the dashboard screen
 expense analysis : 
 * if no data returns from the api - show a friendly message that there is no data
+* you should let me run the report any time i want - currently the run is blocked after one run and opens only when i change filters
 * the master chart:  needs an axis
 * the master chart: the bars need to be next to each other
 * the master chart: on desktop - when hovering a bar change its color to explain its clickable
 * the excel : header should have a background color
 * the excel : total line should have a background color
 * the excel : add borders , and set auto width for all columns
+* expense screen- donwload button is not clickable.
+* 
 
 
 
