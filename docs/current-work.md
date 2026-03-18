@@ -2,27 +2,21 @@
 
 ## Currently Working On
 
+* master chart: x-axis captions spacing + left-align bars
+
 ---
 
 ## TODO (Backlog)
 
-## bugs
-
- 
-
 ## report bugs (pending)
-* we dont want to see the recipt analyzer in the dashboard screen
-expense analysis : 
-* if no data returns from the api - show a friendly message that there is no data
+
+expense analysis:
 * you should let me run the report any time i want - currently the run is blocked after one run and opens only when i change filters
-* the master chart:  needs an axis
-* the master chart: the bars need to be next to each other
-* the master chart: on desktop - when hovering a bar change its color to explain its clickable
 * the excel : header should have a background color
 * the excel : total line should have a background color
 * the excel : add borders , and set auto width for all columns
-* expense screen- donwload button is not clickable.
-* 
+* expense screen - download button is not clickable
+* when transition from charts to table on the analysis reports - add animation so it wont flicker
 
 
 

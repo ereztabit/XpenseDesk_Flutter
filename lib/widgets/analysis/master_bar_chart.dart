@@ -1,4 +1,4 @@
-import 'dart:math' show max;
+import 'dart:math' show max, pi;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
@@ -6,7 +6,7 @@ import '../../models/expenses_analysis_summary_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 
-class MasterBarChart extends StatelessWidget {
+class MasterBarChart extends StatefulWidget {
   final List<ExpensesAnalysisSummaryRow> rows;
   final String? selectedCycleId;
   final String locale;
@@ -25,15 +25,35 @@ class MasterBarChart extends StatelessWidget {
   });
 
   @override
+  State<MasterBarChart> createState() => _MasterBarChartState();
+}
+
+class _MasterBarChartState extends State<MasterBarChart> {
+  int? _hoveredIndex; // 0-based index into widget.rows
+
+  Color _barColor(int rowIndex, bool selected) {
+    if (selected) return AppTheme.primary;
+    if (_hoveredIndex == rowIndex) return AppTheme.primaryDark;
+    return AppTheme.primary.withAlpha(64);
+  }
+
+  // Groups: x=0 is a transparent spacer; x=1..N map to rows[0..N-1].
+  int _groupIndexToRowIndex(int groupIndex) => groupIndex - 1;
+
+  @override
   Widget build(BuildContext context) {
-    final maxValue = rows.map((r) => r.totalApproved).fold(0.0, max);
+    final maxValue =
+        widget.rows.map((r) => r.totalApproved).fold(0.0, max);
+
+    // +1 for the spacer group
+    final groupCount = widget.rows.length + 1;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 20, 8, 4),
+      padding: const EdgeInsets.fromLTRB(4, 20, 8, 4),
       child: Column(
         children: [
           LayoutBuilder(builder: (ctx, constraints) {
-            final minWidth = rows.length * 52.0;
+            final minWidth = groupCount * 70.0;
             final chartWidth = max(constraints.maxWidth, minWidth);
             return SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -41,88 +61,107 @@ class MasterBarChart extends StatelessWidget {
                 width: chartWidth,
                 height: 310,
                 child: BarChart(BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: maxValue > 0 ? maxValue * 1.25 : 100,
-                  barGroups: List.generate(rows.length, (i) {
-                    final row = rows[i];
-                    final selected = row.cycleId == selectedCycleId;
-                    return BarChartGroupData(x: i, barRods: [
-                      BarChartRodData(
-                        toY: row.totalApproved,
-                        color: selected
-                            ? AppTheme.primary
-                            : AppTheme.primary.withAlpha(64),
-                        width: 22,
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(4)),
-                      ),
-                    ]);
-                  }),
+                  alignment: BarChartAlignment.start,
+                  groupsSpace: 20,
+                  maxY: maxValue > 0 ? maxValue * 1.10 : 100,
+                  barGroups: [
+                    // Transparent spacer — creates left margin from the Y-axis
+                    BarChartGroupData(
+                      x: 0,
+                      barRods: [
+                        BarChartRodData(
+                          toY: 0,
+                          width: 8,
+                          color: Colors.transparent,
+                        ),
+                      ],
+                    ),
+                    ...List.generate(widget.rows.length, (i) {
+                      final row = widget.rows[i];
+                      final selected = row.cycleId == widget.selectedCycleId;
+                      return BarChartGroupData(
+                        x: i + 1,
+                        showingTooltipIndicators: row.totalApproved > 0 ? [0] : [],
+                        barRods: [
+                          BarChartRodData(
+                            toY: row.totalApproved,
+                            color: _barColor(i, selected),
+                            width: 32,
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(4)),
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
                   titlesData: FlTitlesData(
-                    topTitles: AxisTitles(
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 28,
+                        reservedSize: 64,
                         getTitlesWidget: (v, _) {
-                          final i = v.toInt();
-                          if (i < 0 || i >= rows.length) {
+                          final rowIndex = _groupIndexToRowIndex(v.toInt());
+                          if (rowIndex < 0 || rowIndex >= widget.rows.length) {
                             return const SizedBox.shrink();
                           }
+                          final row = widget.rows[rowIndex];
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              rows[i].totalApproved
-                                  .toCompactCurrency(locale, currency),
-                              style: const TextStyle(
-                                  fontSize: 9, color: AppTheme.foreground),
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Transform.rotate(
+                              angle: -pi / 4,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(row.cycleLabel,
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppTheme.mutedForeground)),
+                                  if (row.isActive)
+                                    Container(
+                                      margin: const EdgeInsets.only(top: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primary,
+                                        borderRadius:
+                                            BorderRadius.circular(99),
+                                      ),
+                                      child: Text(widget.l10n.activeLabel,
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.bold)),
+                                    ),
+                                ],
+                              ),
                             ),
                           );
                         },
                       ),
                     ),
-                    bottomTitles: AxisTitles(
+                    leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 48,
-                        getTitlesWidget: (v, _) {
-                          final i = v.toInt();
-                          if (i < 0 || i >= rows.length) {
-                            return const SizedBox.shrink();
-                          }
-                          final row = rows[i];
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(height: 4),
-                              Text(row.cycleLabel,
-                                  style: const TextStyle(
-                                      fontSize: 9,
-                                      color: AppTheme.mutedForeground)),
-                              if (row.isActive) ...[
-                                const SizedBox(height: 3),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 5, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primary,
-                                    borderRadius: BorderRadius.circular(99),
-                                  ),
-                                  child: Text(l10n.activeLabel,
-                                      style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.bold)),
-                                ),
-                              ],
-                            ],
+                        reservedSize: 72,
+                        getTitlesWidget: (value, meta) {
+                          if (value == meta.min) return const SizedBox.shrink();
+                          return SideTitleWidget(
+                            meta: meta,
+                            child: Text(
+                              value.toCompactCurrency(widget.locale, widget.currency),
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.mutedForeground),
+                            ),
                           );
                         },
                       ),
                     ),
-                    leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false)),
                     rightTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false)),
                   ),
@@ -134,20 +173,67 @@ class MasterBarChart extends StatelessWidget {
                         strokeWidth: 1,
                         dashArray: [4, 4]),
                   ),
-                  borderData: FlBorderData(show: false),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: const Border(
+                      bottom: BorderSide(color: AppTheme.border, width: 1),
+                      left: BorderSide(color: AppTheme.border, width: 1),
+                    ),
+                  ),
                   barTouchData: BarTouchData(
                     enabled: true,
+                    handleBuiltInTouches: false,
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipItem:
-                          (group, groupIndex, rod, rodIndex) => null,
+                      getTooltipColor: (_) => AppTheme.accent,
+                      tooltipBorderRadius: BorderRadius.circular(99),
+                      tooltipPadding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final rowIndex = _groupIndexToRowIndex(groupIndex);
+                        if (rowIndex < 0 || rowIndex >= widget.rows.length) {
+                          return null;
+                        }
+                        return BarTooltipItem(
+                          widget.rows[rowIndex].totalApproved
+                              .toCompactCurrency(widget.locale, widget.currency),
+                          const TextStyle(
+                            color: AppTheme.primaryForeground,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      },
                     ),
                     touchCallback:
                         (FlTouchEvent event, BarTouchResponse? response) {
-                      if (event is! FlTapUpEvent) return;
-                      if (response?.spot == null) return;
-                      final i = response!.spot!.touchedBarGroupIndex;
-                      if (i >= 0 && i < rows.length) {
-                        onSelectCycle(rows[i].cycleId);
+                      if (event is FlTapUpEvent) {
+                        if (response?.spot == null) return;
+                        final rowIndex = _groupIndexToRowIndex(
+                            response!.spot!.touchedBarGroupIndex);
+                        if (rowIndex >= 0 && rowIndex < widget.rows.length) {
+                          widget.onSelectCycle(widget.rows[rowIndex].cycleId);
+                        }
+                        return;
+                      }
+
+                      if (event is FlPointerHoverEvent) {
+                        final groupIndex =
+                            response?.spot?.touchedBarGroupIndex ?? -1;
+                        final rowIndex = _groupIndexToRowIndex(groupIndex);
+                        final next = (rowIndex >= 0 &&
+                                rowIndex < widget.rows.length)
+                            ? rowIndex
+                            : null;
+                        if (next != _hoveredIndex) {
+                          setState(() => _hoveredIndex = next);
+                        }
+                        return;
+                      }
+
+                      if (event is FlPointerExitEvent) {
+                        if (_hoveredIndex != null) {
+                          setState(() => _hoveredIndex = null);
+                        }
                       }
                     },
                   ),
@@ -156,7 +242,7 @@ class MasterBarChart extends StatelessWidget {
             );
           }),
           const SizedBox(height: 8),
-          Text(l10n.selectMonth,
+          Text(widget.l10n.selectMonth,
               style: const TextStyle(
                   fontSize: 12, color: AppTheme.mutedForeground)),
           const SizedBox(height: 12),
