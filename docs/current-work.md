@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* expense screen - download button is not clickable
+* the details report - should be vertical bars with yaxis, tooltip always visible
 
 ---
 
@@ -11,14 +11,13 @@
 ## report bugs (pending)
 
 expense analysis:
-* you should let me run the report any time i want - currently the run is blocked after one run and opens only when i change filters
-* the excel : header should have a background color
-* the excel : total line should have a background color
-* the excel : add borders , and set auto width for all columns
-* expense screen - download button is not clickable
 * the details report - should be vertical bars with yaxis, tooltip always visible
-
-
+* in hebrew - the master report should have yaxis on the right - the entire chart is reverse.
+* on mobile - the details table mode missing horizontal scroll.
+* on mobile - the details horiz. bars need less margin from the number value
+* remove the analysis report from the user menu
+* for the manager dashboard - the expense widget in the dashboard should move to the analysis report , also when selecting a certain employee or category or when click on view more
+* the caption in the menu for the analysis report is ניתוח הוצאות / Expense Analysis
 
 ## general environment
 
