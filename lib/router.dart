@@ -88,11 +88,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     case '/manager/analysis':
+      final args = settings.arguments as Map<String, String>? ?? {};
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const AuthGate(
+        builder: (_) => AuthGate(
           mode: AuthGateMode.managerOnly,
-          child: ExpensesAnalysisScreen(),
+          child: ExpensesAnalysisScreen(
+            initialEmployeeId: args['employees'],
+            initialCategoryAlias: args['categories'],
+          ),
         ),
       );
 

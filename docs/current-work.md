@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* the route history is not the right name for the purpose of the report - change route name
+* for the manager dashboard - the expense widget in the dashboard should move to the analysis report, also when selecting a certain employee or category or when click on view more
 
 ---
 
@@ -12,6 +12,7 @@
 
 expense analysis:
 * for the manager dashboard - the expense widget in the dashboard should move to the analysis report , also when selecting a certain employee or category or when click on view more
+* expense dashboard - employee filter has transparent background and can hardly seen.
 
 ## general environment
 

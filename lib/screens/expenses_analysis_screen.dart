@@ -11,7 +11,14 @@ import '../models/expenses_analysis_summary_row.dart';
 import '../models/expenses_analysis_detail_state.dart';
 
 class ExpensesAnalysisScreen extends ConsumerStatefulWidget {
-  const ExpensesAnalysisScreen({super.key});
+  final String? initialEmployeeId;
+  final String? initialCategoryAlias;
+
+  const ExpensesAnalysisScreen({
+    super.key,
+    this.initialEmployeeId,
+    this.initialCategoryAlias,
+  });
 
   @override
   ConsumerState<ExpensesAnalysisScreen> createState() =>
@@ -24,8 +31,8 @@ class _ExpensesAnalysisScreenState
   bool get hasUnsavedChanges => false;
 
   // ── filter state ──────────────────────────────────────────────────────────
-  Set<String> _pendingEmployees = {};
-  Set<String> _pendingCategories = {};
+  late Set<String> _pendingEmployees;
+  late Set<String> _pendingCategories;
   Set<String> _appliedEmployees = {};
   Set<String> _appliedCategories = {};
   Map<String, String> _availableEmployees = {};
@@ -58,6 +65,11 @@ class _ExpensesAnalysisScreenState
   @override
   void initState() {
     super.initState();
+    _pendingEmployees =
+        widget.initialEmployeeId != null ? {widget.initialEmployeeId!} : {};
+    _pendingCategories = widget.initialCategoryAlias != null
+        ? {widget.initialCategoryAlias!}
+        : {};
     WidgetsBinding.instance.addPostFrameCallback((_) => _runReport());
   }
 

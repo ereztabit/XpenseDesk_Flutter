@@ -84,13 +84,11 @@ class _SpendOverviewWidgetState extends State<SpendOverviewWidget> {
   }
 
   void _openReport({String? categoryFilter, String? employeeFilter}) {
-    final params = <String, String>{};
-    if (categoryFilter != null) params['categories'] = categoryFilter;
-    if (employeeFilter != null) params['employees'] = employeeFilter;
-    final query = params.isNotEmpty
-        ? '?${params.entries.map((e) => '${e.key}=${Uri.encodeComponent(e.value)}').join('&')}'
-        : '';
-    Navigator.pushNamed(context, '/manager/analysis/report$query');
+    final args = <String, String>{};
+    if (categoryFilter != null) args['categories'] = categoryFilter;
+    if (employeeFilter != null) args['employees'] = employeeFilter;
+    Navigator.pushNamed(context, '/manager/analysis',
+        arguments: args.isNotEmpty ? args : null);
   }
 
   // ── build ─────────────────────────────────────────────────────────────────
