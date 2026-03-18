@@ -1,18 +1,12 @@
-import 'dart:js_interop';
-import 'dart:typed_data';
-import 'package:excel/excel.dart' hide Border;
-import 'package:web/web.dart' as web;
-import 'package:intl/intl.dart';
 import 'screen_imports.dart';
+import '../services/excel_export_service.dart';
 import '../utils/responsive_utils.dart';
-import '../utils/format_utils.dart';
 import '../widgets/analysis/analysis_filter_card.dart';
 import '../widgets/analysis/detail_card.dart';
 import '../widgets/analysis/master_card.dart';
 import '../widgets/employee/employee_selector.dart';
 import '../widgets/category/category_selector.dart';
 import '../providers/expense_provider.dart';
-import '../models/expense_category.dart';
 import '../models/expenses_analysis_summary_row.dart';
 import '../models/expenses_analysis_detail_state.dart';
 
@@ -181,94 +175,16 @@ class _ExpensesAnalysisScreenState
   }
 
   // ── excel export ──────────────────────────────────────────────────────────
-  void _triggerDownload(List<int> bytes, String fileName) {
-    final blob = web.Blob(
-      [Uint8List.fromList(bytes).toJS].toJS,
-      web.BlobPropertyBag(
-          type:
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
-    );
-    final url = web.URL.createObjectURL(blob);
-    final anchor =
-        web.document.createElement('a') as web.HTMLAnchorElement;
-    anchor.href = url;
-    anchor.download = fileName;
-    anchor.click();
-    web.URL.revokeObjectURL(url);
-  }
-
+  // ── exports ───────────────────────────────────────────────────────────────
   void _exportMaster() {
     final locale = ref.read(companyLocaleProvider);
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    final workbook = Excel.createExcel();
-    final sheet = workbook['Monthly Breakdown'];
-    workbook.delete('Sheet1');
-
-    sheet.appendRow([
-      TextCellValue('Cycle'),
-      TextCellValue('Period'),
-      TextCellValue('Total Approved'),
-    ]);
-    for (final row in _summaryRows) {
-      sheet.appendRow([
-        TextCellValue(row.cycleLabel),
-        TextCellValue(
-            '${row.fromDate.toCompanyDate(locale)} – ${row.toDate.toCompanyDate(locale)}'),
-        DoubleCellValue(row.totalApproved),
-      ]);
-    }
-
-    final bytes = workbook.encode()!;
-    _triggerDownload(bytes, 'monthly-breakdown-$today.xlsx');
+    ExcelExportService.exportMasterBreakdown(_summaryRows, locale);
   }
 
   void _exportDetail() {
-    final state = _detailState;
-    if (state == null) return;
+    if (_detailState == null) return;
     final locale = ref.read(companyLocaleProvider);
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-    final workbook = Excel.createExcel();
-    final sheet = workbook['Pivot'];
-    workbook.delete('Sheet1');
-
-    // Header
-    sheet.appendRow([
-      TextCellValue('By Employee'),
-      ...state.activeCategories.map((a) {
-        final cat = ExpenseCategory.fromApiValue(a);
-        return TextCellValue(
-            locale == 'he' ? (cat?.hebrewLabel ?? a) : (cat?.englishLabel ?? a));
-      }),
-      TextCellValue('Total'),
-    ]);
-
-    // Data rows
-    for (final row in state.pivotRows) {
-      sheet.appendRow([
-        TextCellValue(row.employeeName),
-        ...state.activeCategories
-            .map((a) => DoubleCellValue(row.categoryTotals[a] ?? 0)),
-        DoubleCellValue(row.total),
-      ]);
-    }
-
-    // Grand total row
-    sheet.appendRow([
-      TextCellValue('Total Approved'),
-      ...state.activeCategories.map((a) {
-        final colTotal = state.byCategory
-            .where((c) => c.categoryAlias == a)
-            .map((c) => c.total)
-            .fold(0.0, (sum, v) => sum + v);
-        return DoubleCellValue(colTotal);
-      }),
-      DoubleCellValue(state.grandTotal),
-    ]);
-
-    final bytes = workbook.encode()!;
-    _triggerDownload(bytes, 'pivot-${state.cycleId}-$today.xlsx');
+    ExcelExportService.exportDetailPivot(_detailState!, locale);
   }
 
   void _openMobileFiltersDialog(AppLocalizations l10n) {

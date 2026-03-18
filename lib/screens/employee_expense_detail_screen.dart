@@ -5,6 +5,7 @@ import '../models/expense_category.dart';
 import '../models/expense_currency.dart';
 import '../models/update_expense_request.dart';
 import '../providers/expense_provider.dart';
+import '../services/excel_export_service.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
@@ -824,7 +825,10 @@ class _EmployeeExpenseDetailScreenState
                   const SizedBox(width: 4),
                   _buildOverlayButton(
                     icon: Icons.download_outlined,
-                    onTap: () {},
+                    onTap: () {
+                      final filename = imageUrl.split('/').last.split('?').first;
+                      ExcelExportService.downloadUrl(imageUrl, filename.isEmpty ? 'receipt' : filename);
+                    },
                   ),
                 ],
               ],

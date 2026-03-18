@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* master chart: x-axis captions spacing + left-align bars
+* expense screen - download button is not clickable
 
 ---
 
@@ -16,6 +16,7 @@ expense analysis:
 * the excel : total line should have a background color
 * the excel : add borders , and set auto width for all columns
 * expense screen - download button is not clickable
+* the details report - should be vertical bars with yaxis, tooltip always visible
 
 
 
