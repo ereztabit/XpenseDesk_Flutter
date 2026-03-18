@@ -162,49 +162,68 @@ class _DetailCardState extends State<DetailCard> {
   }
 
   Widget _buildConfigWidget() {
+    final canExport = widget.detailState != null;
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: AppTheme.border),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _toggle(
-            icon: Icons.bar_chart,
-            label: widget.isMobile ? null : widget.l10n.byCategory,
-            selected: _viewMode == DetailViewMode.byCategory,
-            onTap: () =>
-                setState(() => _viewMode = DetailViewMode.byCategory),
-          ),
-          _toggle(
-            icon: Icons.people,
-            label: widget.isMobile ? null : widget.l10n.byEmployee,
-            selected: _viewMode == DetailViewMode.byEmployee,
-            onTap: () =>
-                setState(() => _viewMode = DetailViewMode.byEmployee),
-          ),
-          _toggle(
-            icon: Icons.table_rows,
-            label: null,
-            selected: _viewMode == DetailViewMode.pivotTable,
-            onTap: () =>
-                setState(() => _viewMode = DetailViewMode.pivotTable),
-          ),
-          Container(width: 1, height: 28, color: AppTheme.border),
-          TextButton.icon(
-            icon: const Icon(Icons.download, size: 14),
-            label: Text(widget.l10n.export,
-                style: const TextStyle(fontSize: 12)),
-            onPressed:
-                widget.detailState == null ? null : widget.onExport,
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              minimumSize: const Size(0, 36),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(7),
+        child: IntrinsicHeight(
+          child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _toggle(
+              icon: Icons.bar_chart,
+              label: widget.isMobile ? null : widget.l10n.byCategory,
+              selected: _viewMode == DetailViewMode.byCategory,
+              onTap: () =>
+                  setState(() => _viewMode = DetailViewMode.byCategory),
             ),
+            _toggle(
+              icon: Icons.people,
+              label: widget.isMobile ? null : widget.l10n.byEmployee,
+              selected: _viewMode == DetailViewMode.byEmployee,
+              onTap: () =>
+                  setState(() => _viewMode = DetailViewMode.byEmployee),
+            ),
+            _toggle(
+              icon: Icons.table_rows,
+              label: null,
+              selected: _viewMode == DetailViewMode.pivotTable,
+              onTap: () =>
+                  setState(() => _viewMode = DetailViewMode.pivotTable),
+            ),
+            Container(width: 1, color: AppTheme.border),
+            InkWell(
+              onTap: canExport ? widget.onExport : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 11),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.download,
+                        size: 14,
+                        color: canExport
+                            ? AppTheme.foreground
+                            : AppTheme.mutedForeground),
+                    const SizedBox(width: 6),
+                    Text(widget.l10n.export,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: canExport
+                                ? AppTheme.foreground
+                                : AppTheme.mutedForeground)),
+                  ],
+                ),
+              ),
+            ),
+          ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -217,10 +236,12 @@ class _DetailCardState extends State<DetailCard> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
+      child: Container(
         padding: EdgeInsets.symmetric(
             horizontal: label != null ? 8 : 6, vertical: 6),
+        decoration: selected
+            ? BoxDecoration(color: AppTheme.primary.withAlpha(20))
+            : null,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

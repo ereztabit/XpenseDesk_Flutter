@@ -120,37 +120,57 @@ class _MasterCardState extends State<MasterCard> {
   }
 
   Widget _buildConfigWidget() {
+    final canExport = widget.rows.isNotEmpty &&
+        !widget.rows.every((r) => r.totalApproved == 0);
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: AppTheme.border),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _toggle(
-            icon: Icons.bar_chart,
-            selected: _viewMode == MasterViewMode.chart,
-            onTap: () => setState(() => _viewMode = MasterViewMode.chart),
-          ),
-          _toggle(
-            icon: Icons.table_rows,
-            selected: _viewMode == MasterViewMode.table,
-            onTap: () => setState(() => _viewMode = MasterViewMode.table),
-          ),
-          Container(width: 1, height: 28, color: AppTheme.border),
-          TextButton.icon(
-            icon: const Icon(Icons.download, size: 14),
-            label: Text(widget.l10n.export,
-                style: const TextStyle(fontSize: 12)),
-            onPressed: (widget.rows.isEmpty || widget.rows.every((r) => r.totalApproved == 0)) ? null : widget.onExport,
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              minimumSize: const Size(0, 36),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(7),
+        child: IntrinsicHeight(
+          child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _toggle(
+              icon: Icons.bar_chart,
+              selected: _viewMode == MasterViewMode.chart,
+              onTap: () => setState(() => _viewMode = MasterViewMode.chart),
             ),
+            _toggle(
+              icon: Icons.table_rows,
+              selected: _viewMode == MasterViewMode.table,
+              onTap: () => setState(() => _viewMode = MasterViewMode.table),
+            ),
+            Container(width: 1, color: AppTheme.border),
+            InkWell(
+              onTap: canExport ? widget.onExport : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.download,
+                        size: 14,
+                        color: canExport
+                            ? AppTheme.foreground
+                            : AppTheme.mutedForeground),
+                    const SizedBox(width: 6),
+                    Text(widget.l10n.export,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: canExport
+                                ? AppTheme.foreground
+                                : AppTheme.mutedForeground)),
+                  ],
+                ),
+              ),
+            ),
+          ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -162,9 +182,11 @@ class _MasterCardState extends State<MasterCard> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.all(6),
+        decoration: selected
+            ? BoxDecoration(color: AppTheme.primary.withAlpha(20))
+            : null,
         child: Icon(icon,
             size: 16,
             color: selected ? AppTheme.primary : AppTheme.mutedForeground),
