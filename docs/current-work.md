@@ -16,7 +16,6 @@ expense analysis:
 * the excel : total line should have a background color
 * the excel : add borders , and set auto width for all columns
 * expense screen - download button is not clickable
-* when transition from charts to table on the analysis reports - add animation so it wont flicker
 
 
 

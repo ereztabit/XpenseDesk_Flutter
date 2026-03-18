@@ -60,51 +60,62 @@ class _MasterCardState extends State<MasterCard> {
             ),
           ),
           const Divider(height: 1, thickness: 1, color: AppTheme.border),
-          if (widget.loading)
-            const Padding(
-              padding: EdgeInsets.all(48),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (widget.rows.isEmpty ||
-              widget.rows.every((r) => r.totalApproved == 0))
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.inbox_outlined,
-                        size: 40,
-                        color: AppTheme.mutedForeground.withAlpha(102)),
-                    const SizedBox(height: 12),
-                    Text(widget.l10n.analysisNoData,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: AppTheme.mutedForeground, fontSize: 14)),
-                  ],
-                ),
-              ),
-            )
-          else if (_viewMode == MasterViewMode.chart)
-            MasterBarChart(
-              rows: widget.rows,
-              selectedCycleId: widget.selectedCycleId,
-              locale: widget.locale,
-              currency: widget.currency,
-              l10n: widget.l10n,
-              onSelectCycle: widget.onSelectCycle,
-            )
-          else
-            MasterTable(
-              rows: widget.rows,
-              selectedCycleId: widget.selectedCycleId,
-              locale: widget.locale,
-              currency: widget.currency,
-              l10n: widget.l10n,
-              onSelectCycle: widget.onSelectCycle,
-            ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _buildBody(),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (widget.loading) {
+      return const Padding(
+        key: ValueKey('loading'),
+        padding: EdgeInsets.all(48),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (widget.rows.isEmpty || widget.rows.every((r) => r.totalApproved == 0)) {
+      return Padding(
+        key: const ValueKey('empty'),
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inbox_outlined,
+                  size: 40, color: AppTheme.mutedForeground.withAlpha(102)),
+              const SizedBox(height: 12),
+              Text(widget.l10n.analysisNoData,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: AppTheme.mutedForeground, fontSize: 14)),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_viewMode == MasterViewMode.chart) {
+      return MasterBarChart(
+        key: const ValueKey('chart'),
+        rows: widget.rows,
+        selectedCycleId: widget.selectedCycleId,
+        locale: widget.locale,
+        currency: widget.currency,
+        l10n: widget.l10n,
+        onSelectCycle: widget.onSelectCycle,
+      );
+    }
+    return MasterTable(
+      key: const ValueKey('table'),
+      rows: widget.rows,
+      selectedCycleId: widget.selectedCycleId,
+      locale: widget.locale,
+      currency: widget.currency,
+      l10n: widget.l10n,
+      onSelectCycle: widget.onSelectCycle,
     );
   }
 

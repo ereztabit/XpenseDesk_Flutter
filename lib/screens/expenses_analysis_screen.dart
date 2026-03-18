@@ -34,7 +34,6 @@ class _ExpensesAnalysisScreenState
   Set<String> _pendingCategories = {};
   Set<String> _appliedEmployees = {};
   Set<String> _appliedCategories = {};
-  bool _filtersDirty = false;
   Map<String, String> _availableEmployees = {};
 
   // ── master state ──────────────────────────────────────────────────────────
@@ -56,7 +55,7 @@ class _ExpensesAnalysisScreenState
     return count;
   }
 
-  bool get _canRun => _filtersDirty && !_loading;
+  bool get _canRun => !_loading;
 
   ExpensesAnalysisSummaryRow? get _selectedRow =>
       _summaryRows.where((r) => r.cycleId == _selectedCycleId).firstOrNull;
@@ -73,7 +72,6 @@ class _ExpensesAnalysisScreenState
     setState(() {
       _appliedEmployees = Set.from(_pendingEmployees);
       _appliedCategories = Set.from(_pendingCategories);
-      _filtersDirty = false;
       _loading = true;
       _detailLoading = true;
       _error = null;
@@ -330,7 +328,6 @@ class _ExpensesAnalysisScreenState
                       setState(() {
                         _pendingEmployees = pendingEmp;
                         _pendingCategories = pendingCat;
-                        _filtersDirty = true;
                       });
                       Navigator.of(ctx).pop();
                       _runReport();
@@ -378,11 +375,9 @@ class _ExpensesAnalysisScreenState
                           l10n: l10n,
                           onEmployeesChanged: (s) => setState(() {
                             _pendingEmployees = s;
-                            _filtersDirty = true;
                           }),
                           onCategoriesChanged: (s) => setState(() {
                             _pendingCategories = s;
-                            _filtersDirty = true;
                           }),
                           onRun: _runReport,
                         ),

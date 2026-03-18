@@ -91,59 +91,73 @@ class _DetailCardState extends State<DetailCard> {
             ),
           ),
           const Divider(height: 1, thickness: 1, color: AppTheme.border),
-          if (widget.loading)
-            const Padding(
-              padding: EdgeInsets.all(48),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (widget.detailState == null || widget.detailState!.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.inbox_outlined,
-                        size: 40,
-                        color: AppTheme.mutedForeground.withAlpha(102)),
-                    const SizedBox(height: 12),
-                    Text(widget.l10n.analysisNoData,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: AppTheme.mutedForeground, fontSize: 14)),
-                  ],
-                ),
-              ),
-            )
-          else if (_viewMode == DetailViewMode.byCategory)
-            CategoryBarChart(
-              items: widget.detailState!.byCategory,
-              locale: widget.locale,
-              currency: widget.currency,
-              cycleId: widget.cycleId,
-              onDrillThrough: (cycleId, alias) =>
-                  widget.onDrillThrough(cycleId, categoryAlias: alias),
-            )
-          else if (_viewMode == DetailViewMode.byEmployee)
-            EmployeeBarChart(
-              items: widget.detailState!.byEmployee,
-              locale: widget.locale,
-              currency: widget.currency,
-              cycleId: widget.cycleId,
-              onDrillThrough: (cycleId, employeeId) =>
-                  widget.onDrillThrough(cycleId, employeeId: employeeId),
-            )
-          else
-            PivotTable(
-              state: widget.detailState!,
-              locale: widget.locale,
-              currency: widget.currency,
-              cycleId: widget.cycleId,
-              l10n: widget.l10n,
-              onDrillThrough: widget.onDrillThrough,
-            ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _buildBody(),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (widget.loading) {
+      return const Padding(
+        key: ValueKey('loading'),
+        padding: EdgeInsets.all(48),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (widget.detailState == null || widget.detailState!.isEmpty) {
+      return Padding(
+        key: const ValueKey('empty'),
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inbox_outlined,
+                  size: 40, color: AppTheme.mutedForeground.withAlpha(102)),
+              const SizedBox(height: 12),
+              Text(widget.l10n.analysisNoData,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: AppTheme.mutedForeground, fontSize: 14)),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_viewMode == DetailViewMode.byCategory) {
+      return CategoryBarChart(
+        key: const ValueKey('byCategory'),
+        items: widget.detailState!.byCategory,
+        locale: widget.locale,
+        currency: widget.currency,
+        cycleId: widget.cycleId,
+        onDrillThrough: (cycleId, alias) =>
+            widget.onDrillThrough(cycleId, categoryAlias: alias),
+      );
+    }
+    if (_viewMode == DetailViewMode.byEmployee) {
+      return EmployeeBarChart(
+        key: const ValueKey('byEmployee'),
+        items: widget.detailState!.byEmployee,
+        locale: widget.locale,
+        currency: widget.currency,
+        cycleId: widget.cycleId,
+        onDrillThrough: (cycleId, employeeId) =>
+            widget.onDrillThrough(cycleId, employeeId: employeeId),
+      );
+    }
+    return PivotTable(
+      key: const ValueKey('pivot'),
+      state: widget.detailState!,
+      locale: widget.locale,
+      currency: widget.currency,
+      cycleId: widget.cycleId,
+      l10n: widget.l10n,
+      onDrillThrough: widget.onDrillThrough,
     );
   }
 
