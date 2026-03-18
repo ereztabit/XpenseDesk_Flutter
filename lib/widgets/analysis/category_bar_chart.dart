@@ -43,7 +43,7 @@ class CategoryBarChart extends StatelessWidget {
     final maxValue = items.map((i) => i.total).fold(0.0, max);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: Column(
         children: items
             .map((item) => _buildRow(item, maxValue))
@@ -65,15 +65,14 @@ class CategoryBarChart extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 110,
+              width: 90,
               child: Text(
                 _labelFor(item.categoryAlias, locale),
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.foreground),
+                style: const TextStyle(fontSize: 12, color: AppTheme.foreground),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 6),
             Expanded(
               child: Stack(
                 children: [
@@ -97,17 +96,13 @@ class CategoryBarChart extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 80,
-              child: Text(
-                item.total.toCompactCurrency(locale, currency),
-                style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.foreground),
-                textAlign: TextAlign.end,
-              ),
+            const SizedBox(width: 6),
+            Text(
+              item.total.toCompactCurrency(locale, currency),
+              style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.foreground),
             ),
           ],
         ),

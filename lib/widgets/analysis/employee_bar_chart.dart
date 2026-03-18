@@ -31,7 +31,7 @@ class EmployeeBarChart extends StatelessWidget {
     final maxValue = items.map((i) => i.total).fold(0.0, max);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       child: Column(
         children: List.generate(
           items.length,
@@ -54,15 +54,14 @@ class EmployeeBarChart extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 130,
+              width: 110,
               child: Text(
                 item.employeeName,
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.foreground),
+                style: const TextStyle(fontSize: 12, color: AppTheme.foreground),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 6),
             Expanded(
               child: Stack(
                 children: [
@@ -86,17 +85,13 @@ class EmployeeBarChart extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
-            SizedBox(
-              width: 80,
-              child: Text(
-                item.total.toCompactCurrency(locale, currency),
-                style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.foreground),
-                textAlign: TextAlign.end,
-              ),
+            const SizedBox(width: 6),
+            Text(
+              item.total.toCompactCurrency(locale, currency),
+              style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.foreground),
             ),
           ],
         ),
