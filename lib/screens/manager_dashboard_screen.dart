@@ -4,6 +4,7 @@ import '../providers/expense_provider.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/dashboard/spend_overview_widget.dart';
+import '../widgets/employee/employee_selector.dart';
 import '../widgets/expenses/desktop_expense_table.dart';
 import '../widgets/expenses/expense_status_toggle.dart';
 import '../widgets/expenses/manager_swipeable_expense_card.dart';
@@ -20,7 +21,7 @@ class ManagerDashboardScreen extends ConsumerStatefulWidget {
 class _ManagerDashboardScreenState
     extends ConsumerState<ManagerDashboardScreen>
     with FormBehaviorMixin {
-  String? _selectedEmployee;
+  Set<String> _selectedEmployees = {};
   int _selectedStatusId = 1;
   final _openCardNotifier = ValueNotifier<String?>(null);
   bool _mobilePeekPlayed = false;
@@ -35,13 +36,16 @@ class _ManagerDashboardScreenState
   }
 
   List<ExpenseSummary> _filterByEmployee(List<ExpenseSummary> all) {
-    if (_selectedEmployee == null) return all;
-    return all.where((e) => e.createdByName == _selectedEmployee).toList();
+    if (_selectedEmployees.isEmpty) return all;
+    return all.where((e) => _selectedEmployees.contains(e.createdByUserId)).toList();
   }
 
-  List<String> _employeeOptions(List<ExpenseSummary> all) {
-    final names = all.map((e) => e.createdByName).toSet().toList()..sort();
-    return names;
+  Map<String, String> _employeeMap(List<ExpenseSummary> all) {
+    final map = <String, String>{};
+    for (final e in all) {
+      map[e.createdByUserId] = e.createdByName;
+    }
+    return map;
   }
 
   Future<void> _handleApprove(ExpenseSummary expense) async {
@@ -252,7 +256,7 @@ class _ManagerDashboardScreenState
   }
 
   Widget _buildHeaderRow(AppLocalizations l10n, List<ExpenseSummary> allExpenses) {
-    final employeeOptions = _employeeOptions(allExpenses);
+    final employeeMap = _employeeMap(allExpenses);
 
     return Container(
       width: double.maxFinite,
@@ -264,7 +268,7 @@ class _ManagerDashboardScreenState
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
             l10n.pendingExpenses,
@@ -272,12 +276,12 @@ class _ManagerDashboardScreenState
                   fontSize: context.isMobile ? 18 : 24,
                 ),
           ),
-          if (employeeOptions.isNotEmpty)
-            _EmployeeFilterDropdown(
-              selected: _selectedEmployee,
-              options: employeeOptions,
-              allLabel: l10n.allEmployees,
-              onChanged: (name) => setState(() => _selectedEmployee = name),
+          if (employeeMap.isNotEmpty)
+            EmployeeSelector(
+              employees: employeeMap,
+              selectedIds: _selectedEmployees,
+              singleSelect: true,
+              onChanged: (ids) => setState(() => _selectedEmployees = ids),
             ),
         ],
       ),
@@ -355,68 +359,3 @@ class _ManagerDashboardScreenState
   }
 }
 
-// ── Employee filter dropdown ──────────────────────────────────────────────────
-
-class _EmployeeFilterDropdown extends StatelessWidget {
-  final String? selected;
-  final List<String> options;
-  final String allLabel;
-  final ValueChanged<String?> onChanged;
-
-  const _EmployeeFilterDropdown({
-    required this.selected,
-    required this.options,
-    required this.allLabel,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownMenu<String?>(
-      initialSelection: selected,
-      width: 180,
-      textStyle: const TextStyle(fontSize: 12),
-      inputDecorationTheme: InputDecorationTheme(
-        isCollapsed: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        constraints: const BoxConstraints(minHeight: 36, maxHeight: 36),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-          borderSide: const BorderSide(color: AppTheme.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-          borderSide: const BorderSide(color: AppTheme.border),
-        ),
-      ),
-      leadingIcon: const Icon(
-        Icons.filter_list,
-        size: 14,
-        color: AppTheme.mutedForeground,
-      ),
-      onSelected: onChanged,
-      dropdownMenuEntries: [
-        DropdownMenuEntry<String?>(
-          value: null,
-          label: allLabel,
-          style: ButtonStyle(
-            textStyle: WidgetStateProperty.all(
-              const TextStyle(fontSize: 12),
-            ),
-          ),
-        ),
-        ...options.map(
-          (name) => DropdownMenuEntry<String?>(
-            value: name,
-            label: name,
-            style: ButtonStyle(
-              textStyle: WidgetStateProperty.all(
-                const TextStyle(fontSize: 12),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
