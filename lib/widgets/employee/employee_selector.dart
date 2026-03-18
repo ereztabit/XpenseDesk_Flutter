@@ -11,6 +11,9 @@ class EmployeeSelector extends StatelessWidget {
   final double width;
   final bool enabled;
   final String? sectionLabel;
+  /// When true: selecting an item replaces the selection (single-select).
+  /// When false (default): multi-select with Select All / Clear.
+  final bool singleSelect;
 
   const EmployeeSelector({
     super.key,
@@ -20,6 +23,7 @@ class EmployeeSelector extends StatelessWidget {
     this.width = 200,
     this.enabled = true,
     this.sectionLabel,
+    this.singleSelect = false,
   });
 
   @override
@@ -60,26 +64,28 @@ class EmployeeSelector extends StatelessWidget {
               ),
             ),
             menuChildren: [
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: isEnabled ? () => onChanged(employees.keys.toSet()) : null,
-                      child: Text(l10n.selectAll),
-                    ),
-                    const SizedBox(width: 4),
-                    TextButton(
-                      onPressed: isEnabled ? () => onChanged(<String>{}) : null,
-                      child: Text(l10n.clear),
-                    ),
-                  ],
+              if (!singleSelect) ...[
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 8, 4),
+                  child: Row(
+                    children: [
+                      TextButton(
+                        onPressed: isEnabled ? () => onChanged(employees.keys.toSet()) : null,
+                        child: Text(l10n.selectAll),
+                      ),
+                      const SizedBox(width: 4),
+                      TextButton(
+                        onPressed: isEnabled ? () => onChanged(<String>{}) : null,
+                        child: Text(l10n.clear),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Divider(height: 1, thickness: 1, color: AppTheme.border),
+                const Divider(height: 1, thickness: 1, color: AppTheme.border),
+              ],
               ...employees.entries.map(
                 (entry) => MenuItemButton(
-                  closeOnActivate: false,
+                  closeOnActivate: singleSelect,
                   onPressed: isEnabled
                       ? () => onChanged(_toggleId(current: selectedIds, id: entry.key))
                       : null,
@@ -150,6 +156,9 @@ class EmployeeSelector extends StatelessWidget {
   }
 
   Set<String> _toggleId({required Set<String> current, required String id}) {
+    if (singleSelect) {
+      return current.contains(id) ? {} : {id};
+    }
     final next = Set<String>.from(current);
     if (next.contains(id)) {
       next.remove(id);
@@ -179,50 +188,50 @@ class _EmployeeTrigger extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Material(
-        color: enabled ? AppTheme.card : AppTheme.muted,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(
-            color: isOpen ? AppTheme.primary : AppTheme.border,
-            width: isOpen ? 2 : 1,
-          ),
-        ),
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(8),
-          child: SizedBox(
-            height: 40,
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(
-                12,
-                isOpen ? 7 : 8,
-                8,
-                isOpen ? 7 : 8,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      label,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: enabled
-                            ? AppTheme.foreground
-                            : AppTheme.mutedForeground,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    size: 18,
-                    color: AppTheme.mutedForeground,
-                  ),
-                ],
-              ),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: enabled ? AppTheme.card : AppTheme.muted,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isOpen ? AppTheme.primary : AppTheme.borderMedium,
+              width: isOpen ? 2 : 1,
             ),
+            boxShadow: enabled && !isOpen
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(18),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    )
+                  ]
+                : null,
+          ),
+          padding: EdgeInsetsDirectional.fromSTEB(12, 0, 8, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: enabled
+                        ? AppTheme.foreground
+                        : AppTheme.mutedForeground,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                size: 18,
+                color: AppTheme.mutedForeground,
+              ),
+            ],
           ),
         ),
       ),

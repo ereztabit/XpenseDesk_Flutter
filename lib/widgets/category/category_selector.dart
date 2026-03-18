@@ -205,50 +205,50 @@ class _CategoryTrigger extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Material(
-        color: enabled ? AppTheme.card : AppTheme.muted,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: BorderSide(
-            color: isOpen ? AppTheme.primary : AppTheme.border,
-            width: isOpen ? 2 : 1,
-          ),
-        ),
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(8),
-          child: SizedBox(
-            height: 40,
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(
-                12,
-                isOpen ? 7 : 8,
-                8,
-                isOpen ? 7 : 8,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      label,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: enabled
-                            ? AppTheme.foreground
-                            : AppTheme.mutedForeground,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    size: 18,
-                    color: AppTheme.mutedForeground,
-                  ),
-                ],
-              ),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 40,
+          decoration: BoxDecoration(
+            color: enabled ? AppTheme.card : AppTheme.muted,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isOpen ? AppTheme.primary : AppTheme.borderMedium,
+              width: isOpen ? 2 : 1,
             ),
+            boxShadow: enabled && !isOpen
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(18),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    )
+                  ]
+                : null,
+          ),
+          padding: const EdgeInsetsDirectional.fromSTEB(12, 0, 8, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: enabled
+                        ? AppTheme.foreground
+                        : AppTheme.mutedForeground,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                size: 18,
+                color: AppTheme.mutedForeground,
+              ),
+            ],
           ),
         ),
       ),
