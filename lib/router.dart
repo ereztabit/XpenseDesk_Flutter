@@ -14,6 +14,7 @@ import 'screens/receipt_analyzer_screen.dart';
 import 'screens/employee_expense_detail_screen.dart';
 import 'screens/manager_dashboard_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
+import 'screens/expenses_analysis_screen.dart';
 import 'widgets/auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -92,7 +93,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings: settings,
         builder: (_) => const AuthGate(
           mode: AuthGateMode.managerOnly,
-          child: SpendHistoryScreen(),
+          child: ExpensesAnalysisScreen(),
         ),
       );
 

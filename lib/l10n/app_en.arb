@@ -353,5 +353,10 @@
   "spendOverview": "Spend Overview",
   "viewMore": "View More",
   "filtersTitle": "Filters",
-  "applyFilters": "Apply Filters"
+  "applyFilters": "Apply Filters",
+
+  "expensesAnalysis": "Expenses Analysis",
+  "monthlyBreakdown": "Monthly Breakdown",
+  "clearAll": "Clear All",
+  "selectMonth": "Click a month to analyze"
 }

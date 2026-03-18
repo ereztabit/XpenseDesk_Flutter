@@ -9,6 +9,8 @@ import '../models/expense_detail.dart';
 import '../models/expense_summary.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/update_expense_request.dart';
+import '../models/expenses_analysis_summary_row.dart';
+import '../models/expenses_analysis_breakdown_row.dart';
 
 /// Exception thrown when expense operations fail.
 class ExpenseException implements Exception {
@@ -360,5 +362,76 @@ class ExpenseService {
     );
 
     return const JsonEncoder.withIndent('  ').convert(response);
+  }
+
+  // ── Expenses Analysis ────────────────────────────────────────────────────
+
+  /// Fetches the 12-cycle summary dataset for the Expenses Analysis screen.
+  ///
+  /// Null filters mean "all" — omit them from the request body entirely.
+  Future<List<ExpensesAnalysisSummaryRow>> fetchAnalysisSummary({
+    List<String>? employeeIds,
+    List<String>? categoryAliases,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{};
+    if (employeeIds != null && employeeIds.isNotEmpty) {
+      body['createdByUserIds'] = employeeIds;
+    }
+    if (categoryAliases != null && categoryAliases.isNotEmpty) {
+      body['categoriesAlias'] = categoryAliases;
+    }
+
+    final response = await _apiService.post(
+      '/api/reports/expenses-analysis/summary',
+      body,
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load expenses analysis summary');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    final rows = data?['rows'] as List<dynamic>? ?? [];
+    return rows
+        .map((json) => ExpensesAnalysisSummaryRow.fromJson(
+            json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Fetches the per-employee × per-category breakdown for a single cycle.
+  ///
+  /// Null filters mean "all" — omit them from the request body entirely.
+  Future<List<ExpensesAnalysisBreakdownRow>> fetchAnalysisBreakdown({
+    required String cycleId,
+    List<String>? employeeIds,
+    List<String>? categoryAliases,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{'expenseCycleId': cycleId};
+    if (employeeIds != null && employeeIds.isNotEmpty) {
+      body['createdByUserIds'] = employeeIds;
+    }
+    if (categoryAliases != null && categoryAliases.isNotEmpty) {
+      body['categoriesAlias'] = categoryAliases;
+    }
+
+    final response = await _apiService.post(
+      '/api/reports/expenses-analysis/breakdown',
+      body,
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load expenses analysis breakdown');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    final rows = data?['rows'] as List<dynamic>? ?? [];
+    return rows
+        .map((json) => ExpensesAnalysisBreakdownRow.fromJson(
+            json as Map<String, dynamic>))
+        .toList();
   }
 }

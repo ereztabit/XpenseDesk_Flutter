@@ -2,13 +2,9 @@
 
 ## Currently Working On
 
-- Expenses Analysis Step 0: Extract `StickyReportTable` widget and refactor `CycleExpensesReportScreen` to use it — shared scroll infrastructure for Expenses Analysis reuse.
-
 ---
 
 ## TODO (Backlog)
-
-- [ ] implement Expenses Analysis from `docs/expenses-analysis-spec.md`
 
 ## bugs
  

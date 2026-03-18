@@ -353,5 +353,10 @@
   "spendOverview": "סקירת הוצאות",
   "viewMore": "הצג עוד",
   "filtersTitle": "סינון",
-  "applyFilters": "החל סינון"
+  "applyFilters": "החל סינון",
+
+  "expensesAnalysis": "ניתוח הוצאות",
+  "monthlyBreakdown": "פירוט חודשי",
+  "clearAll": "נקה הכל",
+  "selectMonth": "לחץ על חודש לניתוח"
 }
