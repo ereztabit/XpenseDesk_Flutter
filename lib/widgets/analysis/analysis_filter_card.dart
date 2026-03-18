@@ -50,10 +50,9 @@ class AnalysisFilterCard extends StatelessWidget {
               onChanged: onCategoriesChanged,
             ),
             const SizedBox(width: 16),
-            FilledButton.icon(
-              icon: const Icon(Icons.play_arrow, size: 16),
-              label: Text(l10n.runReport),
+            FilledButton(
               onPressed: canRun ? onRun : null,
+              child: Text(l10n.search),
             ),
           ],
         ),

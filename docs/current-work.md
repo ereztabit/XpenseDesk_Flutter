@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* on mobile - the details horiz. bars need less margin from the number value
+* the run CTA button in hebrew should be "חפש" and the arrow on the other side and flipped. in english - its "search"
 
 ---
 
