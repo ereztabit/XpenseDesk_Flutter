@@ -23,65 +23,113 @@ class MasterTable extends StatelessWidget {
     required this.onSelectCycle,
   });
 
+  static final _colDivider = Container(width: 1, color: AppTheme.border);
+
   @override
   Widget build(BuildContext context) {
+    final displayRows = rows.reversed.toList();
+
     return Column(
       children: [
+        // ── header ──────────────────────────────────────────────────────────
         Container(
-          color: AppTheme.muted.withAlpha(128),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(l10n.reportCyclePrefix,
-                    style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.mutedForeground)),
-              ),
-              Text(l10n.totalApprovedLabel,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.mutedForeground)),
-            ],
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withAlpha(20),
+            border: const Border(
+              bottom: BorderSide(color: AppTheme.border),
+            ),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 160),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    child: Text(l10n.reportCyclePrefix,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.foreground)),
+                  ),
+                ),
+                _colDivider,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  child: Text(l10n.totalApprovedLabel,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.foreground)),
+                ),
+                const Expanded(child: SizedBox()),
+              ],
+            ),
           ),
         ),
-        ...rows.map((row) {
+        // ── data rows ───────────────────────────────────────────────────────
+        ...List.generate(displayRows.length, (i) {
+          final row = displayRows[i];
           final isSelected = row.cycleId == selectedCycleId;
+          final isLast = i == displayRows.length - 1;
+
           return InkWell(
             onTap: () => onSelectCycle(row.cycleId),
             child: Container(
-              color: isSelected ? AppTheme.primary.withAlpha(13) : null,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Text(row.cycleLabel,
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                                color: AppTheme.foreground)),
-                        if (row.isActive) ...[
-                          const SizedBox(width: 8),
-                          ActiveBadge(l10n: l10n),
-                        ],
-                      ],
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.primary.withAlpha(40) : null,
+                border: isLast
+                    ? null
+                    : const Border(
+                        bottom: BorderSide(color: AppTheme.border)),
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 160),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(row.cycleLabel,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    color: AppTheme.foreground)),
+                            if (row.isActive) ...[
+                              const SizedBox(width: 8),
+                              ActiveBadge(l10n: l10n),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  Text(row.totalApproved.toCurrency(locale, currency),
-                      style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: AppTheme.foreground)),
-                ],
+                    _colDivider,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Text(
+                        row.totalApproved.toCurrency(locale, currency),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: AppTheme.foreground),
+                      ),
+                    ),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
               ),
             ),
           );

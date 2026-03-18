@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-* on both charts the chart selector widget - the selected mode should have a selected color also, the export button has a round hover inside a square shape it doesnt look good
+* on the master table - the columns should be next to each other, inner border, the header should have a different color than the selected line and the order of presentation is desc so the open cycle is the first in order.
 
 ---
 
@@ -11,8 +11,9 @@
 ## report bugs (pending)
 
 expense analysis:
-* on both charts the chart selector widget - the selected mode should have a selected color also, the export button has a round hover inside a square shape it doesnt look good
-* on the master table - the columns should be next to each other, inner border, the header should have a different color than the selected line and the orer of presentation is desc so the open cycle is the first in order.
+* on the master table - the columns should be next to each other, inner border, the header should have a different color than the selected line and the order of presentation is desc so the open cycle is the first in order.
+* the route history is not suited for the purpose of the report
+* detail report header background similar to total, missing inline borders, there is a white gap on the far left (in RTL mode)
 * on mobile - the details table mode missing horizontal scroll.
 * on mobile - the details horiz. bars need less margin from the number value
 * the run CTA button in hebrew should be "חפש" and the arrow on the other side and fliped. in english - its "search"
