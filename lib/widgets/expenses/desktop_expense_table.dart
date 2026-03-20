@@ -202,6 +202,7 @@ class DesktopExpenseTable extends ConsumerWidget {
             SectionTableColumn(label: l10n.expenseDate, flex: 3),
             SectionTableColumn(label: l10n.amount, flex: 3),
             SectionTableColumn(label: l10n.category, flex: 3),
+            SectionTableColumn(label: l10n.status, flex: 3),
             SectionTableColumn(label: l10n.actions, flex: isPending ? 6 : 3),
           ]
         : [
@@ -277,6 +278,8 @@ class DesktopExpenseTable extends ConsumerWidget {
           amountCell,
           // Category
           categoryCell,
+          // Status
+          statusCell,
           // Actions
           _buildActionCell(expense),
         ];

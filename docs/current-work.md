@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: Incorrect column label — changed `l10n.date` → `l10n.expenseDate` in both employee and manager table modes in `desktop_expense_table.dart`
+DONE: Manager view missing expense status column — added Status column to desktop manager table; removed hideStatusBadge:true from manager_swipeable_expense_card
 
 
 ## TODO (Backlog)

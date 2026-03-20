@@ -279,7 +279,6 @@ class _ManagerSwipeableExpenseCardState
                             child: MobileExpenseCard(
                               expense: widget.expense,
                               showEmployeeName: true,
-                              hideStatusBadge: true,
                               onEdit: widget.onEdit,
                               margin: EdgeInsets.zero,
                             ),
