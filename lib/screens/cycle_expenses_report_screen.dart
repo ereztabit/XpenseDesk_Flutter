@@ -923,7 +923,12 @@ class _CycleExpensesReportScreenState
     final hasExpenseId = row.expenseId != null && row.expenseId!.isNotEmpty;
 
     return Container(
-      color: isEven ? AppTheme.muted.withAlpha(25) : null,
+      decoration: BoxDecoration(
+        color: isEven ? AppTheme.muted.withAlpha(25) : null,
+        border: const Border(
+          bottom: BorderSide(color: AppTheme.border, width: 0.5),
+        ),
+      ),
       child: Row(
         children: [
           // #

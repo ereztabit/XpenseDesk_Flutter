@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: expenses report - Search button size inconsistent with Export — pinned to 36px height + fontSize 12 to match Export button
+DONE: Reports missing inner borders — added bottom border to each data row in cycle_expenses_report_screen
 
 
 ## TODO (Backlog)
