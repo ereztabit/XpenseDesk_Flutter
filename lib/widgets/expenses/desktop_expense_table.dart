@@ -206,7 +206,7 @@ class DesktopExpenseTable extends ConsumerWidget {
           ]
         : [
             SectionTableColumn(label: l10n.merchant, flex: 4),
-            SectionTableColumn(label: l10n.date, flex: 4),
+            SectionTableColumn(label: l10n.expenseDate, flex: 4),
             SectionTableColumn(label: l10n.amount, flex: 3),
             SectionTableColumn(label: l10n.category, flex: 4),
             SectionTableColumn(label: l10n.status, flex: 3),
