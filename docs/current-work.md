@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: Manager view missing expense status column — added Status column to desktop manager table; removed hideStatusBadge:true from manager_swipeable_expense_card
+DONE: expenses report - Search button size inconsistent with Export — pinned to 36px height + fontSize 12 to match Export button
 
 
 ## TODO (Backlog)

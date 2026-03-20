@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../widgets/employee/employee_selector.dart';
 import '../../widgets/category/category_selector.dart';
+import '../search_button.dart';
 
 class AnalysisFilterCard extends StatelessWidget {
   final Map<String, String> availableEmployees;
@@ -50,9 +51,8 @@ class AnalysisFilterCard extends StatelessWidget {
               onChanged: onCategoriesChanged,
             ),
             const SizedBox(width: 16),
-            FilledButton(
+            SearchButton(
               onPressed: canRun ? onRun : null,
-              child: Text(l10n.search),
             ),
           ],
         ),

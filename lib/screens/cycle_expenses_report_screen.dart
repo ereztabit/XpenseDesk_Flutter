@@ -13,6 +13,7 @@ import '../widgets/category/category_selector.dart';
 import '../widgets/cycle/cycle_selector.dart';
 import '../widgets/employee/employee_selector.dart';
 import '../widgets/sticky_report_table.dart';
+import '../widgets/search_button.dart';
 import 'employee_expense_detail_screen.dart';
 
 class CycleExpensesReportScreen extends ConsumerStatefulWidget {
@@ -725,14 +726,8 @@ class _CycleExpensesReportScreenState
         )
       : null;
 
-    final searchButton = FilledButton(
+    final searchButton = SearchButton(
       onPressed: _loading ? null : _loadReport,
-      style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        minimumSize: const Size(0, 36),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: Text(l10n.search),
     );
 
     return Card(
