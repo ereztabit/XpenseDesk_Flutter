@@ -2,12 +2,15 @@
 
 ## Currently Working On
 
- 
+DONE: Incorrect column label — changed `l10n.date` → `l10n.expenseDate` in both employee and manager table modes in `desktop_expense_table.dart`
+
 
 ## TODO (Backlog)
 
 ## report bugs (pending)
 * onboarding Email OTP input cursor direction incorrect - on rtl it should be from the right
+* on the expenses dashboard - when an expense is approved there is - hebrew caption should be - "אושר ע"י" 
+* in the mobile cards - instead of נבדק it should be אושר
 * Missing invite users option after signup - we need to have a quick onboarding flow to allow manager invite users
 * Invite users modal does not close on submit - after adding a user it should be closed
 * New expense modal spacing hides Continue button - the titles and back button takes too much of the screen
