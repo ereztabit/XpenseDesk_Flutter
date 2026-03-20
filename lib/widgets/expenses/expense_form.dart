@@ -14,7 +14,7 @@ import '../form_behavior_mixin.dart';
 
 class ExpenseForm extends ConsumerWidget {
   static final RegExp _receiptRefInputPattern = RegExp(
-    r'[a-zA-Z0-9\u0590-\u05FF /\\-]',
+    r'[a-zA-Z0-9\u0590-\u05FF/\\-]',
   );
 
   const ExpenseForm({

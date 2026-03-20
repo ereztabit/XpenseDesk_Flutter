@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: Reports missing inner borders — added bottom border to each data row in cycle_expenses_report_screen
+IN PROGRESS: Mobile pull-to-refresh not working in header - on the report screen
 
 
 ## TODO (Backlog)
