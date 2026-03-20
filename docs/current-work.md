@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: Mobile pull-to-refresh - restructured mobile body to CustomScrollView + SliverFillRemaining so page header is inside the scrollable, pull works from anywhere in content
+DONE: Mobile category not localized to Hebrew — use ExpenseCategory.fromId + labelForLocale(uiLocale) in mobile_expense_card.dart
 
 
 ## TODO (Backlog)

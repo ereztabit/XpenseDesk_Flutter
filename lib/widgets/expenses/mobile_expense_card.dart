@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/expense_category.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
@@ -36,6 +37,7 @@ class MobileExpenseCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
+    final uiLocale = Localizations.localeOf(context);
     final amountText = expense.amount != null && expense.currencyCode != null
         ? expense.amount!.toCurrency(locale, expense.currencyCode!)
         : expense.amount != null
@@ -133,7 +135,9 @@ class MobileExpenseCard extends ConsumerWidget {
                   ],
                   _DetailRow(
                     label: l10n.category,
-                    value: expense.categoryName,
+                    value: ExpenseCategory.fromId(expense.categoryId)
+                            ?.labelForLocale(uiLocale) ??
+                        expense.categoryName,
                   ),
                   if (merchantText != null && merchantText.isNotEmpty) ...[
                     const SizedBox(height: 6),
