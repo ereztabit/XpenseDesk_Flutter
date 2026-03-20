@@ -506,15 +506,7 @@ class _CycleExpensesReportScreenState
         body: Column(
           children: [
             const AppHeader(),
-            Expanded(
-              child: context.isMobile
-                  ? RefreshIndicator(
-                      onRefresh: _loadReport,
-                      notificationPredicate: (_) => true,
-                      child: body,
-                    )
-                  : body,
-            ),
+            Expanded(child: body),
             const AppFooter(),
           ],
         ),
@@ -525,16 +517,50 @@ class _CycleExpensesReportScreenState
   Widget _buildBody(
       BuildContext context, AppLocalizations l10n, String locale) {
     final isMobile = context.isMobile;
+    const hPadMobile = 12.0;
+    const hPadDesktop = 24.0;
+    const vPad = 16.0;
+
+    if (isMobile) {
+      // On mobile: page header + table card are both inside a CustomScrollView
+      // so pulling anywhere in the content (including the title area) triggers
+      // RefreshIndicator. SliverFillRemaining gives the table card the rest of
+      // the available height. notificationPredicate filters out horizontal
+      // scroll notifications from StickyReportTable's inner scroll view.
+      return RefreshIndicator(
+        onRefresh: _loadReport,
+        notificationPredicate: (n) => n.metrics.axis == Axis.vertical,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    hPadMobile, vPad, hPadMobile, 12),
+                child: _buildPageHeader(context, l10n, locale),
+              ),
+            ),
+            SliverFillRemaining(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    hPadMobile, 0, hPadMobile, vPad),
+                child: _buildTableCard(context, l10n, locale),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return LayoutBuilder(
       builder: (ctx, constraints) {
-        final hPad = isMobile ? 12.0 : 24.0;
-        const vPad = 16.0;
         final contentHeight = constraints.maxHeight - vPad * 2;
         final contentWidth =
-            (constraints.maxWidth - hPad * 2).clamp(0.0, 1440.0);
+            (constraints.maxWidth - hPadDesktop * 2).clamp(0.0, 1440.0);
 
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+          padding: const EdgeInsets.symmetric(
+              horizontal: hPadDesktop, vertical: vPad),
           child: Align(
             alignment: Alignment.topCenter,
             child: SizedBox(
@@ -545,10 +571,8 @@ class _CycleExpensesReportScreenState
                 children: [
                   _buildPageHeader(context, l10n, locale),
                   const SizedBox(height: 12),
-                  if (!isMobile) ...[
-                    _buildFilterCard(context, l10n),
-                    const SizedBox(height: 12),
-                  ],
+                  _buildFilterCard(context, l10n),
+                  const SizedBox(height: 12),
                   Expanded(child: _buildTableCard(context, l10n, locale)),
                 ],
               ),

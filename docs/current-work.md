@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-IN PROGRESS: Mobile pull-to-refresh not working in header - on the report screen
+DONE: Mobile pull-to-refresh - restructured mobile body to CustomScrollView + SliverFillRemaining so page header is inside the scrollable, pull works from anywhere in content
 
 
 ## TODO (Backlog)
@@ -35,8 +35,17 @@ IN PROGRESS: Mobile pull-to-refresh not working in header - on the report screen
 * expense screen - remove the ai badge below the image and also the one with the strike through
 * when i submit an expense and AI didnt detect the details i want to see a warning message on top of the fields.
 * when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
-
-
+* when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
+* when adding a user that belongs to another company we get this error - 
+{
+    "success": false,
+    "message": "Email already belongs to another company",
+    "errorCode": "UsersInviteEmailBelongsToAnotherCompany",
+    "data": {
+        "email": "arlib1988@gmail.com"
+    }
+}, 
+show an explicit error explaning we cannot join this user to this company
 
 
 ## general environment
