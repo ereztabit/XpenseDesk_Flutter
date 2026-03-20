@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: Mobile approval date display issue — added maxLines param to _DetailRow, reviewed row now wraps to 2 lines
+IN PROGRESS: Mobile manager view inconsistent with employee view - the pills are missing
 
 
 ## TODO (Backlog)

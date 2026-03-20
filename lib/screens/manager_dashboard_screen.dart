@@ -170,27 +170,6 @@ class _ManagerDashboardScreenState
     );
   }
 
-  Widget _buildMobileContent(
-    AppLocalizations l10n,
-    List<ExpenseSummary> allExpenses,
-    Map<int, int> counts,
-  ) {
-    return Column(
-      children: [
-        ExpenseStatusToggle(
-          selectedStatusId: _selectedStatusId,
-          counts: counts,
-          onChanged: (id) => setState(() {
-            _selectedStatusId = id;
-            _openCardNotifier.value = null;
-          }),
-        ),
-        const SizedBox(height: 16),
-        _buildMobileList(l10n, allExpenses),
-      ],
-    );
-  }
-
   Widget _buildMobileList(AppLocalizations l10n, List<ExpenseSummary> allExpenses) {
     final filtered = _filterByEmployee(allExpenses)
         .where((e) => e.expenseStatusId == _selectedStatusId)
@@ -319,14 +298,27 @@ class _ManagerDashboardScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SpendOverviewWidget(
-                        expenses: allExpenses,
-                        locale: ref.watch(companyLocaleProvider),
-                        currencyCode: ref.watch(userInfoProvider)?.currencyCode,
-                      ),
-                      const SizedBox(height: 16),
+                      if (context.isDesktop) ...[
+                        SpendOverviewWidget(
+                          expenses: allExpenses,
+                          locale: ref.watch(companyLocaleProvider),
+                          currencyCode: ref.watch(userInfoProvider)?.currencyCode,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       _buildHeaderRow(l10n, allExpenses),
                       const SizedBox(height: 24),
+                      if (context.isMobile) ...[
+                        ExpenseStatusToggle(
+                          selectedStatusId: _selectedStatusId,
+                          counts: counts,
+                          onChanged: (id) => setState(() {
+                            _selectedStatusId = id;
+                            _openCardNotifier.value = null;
+                          }),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       expensesAsync.when(
                         loading: () => const Padding(
                           padding: EdgeInsets.symmetric(vertical: 32),
@@ -344,7 +336,7 @@ class _ManagerDashboardScreenState
                         ),
                         data: (_) => context.isDesktop
                             ? _buildDesktopContent(l10n, allExpenses)
-                            : _buildMobileContent(l10n, allExpenses, counts),
+                            : _buildMobileList(l10n, allExpenses),
                       ),
                     ],
                   ),
