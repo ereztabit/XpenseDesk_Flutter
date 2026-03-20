@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-DONE: Mobile category not localized to Hebrew — use ExpenseCategory.fromId + labelForLocale(uiLocale) in mobile_expense_card.dart
+DONE: Mobile approval date display issue — added maxLines param to _DetailRow, reviewed row now wraps to 2 lines
 
 
 ## TODO (Backlog)

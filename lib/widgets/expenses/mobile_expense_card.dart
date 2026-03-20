@@ -28,7 +28,6 @@ class MobileExpenseCard extends ConsumerWidget {
   final bool showEmployeeName;
   final bool hideStatusBadge;
 
-  bool get _isPending => expense.expenseStatusId == 1;
   bool get _isProcessed => expense.expenseStatusId == 2 || expense.expenseStatusId == 3;
   bool get _hasReviewedInfo =>
       _isProcessed && expense.reviewedBy != null && expense.reviewedAt != null;
@@ -152,7 +151,7 @@ class MobileExpenseCard extends ConsumerWidget {
                     _DetailRow(
                       label: l10n.reviewed,
                       value: reviewedText,
-                      constrainValue: true,
+                      maxLines: 2,
                     ),
                   ],
                 ],
@@ -184,44 +183,44 @@ class MobileExpenseCard extends ConsumerWidget {
                 ],
               ),
             ],
-            if (_isPending && onEdit != null) ...[
+            if (onEdit != null || (_isProcessed && onViewReceipt != null)) ...[
               const SizedBox(height: 12),
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: FilledButton.icon(
-                  onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined, size: 14),
-                  label: Text(l10n.edit),
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(0, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (_isProcessed && onViewReceipt != null)
+                    OutlinedButton.icon(
+                      onPressed: onViewReceipt,
+                      icon: const Icon(Icons.receipt_long_outlined, size: 14),
+                      label: Text(l10n.receipt),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        side: const BorderSide(color: AppTheme.borderMedium),
+                        foregroundColor: AppTheme.foreground,
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ],
-            if (_isProcessed && onViewReceipt != null) ...[
-              const SizedBox(height: 12),
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: OutlinedButton.icon(
-                  onPressed: onViewReceipt,
-                  icon: const Icon(Icons.receipt_long_outlined, size: 14),
-                  label: Text(l10n.receipt),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  if (_isProcessed && onViewReceipt != null && onEdit != null)
+                    const SizedBox(width: 8),
+                  if (onEdit != null)
+                    FilledButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_outlined, size: 14),
+                      label: Text(l10n.edit),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                    side: const BorderSide(color: AppTheme.borderMedium),
-                    foregroundColor: AppTheme.foreground,
-                  ),
-                ),
+                ],
               ),
             ],
           ],
@@ -237,18 +236,20 @@ class _DetailRow extends StatelessWidget {
     required this.value,
     this.monospace = false,
     this.constrainValue = false,
+    this.maxLines = 1,
   });
 
   final String label;
   final String value;
   final bool monospace;
   final bool constrainValue;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
     final valueWidget = Text(
       value,
-      maxLines: 1,
+      maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.end,
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
