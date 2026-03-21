@@ -1,4 +1,5 @@
 class ReceiptAnalysisResult {
+  final String status; // "success" or "failed"
   final double? amount;
   final String? currencyCode;
   final String? merchantName;
@@ -9,6 +10,7 @@ class ReceiptAnalysisResult {
   final String? imageUrl;
 
   const ReceiptAnalysisResult({
+    this.status = 'success',
     this.amount,
     this.currencyCode,
     this.merchantName,
@@ -19,8 +21,11 @@ class ReceiptAnalysisResult {
     this.imageUrl,
   });
 
+  bool get aiFailed => status == 'failed';
+
   factory ReceiptAnalysisResult.fromJson(Map<String, dynamic> json) {
     return ReceiptAnalysisResult(
+      status: json['status'] as String? ?? 'success',
       amount: (json['amount'] as num?)?.toDouble(),
       currencyCode: json['currency'] as String?,
       merchantName: json['merchant'] as String?,

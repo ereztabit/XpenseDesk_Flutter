@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:web/web.dart' as web;
 import 'dart:js_interop';
 import 'screen_imports.dart';
@@ -257,10 +258,15 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
               result.expenseDate!, ref.read(companyLocaleProvider))
           : '';
       _amountController.text =
-          result.amount != null ? result.amount!.toStringAsFixed(2) : '';
+          result.amount != null ? _formatAmount(result.amount!) : '';
       _merchantController.text = result.merchantName ?? '';
       _receiptRefController.text = result.receiptNumber ?? '';
     });
+  }
+
+  String _formatAmount(double amount) {
+    final fmt = NumberFormat('#,##0.##', 'en');
+    return fmt.format(amount);
   }
 
   // ── AI analysis ────────────────────────────────────────────────────────────
@@ -284,6 +290,18 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (!mounted) return;
       _scanController.stop();
       _pulseController.stop();
+
+      if (result.aiFailed) {
+        setState(() {
+          _aiFailed = true;
+          _isAnalyzing = false;
+          _currentStep = 1;
+          _selectedCurrencyCode = 'ILS';
+          _aiImageUrl = result.imageUrl;
+        });
+        return;
+      }
+
       setState(() {
         _analysisResult = result;
         _isAnalyzing = false;
@@ -298,7 +316,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
               result.expenseDate!, ref.read(companyLocaleProvider));
         }
         if (result.amount != null) {
-          _amountController.text = result.amount!.toStringAsFixed(2);
+          _amountController.text = _formatAmount(result.amount!);
         }
         if (result.merchantName != null) {
           _merchantController.text = result.merchantName!;
@@ -326,7 +344,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   Future<void> _submit() async {
     setState(() => _hasAttemptedSubmit = true);
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount = double.tryParse(_amountController.text.trim().replaceAll(',', ''));
     final categoryId = _selectedCategoryId;
     final merchant = _merchantController.text.trim();
     final currency = _selectedCurrencyCode;

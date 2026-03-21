@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'screen_imports.dart';
 import '../models/expense_detail.dart';
 import '../models/expense_category.dart';
@@ -114,7 +115,7 @@ class _EmployeeExpenseDetailScreenState
 
   void _initForm(ExpenseDetail expense) {
     _amountController.text = expense.amount != null
-        ? expense.amount!.toStringAsFixed(expense.amount! % 1 == 0 ? 0 : 2)
+        ? NumberFormat('#,##0.##', 'en').format(expense.amount!)
         : '';
     _merchantController.text = expense.merchantName ?? '';
     _noteController.text = expense.note ?? '';

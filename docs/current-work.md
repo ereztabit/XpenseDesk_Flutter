@@ -2,21 +2,24 @@
 
 ## Currently Working On
 
-- OTP cursor direction incorrect in RTL mode
+- new expense flow: handle AI `status: "failed"` → route to manual edit
 
+* when i submit a new expense, then i try to edit and modify the total amount , when i hit the save button nothing happens, reproduces every time both mobile and desktop.
 
+* new expense flow: backend now returns a `status` field ("success"/"failed") on AI analysis instead of a 404 — if status is "failed", the flow should drop into manual edit mode instead of erroring out
 
 
 ## TODO (Backlog)
 
 ## report bugs (pending)
+
 * onboardin
 * when logout api gets 401 we got a nasty console error : 
 errors.dart:274 Uncaught (in promise) DartError: Looking up a deactivated widget's ancestor is unsafe.
 At this point the state of the widget's element tree is no longer stable.
 To safely refer to a widget's ancestor in its dispose() method, save a reference to the ancestor by calling dependOnInheritedWidgetOfExactType() in the widget's didChangeDependencies() method.
 
-* when i submit a new expense, then i try to edit and modify the total amount , when i hit the save button nothing happens, reproduces every time both mobile and desktop.
+
 * on the expenses dashboard - when an expense is approved there is - hebrew caption should be - "אושר ע"י"
 * in the mobile cards - instead of נבדק it should be אושר
 * Missing invite users option after signup - we need to have a quick onboarding flow to allow manager invite users
