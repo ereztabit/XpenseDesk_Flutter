@@ -50,37 +50,6 @@ class ExpenseStatusBadge extends StatelessWidget {
       ),
     );
 
-    if (!isAiData || expenseStatusId != 1) return statusPill;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        statusPill,
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withAlpha(230),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.auto_awesome, size: 10, color: Colors.white),
-              SizedBox(width: 3),
-              Text(
-                'AI',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    return statusPill;
   }
 }

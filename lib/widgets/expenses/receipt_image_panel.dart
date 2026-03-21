@@ -78,14 +78,6 @@ class ReceiptImagePanel extends StatelessWidget {
                 children: [
                   if (isDesktop) _buildReplaceButton(context, l10n),
                   const Spacer(),
-                  if (isDesktop && aiFailed) ...[
-                    _buildAiFailButton(l10n),
-                    const SizedBox(width: 4),
-                  ],
-                  if (isDesktop && !aiFailed && !hideAiBadge) ...[
-                    _buildAiBadgeInline(l10n),
-                    const SizedBox(width: 8),
-                  ],
                   if (onExpand != null) ...[
                     _buildBarButton(
                       icon: Icons.open_in_new,
@@ -142,14 +134,6 @@ class ReceiptImagePanel extends StatelessWidget {
                 children: [
                   _buildReplaceButton(context, l10n),
                   const Spacer(),
-                  if (aiFailed) ...[
-                    _buildAiFailButton(l10n),
-                    const SizedBox(width: 4),
-                  ],
-                  if (!aiFailed && !hideAiBadge) ...[
-                    _buildAiBadgeInline(l10n),
-                    const SizedBox(width: 8),
-                  ],
                   if (onExpand != null) ...[
                     _buildBarButton(
                       icon: Icons.open_in_full,
@@ -187,13 +171,6 @@ class ReceiptImagePanel extends StatelessWidget {
               color: AppTheme.muted,
               child: Image.memory(fileBytes, fit: BoxFit.contain),
             ),
-            // AI badge — top-start (only when AI succeeded)
-            if (!aiFailed && !hideAiBadge)
-              PositionedDirectional(
-                top: 8,
-                start: 8,
-                child: _buildAiBadgeInline(l10n),
-              ),
             // Expand button — top-end
             if (onExpand != null)
               PositionedDirectional(
@@ -212,31 +189,6 @@ class ReceiptImagePanel extends StatelessWidget {
   }
 
   // ── Shared helpers ─────────────────────────────────────────────────────────
-
-  Widget _buildAiBadgeInline(AppLocalizations l10n) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withAlpha(230),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.auto_awesome, size: 12, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            l10n.newExpenseAiBadgeLabel,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildBarButton({
     required IconData icon,
@@ -328,29 +280,4 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
-  Widget _buildAiFailButton(AppLocalizations l10n) {
-    return Tooltip(
-      message: l10n.newExpenseAiFailedTooltip,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: const Color(0xFFDC2626),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        alignment: Alignment.center,
-        child: const Text(
-          'AI',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-            decoration: TextDecoration.lineThrough,
-            decorationColor: Colors.white,
-            decorationThickness: 2,
-          ),
-        ),
-      ),
-    );
-  }
 }

@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-- No error message on failed expense deletion
+- expense screen - remove the ai badge below the image and also the one with the strike through
 
 ## TODO (Backlog)
 
@@ -24,7 +24,6 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * Empty state tables not collapsing/expanding correctly - need to explain this behaviour
 * when i disabled a user i dont see him on the users list
 * user managment  - on any command, if you got an error - we want to see the error
-* expense screen - remove the ai badge below the image and also the one with the strike through
 * when i submit an expense and AI didnt detect the details i want to see a warning message on top of the fields.
 * when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
 * when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
