@@ -1073,6 +1073,32 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // AI failure warning
+        Container(
+          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+            color: AppTheme.amber.withAlpha(25),
+            border: Border.all(color: AppTheme.amber.withAlpha(128)),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.warning_amber_rounded,
+                  size: 18, color: AppTheme.amber),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.newExpenseAiFailedWarning,
+                  style: const TextStyle(
+                      fontSize: 13, color: AppTheme.foreground),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // Receipt Reference — first field
         _requiredLabel(l10n.receiptRefLabel),
         const SizedBox(height: 8),

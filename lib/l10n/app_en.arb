@@ -292,6 +292,7 @@
   "newExpenseAnalyzing": "Analyzing receipt...",
   "newExpenseAiApplied": "AI analysis applied",
   "newExpenseAiFailed": "AI analysis failed",
+  "newExpenseAiFailedWarning": "The receipt couldn't be read automatically. Please fill in the details below manually.",
   "newExpenseReplaceReceipt": "Replace Receipt",
   "newExpenseAiBadgeLabel": "AI",
   "newExpenseFormPlaceholder": "Form content will appear here",

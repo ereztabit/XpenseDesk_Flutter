@@ -292,6 +292,7 @@
   "newExpenseAnalyzing": "מנתח קבלה...",
   "newExpenseAiApplied": "ניתוח AI הוחל",
   "newExpenseAiFailed": "ניתוח AI נכשל",
+  "newExpenseAiFailedWarning": "לא הצלחנו לקרוא את הקבלה אוטומטית. אנא מלא את הפרטים להלן ידנית.",
   "newExpenseReplaceReceipt": "החלף קבלה",
   "newExpenseAiBadgeLabel": "AI",
   "newExpenseFormPlaceholder": "תוכן הטופס יופיע כאן",
