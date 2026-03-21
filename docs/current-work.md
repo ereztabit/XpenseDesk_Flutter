@@ -2,15 +2,22 @@
 
 ## Currently Working On
 
-DONE: Mobile approval date display issue — added maxLines param to _DetailRow, reviewed row now wraps to 2 lines
-IN PROGRESS: Mobile manager view inconsistent with employee view - the pills are missing
+- OTP cursor direction incorrect in RTL mode
+
+
 
 
 ## TODO (Backlog)
 
 ## report bugs (pending)
-* onboarding Email OTP input cursor direction incorrect - on rtl it should be from the right
-* on the expenses dashboard - when an expense is approved there is - hebrew caption should be - "אושר ע"י" 
+* onboardin
+* when logout api gets 401 we got a nasty console error : 
+errors.dart:274 Uncaught (in promise) DartError: Looking up a deactivated widget's ancestor is unsafe.
+At this point the state of the widget's element tree is no longer stable.
+To safely refer to a widget's ancestor in its dispose() method, save a reference to the ancestor by calling dependOnInheritedWidgetOfExactType() in the widget's didChangeDependencies() method.
+
+* when i submit a new expense, then i try to edit and modify the total amount , when i hit the save button nothing happens, reproduces every time both mobile and desktop.
+* on the expenses dashboard - when an expense is approved there is - hebrew caption should be - "אושר ע"י"
 * in the mobile cards - instead of נבדק it should be אושר
 * Missing invite users option after signup - we need to have a quick onboarding flow to allow manager invite users
 * Invite users modal does not close on submit - after adding a user it should be closed
@@ -21,23 +28,14 @@ IN PROGRESS: Mobile manager view inconsistent with employee view - the pills are
 * Missing rejection reason field for manager - new feature
 * manager/Employee dashboard does not auto-refresh - every time we are coming to this screen data should be refreshed - the problem happens when you go to other report and go back to this screen - then data is not up to date.
 * Empty state tables not collapsing/expanding correctly - need to explain this behaviour
-* Incorrect column label (Expense Date) - on the expense dahboard the date should be expense date
-* Manager view missing expense status column - in the cards, the employee cards are ok.
-* expenses report - Search button size inconsistent with Export
-* Reports missing inner borders
-* Reference number allows spaces - when we submit new expense - we need to trim the recipet number
-* Mobile pull-to-refresh not working in header - on the report screen
-* Mobile category not localized to Hebrew - in the expense cards
-* Mobile approval date display issue - it is cut on the cards
-* Mobile manager view inconsistent with employee view - the pills are missing - it should be the same
 * No error message on failed expense deletion- the user tried to delete an expense that was already approved.
-* when i disabled a user i dont see him on the users list 
+* when i disabled a user i dont see him on the users list
 * user managment  - on any command, if you got an error - we want to see the error
 * expense screen - remove the ai badge below the image and also the one with the strike through
 * when i submit an expense and AI didnt detect the details i want to see a warning message on top of the fields.
 * when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
 * when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
-* when adding a user that belongs to another company we get this error - 
+* when adding a user that belongs to another company we get this error -
 {
     "success": false,
     "message": "Email already belongs to another company",
@@ -45,7 +43,7 @@ IN PROGRESS: Mobile manager view inconsistent with employee view - the pills are
     "data": {
         "email": "arlib1988@gmail.com"
     }
-}, 
+},
 show an explicit error explaning we cannot join this user to this company
 
 

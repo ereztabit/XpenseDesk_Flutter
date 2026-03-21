@@ -480,9 +480,12 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
           child: child,
         );
       },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(6, _buildDigitBox),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(6, _buildDigitBox),
+        ),
       ),
     );
   }
