@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-- manager/Employee dashboard does not auto-refresh
+- No error message on failed expense deletion
 
 ## TODO (Backlog)
 
@@ -22,7 +22,6 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * Manager and employee edit screens inconsistent - there should have been only one widget for new , update and view - consolidate them - the new expense is the most recent and rich
 * Missing rejection reason field for manager - new feature
 * Empty state tables not collapsing/expanding correctly - need to explain this behaviour
-* No error message on failed expense deletion- the user tried to delete an expense that was already approved.
 * when i disabled a user i dont see him on the users list
 * user managment  - on any command, if you got an error - we want to see the error
 * expense screen - remove the ai badge below the image and also the one with the strike through

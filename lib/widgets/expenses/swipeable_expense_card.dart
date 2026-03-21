@@ -27,6 +27,7 @@ class SwipeableExpenseCard extends StatefulWidget {
   final bool autoPeek;
   final VoidCallback? onPeekPlayed;
   final VoidCallback? onEdit;
+  final VoidCallback? onRefresh;
 
   const SwipeableExpenseCard({
     super.key,
@@ -35,6 +36,7 @@ class SwipeableExpenseCard extends StatefulWidget {
     this.autoPeek = false,
     this.onPeekPlayed,
     this.onEdit,
+    this.onRefresh,
   });
 
   @override
@@ -198,7 +200,11 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
     }
     _animateTo(0);
     if (mounted) {
-      await DeleteExpenseDialog.show(context, widget.expense.expenseId);
+      await DeleteExpenseDialog.show(
+        context,
+        widget.expense.expenseId,
+        onRefresh: widget.onRefresh,
+      );
     }
   }
 

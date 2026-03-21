@@ -15,7 +15,8 @@ import '../models/expenses_analysis_breakdown_row.dart';
 /// Exception thrown when expense operations fail.
 class ExpenseException implements Exception {
   final String message;
-  const ExpenseException(this.message);
+  final String? errorCode;
+  const ExpenseException(this.message, {this.errorCode});
 
   @override
   String toString() => message;
@@ -47,7 +48,8 @@ class ExpenseService {
     final success = response['success'] as bool? ?? false;
     if (!success) {
       final message = response['message'] as String? ?? defaultErrorMessage;
-      throw ExpenseException(message);
+      final errorCode = response['errorCode'] as String?;
+      throw ExpenseException(message, errorCode: errorCode);
     }
   }
 

@@ -130,6 +130,7 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                     : null,
                 onEdit: () => showMobileExpenseModal(context, entry.value)
                     .then((_) => ref.invalidate(expenseSearchProvider)),
+                onRefresh: () => ref.invalidate(expenseSearchProvider),
               );
             }).toList(),
           );
@@ -203,7 +204,11 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
               .pushNamed('/employee/expense/${expense.expenseId}')
               .then((_) => ref.invalidate(expenseSearchProvider)),
           onDelete: (expense) async {
-            await DeleteExpenseDialog.show(context, expense.expenseId);
+            await DeleteExpenseDialog.show(
+              context,
+              expense.expenseId,
+              onRefresh: () => ref.invalidate(expenseSearchProvider),
+            );
           },
         ),
         const SizedBox(height: 16),
