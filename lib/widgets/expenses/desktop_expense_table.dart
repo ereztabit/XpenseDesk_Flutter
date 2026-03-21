@@ -79,7 +79,7 @@ class DesktopExpenseTable extends ConsumerWidget {
             style: const TextStyle(fontSize: 14, color: AppTheme.foreground)),
         const SizedBox(height: 2),
         Text(
-          '${l10n.reviewedBy}${expense.reviewedBy ?? ''}',
+          '${expense.expenseStatusId == 2 ? l10n.approvedBy : expense.expenseStatusId == 3 ? l10n.declinedBy : l10n.reviewedBy}${expense.reviewedBy ?? ''}',
           style:
               const TextStyle(fontSize: 12, color: AppTheme.mutedForeground),
           maxLines: 1,
@@ -199,7 +199,7 @@ class DesktopExpenseTable extends ConsumerWidget {
         ? [
             SectionTableColumn(label: l10n.employee, flex: 3),
             SectionTableColumn(label: l10n.receiptNumber, flex: 3),
-            SectionTableColumn(label: l10n.expenseDate, flex: 3),
+            SectionTableColumn(label: l10n.expenseDate, flex: 5),
             SectionTableColumn(label: l10n.amount, flex: 3),
             SectionTableColumn(label: l10n.category, flex: 3),
             SectionTableColumn(label: l10n.status, flex: 3),
@@ -207,7 +207,7 @@ class DesktopExpenseTable extends ConsumerWidget {
           ]
         : [
             SectionTableColumn(label: l10n.merchant, flex: 4),
-            SectionTableColumn(label: l10n.expenseDate, flex: 4),
+            SectionTableColumn(label: l10n.expenseDate, flex: 6),
             SectionTableColumn(label: l10n.amount, flex: 3),
             SectionTableColumn(label: l10n.category, flex: 4),
             SectionTableColumn(label: l10n.status, flex: 3),

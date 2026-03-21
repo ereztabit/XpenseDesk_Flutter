@@ -149,7 +149,7 @@ class MobileExpenseCard extends ConsumerWidget {
                   if (reviewedText != null) ...[
                     const SizedBox(height: 6),
                     _DetailRow(
-                      label: l10n.reviewed,
+                      label: expense.expenseStatusId == 2 ? l10n.approved : expense.expenseStatusId == 3 ? l10n.declined : l10n.reviewed,
                       value: reviewedText,
                       maxLines: 2,
                     ),

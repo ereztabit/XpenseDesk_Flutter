@@ -190,12 +190,15 @@ class _SectionTableState extends State<SectionTable>
                             for (final col in widget.columns)
                               Expanded(
                                 flex: col.flex,
-                                child: Text(
-                                  col.label,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppTheme.mutedForeground,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  child: Text(
+                                    col.label,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppTheme.mutedForeground,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -250,7 +253,10 @@ class _BodyRowState extends State<_BodyRow> {
             for (int i = 0; i < widget.columns.length; i++)
               Expanded(
                 flex: widget.columns[i].flex,
-                child: widget.cells[i],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: widget.cells[i],
+                ),
               ),
           ],
         ),
