@@ -35,6 +35,14 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
   bool get hasUnsavedChanges => false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(expenseSearchProvider);
+    });
+  }
+
+  @override
   void dispose() {
     _openCardNotifier.dispose();
     super.dispose();
@@ -79,8 +87,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
               child: ExpensesEmptyState(
                 title: l10n.noPendingExpensesTitle,
                 subtitle: l10n.noPendingExpensesSubtitle,
-                onNewExpense: () =>
-                    Navigator.of(context).pushNamed('/employee/new-expense'),
+                onNewExpense: () => Navigator.of(context)
+                    .pushNamed('/employee/new-expense')
+                    .then((_) => ref.invalidate(expenseSearchProvider)),
                 newExpenseLabel: l10n.newExpense,
               ),
             );
@@ -185,8 +194,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
           emptyState: ExpensesEmptyState(
             title: l10n.noPendingExpensesTitle,
             subtitle: l10n.noPendingExpensesSubtitle,
-            onNewExpense: () =>
-                Navigator.of(context).pushNamed('/employee/new-expense'),
+            onNewExpense: () => Navigator.of(context)
+                .pushNamed('/employee/new-expense')
+                .then((_) => ref.invalidate(expenseSearchProvider)),
             newExpenseLabel: l10n.newExpense,
           ),
           onEdit: (expense) => Navigator.of(context)
@@ -282,9 +292,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                             Row(
                               children: [
                                 FilledButton.icon(
-                                  onPressed: () => Navigator.of(
-                                    context,
-                                  ).pushNamed('/employee/new-expense'),
+                                  onPressed: () => Navigator.of(context)
+                                      .pushNamed('/employee/new-expense')
+                                      .then((_) => ref.invalidate(expenseSearchProvider)),
                                   icon: const Icon(Icons.add, size: 18),
                                   label: Text(l10n.newExpense),
                                 ),

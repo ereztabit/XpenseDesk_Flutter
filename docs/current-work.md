@@ -2,6 +2,8 @@
 
 ## Currently Working On
 
+- manager/Employee dashboard does not auto-refresh
+
 ## TODO (Backlog)
 
 ## report bugs (pending)
@@ -12,8 +14,6 @@ errors.dart:274 Uncaught (in promise) DartError: Looking up a deactivated widget
 At this point the state of the widget's element tree is no longer stable.
 To safely refer to a widget's ancestor in its dispose() method, save a reference to the ancestor by calling dependOnInheritedWidgetOfExactType() in the widget's didChangeDependencies() method.
 
-* on the expenses dashboard - when an expense is approved there is - hebrew caption should be - "אושר ע"י"
-* in the mobile cards - instead of נבדק it should be אושר
 * Missing invite users option after signup - we need to have a quick onboarding flow to allow manager invite users
 * Invite users modal does not close on submit - after adding a user it should be closed
 * New expense modal spacing hides Continue button - the titles and back button takes too much of the screen
@@ -21,7 +21,6 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * Finish button misaligned ,should be left on LTR, and below the image.
 * Manager and employee edit screens inconsistent - there should have been only one widget for new , update and view - consolidate them - the new expense is the most recent and rich
 * Missing rejection reason field for manager - new feature
-* manager/Employee dashboard does not auto-refresh - every time we are coming to this screen data should be refreshed - the problem happens when you go to other report and go back to this screen - then data is not up to date.
 * Empty state tables not collapsing/expanding correctly - need to explain this behaviour
 * No error message on failed expense deletion- the user tried to delete an expense that was already approved.
 * when i disabled a user i dont see him on the users list

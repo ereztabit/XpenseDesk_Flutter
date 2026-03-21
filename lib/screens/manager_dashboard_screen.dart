@@ -30,6 +30,14 @@ class _ManagerDashboardScreenState
   bool get hasUnsavedChanges => false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(expenseSearchProvider);
+    });
+  }
+
+  @override
   void dispose() {
     _openCardNotifier.dispose();
     super.dispose();
@@ -303,6 +311,7 @@ class _ManagerDashboardScreenState
                           expenses: allExpenses,
                           locale: ref.watch(companyLocaleProvider),
                           currencyCode: ref.watch(userInfoProvider)?.currencyCode,
+                          onNavigateAway: () => ref.invalidate(expenseSearchProvider),
                         ),
                         const SizedBox(height: 16),
                       ],

@@ -9,12 +9,14 @@ class SpendOverviewWidget extends StatefulWidget {
   final List<ExpenseSummary> expenses;
   final String locale;
   final String? currencyCode;
+  final VoidCallback? onNavigateAway;
 
   const SpendOverviewWidget({
     super.key,
     required this.expenses,
     required this.locale,
     this.currencyCode,
+    this.onNavigateAway,
   });
 
   @override
@@ -88,7 +90,8 @@ class _SpendOverviewWidgetState extends State<SpendOverviewWidget> {
     if (categoryFilter != null) args['categories'] = categoryFilter;
     if (employeeFilter != null) args['employees'] = employeeFilter;
     Navigator.pushNamed(context, '/manager/analysis',
-        arguments: args.isNotEmpty ? args : null);
+            arguments: args.isNotEmpty ? args : null)
+        .then((_) => widget.onNavigateAway?.call());
   }
 
   // ── build ─────────────────────────────────────────────────────────────────
