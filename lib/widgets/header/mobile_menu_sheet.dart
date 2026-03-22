@@ -112,11 +112,14 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
   }
 
   Future<void> _handleLogout() async {
+    final authService = ref.read(authServiceProvider);
+    final userInfoNotifier = ref.read(userInfoProvider.notifier);
+
     await _close();
-    
-    ref.read(userInfoProvider.notifier).logout();
-    await ref.read(authServiceProvider).logout();
-    
+
+    await authService.logout();
+    userInfoNotifier.logout();
+
     if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }

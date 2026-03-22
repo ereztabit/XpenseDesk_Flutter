@@ -128,7 +128,7 @@ class AuthService {
     final token = await getSessionToken();
     if (token != null && token.isNotEmpty) {
       try {
-        await _apiService.post('/api/auth/logout', {}, authToken: token);
+        await _apiService.post('/api/auth/logout', {}, authToken: token, suppressUnauthorized: true);
       } catch (_) {
         // Ignore API errors — local logout must always succeed.
       }

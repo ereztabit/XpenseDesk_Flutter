@@ -151,8 +151,8 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         await MenuItems.launchContactSupport(userInfo, t);
         break;
       case 'logout':
-        ref.read(userInfoProvider.notifier).logout();
         await ref.read(authServiceProvider).logout();
+        ref.read(userInfoProvider.notifier).logout();
         if (mounted) {
           Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         }

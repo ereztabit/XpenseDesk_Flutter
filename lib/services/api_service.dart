@@ -31,9 +31,10 @@ class ApiService {
   static void Function()? onUnauthorized;
 
   /// Decode the response body and throw [UnauthorizedException] on 401.
-  Map<String, dynamic> _decode(http.Response response) {
+  /// Pass [suppressUnauthorized] = true to skip the global handler (e.g. logout).
+  Map<String, dynamic> _decode(http.Response response, {bool suppressUnauthorized = false}) {
     if (response.statusCode == 401) {
-      onUnauthorized?.call();
+      if (!suppressUnauthorized) onUnauthorized?.call();
       throw const UnauthorizedException();
     }
     return jsonDecode(response.body) as Map<String, dynamic>;
@@ -61,11 +62,14 @@ class ApiService {
     return headers;
   }
 
-  /// Make a POST request
+  /// Make a POST request.
+  /// Set [suppressUnauthorized] = true to skip the global 401 handler
+  /// (use for logout, where a 401 is expected and navigation is handled by the caller).
   Future<Map<String, dynamic>> post(
     String endpoint,
     Map<String, dynamic> body, {
     String? authToken,
+    bool suppressUnauthorized = false,
   }) =>
       _run(() async {
         final uri = Uri.parse('$baseUrl$endpoint');
@@ -74,7 +78,7 @@ class ApiService {
           headers: _buildHeaders(authToken: authToken),
           body: jsonEncode(body),
         );
-        return _decode(response);
+        return _decode(response, suppressUnauthorized: suppressUnauthorized);
       });
 
   /// Make a POST request and return both the HTTP status code and the decoded body.

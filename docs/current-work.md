@@ -2,27 +2,16 @@
 
 ## Currently Working On
 
-**Feature: Delete user from user management**
-- POST /api/users/delete with full errorCode mapping
-- Confirmation dialog + 6 localized error codes (EN + HE)
-
-**Bug: Expense image expand UX on desktop**
-- Expand button has no mouse pointer cursor on hover
-- Clicking the image itself should show an expand hint and expand it on click
-
 ## TODO (Backlog)
 
 ## report bugs (pending)
 
 * onboarding - (skipping for now, tackling non-onboarding first)
-* when logout api gets 401 we got a nasty console error: "Looking up a deactivated widget's ancestor is unsafe"
 * Missing invite users option after signup - quick onboarding flow to allow manager invite users
 * New expense modal spacing hides Continue button - titles and back button takes too much of the screen
 * Finish button misaligned - should be left on LTR, and below the image
 * Missing rejection reason field for manager - new feature
-* editing an expense - expand button has no mouse pointer on hover; clicking the image itself should show expand hint and expand on click
 * Empty state tables not collapsing/expanding correctly
-* when i disabled a user i dont see him on the users list
 * when i submit an expense and AI did detect, category is mandatory but not obvious - scroll/highlight category when hitting done with empty category
 * onboarding bug - landing on dashboard with info of previous company after new signup
 
