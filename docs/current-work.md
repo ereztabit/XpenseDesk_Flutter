@@ -2,11 +2,9 @@
 
 ## Currently Working On
 
-**Bug: Adding a user from another company shows a generic/unclear error**
-- API returns errorCode `UsersInviteEmailBelongsToAnotherCompany` with message "Email already belongs to another company"
-- Need to surface an explicit, localized user-friendly message in the dialog
-
-
+**Bug: User management commands don't show errors**
+- `_handlePromote/Demote/Disable/Enable` all call `ScaffoldMessenger.of(context)` after `await refresh()` — same stale context issue as the invite dialog fix
+- Fix: capture messenger + l10n before first await in each handler
 
 ## TODO (Backlog)
 
@@ -31,16 +29,7 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * user managment  - on any command, if you got an error - we want to see the error
 * when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
 * when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
-* when adding a user that belongs to another company we get this error -
-{
-    "success": false,
-    "message": "Email already belongs to another company",
-    "errorCode": "UsersInviteEmailBelongsToAnotherCompany",
-    "data": {
-        "email": "arlib1988@gmail.com"
-    }
-},
-show an explicit error explaning we cannot join this user to this company
+[x] when adding a user that belongs to another company - show explicit inline error with conflicting emails marked red
 
 * onboarding bug - i listed a new company, completed otp with 123456, then i was landing on the dashbaord but i got the info of the previous company. maby we need to make sure we delete any token stored , while we are in the onboarding process.
 

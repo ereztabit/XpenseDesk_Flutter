@@ -187,34 +187,26 @@ class UserListCard extends ConsumerWidget {
     if (!confirmed || !context.mounted) return;
 
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final service = ref.read(usersServiceProvider);
       await service.promoteToAdmin(user.userId);
 
-      if (!context.mounted) return;
-
-      // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.userPromotedSuccess),
           backgroundColor: Colors.green,
         ),
       );
     } on UsersException catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
           backgroundColor: Colors.red,
@@ -237,34 +229,26 @@ class UserListCard extends ConsumerWidget {
     if (!confirmed || !context.mounted) return;
 
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final service = ref.read(usersServiceProvider);
       await service.downgradeToEmployee(user.userId);
 
-      if (!context.mounted) return;
-
-      // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.userDemotedSuccess),
           backgroundColor: Colors.green,
         ),
       );
     } on UsersException catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
           backgroundColor: Colors.red,
@@ -283,34 +267,26 @@ class UserListCard extends ConsumerWidget {
     if (!confirmed || !context.mounted) return;
 
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final service = ref.read(usersServiceProvider);
       await service.disableUser(user.userId);
 
-      if (!context.mounted) return;
-
-      // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.userDisabledSuccess),
           backgroundColor: Colors.green,
         ),
       );
     } on UsersException catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
           backgroundColor: Colors.red,
@@ -325,34 +301,26 @@ class UserListCard extends ConsumerWidget {
     UserListItem user,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
       final service = ref.read(usersServiceProvider);
       await service.enableUser(user.userId);
 
-      if (!context.mounted) return;
-
-      // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.userEnabledSuccess),
           backgroundColor: Colors.green,
         ),
       );
     } on UsersException catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text(e.message), backgroundColor: Colors.red),
       );
     } catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
           backgroundColor: Colors.red,
