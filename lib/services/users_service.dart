@@ -7,11 +7,13 @@ class UsersException implements Exception {
   final String message;
   final String? errorCode;
   final List<String> problematicEmails;
+  final Map<String, dynamic>? data;
 
   const UsersException(
     this.message, {
     this.errorCode,
     this.problematicEmails = const [],
+    this.data,
   });
 
   @override
@@ -50,7 +52,7 @@ class UsersService {
         problematicEmails = const [];
       }
 
-      throw UsersException(message, errorCode: errorCode, problematicEmails: problematicEmails);
+      throw UsersException(message, errorCode: errorCode, problematicEmails: problematicEmails, data: data);
     }
   }
 

@@ -1430,7 +1430,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         errorRow,
         submitButton,
@@ -1606,15 +1606,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                               const EdgeInsets.symmetric(horizontal: 8),
                         ),
                       ),
-                      if (context.isDesktop) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.newExpense,
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const SizedBox(height: 24),
-                      ] else
-                        const SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Card(
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -1627,9 +1619,28 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ExpenseStepIndicator(
-                                  currentStep: _currentStep),
-                              const SizedBox(height: 32),
+                              if (context.isDesktop)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      l10n.newExpense,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.foreground,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: ExpenseStepIndicator(
+                                          currentStep: _currentStep),
+                                    ),
+                                  ],
+                                )
+                              else
+                                ExpenseStepIndicator(
+                                    currentStep: _currentStep),
+                              const SizedBox(height: 24),
                               if (_currentStep == 0) ...[
                                 if (_fileBytes == null)
                                   _buildUploadZone(l10n, uploadHeight)

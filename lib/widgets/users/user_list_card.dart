@@ -317,8 +317,24 @@ class UserListCard extends ConsumerWidget {
         ),
       );
     } on UsersException catch (e) {
+      if (!context.mounted) return;
+      final l10nInner = AppLocalizations.of(context)!;
+      final String displayMessage;
+      switch (e.errorCode) {
+        case 'UsersEnableMaximumActiveUsersReached':
+          final maxActiveUsers = e.data?['maxActiveUsers'] as int?;
+          if (maxActiveUsers != null) {
+            displayMessage =
+                '${l10nInner.enableUserErrorMaxActiveUsersWithCountPrefix} $maxActiveUsers ${l10nInner.enableUserErrorMaxActiveUsersWithCountSuffix}';
+          } else {
+            displayMessage = l10nInner.enableUserErrorMaxActiveUsers;
+          }
+          break;
+        default:
+          displayMessage = e.message;
+      }
       messenger.showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        SnackBar(content: Text(displayMessage), backgroundColor: Colors.red),
       );
     } catch (e) {
       messenger.showSnackBar(

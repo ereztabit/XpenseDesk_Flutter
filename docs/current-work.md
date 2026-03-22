@@ -2,16 +2,15 @@
 
 ## Currently Working On
 
+- Enable user seat-limit error handling (`UsersEnableMaximumActiveUsersReached` / 409)
+
 ## TODO (Backlog)
 
 ## report bugs (pending)
 
 * onboarding - (skipping for now, tackling non-onboarding first)
-* Missing invite users option after signup - quick onboarding flow to allow manager invite users
-* New expense modal spacing hides Continue button - titles and back button takes too much of the screen
-* Finish button misaligned - should be left on LTR, and below the image
-* Missing rejection reason field for manager - new feature
-* Empty state tables not collapsing/expanding correctly
+
+
 * when i submit an expense and AI did detect, category is mandatory but not obvious - scroll/highlight category when hitting done with empty category
 * onboarding bug - landing on dashboard with info of previous company after new signup
 
@@ -40,6 +39,8 @@
 ## manager expenses report
 
 - [ ] build the spend overview widget for manager and employee spend-overview-spec.md
+* Missing rejection reason field for manager - new feature
+* Missing invite users option after signup - quick onboarding flow to allow manager invite users
 
 ## management screens
 - [ ] we need to configure which categories are available
