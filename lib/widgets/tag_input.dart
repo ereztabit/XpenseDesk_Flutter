@@ -13,6 +13,8 @@ class TagInput extends StatefulWidget {
   final int? maxTags;
   final String? Function(String)? validator;
   final TextDirection? contentTextDirection;
+  /// Tags that should be visually marked as conflicting/errored (red styling).
+  final Set<String> errorTags;
 
   const TagInput({
     super.key,
@@ -25,6 +27,7 @@ class TagInput extends StatefulWidget {
     this.maxTags,
     this.validator,
     this.contentTextDirection,
+    this.errorTags = const {},
   });
 
   @override
@@ -205,6 +208,7 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
 
   Widget _buildTag(String tag, int index, TextDirection contentTextDirection) {
     final isSelected = _selectedTagIndex == index;
+    final isError = widget.errorTags.contains(tag);
     
     // Get or create animation controller for this tag
     _tagAnimationControllers.putIfAbsent(
@@ -233,14 +237,18 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: isSelected
                     ? Theme.of(context).colorScheme.primary.withAlpha(204)
-                    : const Color(0xFFE8E3F3),
+                    : isError
+                        ? const Color(0xFFFFEBEE)
+                        : const Color(0xFFE8E3F3),
                 borderRadius: BorderRadius.circular(16),
                 border: isSelected
                     ? Border.all(
                         color: Theme.of(context).colorScheme.primary,
                         width: 2,
                       )
-                    : null,
+                    : isError
+                        ? Border.all(color: Colors.red.shade300, width: 1)
+                        : null,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withAlpha(13),
@@ -252,6 +260,10 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (isError) ...[
+                    Icon(Icons.warning_amber_rounded, size: 14, color: Colors.red.shade600),
+                    const SizedBox(width: 4),
+                  ],
                   Text(
                     tag,
                     textDirection: contentTextDirection,
@@ -259,7 +271,9 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: isSelected
                           ? Colors.white
-                          : const Color(0xFF5E4B8B),
+                          : isError
+                              ? Colors.red.shade700
+                              : const Color(0xFF5E4B8B),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -274,7 +288,9 @@ class _TagInputState extends State<TagInput> with TickerProviderStateMixin {
                         size: 16,
                         color: isSelected
                             ? Colors.white
-                            : const Color(0xFF5E4B8B),
+                            : isError
+                                ? Colors.red.shade600
+                                : const Color(0xFF5E4B8B),
                       ),
                     ),
                   ),

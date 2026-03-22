@@ -102,6 +102,8 @@
   "usersInvitedSuccess": "המשתמשים הוזמנו בהצלחה",
   "cannotModifySelf": "אינך יכול לשנות את החשבון שלך",
   "planLimitReached": "לא ניתן להזמין משתמשים נוספים. הגעת למגבלת התוכנית.",
+  "invitePartialSuccess": "נוספו בהצלחה:",
+  "inviteEmailBelongsToAnotherCompany": "האימייל(ים) הבאים לא ניתן להוסיפם — הם כבר רשומים בחברה אחרת. הסר אותם כדי להמשיך.",
   "noValidEmails": "לא נמצאו כתובות אימייל תקינות",
   "noUsersFound": "לא נמצאו משתמשים",
   "noUsersMatchSearch": "אין משתמשים התואמים את החיפוש",

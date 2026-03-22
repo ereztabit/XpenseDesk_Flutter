@@ -5,7 +5,14 @@ import '../models/user_list_item.dart';
 /// Exception thrown when user management operations fail
 class UsersException implements Exception {
   final String message;
-  const UsersException(this.message);
+  final String? errorCode;
+  final List<String> problematicEmails;
+
+  const UsersException(
+    this.message, {
+    this.errorCode,
+    this.problematicEmails = const [],
+  });
 
   @override
   String toString() => message;
@@ -25,7 +32,25 @@ class UsersService {
     final success = response['success'] as bool? ?? false;
     if (!success) {
       final message = response['message'] as String? ?? defaultErrorMessage;
-      throw UsersException(message);
+      final errorCode = response['errorCode'] as String?;
+
+      // Extract problematic email(s) from data field when present
+      final data = response['data'] as Map<String, dynamic>?;
+      final List<String> problematicEmails;
+      if (data != null) {
+        final email = data['email'];
+        if (email is String) {
+          problematicEmails = [email];
+        } else if (email is List) {
+          problematicEmails = email.whereType<String>().toList();
+        } else {
+          problematicEmails = const [];
+        }
+      } else {
+        problematicEmails = const [];
+      }
+
+      throw UsersException(message, errorCode: errorCode, problematicEmails: problematicEmails);
     }
   }
 

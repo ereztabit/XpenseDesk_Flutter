@@ -19,6 +19,8 @@ class InviteUsersDialog extends ConsumerStatefulWidget {
 class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
   bool _isLoading = false;
   List<String> _emailList = [];
+  Set<String> _conflictEmails = {};
+  int _successCount = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -54,13 +56,16 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
             // Email tag input
             TagInput(
               tags: _emailList,
+              errorTags: _conflictEmails,
               onChanged: (tags) {
                 setState(() {
-                  // Limit to remaining slots and max 20 per batch
                   final maxEmails = widget.remainingSlots < 20
                       ? widget.remainingSlots
                       : 20;
                   _emailList = tags.take(maxEmails).toList();
+                  // Clear resolved conflicts as user removes emails
+                  _conflictEmails = _conflictEmails
+                      .intersection(_emailList.toSet());
                 });
               },
               labelText: l10n.emailAddresses,
@@ -81,6 +86,65 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
                 return null;
               },
             ),
+
+            // Partial success banner
+            if (_successCount > 0) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_outline,
+                        size: 18, color: Colors.green.shade700),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${l10n.invitePartialSuccess} $_successCount',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.green.shade800,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            // Inline conflict error — shown when API rejects emails from another company
+            if (_conflictEmails.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFEBEE),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.error_outline,
+                        size: 18, color: Colors.red.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.inviteEmailBelongsToAnotherCompany,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.red.shade800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             // Actions
@@ -115,6 +179,12 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
   Future<void> _handleInvite() async {
     if (_emailList.isEmpty) return;
 
+    // Capture context-dependent references before any async gap —
+    // Riverpod rebuilds triggered by the refresh can invalidate context lookups.
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() => _isLoading = true);
 
     try {
@@ -126,34 +196,35 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
       // Refresh users list
       await ref.read(usersListProvider.notifier).refresh();
 
-      if (!mounted) return;
-
-      // Show success message
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.usersInvitedSuccess),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Close dialog
-      Navigator.pop(context);
+      navigator.pop();
     } on UsersException catch (e) {
       if (!mounted) return;
 
-      setState(() => _isLoading = false);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.red),
-      );
+      if (e.errorCode == 'UsersInviteEmailBelongsToAnotherCompany' &&
+          e.problematicEmails.isNotEmpty) {
+        final conflicts = e.problematicEmails.toSet();
+        final successCount = _emailList.where((email) => !conflicts.contains(email)).length;
+        setState(() {
+          _isLoading = false;
+          _conflictEmails = conflicts;
+          _successCount = successCount;
+          // Valid emails were already added server-side — keep only the conflicting ones
+          _emailList = _emailList.where((email) => conflicts.contains(email)).toList();
+        });
+        // Refresh in background so seat count reflects the newly added users
+        ref.read(usersListProvider.notifier).refresh();
+      } else {
+        setState(() => _isLoading = false);
+        messenger.showSnackBar(
+          SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
       setState(() => _isLoading = false);
 
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.anErrorOccurred),
           backgroundColor: Colors.red,

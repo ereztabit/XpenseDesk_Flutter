@@ -102,6 +102,8 @@
   "usersInvitedSuccess": "Users invited successfully",
   "cannotModifySelf": "You cannot modify your own account",
   "planLimitReached": "Cannot invite more users. Plan limit reached.",
+  "invitePartialSuccess": "Added successfully:",
+  "inviteEmailBelongsToAnotherCompany": "The following email(s) could not be added — they are already registered with a different company. Remove them to continue.",
   "noValidEmails": "No valid email addresses found",
   "noUsersFound": "No users found",
   "noUsersMatchSearch": "No users match your search",
