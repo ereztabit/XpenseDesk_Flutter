@@ -90,6 +90,7 @@ class UserListCard extends ConsumerWidget {
           onDemote: () => _handleDemote(context, ref, user),
           onDisable: () => _handleDisable(context, ref, user),
           onEnable: () => _handleEnable(context, ref, user),
+          onDelete: () => _handleDelete(context, ref, user),
         );
       },
     );
@@ -354,6 +355,101 @@ class UserListCard extends ConsumerWidget {
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(l10n.confirm),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<void> _handleDelete(
+    BuildContext context,
+    WidgetRef ref,
+    UserListItem user,
+  ) async {
+    final confirmed = await _showDeleteConfirmation(context, user);
+
+    if (!confirmed || !context.mounted) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final service = ref.read(usersServiceProvider);
+      await service.deleteUser(user.userId);
+
+      await ref.read(usersListProvider.notifier).refresh();
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.userDeletedSuccess),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } on UsersException catch (e) {
+      if (!context.mounted) return;
+      final l10nInner = AppLocalizations.of(context)!;
+      final String displayMessage;
+      switch (e.errorCode) {
+        case 'UsersDeleteCannotDeleteYourself':
+          displayMessage = l10nInner.deleteUserErrorCannotDeleteYourself;
+          break;
+        case 'UsersDeleteOnlyActiveAdminCanDeleteUsers':
+          displayMessage = l10nInner.deleteUserErrorNotAdmin;
+          break;
+        case 'UsersDeleteTargetUserNotFoundInCompany':
+          displayMessage = l10nInner.deleteUserErrorNotFound;
+          await ref.read(usersListProvider.notifier).refresh();
+          break;
+        case 'UsersDeleteCannotDeleteLastActiveAdminInCompany':
+          displayMessage = l10nInner.deleteUserErrorLastAdmin;
+          break;
+        case 'UsersDeleteCannotDeleteUserThatCreatedExpenses':
+          displayMessage = l10nInner.deleteUserErrorCreatedExpenses;
+          break;
+        case 'UsersDeleteCannotDeleteUserThatReviewedExpenses':
+          displayMessage = l10nInner.deleteUserErrorReviewedExpenses;
+          break;
+        default:
+          displayMessage = e.message;
+      }
+      messenger.showSnackBar(
+        SnackBar(content: Text(displayMessage), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.anErrorOccurred),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<bool> _showDeleteConfirmation(
+    BuildContext context,
+    UserListItem user,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final userName = user.fullName.isEmpty ? user.email : user.fullName;
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.deleteUserTitle),
+            content: Text(
+              '${l10n.deleteConfirmPrefix}$userName${l10n.deleteConfirmSuffix}',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                child: Text(l10n.deleteUser),
               ),
             ],
           ),

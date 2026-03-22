@@ -2,6 +2,10 @@
 
 ## Currently Working On
 
+**Feature: Delete user from user management**
+- POST /api/users/delete with full errorCode mapping
+- Confirmation dialog + 6 localized error codes (EN + HE)
+
 **Bug: Expense image expand UX on desktop**
 - Expand button has no mouse pointer cursor on hover
 - Clicking the image itself should show an expand hint and expand it on click

@@ -173,6 +173,26 @@ class UsersService {
     _validateResponse(response, 'Failed to disable user');
   }
 
+  /// Permanently delete a user account
+  /// POST /api/users/delete
+  /// Requires: Administrator role
+  Future<void> deleteUser(String targetUserId) async {
+    if (targetUserId.isEmpty) {
+      throw const UsersException('User ID cannot be empty');
+    }
+
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/users/delete',
+      {'targetUserId': targetUserId},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to delete user');
+  }
+
   /// Enable a disabled user account
   /// POST /api/users/enable
   /// Requires: Administrator role

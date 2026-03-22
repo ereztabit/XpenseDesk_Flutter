@@ -12,6 +12,7 @@ class UserListItemWidget extends StatelessWidget {
   final VoidCallback? onDemote;
   final VoidCallback? onDisable;
   final VoidCallback? onEnable;
+  final VoidCallback? onDelete;
 
   const UserListItemWidget({
     super.key,
@@ -21,6 +22,7 @@ class UserListItemWidget extends StatelessWidget {
     this.onDemote,
     this.onDisable,
     this.onEnable,
+    this.onDelete,
   });
 
   @override
@@ -313,6 +315,21 @@ class UserListItemWidget extends StatelessWidget {
             ],
           ),
         ),
+        const PopupMenuDivider(),
+        // Delete option
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              const Icon(Icons.delete_outline, size: 18, color: AppTheme.destructive),
+              const SizedBox(width: 12),
+              Text(
+                l10n.deleteUser,
+                style: const TextStyle(color: AppTheme.destructive),
+              ),
+            ],
+          ),
+        ),
       ],
       onSelected: (value) {
         switch (value) {
@@ -327,6 +344,9 @@ class UserListItemWidget extends StatelessWidget {
             break;
           case 'enable':
             onEnable?.call();
+            break;
+          case 'delete':
+            onDelete?.call();
             break;
         }
       },
