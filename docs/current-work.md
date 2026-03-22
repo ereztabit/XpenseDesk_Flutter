@@ -2,32 +2,25 @@
 
 ## Currently Working On
 
+**Bug: Expense image expand UX on desktop**
+- Expand button has no mouse pointer cursor on hover
+- Clicking the image itself should show an expand hint and expand it on click
+
 ## TODO (Backlog)
 
 ## report bugs (pending)
 
-* onboardin
-* when logout api gets 401 we got a nasty console error :
-errors.dart:274 Uncaught (in promise) DartError: Looking up a deactivated widget's ancestor is unsafe.
-At this point the state of the widget's element tree is no longer stable.
-To safely refer to a widget's ancestor in its dispose() method, save a reference to the ancestor by calling dependOnInheritedWidgetOfExactType() in the widget's didChangeDependencies() method.
-
-* Missing invite users option after signup - we need to have a quick onboarding flow to allow manager invite users
-[x] Invite users modal does not close on submit - after adding a user it should be closed
-* New expense modal spacing hides Continue button - the titles and back button takes too much of the screen
-
-* Finish button misaligned ,should be left on LTR, and below the image.
-
+* onboarding - (skipping for now, tackling non-onboarding first)
+* when logout api gets 401 we got a nasty console error: "Looking up a deactivated widget's ancestor is unsafe"
+* Missing invite users option after signup - quick onboarding flow to allow manager invite users
+* New expense modal spacing hides Continue button - titles and back button takes too much of the screen
+* Finish button misaligned - should be left on LTR, and below the image
 * Missing rejection reason field for manager - new feature
-* editing and expense - the expand button on the expense doesnt have a mouse pointer on hover, we would like that on desktop - when a user clicks on the image itself, the entire image will have a hint that its explandable - and when you click on it it will expand.
-* Empty state tables not collapsing/expanding correctly - need to explain this behaviour
+* editing an expense - expand button has no mouse pointer on hover; clicking the image itself should show expand hint and expand on click
+* Empty state tables not collapsing/expanding correctly
 * when i disabled a user i dont see him on the users list
-[x] user managment  - on any command, if you got an error - we want to see the error
-* when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
-[x] when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
-[x] when adding a user that belongs to another company - show explicit inline error with conflicting emails marked red
-
-* onboarding bug - i listed a new company, completed otp with 123456, then i was landing on the dashbaord but i got the info of the previous company. maby we need to make sure we delete any token stored , while we are in the onboarding process.
+* when i submit an expense and AI did detect, category is mandatory but not obvious - scroll/highlight category when hitting done with empty category
+* onboarding bug - landing on dashboard with info of previous company after new signup
 
 ## general environment
 

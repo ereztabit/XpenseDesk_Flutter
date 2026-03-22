@@ -804,13 +804,9 @@ class _EmployeeExpenseDetailScreenState
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            imageUrl,
-            fit: BoxFit.contain,
-            errorBuilder: (ctx, err, stack) => const Center(
-              child: Icon(Icons.broken_image,
-                  size: 48, color: AppTheme.mutedForeground),
-            ),
+          _HoverableNetworkImage(
+            imageUrl: imageUrl,
+            onExpand: () => _showExpandDialog(imageUrl),
           ),
           // Top-end overlay
           PositionedDirectional(
@@ -861,16 +857,19 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildOverlayButton(
       {required IconData icon, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: AppTheme.card.withAlpha(204),
-          borderRadius: BorderRadius.circular(6),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppTheme.card.withAlpha(204),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(icon, size: 16, color: AppTheme.foreground),
         ),
-        child: Icon(icon, size: 16, color: AppTheme.foreground),
       ),
     );
   }
@@ -1129,6 +1128,81 @@ class _SummaryTile extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 color: AppTheme.foreground)),
       ],
+    );
+  }
+}
+
+class _HoverableNetworkImage extends StatefulWidget {
+  final String imageUrl;
+  final VoidCallback onExpand;
+
+  const _HoverableNetworkImage({required this.imageUrl, required this.onExpand});
+
+  @override
+  State<_HoverableNetworkImage> createState() => _HoverableNetworkImageState();
+}
+
+class _HoverableNetworkImageState extends State<_HoverableNetworkImage> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onExpand,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              widget.imageUrl,
+              fit: BoxFit.contain,
+              errorBuilder: (ctx, err, stack) => const Center(
+                child: Icon(Icons.broken_image,
+                    size: 48, color: AppTheme.mutedForeground),
+              ),
+            ),
+            if (_hovered)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withAlpha(51),
+                  alignment: Alignment.center,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.background.withAlpha(204),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.open_in_full,
+                              size: 16, color: AppTheme.foreground),
+                          const SizedBox(width: 6),
+                          Text(
+                            l10n.newExpenseExpandImage,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.foreground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

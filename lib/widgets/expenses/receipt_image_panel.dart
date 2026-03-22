@@ -120,7 +120,10 @@ class ReceiptImagePanel extends StatelessWidget {
               child: Container(
                 color: AppTheme.muted,
                 alignment: Alignment.center,
-                child: Image.memory(fileBytes, fit: BoxFit.contain),
+                child: _HoverableReceiptImage(
+                  fileBytes: fileBytes,
+                  onExpand: onExpand,
+                ),
               ),
             ),
             Container(
@@ -199,6 +202,7 @@ class ReceiptImagePanel extends StatelessWidget {
       message: tooltip,
       child: InkWell(
         onTap: onTap,
+        mouseCursor: SystemMouseCursors.click,
         borderRadius: BorderRadius.circular(4),
         child: Padding(
           padding: const EdgeInsets.all(5),
@@ -216,21 +220,24 @@ class ReceiptImagePanel extends StatelessWidget {
   }) {
     return Tooltip(
       message: tooltip,
-      child: GestureDetector(
-        onTap: onTap,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppTheme.background.withAlpha(204),
-                borderRadius: BorderRadius.circular(6),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppTheme.background.withAlpha(204),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Icon(icon, size: 16, color: AppTheme.foreground),
               ),
-              alignment: Alignment.center,
-              child: Icon(icon, size: 16, color: AppTheme.foreground),
             ),
           ),
         ),
@@ -239,40 +246,43 @@ class ReceiptImagePanel extends StatelessWidget {
   }
 
   Widget _buildReplaceButton(BuildContext context, AppLocalizations l10n) {
-    return GestureDetector(
-      onTap: onReplace,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-          child: Container(
-            height: 28,
-            padding: const EdgeInsetsDirectional.only(start: 6, end: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha(180),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? Icons.arrow_circle_right_outlined
-                      : Icons.arrow_circle_left_outlined,
-                  size: 14,
-                  color: AppTheme.foreground,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  l10n.newExpenseReplaceReceipt,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onReplace,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              height: 28,
+              padding: const EdgeInsetsDirectional.only(start: 6, end: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(180),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.arrow_circle_right_outlined
+                        : Icons.arrow_circle_left_outlined,
+                    size: 14,
                     color: AppTheme.foreground,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  Text(
+                    l10n.newExpenseReplaceReceipt,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.foreground,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -280,4 +290,79 @@ class ReceiptImagePanel extends StatelessWidget {
     );
   }
 
+}
+
+// ── Hoverable receipt image (desktop) ───────────────────────────────────────
+// Shows a semi-transparent expand hint overlay on hover; clicking expands.
+
+class _HoverableReceiptImage extends StatefulWidget {
+  final Uint8List fileBytes;
+  final VoidCallback? onExpand;
+
+  const _HoverableReceiptImage({required this.fileBytes, this.onExpand});
+
+  @override
+  State<_HoverableReceiptImage> createState() => _HoverableReceiptImageState();
+}
+
+class _HoverableReceiptImageState extends State<_HoverableReceiptImage> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final canExpand = widget.onExpand != null;
+    final l10n = AppLocalizations.of(context)!;
+
+    return MouseRegion(
+      cursor: canExpand ? SystemMouseCursors.click : MouseCursor.defer,
+      onEnter: canExpand ? (_) => setState(() => _hovered = true) : null,
+      onExit: canExpand ? (_) => setState(() => _hovered = false) : null,
+      child: GestureDetector(
+        onTap: widget.onExpand,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.memory(widget.fileBytes, fit: BoxFit.contain),
+            if (canExpand && _hovered)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withAlpha(51),
+                  alignment: Alignment.center,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.background.withAlpha(204),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.open_in_full,
+                                size: 16, color: AppTheme.foreground),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.newExpenseExpandImage,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.foreground,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
