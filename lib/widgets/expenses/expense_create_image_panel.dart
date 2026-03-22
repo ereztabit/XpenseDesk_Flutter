@@ -5,7 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_utils.dart';
 
-class ReceiptImagePanel extends StatelessWidget {
+class ExpenseCreateImagePanel extends StatelessWidget {
   final Uint8List fileBytes;
   final bool isPdf;
   final String? pdfViewType;
@@ -16,7 +16,7 @@ class ReceiptImagePanel extends StatelessWidget {
   final bool hideAiBadge;
   final double imageHeight;
 
-  const ReceiptImagePanel({
+  const ExpenseCreateImagePanel({
     super.key,
     required this.fileBytes,
     required this.isPdf,

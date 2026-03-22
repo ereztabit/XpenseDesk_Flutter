@@ -11,7 +11,7 @@ import '../utils/responsive_utils.dart';
 import '../utils/format_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
-import '../widgets/expenses/receipt_image_panel.dart';
+import '../widgets/expenses/expense_create_image_panel.dart';
 import '../providers/expense_provider.dart';
 import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
@@ -1668,7 +1668,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                     ),
                                     const SizedBox(width: 24),
                                     Expanded(
-                                      child: ReceiptImagePanel(
+                                      child: ExpenseCreateImagePanel(
                                         fileBytes: _fileBytes!,
                                         isPdf: _isPdf,
                                         pdfViewType: _pdfViewType,

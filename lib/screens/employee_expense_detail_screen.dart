@@ -11,6 +11,7 @@ import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
+import '../widgets/expenses/expense_modify_image_panel.dart';
 
 class EmployeeExpenseDetailScreen extends ConsumerStatefulWidget {
   final String expenseId;
@@ -769,144 +770,6 @@ class _EmployeeExpenseDetailScreenState
     );
   }
 
-  Widget _buildReceiptSection(AppLocalizations l10n, {double height = 400}) {
-    final imageUrl = _expense?.imageUrl;
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: AppTheme.muted,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.receipt_long_outlined,
-                  size: 40, color: AppTheme.mutedForeground),
-              const SizedBox(height: 8),
-              Text(l10n.noReceipt,
-                  style: const TextStyle(
-                      fontSize: 14, color: AppTheme.mutedForeground)),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: AppTheme.muted,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _HoverableNetworkImage(
-            imageUrl: imageUrl,
-            onExpand: () => _showExpandDialog(imageUrl),
-          ),
-          // Top-end overlay
-          PositionedDirectional(
-            top: 8,
-            end: 8,
-            child: Row(
-              children: [
-                _buildOverlayButton(
-                  icon: Icons.open_in_full,
-                  onTap: () => _showExpandDialog(imageUrl),
-                ),
-                if (context.isDesktop) ...[
-                  const SizedBox(width: 4),
-                  _buildOverlayButton(
-                    icon: Icons.download_outlined,
-                    onTap: () {
-                      final filename = imageUrl.split('/').last.split('?').first;
-                      ExcelExportService.downloadUrl(imageUrl, filename.isEmpty ? 'receipt' : filename);
-                    },
-                  ),
-                ],
-              ],
-            ),
-          ),
-          // Replace receipt (desktop + pending only, not for manager)
-          if (_isEditable && context.isDesktop && !widget.isManagerMode)
-            PositionedDirectional(
-              bottom: 8,
-              start: 8,
-              child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.image_outlined, size: 14),
-                label: Text(l10n.newExpenseReplaceReceipt),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: AppTheme.card.withAlpha(204),
-                  minimumSize: const Size(0, 28),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  textStyle: const TextStyle(fontSize: 12),
-                  side: BorderSide.none,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOverlayButton(
-      {required IconData icon, required VoidCallback onTap}) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: AppTheme.card.withAlpha(204),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(icon, size: 16, color: AppTheme.foreground),
-        ),
-      ),
-    );
-  }
-
-  void _showExpandDialog(String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        insetPadding: const EdgeInsets.all(8),
-        child: SizedBox(
-          width: context.screenWidth * 0.98,
-          height: MediaQuery.of(context).size.height * 0.98,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: InteractiveViewer(
-                  child: Image.network(imageUrl, fit: BoxFit.contain),
-                ),
-              ),
-              PositionedDirectional(
-                top: 8,
-                end: 8,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppTheme.card.withAlpha(204),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildNotFound(AppLocalizations l10n) {
     return Center(
       child: Column(
@@ -1060,7 +923,17 @@ class _EmployeeExpenseDetailScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _buildReceiptSection(l10n),
+                ExpenseModifyImagePanel(
+                  imageUrl: _expense?.imageUrl,
+                  isEditable: _isEditable,
+                  isManagerMode: widget.isManagerMode,
+                  onReplace: () {},
+                  onDownload: () {
+                    final url = _expense?.imageUrl ?? '';
+                    final filename = url.split('/').last.split('?').first;
+                    ExcelExportService.downloadUrl(url, filename.isEmpty ? 'receipt' : filename);
+                  },
+                ),
                 if (widget.isManagerMode) ...[
                   const Spacer(),
                   _buildManagerApproveDeclineRow(l10n),
@@ -1082,7 +955,18 @@ class _EmployeeExpenseDetailScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildReceiptSection(l10n, height: 192),
+        ExpenseModifyImagePanel(
+          imageUrl: _expense?.imageUrl,
+          height: 192,
+          isEditable: _isEditable,
+          isManagerMode: widget.isManagerMode,
+          onReplace: () {},
+          onDownload: () {
+            final url = _expense?.imageUrl ?? '';
+            final filename = url.split('/').last.split('?').first;
+            ExcelExportService.downloadUrl(url, filename.isEmpty ? 'receipt' : filename);
+          },
+        ),
         if (widget.isManagerMode) ...[
           const SizedBox(height: 16),
           _buildManagerApproveDeclineRow(l10n),
@@ -1132,77 +1016,3 @@ class _SummaryTile extends StatelessWidget {
   }
 }
 
-class _HoverableNetworkImage extends StatefulWidget {
-  final String imageUrl;
-  final VoidCallback onExpand;
-
-  const _HoverableNetworkImage({required this.imageUrl, required this.onExpand});
-
-  @override
-  State<_HoverableNetworkImage> createState() => _HoverableNetworkImageState();
-}
-
-class _HoverableNetworkImageState extends State<_HoverableNetworkImage> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onExpand,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.network(
-              widget.imageUrl,
-              fit: BoxFit.contain,
-              errorBuilder: (ctx, err, stack) => const Center(
-                child: Icon(Icons.broken_image,
-                    size: 48, color: AppTheme.mutedForeground),
-              ),
-            ),
-            if (_hovered)
-              Positioned.fill(
-                child: Container(
-                  color: Colors.black.withAlpha(51),
-                  alignment: Alignment.center,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.background.withAlpha(204),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.open_in_full,
-                              size: 16, color: AppTheme.foreground),
-                          const SizedBox(width: 6),
-                          Text(
-                            l10n.newExpenseExpandImage,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.foreground,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
