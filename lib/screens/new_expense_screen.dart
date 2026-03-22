@@ -57,13 +57,17 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   late final AnimationController _scanController;
   late final AnimationController _pulseController;
+  late final AnimationController _shakeCategoryController;
+  late final Animation<double> _shakeCategoryAnimation;
   late final TextEditingController _amountController;
   late final TextEditingController _merchantController;
   late final TextEditingController _noteController;
   late final TextEditingController _dateController;
   late final TextEditingController _receiptRefController;
   late final FocusNode _dateFocusNode;
+  late final TextEditingController _categoryController;
   String? _dateInputError;
+  final _categoryKey = GlobalKey();
 
   @override
   void initState() {
@@ -76,6 +80,21 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
+    _shakeCategoryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+    _shakeCategoryAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -8.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -8.0, end: 8.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 8.0, end: -8.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -8.0, end: 8.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 8.0, end: 0.0), weight: 1),
+    ]).animate(
+      CurvedAnimation(parent: _shakeCategoryController, curve: Curves.easeInOut),
+    );
+    _categoryController = TextEditingController();
+    _categoryController.addListener(_onCategoryTextChanged);
     _amountController = TextEditingController();
     _merchantController = TextEditingController();
     _noteController = TextEditingController();
@@ -95,6 +114,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   void dispose() {
     _scanController.dispose();
     _pulseController.dispose();
+    _shakeCategoryController.dispose();
+    _categoryController.dispose();
     _amountController.dispose();
     _merchantController.dispose();
     _noteController.dispose();
@@ -107,15 +128,48 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   void _onFormChanged() => setState(() {});
 
+  void _onCategoryTextChanged() {
+    if (_selectedCategoryId == null) return;
+    final text = _categoryController.text;
+    if (text.isEmpty) {
+      setState(() => _selectedCategoryId = null);
+      return;
+    }
+    final locale = Localizations.localeOf(context);
+    final matchesAny = ExpenseCategory.orderedValues
+        .any((c) => c.labelForLocale(locale) == text);
+    if (!matchesAny) {
+      setState(() => _selectedCategoryId = null);
+    }
+  }
+
+  /// Updates [_categoryController] text to match [categoryId]'s label.
+  /// Call AFTER the setState that sets [_selectedCategoryId].
+  void _syncCategoryController(int? categoryId) {
+    if (categoryId == null) {
+      _categoryController.text = '';
+      return;
+    }
+    final locale = Localizations.localeOf(context);
+    final cat = ExpenseCategory.orderedValues
+        .where((c) => c.id == categoryId)
+        .firstOrNull;
+    _categoryController.text = cat?.labelForLocale(locale) ?? '';
+  }
+
   @override
   bool get hasUnsavedChanges => false;
 
-  bool get _canSubmit =>
+  // True when the mandatory typed fields are filled — enables the button so
+  // _submit() can run and scroll to any missing field (e.g. category).
+  bool get _canAttemptSubmit =>
       _amountController.text.trim().isNotEmpty &&
-      _selectedCategoryId != null &&
       _merchantController.text.trim().isNotEmpty &&
       _dateController.text.trim().isNotEmpty &&
       _dateInputError == null;
+
+  // True when every required field is valid — drives the green "ready" style.
+  bool get _canSubmit => _canAttemptSubmit && _selectedCategoryId != null;
 
   // ── File handling ──────────────────────────────────────────────────────────
 
@@ -238,6 +292,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _hasAttemptedSubmit = false;
       _aiImageUrl = null;
     });
+    _syncCategoryController(null);
   }
 
   void _undoAiModify() {
@@ -262,6 +317,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _merchantController.text = result.merchantName ?? '';
       _receiptRefController.text = result.receiptNumber ?? '';
     });
+    _syncCategoryController(result.categoryId);
   }
 
   String _formatAmount(double amount) {
@@ -327,6 +383,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _aiImageUrl = result.imageUrl;
         _isAiData = true;
       });
+      _syncCategoryController(result.categoryId);
     } catch (_) {
       if (!mounted) return;
       _scanController.stop();
@@ -344,6 +401,22 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   Future<void> _submit() async {
     setState(() => _hasAttemptedSubmit = true);
+
+    if (_selectedCategoryId == null) {
+      _shakeCategoryController.forward(from: 0);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = _categoryKey.currentContext;
+        if (ctx != null) {
+          Scrollable.ensureVisible(
+            ctx,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: 0.1,
+          );
+        }
+      });
+    }
+
     final amount = double.tryParse(_amountController.text.trim().replaceAll(',', ''));
     final categoryId = _selectedCategoryId;
     final merchant = _merchantController.text.trim();
@@ -812,30 +885,44 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Category
-        _requiredLabel(l10n.categoryLabel),
-        const SizedBox(height: 8),
-        DropdownMenu<int>(
-          key: ValueKey(_selectedCategoryId),
-          initialSelection: _selectedCategoryId,
-          expandedInsets: EdgeInsets.zero,
-          hintText: l10n.selectCategory,
-          inputDecorationTheme: _dropdownTheme(),
-          dropdownMenuEntries: ExpenseCategory.orderedValues
-              .map((c) => DropdownMenuEntry<int>(
-                    value: c.id,
-                    label: c.labelForLocale(uiLocale),
-                  ))
-              .toList(),
-          onSelected: (v) => setState(() => _selectedCategoryId = v),
-        ),
-        if (_hasAttemptedSubmit && _selectedCategoryId == null)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
-            child: Text(
-              l10n.categoryRequired,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
+        AnimatedBuilder(
+          animation: _shakeCategoryAnimation,
+          child: Column(
+            key: _categoryKey,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _requiredLabel(l10n.categoryLabel),
+              const SizedBox(height: 8),
+              DropdownMenu<int>(
+                controller: _categoryController,
+                expandedInsets: EdgeInsets.zero,
+                hintText: l10n.selectCategory,
+                inputDecorationTheme: _dropdownTheme(
+                  isError: _hasAttemptedSubmit && _selectedCategoryId == null,
+                ),
+                dropdownMenuEntries: ExpenseCategory.orderedValues
+                    .map((c) => DropdownMenuEntry<int>(
+                          value: c.id,
+                          label: c.labelForLocale(uiLocale),
+                        ))
+                    .toList(),
+                onSelected: (v) => setState(() => _selectedCategoryId = v),
+              ),
+              if (_hasAttemptedSubmit && _selectedCategoryId == null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+                  child: Text(
+                    l10n.categoryRequired,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+            ],
           ),
+          builder: (context, child) => Transform.translate(
+            offset: Offset(_shakeCategoryAnimation.value, 0),
+            child: child,
+          ),
+        ),
         const SizedBox(height: 16),
 
         // Note
@@ -1129,30 +1216,44 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         const SizedBox(height: 16),
 
         // Category
-        _requiredLabel(l10n.categoryLabel),
-        const SizedBox(height: 8),
-        DropdownMenu<int>(
-          key: ValueKey(_selectedCategoryId),
-          initialSelection: _selectedCategoryId,
-          expandedInsets: EdgeInsets.zero,
-          hintText: l10n.selectCategory,
-          inputDecorationTheme: _dropdownTheme(),
-          dropdownMenuEntries: ExpenseCategory.orderedValues
-              .map((c) => DropdownMenuEntry<int>(
-                    value: c.id,
-                    label: c.labelForLocale(uiLocale),
-                  ))
-              .toList(),
-          onSelected: (v) => setState(() => _selectedCategoryId = v),
-        ),
-        if (_hasAttemptedSubmit && _selectedCategoryId == null)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
-            child: Text(
-              l10n.categoryRequired,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
-            ),
+        AnimatedBuilder(
+          animation: _shakeCategoryAnimation,
+          child: Column(
+            key: _categoryKey,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _requiredLabel(l10n.categoryLabel),
+              const SizedBox(height: 8),
+              DropdownMenu<int>(
+                controller: _categoryController,
+                expandedInsets: EdgeInsets.zero,
+                hintText: l10n.selectCategory,
+                inputDecorationTheme: _dropdownTheme(
+                  isError: _hasAttemptedSubmit && _selectedCategoryId == null,
+                ),
+                dropdownMenuEntries: ExpenseCategory.orderedValues
+                    .map((c) => DropdownMenuEntry<int>(
+                          value: c.id,
+                          label: c.labelForLocale(uiLocale),
+                        ))
+                    .toList(),
+                onSelected: (v) => setState(() => _selectedCategoryId = v),
+              ),
+              if (_hasAttemptedSubmit && _selectedCategoryId == null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+                  child: Text(
+                    l10n.categoryRequired,
+                    style: const TextStyle(color: Colors.red, fontSize: 12),
+                  ),
+                ),
+            ],
           ),
+          builder: (context, child) => Transform.translate(
+            offset: Offset(_shakeCategoryAnimation.value, 0),
+            child: child,
+          ),
+        ),
         const SizedBox(height: 16),
 
         // Note
@@ -1385,7 +1486,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   Widget _buildActionButtons(AppLocalizations l10n, BuildContext context) {
     final submitButton = ElevatedButton(
-      onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
+      onPressed: (_canAttemptSubmit && !_isSubmitting) ? _submit : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: _canSubmit ? AppTheme.success : null,
         foregroundColor: _canSubmit ? Colors.white : null,
@@ -1419,22 +1520,16 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           )
         : const SizedBox.shrink();
 
-    if (context.isNarrow) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           errorRow,
           submitButton,
         ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        errorRow,
-        submitButton,
-      ],
+      ),
     );
   }
 
@@ -1540,8 +1635,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
-  InputDecorationTheme _dropdownTheme() {
-    const borderSide = BorderSide(color: AppTheme.border);
+  InputDecorationTheme _dropdownTheme({bool isError = false}) {
+    final borderSide = isError
+        ? const BorderSide(color: AppTheme.destructive, width: 1.5)
+        : const BorderSide(color: AppTheme.border);
     return InputDecorationTheme(
       filled: true,
       fillColor: AppTheme.card,

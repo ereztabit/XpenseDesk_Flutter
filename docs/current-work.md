@@ -2,7 +2,6 @@
 
 ## Currently Working On
 
-- Enable user seat-limit error handling (`UsersEnableMaximumActiveUsersReached` / 409)
 
 ## TODO (Backlog)
 
