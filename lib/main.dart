@@ -1,3 +1,4 @@
+import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,6 +23,15 @@ void main() async {
   }
 
   await AppConfig.getInstance();
+
+  // Suppress NetworkException from the browser console — it is already
+  // caught and displayed by the UI, but Flutter web's async bridge can
+  // still emit an "Uncaught (in promise)" entry for it.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    if (error is NetworkException) return true;
+    return false;
+  };
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

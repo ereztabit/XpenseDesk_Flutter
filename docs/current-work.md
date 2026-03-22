@@ -2,9 +2,10 @@
 
 ## Currently Working On
 
-**Bug: User management commands don't show errors**
-- `_handlePromote/Demote/Disable/Enable` all call `ScaffoldMessenger.of(context)` after `await refresh()` — same stale context issue as the invite dialog fix
-- Fix: capture messenger + l10n before first await in each handler
+**Bug: Backend unavailable exposes raw URL in error messages**
+- `ApiService` lets `ClientException` (contains URL) bubble up unhandled
+- `UserListCard._buildErrorState` renders `error.toString()` directly
+- Fix: add `NetworkException` wrapper in `ApiService` + show generic localized message in error state
 
 ## TODO (Backlog)
 
@@ -26,7 +27,7 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * editing and expense - the expand button on the expense doesnt have a mouse pointer on hover, we would like that on desktop - when a user clicks on the image itself, the entire image will have a hint that its explandable - and when you click on it it will expand.
 * Empty state tables not collapsing/expanding correctly - need to explain this behaviour
 * when i disabled a user i dont see him on the users list
-* user managment  - on any command, if you got an error - we want to see the error
+[x] user managment  - on any command, if you got an error - we want to see the error
 * when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
 * when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
 [x] when adding a user that belongs to another company - show explicit inline error with conflicting emails marked red

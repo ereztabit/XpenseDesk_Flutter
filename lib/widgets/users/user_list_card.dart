@@ -163,7 +163,7 @@ class UserListCard extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              error.toString(),
+              l10n.anErrorOccurred,
               style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
