@@ -70,6 +70,7 @@
   "disabled": "Disabled",
 
   "myExpenses": "My Expenses",
+  "companyExpenses": "Company Expenses",
   "newExpense": "New Expense",
   "you": "you",
   "promoteToManager": "Promote to Manager",

@@ -182,45 +182,47 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
     return Column(
       children: [
-        // ── Pending section ─────────────────────────────────────
-        DesktopExpenseTable(
-          title: l10n.pendingExpenses,
-          count: pending.length,
-          summaryText:
-              '${_formatSummaryAmount(pendingTotal, companyCurrency, companyLocale)} ${l10n.pendingAmountSuffix}',
-          summaryColor: const Color(0xFFEA580C), // orange-600
-          initiallyExpanded: true,
-          expenses: pending,
-          isPending: true,
-          emptyState: ExpensesEmptyState(
-            title: l10n.noPendingExpensesTitle,
-            subtitle: l10n.noPendingExpensesSubtitle,
-            onNewExpense: () => Navigator.of(context)
-                .pushNamed('/employee/new-expense')
+        // ── Pending section — only shown when there are pending expenses ──
+        if (pending.isNotEmpty) ...[
+          DesktopExpenseTable(
+            title: l10n.pendingExpenses,
+            count: pending.length,
+            summaryText:
+                '${_formatSummaryAmount(pendingTotal, companyCurrency, companyLocale)} ${l10n.pendingAmountSuffix}',
+            summaryColor: const Color(0xFFEA580C), // orange-600
+            initiallyExpanded: true,
+            expenses: pending,
+            isPending: true,
+            emptyState: ExpensesEmptyState(
+              title: l10n.noPendingExpensesTitle,
+              subtitle: l10n.noPendingExpensesSubtitle,
+              onNewExpense: () => Navigator.of(context)
+                  .pushNamed('/employee/new-expense')
+                  .then((_) => ref.invalidate(expenseSearchProvider)),
+              newExpenseLabel: l10n.newExpense,
+            ),
+            onEdit: (expense) => Navigator.of(context)
+                .pushNamed('/employee/expense/${expense.expenseId}')
                 .then((_) => ref.invalidate(expenseSearchProvider)),
-            newExpenseLabel: l10n.newExpense,
+            onDelete: (expense) async {
+              await DeleteExpenseDialog.show(
+                context,
+                expense.expenseId,
+                onRefresh: () => ref.invalidate(expenseSearchProvider),
+              );
+            },
           ),
-          onEdit: (expense) => Navigator.of(context)
-              .pushNamed('/employee/expense/${expense.expenseId}')
-              .then((_) => ref.invalidate(expenseSearchProvider)),
-          onDelete: (expense) async {
-            await DeleteExpenseDialog.show(
-              context,
-              expense.expenseId,
-              onRefresh: () => ref.invalidate(expenseSearchProvider),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
+        ],
 
-        // ── Processed section ───────────────────────────────────
+        // ── Processed section — auto-opens when there are no pending ──────
         DesktopExpenseTable(
           title: l10n.processedExpenses,
           count: processed.length,
           summaryText:
               '${_formatSummaryAmount(approvedTotal, companyCurrency, companyLocale)} ${l10n.approvedAmountSuffix}',
           summaryColor: const Color(0xFF16A34A), // green-600
-          initiallyExpanded: false,
+          initiallyExpanded: pending.isEmpty && processed.isNotEmpty,
           expenses: processed,
           isPending: false,
           emptyState: Padding(

@@ -79,6 +79,19 @@ class _SectionTableState extends State<SectionTable>
   }
 
   @override
+  void didUpdateWidget(SectionTable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initiallyExpanded != oldWidget.initiallyExpanded) {
+      _isExpanded = widget.initiallyExpanded;
+      if (_isExpanded) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();

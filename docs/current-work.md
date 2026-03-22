@@ -2,11 +2,6 @@
 
 ## Currently Working On
 
-**Bug: Backend unavailable exposes raw URL in error messages**
-- `ApiService` lets `ClientException` (contains URL) bubble up unhandled
-- `UserListCard._buildErrorState` renders `error.toString()` directly
-- Fix: add `NetworkException` wrapper in `ApiService` + show generic localized message in error state
-
 ## TODO (Backlog)
 
 ## report bugs (pending)
@@ -29,7 +24,7 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * when i disabled a user i dont see him on the users list
 [x] user managment  - on any command, if you got an error - we want to see the error
 * when i submit an expense and AI did detect , i want to click on the finish button but i cant understand the the category is mandatory - maby when i hit done but the category is empty, move the category a bit so i figure it out.
-* when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
+[x] when backend is not available - we are showing a bad error revealing backend url - we just need to show a general "temporary internet error - please check your connection" or something like that.
 [x] when adding a user that belongs to another company - show explicit inline error with conflicting emails marked red
 
 * onboarding bug - i listed a new company, completed otp with 123456, then i was landing on the dashbaord but i got the info of the previous company. maby we need to make sure we delete any token stored , while we are in the onboarding process.

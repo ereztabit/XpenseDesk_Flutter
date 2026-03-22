@@ -100,7 +100,7 @@ class _ManagerDashboardScreenState
           count: pending.length,
           summaryText: '${fmt(pendingTotal)} ${l10n.pendingAmountSuffix}',
           summaryColor: AppTheme.amber,
-          initiallyExpanded: true,
+          initiallyExpanded: pending.isNotEmpty,
           expenses: pending,
           isPending: true,
           isManagerMode: true,
@@ -258,7 +258,7 @@ class _ManagerDashboardScreenState
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            l10n.pendingExpenses,
+            l10n.companyExpenses,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontSize: context.isMobile ? 18 : 24,
                 ),
