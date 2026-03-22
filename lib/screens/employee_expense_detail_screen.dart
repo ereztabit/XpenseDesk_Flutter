@@ -1030,7 +1030,7 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildDesktopLayout(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {
-    final form = widget.isManagerMode || !(_isAiData && _isEditable)
+    final form = !_isAiData
         ? _buildFullForm(l10n, companyLocale, uiLocale)
         : _buildFastTrackForm(l10n, companyLocale, uiLocale);
 
@@ -1076,7 +1076,7 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildMobileLayout(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {
-    final form = widget.isManagerMode || !(_isAiData && _isEditable)
+    final form = !_isAiData
         ? _buildFullForm(l10n, companyLocale, uiLocale)
         : _buildFastTrackForm(l10n, companyLocale, uiLocale);
 

@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-- when i submit an expense and AI didnt detect the details i want to see a warning message on top of the fields
+ 
 
 ## TODO (Backlog)
 
@@ -19,7 +19,7 @@ To safely refer to a widget's ancestor in its dispose() method, save a reference
 * New expense modal spacing hides Continue button - the titles and back button takes too much of the screen
 
 * Finish button misaligned ,should be left on LTR, and below the image.
-* Manager and employee edit screens inconsistent - there should have been only one widget for new , update and view - consolidate them - the new expense is the most recent and rich
+
 * Missing rejection reason field for manager - new feature
 * Empty state tables not collapsing/expanding correctly - need to explain this behaviour
 * when i disabled a user i dont see him on the users list
