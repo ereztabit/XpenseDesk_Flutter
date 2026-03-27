@@ -7,10 +7,7 @@
 
 ## report bugs (pending)
 
-* onboarding - (skipping for now, tackling non-onboarding first)
 
-
-* when i submit an expense and AI did detect, category is mandatory but not obvious - scroll/highlight category when hitting done with empty category
 * onboarding bug - landing on dashboard with info of previous company after new signup
 
 ## general environment
