@@ -32,6 +32,14 @@ we are talking about validation errors
 > 2. Are these the correct test card numbers for the Hosted Fields integration, or is there a separate test card set for this flow?
 > 3. What CVV and expiry date should be used with these cards? We are currently using expiry `12/30` and CVV `123` — are these valid for the 3DS test cards?
 
+**Q4 — Phone number validation for 3DS cardholder fields:**
+
+> When passing `phone_country_code` and `phone_number` to `fields.charge()`:
+> 1. Does Tranzila validate the phone country code format? Must it include `+` or just digits (e.g. `972` vs `+972`)?
+> 2. Is there a minimum/maximum length enforced on `phone_number`?
+> 3. Does the phone number need to be in a specific format (e.g. no leading zero, no spaces, no dashes)?
+> 4. If the phone fields are missing or invalid, does the transaction fail or does 3DS simply proceed without them?
+
 ---
 
 ## Two-Page Architecture (interim 3DS security)

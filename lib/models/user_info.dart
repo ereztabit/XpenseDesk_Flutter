@@ -7,6 +7,7 @@ class UserInfo {
   final int languageId;
   final String? languageCode;
   final String? currencyCode;
+  final String? dailingCode;
   final DateTime? termsConsentDate;
 
   const UserInfo({
@@ -18,6 +19,7 @@ class UserInfo {
     this.languageId = 1,
     this.languageCode,
     this.currencyCode,
+    this.dailingCode,
     this.termsConsentDate,
   });
 
@@ -31,6 +33,7 @@ class UserInfo {
       languageId: (json['languageId'] as num?)?.toInt() ?? 1,
       languageCode: json['languageCode'] as String?,
       currencyCode: json['currencyCode'] as String?,
+      dailingCode:  json['dailingCode']  as String?,
       termsConsentDate: json['termsConsentDate'] != null
           ? DateTime.tryParse(json['termsConsentDate'] as String)
           : null,

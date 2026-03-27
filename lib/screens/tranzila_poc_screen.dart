@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
 import '../providers/auth_provider.dart';
-import '../providers/company_provider.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/header/app_header.dart';
@@ -70,30 +69,17 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
     });
   }
 
-  // ISO 3166-1 alpha-2 → dial code (digits only, no +)
-  static const _dialCodes = {
-    'IL': '972', 'US': '1',   'GB': '44',  'DE': '49',  'FR': '33',
-    'AU': '61',  'CA': '1',   'IN': '91',  'JP': '81',  'CN': '86',
-    'AE': '971', 'SA': '966', 'TR': '90',  'IT': '39',  'ES': '34',
-    'NL': '31',  'BE': '32',  'CH': '41',  'PL': '48',  'SE': '46',
-    'NO': '47',  'DK': '45',  'FI': '358', 'PT': '351', 'AT': '43',
-    'ZA': '27',  'EG': '20',  'NG': '234', 'BR': '55',  'MX': '52',
-    'RU': '7',   'UA': '380',
-  };
-
   void _openPopup() {
-    final lang        = Localizations.localeOf(context).languageCode;
-    final terminal    = Uri.encodeComponent(AppConfig.instance.tranzilaTerminal);
-    final page        = AppConfig.instance.tranzilaUse3ds
+    final lang     = Localizations.localeOf(context).languageCode;
+    final terminal = Uri.encodeComponent(AppConfig.instance.tranzilaTerminal);
+    final page     = AppConfig.instance.tranzilaUse3ds
         ? '/CreditCard/AuthorizeCard3DS.html'
         : '/CreditCard/Authorize.html';
 
-    final userInfo    = ref.read(userInfoProvider);
-    final companyInfo = ref.read(companyProvider).value;
-
-    final name      = Uri.encodeComponent(userInfo?.fullName ?? '');
-    final email     = Uri.encodeComponent(userInfo?.email   ?? '');
-    final dialCode  = _dialCodes[companyInfo?.countryCode.toUpperCase() ?? ''] ?? '';
+    final userInfo = ref.read(userInfoProvider);
+    final name     = Uri.encodeComponent(userInfo?.fullName    ?? '');
+    final email    = Uri.encodeComponent(userInfo?.email       ?? '');
+    final dialCode = userInfo?.dailingCode ?? '';
 
     final url = '$page'
         '?thtk=$_thtk'
