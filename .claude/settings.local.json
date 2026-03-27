@@ -14,7 +14,8 @@
       "Bash(netstat -ano)",
       "Bash(mkcert --version)",
       "Bash(mkcert -install)",
-      "Bash(mkcert localhost:*)"
+      "Bash(mkcert localhost:*)",
+      "WebFetch(domain:docs.tranzila.com)"
     ]
   }
 }

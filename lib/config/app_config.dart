@@ -51,4 +51,9 @@ class AppConfig {
 
     return api['baseUrl'] as String;
   }
+
+  String get tranzilaTerminal {
+    final payment = _config['payment'] as Map;
+    return payment['tranzilaTerminal'] as String;
+  }
 }

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Payment Card — XpenseDesk</title>
+  <link rel="stylesheet" href="authorize.css" />
+  <script src="https://hf.tranzila.com/assets/js/thostedf.js"></script>
+</head>
+<body>
+  <header>
+    <span class="logo">XpenseDesk</span>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Add Payment Card</h2>
+
+      <div id="status-banner" class="banner"></div>
+
+      <div class="field-group">
+        <label>Card Number</label>
+        <div id="card-number"></div>
+        <div id="errors_for_credit_card_number" class="field-error"></div>
+      </div>
+
+      <div class="row">
+        <div class="field-group">
+          <label>CVV</label>
+          <div id="cvv"></div>
+          <div id="errors_for_cvv" class="field-error"></div>
+        </div>
+        <div class="field-group">
+          <label>Expiry</label>
+          <div id="expiry"></div>
+          <div id="errors_for_expiry" class="field-error"></div>
+        </div>
+      </div>
+
+      <button id="submit-btn" disabled>Save Card</button>
+
+      <div id="result"></div>
+    </div>
+  </main>
+
+  <script>
+    const params        = new URLSearchParams(window.location.search);
+    const thtk          = params.get('thtk');
+    const TERMINAL_NAME = params.get('terminal') || 'dev123';
+
+    const banner    = document.getElementById('status-banner');
+    const submitBtn = document.getElementById('submit-btn');
+    const resultDiv = document.getElementById('result');
+
+    function showBanner(msg, type) {
+      banner.textContent = msg;
+      banner.className   = 'banner ' + type;
+    }
+
+    function showFieldError(field, msg) {
+      const el = document.getElementById('errors_for_' + field);
+      if (!el) return;
+      if (msg) { el.textContent = msg; el.classList.add('visible'); }
+      else      { el.textContent = ''; el.classList.remove('visible'); }
+    }
+
+    function clearFieldErrors() {
+      ['credit_card_number', 'cvv', 'expiry'].forEach(f => showFieldError(f, ''));
+    }
+
+    if (!thtk) {
+      showBanner('Missing handshake token.', 'error');
+    } else {
+      init();
+    }
+
+    function init() {
+      const fields = TzlaHostedFields.create({
+        sandbox: false,
+        fields: {
+          credit_card_number: { selector: '#card-number', placeholder: '4580 4580 4580 4580', tabindex: 1 },
+          cvv:                { selector: '#cvv',         placeholder: '123',                 tabindex: 2 },
+          expiry:             { selector: '#expiry',      placeholder: '12/28',               version: '1' }
+        },
+        styles: {
+          'input': { 'font-size': '15px', 'color': '#111827' }
+        }
+      });
+
+      showBanner('Enter your card details below.', 'info');
+      submitBtn.disabled = false;
+
+      submitBtn.addEventListener('click', function () {
+        clearFieldErrors();
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span>Processing…';
+
+        fields.charge({
+          terminal_name: TERMINAL_NAME,
+          tran_mode:     'V',
+          tokenize:      true,
+          amount:        10,
+          currency_code: 'ILS',
+          thtk:          thtk
+        }, function (err, response) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Save Card';
+
+          if (err) {
+            if (err.messages && err.messages.length) {
+              err.messages.forEach(function (m) {
+                showFieldError(m.param, m.message + ' (' + m.code + ')');
+              });
+              showBanner('Please fix the errors below.', 'error');
+            } else {
+              showBanner('Error: ' + JSON.stringify(err), 'error');
+            }
+            return;
+          }
+
+          const tx = response.transaction_response;
+          if (tx && tx.success) {
+            const cardTypeMap = { 1: 'MasterCard', 2: 'Visa', 3: 'Diners', 4: 'Amex', 5: 'Isracard', 6: 'Maestro' };
+            const cardType = cardTypeMap[parseInt(tx.card_type)] || tx.card_type_name || 'Unknown';
+
+            showBanner('Card saved successfully!', 'success');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML =
+              '<table style="border-collapse:collapse;width:100%;font-size:13px;">' +
+              '<tr><td style="padding:6px 10px;color:#6b7280;width:80px;">Type</td><td style="padding:6px 10px;font-weight:600;">' + cardType + '</td></tr>' +
+              '<tr style="background:#f9fafb"><td style="padding:6px 10px;color:#6b7280;">Card</td><td style="padding:6px 10px;font-weight:600;font-family:monospace;">' + tx.card_mask + '</td></tr>' +
+              '<tr><td style="padding:6px 10px;color:#6b7280;">Expiry</td><td style="padding:6px 10px;font-weight:600;">' + tx.expiry_month + '/' + tx.expiry_year + '</td></tr>' +
+              '<tr style="background:#f9fafb"><td style="padding:6px 10px;color:#6b7280;">Token</td><td style="padding:6px 10px;font-weight:600;font-family:monospace;word-break:break-all;">' + tx.token + '</td></tr>' +
+              '</table>';
+
+            if (window.opener) {
+              window.opener.postMessage({
+                type:      'tranzila_result',
+                token:     tx.token,
+                card_mask: tx.card_mask,
+                card_type: cardType,
+                expiry:    tx.expiry_month + '/' + tx.expiry_year
+              }, '*');
+            }
+            setTimeout(function () { window.close(); }, 1500);
+          } else {
+            showBanner('Tokenization failed.', 'error');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<pre style="padding:12px;font-size:12px;">' + JSON.stringify(response, null, 2) + '</pre>';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

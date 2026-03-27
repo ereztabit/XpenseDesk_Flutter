@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../config/app_config.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
@@ -74,8 +75,8 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
   }
 
   void _openPopup() {
-    final terminal = Uri.encodeComponent('dev123');
-    final url = '/tranzila-poc.html?thtk=$_thtk&terminal=$terminal';
+    final terminal = Uri.encodeComponent(AppConfig.instance.tranzilaTerminal);
+    final url = '/CreditCard/Authorize.html?thtk=$_thtk&terminal=$terminal';
     // dart:html types window.open() as non-nullable but it returns null at
     // runtime when the browser blocks the popup.
     final dynamic popup = html.window.open(
