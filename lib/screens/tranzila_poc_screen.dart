@@ -62,21 +62,17 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
     _messageSub = html.window.onMessage.listen((event) {
       final data = event.data;
       if (data is Map && data['type'] == 'tranzila_result') {
-        setState(() {
-          _result = {
-            'token':     data['token'],
-            'card_mask': data['card_mask'],
-            'card_type': data['card_type'],
-            'expiry':    data['expiry'],
-          };
-        });
+        final tx = data['transaction_response'] as Map?;
+        if (tx == null) return;
+        setState(() { _result = Map<String, dynamic>.from(tx); });
       }
     });
   }
 
   void _openPopup() {
+    final lang     = Localizations.localeOf(context).languageCode;
     final terminal = Uri.encodeComponent(AppConfig.instance.tranzilaTerminal);
-    final url = '/CreditCard/Authorize.html?thtk=$_thtk&terminal=$terminal';
+    final url = '/CreditCard/Authorize.html?thtk=$_thtk&terminal=$terminal&lang=$lang';
     // dart:html types window.open() as non-nullable but it returns null at
     // runtime when the browser blocks the popup.
     final dynamic popup = html.window.open(
@@ -243,9 +239,9 @@ class _ResultCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            _row('Type',   result['card_type'] ?? ''),
+            _row('Type',   result['card_type_name'] ?? result['card_type'] ?? ''),
             _row('Card',   result['card_mask']  ?? ''),
-            _row('Expiry', result['expiry']     ?? ''),
+            _row('Expiry', '${result['expiry_month'] ?? ''}/${result['expiry_year'] ?? ''}'),
             _row('Token',  result['token']      ?? ''),
           ],
         ),

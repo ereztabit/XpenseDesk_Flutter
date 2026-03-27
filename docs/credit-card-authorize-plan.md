@@ -28,29 +28,25 @@ assets/
 - Terminal now from `AppConfig.instance.tranzilaTerminal` (not hardcoded)
 - Build & verified page loads ✅
 
-### Step 2 — Logo + PCI DSS badge + Tranzila footer
-- Replace `<span class="logo">XpenseDesk</span>` with `<img src="/assets/images/logo.png">`
-- Add inline SVG PCI DSS badge next to logo or in the card header
-- Add `<footer>Powered by Tranzila</footer>` at the bottom
-- Build & verify layout
+### Step 2 — Logo + PCI DSS badge + Tranzila footer ✅ VERIFIED
+- Replaced `<span class="logo">XpenseDesk</span>` with `<img src="/assets/images/logo.png">`
+- Added inline SVG PCI DSS badge in header right side
+- Added `<footer>Powered by Tranzila</footer>` at the bottom
+- Build & verified layout ✅
 
-### Step 3 — Multi-language support
+### Step 3 — Multi-language support ✅ VERIFIED
 - Read `?lang=en|he` from URL params (default `en`)
-- Define `STRINGS` object with both languages for every user-visible string:
-  - Banner messages (loading, ready, processing, success, errors)
-  - Field labels (Card Number, CVV, Expiry)
-  - Button text (Save Card, Processing…)
-  - Error messages
-- Apply `dir="rtl"` to `<html>` when `lang=he`
-- Update `TranzilaPocScreen` to pass the current app language
-- Build & verify both languages
+- Defined `STRINGS` object with both languages for all user-visible strings
+- Applied `dir="rtl"` / `lang` on `<html>` via JS on load
+- `TranzilaPocScreen` passes `&lang=` from `Localizations.localeOf(context).languageCode`
+- `response_language: lang === 'he' ? 'Hebrew' : 'English'` passed to `fields.charge()` — **open question**: SDK may not forward it (see comment in Authorize.html)
+- Build & verified both languages ✅
 
 ### Step 4 — Pass full result to opener + console error logging
 - On success: postMessage the **full** `transaction_response` object (not just selected fields)
 - Add explicit console.error calls when expected fields are missing from the response:
   - `token`, `card_mask`, `card_type`, `expiry_month`, `expiry_year`
-- On failure: use `tx.error` (Tranzila's actual message) instead of generic "Tokenization failed"
-  - Fallback: `processor_response_code` description map for common codes
+- On failure: resolve the human-readable message from the response code using the error codes JSON (see Error Codes section below)
 - Build & verify
 
 ### Step 5 — Flutter side: handle full result
@@ -60,20 +56,167 @@ assets/
 
 ---
 
-## Processor Response Codes (for human-readable errors)
+## Tranzila Callback Response Shape
 
-| Code | User-facing message |
-|------|-------------------|
-| `000` | Approved |
-| `002` | Card stolen — contact your bank |
-| `003` | Card not found |
-| `004` | Card refused — please contact your bank or try a different card |
-| `006` | Incorrect CVV |
-| `033` | Card expired |
-| `036` | Card restricted |
-| `039` | Invalid card number |
+The `fields.charge()` callback fires with `(err, response)`. The full shape of both outcomes is documented here.
 
-Fall back to Tranzila's `tx.error` string if code not in map.
+### Success Response
+
+`err` is `null`. `response` contains:
+
+```json
+{
+  "errors": null,
+  "transaction_response": {
+    "success": true,
+    "error": null,
+    "processor_response_code": "000",
+    "transaction_id": "97588",
+    "auth_number": "0000000",
+    "amount": "10.00",
+    "currency_code": 1,
+    "credit_card_last_4_digits": "2312",
+    "expiry_month": "12",
+    "expiry_year": "26",
+    "user_form_data": {
+      "response_language": "",
+      "contact": "john.doe@example.com",
+      "company": "Example Corp",
+      "json_purchase_data": "",
+      "force_challenge": "0",
+      "force_txn_on_3ds_fail": "N",
+      "expiry": "",
+      "notify_url": "",
+      "shopify_id": "",
+      "DCdisable": "",
+      "requested_by_user": "merchant_user",
+      "card_holder_id_number": ""
+    },
+    "card_type": "5",
+    "card_mask": "458059****2312",
+    "card_locality": "domestic",
+    "txn_type": "debit",
+    "tranmode": "A",
+    "card_type_name": "Isracard",
+    "cvv_status": "3",
+    "id_status": "0",
+    "card_issuer": "1",
+    "token": "me4b50240d8c6222312",
+    "payment_plan": 1,
+    "total_installments_number": null
+  },
+  "response_hash": "7d7dfdbbd6e863ebb8b68c74a6080cdd26bbac4b39fe01a0aa3839ee6c63d217"
+}
+```
+
+**Fields Flutter needs to extract from `transaction_response`:**
+
+| Field | Description |
+|-------|-------------|
+| `token` | Reusable card token — the primary output |
+| `card_mask` | Display string e.g. `458059****2312` |
+| `card_type` | Numeric brand code (see card types below) |
+| `card_type_name` | Human-readable brand e.g. `Isracard` |
+| `expiry_month` | `MM` |
+| `expiry_year` | `YY` |
+| `processor_response_code` | `"000"` on approval, `"777"` for J5 verify — both are success |
+
+**Card type codes:**
+
+| Value | Brand |
+|-------|-------|
+| `1` | Mastercard |
+| `2` | Visa |
+| `3` | Diners |
+| `4` | Amex |
+| `5` | Isracard |
+| `6` | Maestro |
+
+**Success condition:** `transaction_response.success === true` AND `processor_response_code` is `"000"` or `"777"`.
+
+---
+
+### Failure Response
+
+There are two distinct failure modes:
+
+**Mode A — Hosted Fields validation error** (`err` is non-null, `response` may be null):
+
+```json
+{
+  "errors": [
+    {
+      "code": 10017,
+      "message": "Invalid handshake token",
+      "param": "thtk"
+    }
+  ],
+  "transaction_response": null,
+  "response_hash": "9c636a0098729e53e48b16a348229fa19e01d1f99e0f25bf1eceeef17149d603"
+}
+```
+
+`err.messages[]` — each entry has `code` (integer, `10000–10017` range), `message` (English string from Tranzila), and `param` (which field failed). Display under the relevant field container using `#errors_for_{param}`.
+
+**Mode B — Transaction declined** (`err` is null, `response.transaction_response.success === false`):
+
+`processor_response_code` contains the SHVA/3DS code. Look up in `errorMap` and display in the current language.
+
+---
+
+## Error Codes — Source and Usage
+
+**Source file:** `assets/data/tranzila_response_codes.json`
+
+This file contains every SHVA and 3DS response code from Tranzila, with both English and Hebrew translations. It is served by Flutter's static asset handler at:
+
+```
+/assets/data/tranzila_response_codes.json
+```
+
+The HTML page fetches this file on load, builds a lookup map keyed by `code`, then resolves the display message using the `?lang=en|he` URL parameter.
+
+### Loading the codes
+
+```javascript
+const errorMap = {};   // populated on load
+
+fetch('/assets/data/tranzila_response_codes.json')
+  .then(r => r.json())
+  .then(data => {
+    data.codes.forEach(c => { errorMap[c.code] = { en: c.en, he: c.he }; });
+  });
+```
+
+### Resolving a code to a user-facing message
+
+```javascript
+function resolveErrorMessage(code) {
+  const entry = errorMap[String(code)];
+  if (!entry) return lang === 'he' ? 'שגיאה לא ידועה (' + code + ')' : 'Unknown error (' + code + ')';
+  return (entry[lang] ?? entry.en) || 'Unknown error (' + code + ')';
+}
+```
+
+### Example
+
+Tranzila returns `processor_response_code: "006"` with `?lang=he`:
+
+```
+entry = { en: "Incorrect identity number or CVV.", he: "דחה עסקה: ת.ז. או CVV שגויים" }
+resolveErrorMessage("006") → "דחה עסקה: ת.ז. או CVV שגויים"
+```
+
+Same code with `?lang=en`:
+```
+resolveErrorMessage("006") → "Incorrect identity number or CVV."
+```
+
+### Fallback chain
+
+1. Look up `processor_response_code` in `errorMap` → display in current `lang`
+2. If code not found → show Tranzila's raw `tx.error` string (already in English)
+3. If both missing → show generic "Payment failed" string from `STRINGS[lang]`
 
 ---
 
