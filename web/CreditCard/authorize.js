@@ -2,9 +2,17 @@
 // Loaded with a cache-busting timestamp by Authorize.html.
 
 const params        = new URLSearchParams(window.location.search);
-const thtk          = params.get('thtk');
-const TERMINAL_NAME = params.get('terminal');
 const lang          = params.get('lang') === 'he' ? 'he' : 'en';
+const DEV           = window.location.hostname === 'localhost';
+
+// Populated via init_data postMessage — not in URL
+let thtk          = null;
+let TERMINAL_NAME = null;
+
+function devLog(direction, data) {
+  if (!DEV) return;
+  console.log('[Tranzila ' + direction + ']', JSON.parse(JSON.stringify(data)));
+}
 
 // Apply RTL and lang attribute before rendering
 document.documentElement.dir  = lang === 'he' ? 'rtl' : 'ltr';
@@ -22,7 +30,9 @@ const STRINGS = {
     expiry:        'Expiry',
     saveCard:      'Save Card',
     processing:    'Processing\u2026',
+    bannerConnecting: 'Connecting\u2026',
     bannerReady:   'Enter your card details below.',
+    errorDirectOpen: 'Please open this window directly from XpenseDesk.',
     bannerSuccess: 'Card saved successfully!',
     bannerError:   'Please fix the errors below.',
     errorMissing:  'Missing handshake token.',
@@ -39,7 +49,9 @@ const STRINGS = {
     expiry:        '\u05EA\u05D5\u05E7\u05E3',
     saveCard:      '\u05E9\u05DE\u05D5\u05E8 \u05DB\u05E8\u05D8\u05D9\u05E1',
     processing:    '\u05DE\u05E2\u05D1\u05D3\u2026',
+    bannerConnecting: '\u05DE\u05EA\u05D7\u05D1\u05E8\u2026',
     bannerReady:   '\u05D4\u05D6\u05DF \u05D0\u05EA \u05E4\u05E8\u05D8\u05D9 \u05D4\u05DB\u05E8\u05D8\u05D9\u05E1 \u05E9\u05DC\u05DA.',
+    errorDirectOpen: '\u05E4\u05EA\u05D7 \u05D7\u05DC\u05D5\u05DF \u05D6\u05D4 \u05D9\u05E9\u05D9\u05E8\u05D5\u05EA \u05DE\u05EA\u05D5\u05DA XpenseDesk.',
     bannerSuccess: '\u05D4\u05DB\u05E8\u05D8\u05D9\u05E1 \u05E0\u05E9\u05DE\u05E8 \u05D1\u05D4\u05E6\u05DC\u05D7\u05D4!',
     bannerError:   '\u05D0\u05E0\u05D0 \u05EA\u05E7\u05DF \u05D0\u05EA \u05D4\u05E9\u05D2\u05D9\u05D0\u05D5\u05EA \u05DC\u05DE\u05D8\u05D4.',
     errorMissing:  '\u05D7\u05E1\u05E8 \u05D0\u05E1\u05D9\u05DE\u05D5\u05DF \u05D7\u05D9\u05D1\u05D5\u05E8.',
@@ -97,18 +109,6 @@ setLabel('label-card-holder-name',   S.cardHolderName);
 setLabel('label-phone-country-code', S.phoneCountryCode);
 setLabel('label-phone-number',       S.phoneNumber);
 
-const _nameEl = document.getElementById('card_holder_name');
-if (_nameEl) {
-  _nameEl.value = params.get('card_holder_name') || '';
-  const _emailEl = document.getElementById('card_holder_email');
-  if (_emailEl) _emailEl.value = params.get('card_holder_email') || '';
-  const _phoneEl = document.getElementById('phone_number');
-  if (_phoneEl) _phoneEl.value = params.get('phone_number') || '';
-  const pcc = params.get('phone_country_code');
-  const _pccEl = document.getElementById('phone_country_code');
-  if (_pccEl) _pccEl.value = pcc ? '+' + pcc : '';
-}
-
 const banner    = document.getElementById('status-banner');
 const submitBtn = document.getElementById('submit-btn');
 const resultDiv = document.getElementById('result');
@@ -130,14 +130,54 @@ function clearFieldErrors() {
 }
 
 // ---------------------------------------------------------------------------
-// Entry point
+// Entry point — wait for init_data from Flutter via postMessage
 // ---------------------------------------------------------------------------
 
-if (!thtk || !TERMINAL_NAME) {
-  showBanner(S.errorMissing, 'error');
-  if (!TERMINAL_NAME) console.error('Authorize.html: missing required URL param "terminal"');
+showBanner(S.bannerConnecting, 'info');
+
+if (!window.opener) {
+  showBanner(S.errorDirectOpen, 'error');
+  console.error('Authorize.html: window.opener is null — page must be opened as a popup from XpenseDesk');
 } else {
-  init();
+  const readyMsg = { type: 'ready' };
+  devLog('▶ send', readyMsg);
+  window.opener.postMessage(readyMsg, '*');
+
+  // If init_data never arrives (e.g. opener closed before sending), show error
+  const _initTimeout = setTimeout(function () {
+    if (!thtk) showBanner(S.errorDirectOpen, 'error');
+  }, 8000);
+
+  window.addEventListener('message', function (event) {
+    const data = event.data;
+    if (!data || data.type !== 'init_data') return;
+    clearTimeout(_initTimeout);
+    devLog('◀ recv', data);
+
+    thtk          = data.thtk     || null;
+    TERMINAL_NAME = data.terminal || null;
+
+    const _nameEl = document.getElementById('card_holder_name');
+    if (_nameEl) {
+      _nameEl.value = data.card_holder_name || '';
+      const _emailEl = document.getElementById('card_holder_email');
+      if (_emailEl) _emailEl.value = data.card_holder_email || '';
+      const _phoneEl = document.getElementById('phone_number');
+      if (_phoneEl) _phoneEl.value = data.phone_number || '';
+      const _pccEl = document.getElementById('phone_country_code');
+      if (_pccEl) {
+        const pcc = data.phone_country_code || '';
+        _pccEl.value = pcc ? '+' + pcc : '';
+      }
+    }
+
+    if (!thtk || !TERMINAL_NAME) {
+      showBanner(S.errorDirectOpen, 'error');
+      console.error('Authorize.html: init_data missing thtk or terminal');
+      return;
+    }
+    init();
+  });
 }
 
 function init() {
@@ -215,11 +255,13 @@ function init() {
           '</table>';
 
         if (window.opener) {
-          window.opener.postMessage({
+          const resultMsg = {
             type:                 'tranzila_result',
             success:              true,
             transaction_response: tx
-          }, '*');
+          };
+          devLog('▶ send', resultMsg);
+          window.opener.postMessage(resultMsg, '*');
         }
         setTimeout(function () { window.close(); }, 1500);
       } else {

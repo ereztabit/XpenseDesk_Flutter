@@ -25,6 +25,7 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
   String? _thtk;
   Map<String, dynamic>? _result;
   StreamSubscription? _messageSub;
+  html.WindowBase? _popup;
 
   @override
   void initState() {
@@ -61,7 +62,16 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
   void _listenForResult() {
     _messageSub = html.window.onMessage.listen((event) {
       final data = event.data;
-      if (data is Map && data['type'] == 'tranzila_result') {
+      if (data is! Map) return;
+
+      final type = data['type'] as String?;
+      if (AppConfig.environment == 'dev') {
+        debugPrint('[Tranzila ◀ recv] type=$type data=$data');
+      }
+
+      if (type == 'ready') {
+        _sendInitData();
+      } else if (type == 'tranzila_result') {
         final tx = data['transaction_response'] as Map?;
         if (tx == null) return;
         setState(() { _result = Map<String, dynamic>.from(tx); });
@@ -69,32 +79,34 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
     });
   }
 
+  void _sendInitData() {
+    if (_popup == null || _thtk == null) return;
+    final userInfo = ref.read(userInfoProvider);
+    final payload = {
+      'type':               'init_data',
+      'thtk':               _thtk,
+      'terminal':           AppConfig.instance.tranzilaTerminal,
+      'card_holder_name':   userInfo?.fullName    ?? '',
+      'card_holder_email':  userInfo?.email       ?? '',
+      'phone_country_code': userInfo?.dailingCode ?? '',
+      'phone_number':       '',
+    };
+    if (AppConfig.environment == 'dev') {
+      debugPrint('[Tranzila ▶ send] $payload');
+    }
+    _popup!.postMessage(payload, html.window.location.origin);
+  }
+
   void _openPopup() {
-    final lang     = Localizations.localeOf(context).languageCode;
-    final terminal = Uri.encodeComponent(AppConfig.instance.tranzilaTerminal);
-    final page     = AppConfig.instance.tranzilaUse3ds
+    final lang = Localizations.localeOf(context).languageCode;
+    final page = AppConfig.instance.tranzilaUse3ds
         ? '/CreditCard/AuthorizeCard3DS.html'
         : '/CreditCard/Authorize.html';
 
-    final userInfo = ref.read(userInfoProvider);
-    final name     = Uri.encodeComponent(userInfo?.fullName    ?? '');
-    final email    = Uri.encodeComponent(userInfo?.email       ?? '');
-    final dialCode = userInfo?.dailingCode ?? '';
-
-    final url = '$page'
-        '?thtk=$_thtk'
-        '&terminal=$terminal'
-        '&lang=$lang'
-        '&card_holder_name=$name'
-        '&card_holder_email=$email'
-        '&phone_country_code=$dialCode'
-        '&phone_number='
-        '&force_txn_on_3ds_fail=N';
-
-    // dart:html types window.open() as non-nullable but it returns null at
-    // runtime when the browser blocks the popup.
+    // Open immediately (synchronous — keeps user gesture context for popup blocker).
+    // Sensitive data (thtk, cardholder) is sent via postMessage once popup signals ready.
     final dynamic popup = html.window.open(
-      url,
+      '$page?lang=$lang',
       'card-tokenization',
       'width=520,height=640,toolbar=no,menubar=no,location=no,status=no,resizable=no',
     );
@@ -105,7 +117,9 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
         _error = 'Your browser blocked the payment window. '
             'Please allow popups for this site and try again.';
       });
+      return;
     }
+    _popup = popup as html.WindowBase;
   }
 
   @override

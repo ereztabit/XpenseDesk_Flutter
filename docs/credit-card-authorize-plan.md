@@ -40,6 +40,14 @@ we are talking about validation errors
 > 3. Does the phone number need to be in a specific format (e.g. no leading zero, no spaces, no dashes)?
 > 4. If the phone fields are missing or invalid, does the transaction fail or does 3DS simply proceed without them?
 
+**Q5 — Sandbox environment and test credit cards:**
+
+> We are getting real declines on real credit cards during development (e.g. error `003` — "Contact credit company to approve the transaction"). We should not be developing against a live terminal.
+>
+> 1. How do we get a sandbox/test terminal that does not process real transactions?
+> 2. What test credit card numbers can we use against the sandbox that will return controlled success/failure responses?
+> 3. **RESOLVED — `sandbox` flag is not an environment toggle.** Tranzila docs explicitly state "Always use `sandbox: false`". The flag is unrelated to test/live mode. Sandbox environment must be provisioned at the terminal level. Please provide a sandbox terminal for development use.
+
 ---
 
 ## Two-Page Architecture (interim 3DS security)
@@ -226,7 +234,41 @@ Pass cardholder data as URL params when opening the page. The Flutter side alrea
 
 ---
 
-### Step 7 — Cleanup
+### Step 7 — postMessage init_data architecture
+
+**Goal:** Remove `thtk` and all cardholder data from the URL. They must not appear in browser history, server logs, or referrer headers. The popup opens synchronously on click; sensitive data flows via postMessage only.
+
+**URL after this step:** `/CreditCard/Authorize.html?lang=he` — lang only (needed immediately for RTL rendering before any message arrives). Both HTML files are unchanged in structure.
+
+#### JS changes (`authorize.js` — shared by both pages)
+
+- Remove `thtk` and `TERMINAL_NAME` from URL params reading at top — they arrive via `init_data` instead
+- `lang` stays in URL params (needed for immediate RTL/string rendering)
+- On DOM ready: show "Connecting…" banner, then send `{ type: 'ready' }` to `window.opener`
+- Listen for `window.message` with `type: 'init_data'` — extract `thtk`, `terminal`, and cardholder fields, then call `init()`
+- `init()` signature unchanged — it just reads from variables that are now set by `init_data` instead of URL params
+- **Dev logging:** `const DEV = window.location.hostname === 'localhost'` — when true, `console.log` every postMessage sent and received with a `[Tranzila ▶]` / `[Tranzila ◀]` prefix
+
+#### Flutter changes (`tranzila_poc_screen.dart`)
+
+- `_openPopup()`: open with `?lang=` only — no thtk, terminal, or cardholder data in URL. Store popup reference as `_popup`.
+- `_listenForResult()`: handles both `tranzila_result` (existing, unchanged) and the new `ready` message — on `ready`, send `init_data` to `_popup`
+- `init_data` payload:
+  ```dart
+  {
+    'type':               'init_data',
+    'thtk':               _thtk,
+    'terminal':           AppConfig.instance.tranzilaTerminal,
+    'card_holder_name':   userInfo?.fullName  ?? '',
+    'card_holder_email':  userInfo?.email     ?? '',
+    'phone_country_code': userInfo?.dailingCode ?? '',
+    'phone_number':       '',
+  }
+  ```
+- Use `window.location.origin` as `targetOrigin` when sending `init_data` (sensitive payload — don't use `'*'`)
+- **Dev logging:** `if (AppConfig.environment == 'dev') debugPrint(...)` for both send and receive
+
+### Step 8 — Cleanup
 - Delete `web/tranzila-poc.html` (replaced by `web/CreditCard/Authorize.html`)
 - Commit
 
