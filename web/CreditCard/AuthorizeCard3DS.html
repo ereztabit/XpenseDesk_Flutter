@@ -13,6 +13,9 @@
     document.head.appendChild(l);
   </script>
   <script src="https://hf.tranzila.com/assets/js/thostedf.js"></script>
+  <!-- Hardcode 3DS params — authorize.js reads this before URL params.
+       force_txn_on_3ds_fail MUST NOT be overridable by the caller. -->
+  <script>window.TZLA_PAGE_CONFIG = { force_txn_on_3ds_fail: 'N', force_challenge: 1 };</script>
   <script>
     var s = document.createElement('script');
     s.src = 'authorize.js?v=' + Date.now();
@@ -55,6 +58,22 @@
           <div id="errors_for_expiry" class="field-error"></div>
         </div>
       </div>
+
+      <div class="field-group">
+        <label id="label-card-holder-name">Cardholder Name</label>
+        <input type="text" id="card_holder_name" autocomplete="cc-name">
+      </div>
+      <div class="field-group phone-row">
+        <div>
+          <label id="label-phone-country-code">Country Code</label>
+          <input type="text" id="phone_country_code" placeholder="+972">
+        </div>
+        <div>
+          <label id="label-phone-number">Phone</label>
+          <input type="tel" id="phone_number" autocomplete="tel">
+        </div>
+      </div>
+      <input type="hidden" id="card_holder_email">
 
       <button id="submit-btn" disabled>Save Card</button>
 

@@ -9,3 +9,4 @@ app:
 
 payment:
   tranzilaTerminal: dev123
+  use3ds: false

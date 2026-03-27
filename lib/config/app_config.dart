@@ -56,4 +56,9 @@ class AppConfig {
     final payment = _config['payment'] as Map;
     return payment['tranzilaTerminal'] as String;
   }
+
+  bool get tranzilaUse3ds {
+    final payment = _config['payment'] as Map;
+    return payment['use3ds'] as bool? ?? false;
+  }
 }

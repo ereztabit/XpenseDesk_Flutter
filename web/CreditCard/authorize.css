@@ -102,3 +102,26 @@ footer {
   font-size: 11px;
   color: #9ca3af;
 }
+#card_holder_name, #phone_country_code, #phone_number {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  height: 40px;
+  padding: 0 12px;
+  background: #fff;
+  width: 100%;
+  font-size: 15px;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  outline: none;
+}
+#card_holder_name:focus, #phone_country_code:focus, #phone_number:focus {
+  border-color: #6366f1;
+}
+.phone-row {
+  display: flex;
+  gap: 12px;
+  direction: ltr; /* phone layout is always LTR: [+code] [number] */
+}
+.phone-row > div:first-child { flex: 0 0 110px; }
+.phone-row > div:last-child  { flex: 1; }
+[dir="rtl"] .phone-row label { direction: rtl; }

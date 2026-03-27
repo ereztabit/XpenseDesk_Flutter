@@ -1,5 +1,58 @@
 # Credit Card Authorization Page — Production Plan
 
+---
+
+## ❓ Open Questions — Tranzila Support
+
+**Q1 — `response_language` param in `fields.charge()`:**
+
+> We pass `response_language: 'English'` (or `'Hebrew'`) in the `fields.charge()` call but Tranzila field-level errors still return in Hebrew regardless.
+> Does the Hosted Fields SDK actually forward this param to the API, or is it ignored?
+we are talking about validation errors
+> Note: if unsupported, our `tranzila_response_codes.json` error resolution handles language on our side, making this moot.
+
+**Q2 — 3DS `force_txn_on_3ds_fail` security (ask before implementing Step 6):**
+
+> What is the recommended way to enforce `force_txn_on_3ds_fail` securely?
+> Specifically: can this setting be locked at the terminal level or embedded in the `thtk` issuance call so that the client-side `fields.charge()` payload cannot override it?
+> We want to ensure a user cannot modify the page URL or JS call to bypass 3DS failure rejection.
+
+**Q3 — 3DS test cards not working on dev terminal:**
+
+> We are unable to complete any 3DS transaction on the dev terminal using the following test cards:
+>
+> | Card Number | Scenario |
+> |-------------|----------|
+> | `4907639999909022` | 3DS Frictionless — Success |
+> | `4907639999990022` | 3DS Frictionless — Fail |
+> | `4918914107195005` | 3DS Challenge Required (enter `555` to pass) |
+>
+> Questions:
+> 1. Does the dev terminal need to be explicitly enrolled in 3DS? If so, please enable it.
+> 2. Are these the correct test card numbers for the Hosted Fields integration, or is there a separate test card set for this flow?
+> 3. What CVV and expiry date should be used with these cards? We are currently using expiry `12/30` and CVV `123` — are these valid for the 3DS test cards?
+
+---
+
+## Two-Page Architecture (interim 3DS security)
+
+Until Tranzila confirms a server-authoritative way to lock 3DS settings, we use **two separate HTML pages**:
+
+| Page | URL | 3DS |
+|------|-----|-----|
+| `Authorize.html` | `/CreditCard/Authorize.html` | No 3DS |
+| `AuthorizeCard3DS.html` | `/CreditCard/AuthorizeCard3DS.html` | 3DS enabled |
+
+**Why this works as an interim measure:**
+- Flutter decides which page to open based on `AppConfig` — the user never sees or controls the URL
+- The 3DS page URL is not guessable from the standard page URL
+- No URL param for `force_txn_on_3ds_fail` — it's hardcoded inside the 3DS page itself
+- Both pages share the same `authorize.css` and `authorize.js` — 3DS page adds only the extra `fields.charge()` params and the cardholder input fields
+
+**Future state:** once Tranzila confirms server-side enforcement, merge back to a single page and remove the split.
+
+---
+
 ## File Structure (target)
 
 ```
@@ -55,7 +108,117 @@ assets/
 - `_ResultCard` reads `card_type_name`, `card_mask`, `expiry_month`/`expiry_year`, `token`
 - Build & verified ✅
 
-### Step 6 — Cleanup
+### Step 6 — 3DS Support
+
+3DS is only active if the Tranzila terminal has the service enabled. When triggered, the SDK injects a 400×600 iframe challenge popup into the page automatically — we don't render it ourselves, just need to make sure nothing in our layout blocks or clips it.
+
+#### HTML changes (`Authorize.html` / `authorize.js`)
+
+**Add visible, editable cardholder identity inputs** below the card fields, pre-filled from URL params. The user can override them before submitting:
+
+```html
+<!-- Visible, editable by user -->
+<div class="field-group">
+  <label for="card_holder_name">Cardholder Name</label>
+  <input type="text" id="card_holder_name" autocomplete="cc-name">
+</div>
+<div class="field-group phone-row">
+  <div>
+    <label for="phone_country_code">Country Code</label>
+    <input type="text" id="phone_country_code" placeholder="+972">
+  </div>
+  <div>
+    <label for="phone_number">Phone</label>
+    <input type="tel" id="phone_number" autocomplete="tel">
+  </div>
+</div>
+
+<!-- Hidden — injected from URL param, never shown -->
+<input type="hidden" id="card_holder_email">
+```
+
+**Phone country code — pre-filled from URL param, free-text:**
+
+Flutter passes `&phone_country_code=+972` (resolved from company country defaults on the Flutter side). The HTML page reads it and pre-fills the field. If the param is absent the field is left blank. No mapping logic lives in this page.
+
+**Pre-fill all fields from URL params:**
+
+```javascript
+document.getElementById('card_holder_name').value  = params.get('card_holder_name')  || '';
+document.getElementById('card_holder_email').value = params.get('card_holder_email') || '';
+document.getElementById('phone_number').value      = params.get('phone_number')      || '';
+
+// phone_country_code is passed as digits only (e.g. "972") — prepend "+" here
+const pcc = params.get('phone_country_code');
+document.getElementById('phone_country_code').value = pcc ? '+' + pcc : '';
+```
+
+**Flutter URL construction** (`TranzilaPocScreen`):
+
+```
+/CreditCard/Authorize.html
+  ?thtk=...
+  &terminal=...
+  &lang=he
+  &card_holder_name=John+Doe
+  &card_holder_email=john@example.com
+  &phone_country_code=972
+  &phone_number=
+  &force_txn_on_3ds_fail=N
+```
+
+Flutter passes the dial code as digits only — no `+`, no encoding needed. The HTML page prepends `+` when filling the field. Flutter is responsible for resolving the dial code from company country defaults before building this URL.
+
+`card_holder_name`, `phone_country_code`, `phone_number` need EN/HE labels added to the `STRINGS` object. Email is hidden — no label needed.
+
+**Pass them into `fields.charge()`:**
+
+```javascript
+fields.charge({
+  terminal_name:       params.get('terminal'),
+  amount:              '1.00',
+  tranmode:            'V',
+  response_language:   lang === 'he' ? 'Hebrew' : 'English',
+  // 3DS
+  force_challenge:     params.get('force_challenge') || 0,
+  force_txn_on_3ds_fail: params.get('force_txn_on_3ds_fail') || 'N',
+  // Cardholder identity — improves frictionless rate
+  card_holder_name:    document.getElementById('card_holder_name').value,
+  card_holder_email:   document.getElementById('card_holder_email').value,
+  phone_country_code:  document.getElementById('phone_country_code').value,
+  phone_number:        document.getElementById('phone_number').value,
+}, function(err, response) { ... });
+```
+
+**Layout guard:** the SDK challenge iframe is injected at `position: fixed`, centered in the viewport. Our page has no `overflow: hidden` or `transform` on the root — verify this stays true so the iframe isn't clipped.
+
+#### Flutter changes (`TranzilaPocScreen`)
+
+Pass cardholder data as URL params when opening the page. The Flutter side already has `userInfo` (email, name) and can supply them:
+
+```
+/CreditCard/Authorize.html
+  ?thtk=...
+  &terminal=...
+  &lang=en
+  &card_holder_name=John+Doe
+  &card_holder_email=john@example.com
+  &phone_country_code=%2B972
+  &phone_number=0501234567
+  &force_txn_on_3ds_fail=N
+```
+
+`TranzilaPocScreen` reads `userInfo` from Riverpod and URI-encodes the fields before building the URL.
+
+#### Open questions before closing this step
+
+- [ ] Confirm with Tranzila that the dev terminal has 3DS enrolled — without it we cannot test the challenge flow at all
+- [ ] Decide: do we pass `force_challenge: 1` during POC testing to force the challenge iframe to appear?
+- [ ] Confirm `force_txn_on_3ds_fail` default — `'N'` means a non-3DS-enrolled card will fail; `'Y'` degrades gracefully but loses liability shift
+
+---
+
+### Step 7 — Cleanup
 - Delete `web/tranzila-poc.html` (replaced by `web/CreditCard/Authorize.html`)
 - Commit
 

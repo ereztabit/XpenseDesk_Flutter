@@ -27,7 +27,10 @@ const STRINGS = {
     bannerError:   'Please fix the errors below.',
     errorMissing:  'Missing handshake token.',
     poweredBy:     'Powered by Tranzila',
-    paymentFailed: 'Payment failed.',
+    paymentFailed:     'Payment failed.',
+    cardHolderName:    'Cardholder Name',
+    phoneCountryCode:  'Country Code',
+    phoneNumber:       'Phone',
   },
   he: {
     title:         '\u05D4\u05D5\u05E1\u05E4\u05EA \u05DB\u05E8\u05D8\u05D9\u05E1 \u05D0\u05E9\u05E8\u05D0\u05D9',
@@ -41,7 +44,10 @@ const STRINGS = {
     bannerError:   '\u05D0\u05E0\u05D0 \u05EA\u05E7\u05DF \u05D0\u05EA \u05D4\u05E9\u05D2\u05D9\u05D0\u05D5\u05EA \u05DC\u05DE\u05D8\u05D4.',
     errorMissing:  '\u05D7\u05E1\u05E8 \u05D0\u05E1\u05D9\u05DE\u05D5\u05DF \u05D7\u05D9\u05D1\u05D5\u05E8.',
     poweredBy:     '\u05DE\u05D5\u05E4\u05E2\u05DC \u05E2\u05DC \u05D9\u05D3\u05D9 \u05D8\u05E8\u05E0\u05D6\u05D9\u05DC\u05D4',
-    paymentFailed: '\u05D4\u05EA\u05E9\u05DC\u05D5\u05DD \u05E0\u05DB\u05E9\u05DC.',
+    paymentFailed:     '\u05D4\u05EA\u05E9\u05DC\u05D5\u05DD \u05E0\u05DB\u05E9\u05DC.',
+    cardHolderName:    '\u05E9\u05DD \u05D1\u05E2\u05DC \u05D4\u05DB\u05E8\u05D8\u05D9\u05E1',
+    phoneCountryCode:  '\u05E7\u05D5\u05D3 \u05DE\u05D3\u05D9\u05E0\u05D4',
+    phoneNumber:       '\u05D8\u05DC\u05E4\u05D5\u05DF',
   },
 };
 const S = STRINGS[lang];
@@ -82,6 +88,26 @@ document.getElementById('label-cvv').textContent         = S.cvv;
 document.getElementById('label-expiry').textContent      = S.expiry;
 document.getElementById('submit-btn').textContent        = S.saveCard;
 document.getElementById('footer-powered-by').textContent = S.poweredBy;
+
+// Cardholder fields are only present on AuthorizeCard3DS.html
+function setLabel(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+function getVal(id)          { const el = document.getElementById(id); return el ? el.value : ''; }
+
+setLabel('label-card-holder-name',   S.cardHolderName);
+setLabel('label-phone-country-code', S.phoneCountryCode);
+setLabel('label-phone-number',       S.phoneNumber);
+
+const _nameEl = document.getElementById('card_holder_name');
+if (_nameEl) {
+  _nameEl.value = params.get('card_holder_name') || '';
+  const _emailEl = document.getElementById('card_holder_email');
+  if (_emailEl) _emailEl.value = params.get('card_holder_email') || '';
+  const _phoneEl = document.getElementById('phone_number');
+  if (_phoneEl) _phoneEl.value = params.get('phone_number') || '';
+  const pcc = params.get('phone_country_code');
+  const _pccEl = document.getElementById('phone_country_code');
+  if (_pccEl) _pccEl.value = pcc ? '+' + pcc : '';
+}
 
 const banner    = document.getElementById('status-banner');
 const submitBtn = document.getElementById('submit-btn');
@@ -130,19 +156,28 @@ function init() {
   showBanner(S.bannerReady, 'info');
   submitBtn.disabled = false;
 
+  // Page-level config injected by AuthorizeCard3DS.html to hardcode 3DS params
+  const _pageConfig = window.TZLA_PAGE_CONFIG || {};
+
   submitBtn.addEventListener('click', function () {
     clearFieldErrors();
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span>' + S.processing;
 
     fields.charge({
-      terminal_name:     TERMINAL_NAME,
-      tran_mode:         'V',
-      tokenize:          true,
-      amount:            10,
-      currency_code:     'ILS',
-      thtk:              thtk,
-      response_language: lang === 'he' ? 'Hebrew' : 'English'
+      terminal_name:         TERMINAL_NAME,
+      tran_mode:             'V',
+      tokenize:              true,
+      amount:                10,
+      currency_code:         'ILS',
+      thtk:                  thtk,
+      response_language:     lang === 'he' ? 'Hebrew' : 'English',
+      force_challenge:       _pageConfig.force_challenge !== undefined ? _pageConfig.force_challenge : (params.get('force_challenge') || 0),
+      force_txn_on_3ds_fail: _pageConfig.force_txn_on_3ds_fail || params.get('force_txn_on_3ds_fail') || 'N',
+      card_holder_name:      getVal('card_holder_name'),
+      card_holder_email:     getVal('card_holder_email'),
+      phone_country_code:    getVal('phone_country_code'),
+      phone_number:          getVal('phone_number'),
     }, function (err, response) {
       submitBtn.disabled    = false;
       submitBtn.textContent = S.saveCard;
