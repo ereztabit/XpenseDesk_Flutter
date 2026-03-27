@@ -42,17 +42,22 @@ assets/
 - `response_language: lang === 'he' ? 'Hebrew' : 'English'` passed to `fields.charge()` — **open question**: SDK may not forward it (see comment in Authorize.html)
 - Build & verified both languages ✅
 
-### Step 4 — Pass full result to opener + console error logging
-- On success: postMessage the **full** `transaction_response` object (not just selected fields)
-- Add explicit console.error calls when expected fields are missing from the response:
-  - `token`, `card_mask`, `card_type`, `expiry_month`, `expiry_year`
-- On failure: resolve the human-readable message from the response code using the error codes JSON (see Error Codes section below)
-- Build & verify
+### Step 4 — Pass full result to opener + console error logging ✅ VERIFIED
+- postMessage now sends full `transaction_response` object
+- console.error fires for missing expected fields
+- Failure banner resolves via errorMap → tx.error → generic fallback
+- JS extracted to `authorize.js`, CSS to `authorize.css`, both cache-busted with `Date.now()`
+- No-cache meta tags added to `Authorize.html`
+- Build & verified ✅
 
-### Step 5 — Flutter side: handle full result
-- Update `_listenForResult()` to store the full `transaction_response`
-- Update `_ResultCard` widget to display from full response
-- Build & verify
+### Step 5 — Flutter side: handle full result ✅ VERIFIED
+- `_listenForResult()` now stores full `transaction_response` from postMessage
+- `_ResultCard` reads `card_type_name`, `card_mask`, `expiry_month`/`expiry_year`, `token`
+- Build & verified ✅
+
+### Step 6 — Cleanup
+- Delete `web/tranzila-poc.html` (replaced by `web/CreditCard/Authorize.html`)
+- Commit
 
 ---
 
