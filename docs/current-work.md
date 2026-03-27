@@ -3,13 +3,12 @@
 ## Currently Working On
 
 ### Tranzila Hosted Fields POC
-- `web/tranzila-poc.html` — self-contained card tokenization page
-- `lib/screens/tranzila_poc_screen.dart` — Flutter screen wrapping it in an iframe via HtmlElementView
-- Menu entry (manager only) + route `/manager/payment-poc`
-- Spec: `tranzila_hosted_fields_spec.md`
+ 
 
 
 ## TODO (Backlog)
+- [ ] add logos to the tranzila page
+- [ ] build the entire billing module
 
 ## report bugs (pending)
 
@@ -53,5 +52,28 @@
 
 - [ ] spend history - user
 - [ ] billing area
+
+---
+
+## Tranzila Support — Open Questions
+
+### SDK / Integration
+- [ ] **Q1** — Inline field validation language: iframe validation messages (e.g. "invalid card number") always appear in Hebrew. Is there a param in `TzlaHostedFields.create()` or `fields.charge()` to control the language? `response_language` does not affect iframe UI strings.
+- [ ] **Q2** — `force_txn_on_3ds_fail` security: can this be locked at the terminal level or in the `thtk` issuance so the client-side value cannot be overridden?
+- [ ] **Q3** — 3DS test cards: dev terminal cannot complete any 3DS flow with `4907639999909022`, `4907639999990022`, `4918914107195005`. Does the terminal need explicit 3DS enrollment? What CVV/expiry to use?
+- [ ] **Q4** — Phone number validation in `fields.charge()`: format of `phone_country_code` (`+972` vs `972`), min/max length of `phone_number`, does invalid phone fail the transaction or get ignored?
+
+### Sandbox
+- [ ] **Q5** — Need a sandbox terminal for development — we are hitting live transactions. `sandbox: false` is always correct per docs, so sandbox must be terminal-level. Please provision a sandbox terminal and provide test card numbers.
+
+### Recurring Payments
+- [ ] **Q6** — How to test the full charge flow (tokenization → recurring charge) without real transactions? Is there a sandbox/test endpoint for the charge API? Share API docs for charging a saved token.
+
+### Billing Documents
+- [ ] **Q7** — Can the system issue a Hebrew קבלה for Israeli customers and an English invoice for international customers? Per-transaction or terminal-level setting?
+- [ ] **Q8** — Accountant requires separate document number sequences for Israeli vs. international transactions. Does Tranzila support separate numbering series, and if not, what is the recommended approach?
+
+### Multi-Currency
+- [ ] **Q9** — Can we charge Israeli companies in NIS and foreign companies in USD? Does this require separate terminals per currency, and can they operate under the same merchant account?
 
 ---

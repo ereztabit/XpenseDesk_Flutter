@@ -1,52 +1,6 @@
 # Credit Card Authorization Page — Production Plan
 
----
-
-## ❓ Open Questions — Tranzila Support
-
-**Q1 — `response_language` param in `fields.charge()`:**
-
-> We pass `response_language: 'English'` (or `'Hebrew'`) in the `fields.charge()` call but Tranzila field-level errors still return in Hebrew regardless.
-> Does the Hosted Fields SDK actually forward this param to the API, or is it ignored?
-we are talking about validation errors
-> Note: if unsupported, our `tranzila_response_codes.json` error resolution handles language on our side, making this moot.
-
-**Q2 — 3DS `force_txn_on_3ds_fail` security (ask before implementing Step 6):**
-
-> What is the recommended way to enforce `force_txn_on_3ds_fail` securely?
-> Specifically: can this setting be locked at the terminal level or embedded in the `thtk` issuance call so that the client-side `fields.charge()` payload cannot override it?
-> We want to ensure a user cannot modify the page URL or JS call to bypass 3DS failure rejection.
-
-**Q3 — 3DS test cards not working on dev terminal:**
-
-> We are unable to complete any 3DS transaction on the dev terminal using the following test cards:
->
-> | Card Number | Scenario |
-> |-------------|----------|
-> | `4907639999909022` | 3DS Frictionless — Success |
-> | `4907639999990022` | 3DS Frictionless — Fail |
-> | `4918914107195005` | 3DS Challenge Required (enter `555` to pass) |
->
-> Questions:
-> 1. Does the dev terminal need to be explicitly enrolled in 3DS? If so, please enable it.
-> 2. Are these the correct test card numbers for the Hosted Fields integration, or is there a separate test card set for this flow?
-> 3. What CVV and expiry date should be used with these cards? We are currently using expiry `12/30` and CVV `123` — are these valid for the 3DS test cards?
-
-**Q4 — Phone number validation for 3DS cardholder fields:**
-
-> When passing `phone_country_code` and `phone_number` to `fields.charge()`:
-> 1. Does Tranzila validate the phone country code format? Must it include `+` or just digits (e.g. `972` vs `+972`)?
-> 2. Is there a minimum/maximum length enforced on `phone_number`?
-> 3. Does the phone number need to be in a specific format (e.g. no leading zero, no spaces, no dashes)?
-> 4. If the phone fields are missing or invalid, does the transaction fail or does 3DS simply proceed without them?
-
-**Q5 — Sandbox environment and test credit cards:**
-
-> We are getting real declines on real credit cards during development (e.g. error `003` — "Contact credit company to approve the transaction"). We should not be developing against a live terminal.
->
-> 1. How do we get a sandbox/test terminal that does not process real transactions?
-> 2. What test credit card numbers can we use against the sandbox that will return controlled success/failure responses?
-> 3. **RESOLVED — `sandbox` flag is not an environment toggle.** Tranzila docs explicitly state "Always use `sandbox: false`". The flag is unrelated to test/live mode. Sandbox environment must be provisioned at the terminal level. Please provide a sandbox terminal for development use.
+> Open questions tracked in `docs/current-work.md` under "Tranzila Support — Open Questions".
 
 ---
 
