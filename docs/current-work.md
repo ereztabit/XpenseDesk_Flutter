@@ -2,6 +2,12 @@
 
 ## Currently Working On
 
+### Tranzila Hosted Fields POC
+- `web/tranzila-poc.html` — self-contained card tokenization page
+- `lib/screens/tranzila_poc_screen.dart` — Flutter screen wrapping it in an iframe via HtmlElementView
+- Menu entry (manager only) + route `/manager/payment-poc`
+- Spec: `tranzila_hosted_fields_spec.md`
+
 
 ## TODO (Backlog)
 

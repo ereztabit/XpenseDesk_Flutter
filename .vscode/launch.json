@@ -32,6 +32,25 @@
       ]
     },
     {
+      "name": "Flutter Dev HTTPS (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "preLaunchTask": "flutter pub get",
+      "args": [
+        "-d",
+        "chrome",
+        "--web-hostname",
+        "localhost",
+        "--web-port=8080",
+        "--web-tls-cert-path",
+        "localhost+1.pem",
+        "--web-tls-cert-key-path",
+        "localhost+1-key.pem",
+        "--dart-define=ENV=dev"
+      ]
+    },
+    {
       "name": "Flutter Dev (Web Server - External)",
       "request": "launch",
       "type": "dart",

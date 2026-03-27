@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Payment Card — XpenseDesk</title>
+  <script src="https://hf.tranzila.com/assets/js/thostedf.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      color: #1f2937;
+      min-height: 100vh;
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+    }
+    header .logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: #6366f1;
+      letter-spacing: -0.3px;
+    }
+    main {
+      padding: 32px 24px;
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 440px;
+    }
+    h2 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 20px;
+    }
+    .banner {
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      display: none;
+    }
+    .banner.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+    .banner.info    { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; display: block; }
+    .banner.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
+    .field-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #374151; }
+    #card-number, #cvv, #expiry {
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      height: 40px;
+      padding: 0 12px;
+      background: #fff;
+    }
+    .field-error { font-size: 12px; color: #dc2626; margin-top: 4px; display: none; }
+    .field-error.visible { display: block; }
+    .row { display: flex; gap: 12px; }
+    .row .field-group { flex: 1; }
+    #submit-btn {
+      width: 100%;
+      padding: 10px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    #submit-btn:disabled { background: #a5b4fc; cursor: not-allowed; }
+    #submit-btn:hover:not(:disabled) { background: #4f46e5; }
+    .spinner {
+      display: inline-block;
+      width: 13px; height: 13px;
+      border: 2px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #result {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      margin-top: 16px;
+      display: none;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo">XpenseDesk</span>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Add Payment Card</h2>
+
+      <div id="status-banner" class="banner"></div>
+
+      <div class="field-group">
+        <label>Card Number</label>
+        <div id="card-number"></div>
+        <div id="errors_for_credit_card_number" class="field-error"></div>
+      </div>
+
+      <div class="row">
+        <div class="field-group">
+          <label>CVV</label>
+          <div id="cvv"></div>
+          <div id="errors_for_cvv" class="field-error"></div>
+        </div>
+        <div class="field-group">
+          <label>Expiry</label>
+          <div id="expiry"></div>
+          <div id="errors_for_expiry" class="field-error"></div>
+        </div>
+      </div>
+
+      <button id="submit-btn" disabled>Save Card</button>
+
+      <div id="result"></div>
+    </div>
+  </main>
+
+  <script>
+    const params       = new URLSearchParams(window.location.search);
+    const thtk         = params.get('thtk');
+    const TERMINAL_NAME = params.get('terminal') || 'dev123';
+
+    const banner    = document.getElementById('status-banner');
+    const submitBtn = document.getElementById('submit-btn');
+    const resultDiv = document.getElementById('result');
+
+    function showBanner(msg, type) {
+      banner.textContent = msg;
+      banner.className   = 'banner ' + type;
+    }
+
+    function showFieldError(field, msg) {
+      const el = document.getElementById('errors_for_' + field);
+      if (!el) return;
+      if (msg) { el.textContent = msg; el.classList.add('visible'); }
+      else      { el.textContent = ''; el.classList.remove('visible'); }
+    }
+
+    function clearFieldErrors() {
+      ['credit_card_number', 'cvv', 'expiry'].forEach(f => showFieldError(f, ''));
+    }
+
+    if (!thtk) {
+      showBanner('Missing handshake token.', 'error');
+    } else {
+      init();
+    }
+
+    function init() {
+      const fields = TzlaHostedFields.create({
+        sandbox: false,
+        fields: {
+          credit_card_number: { selector: '#card-number', placeholder: '4580 4580 4580 4580', tabindex: 1 },
+          cvv:                { selector: '#cvv',         placeholder: '123',                 tabindex: 2 },
+          expiry:             { selector: '#expiry',      placeholder: '12/28',               version: '1' }
+        },
+        styles: {
+          'input': { 'font-size': '15px', 'color': '#111827' }
+        }
+      });
+
+      showBanner('Enter your card details below.', 'info');
+      submitBtn.disabled = false;
+
+      submitBtn.addEventListener('click', function () {
+        clearFieldErrors();
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span>Processing…';
+
+        fields.charge({
+          terminal_name: TERMINAL_NAME,
+          tran_mode:     'V',
+          tokenize:      true,
+          amount:        10,
+          currency_code: 'ILS',
+          thtk:          thtk
+        }, function (err, response) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Save Card';
+
+          if (err) {
+            if (err.messages && err.messages.length) {
+              err.messages.forEach(function (m) {
+                showFieldError(m.param, m.message + ' (' + m.code + ')');
+              });
+              showBanner('Please fix the errors below.', 'error');
+            } else {
+              showBanner('Error: ' + JSON.stringify(err), 'error');
+            }
+            return;
+          }
+
+          const tx = response.transaction_response;
+          if (tx && tx.success) {
+            const cardTypeMap = { 1: 'MasterCard', 2: 'Visa', 3: 'Diners', 4: 'Amex', 5: 'Isracard', 6: 'Maestro' };
+            const cardType = cardTypeMap[parseInt(tx.card_type)] || tx.card_type_name || 'Unknown';
+
+            showBanner('Card saved successfully!', 'success');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML =
+              '<table style="border-collapse:collapse;width:100%;font-size:13px;">' +
+              '<tr><td style="padding:6px 10px;color:#6b7280;width:80px;">Type</td><td style="padding:6px 10px;font-weight:600;">' + cardType + '</td></tr>' +
+              '<tr style="background:#f9fafb"><td style="padding:6px 10px;color:#6b7280;">Card</td><td style="padding:6px 10px;font-weight:600;font-family:monospace;">' + tx.card_mask + '</td></tr>' +
+              '<tr><td style="padding:6px 10px;color:#6b7280;">Expiry</td><td style="padding:6px 10px;font-weight:600;">' + tx.expiry_month + '/' + tx.expiry_year + '</td></tr>' +
+              '<tr style="background:#f9fafb"><td style="padding:6px 10px;color:#6b7280;">Token</td><td style="padding:6px 10px;font-weight:600;font-family:monospace;word-break:break-all;">' + tx.token + '</td></tr>' +
+              '</table>';
+
+            // Notify Flutter and close after short delay so user sees the success state
+            if (window.opener) {
+              window.opener.postMessage({
+                type:      'tranzila_result',
+                token:     tx.token,
+                card_mask: tx.card_mask,
+                card_type: cardType,
+                expiry:    tx.expiry_month + '/' + tx.expiry_year
+              }, '*');
+            }
+            setTimeout(function () { window.close(); }, 1500);
+          } else {
+            showBanner('Tokenization failed.', 'error');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<pre style="padding:12px;font-size:12px;">' + JSON.stringify(response, null, 2) + '</pre>';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>

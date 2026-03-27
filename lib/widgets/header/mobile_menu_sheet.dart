@@ -82,6 +82,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
       case 'company-config':
         await _navigateToRoute('/manager/company-config');
         break;
+      case 'payment-poc':
+        await _navigateToRoute('/manager/payment-poc');
+        break;
       case 'contact-support':
         await _handleContactSupport(userInfo);
         break;

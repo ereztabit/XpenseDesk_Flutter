@@ -55,6 +55,12 @@ class MenuItems {
         requiresManagerRole: true,
       ),
       MenuItem(
+        id: 'payment-poc',
+        icon: Icons.credit_card_outlined,
+        label: 'Payment POC',
+        requiresManagerRole: true,
+      ),
+      MenuItem(
         id: 'receipt-analyzer',
         icon: Icons.receipt_long,
         label: t.receiptAnalyzerTitle,

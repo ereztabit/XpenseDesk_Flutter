@@ -1,3 +1,7 @@
+# Local TLS certs (mkcert)
+localhost+1.pem
+localhost+1-key.pem
+
 # Miscellaneous
 *.class
 *.log

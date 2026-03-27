@@ -11,7 +11,10 @@
       "Bash(tasklist)",
       "Bash(flutter run:*)",
       "Bash(cmd /c \"taskkill /PID 210324 /F\")",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(mkcert --version)",
+      "Bash(mkcert -install)",
+      "Bash(mkcert localhost:*)"
     ]
   }
 }

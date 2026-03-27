@@ -143,6 +143,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       case 'user-management':
         if (mounted) Navigator.pushNamed(context, '/manager/users');
         break;
+      case 'payment-poc':
+        if (mounted) Navigator.pushNamed(context, '/manager/payment-poc');
+        break;
       case 'receipt-analyzer':
         if (mounted) ReceiptAnalyzerDialog.show(context);
         break;
