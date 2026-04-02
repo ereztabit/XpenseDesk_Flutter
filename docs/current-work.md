@@ -9,7 +9,7 @@ Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 - [x] Story 1 — Tab shell (General / Billing / Billing History tabs)
 - [x] Story 2 — Billing overview read-only (Current Plan card)
 - [x] Story 3 — Payment method read-only (card info + status warnings)
-- [ ] Story 4 — Billing information form (collapsible, save)
+- [x] Story 4 — Billing information form (collapsible, save)
 - [ ] Story 5 — Cancel subscription dialog
 - [ ] Story 6 — Resume subscription dialog
 - [ ] Story 7 — Switch plan dialog (upgrade / downgrade + cancel scheduled switch)
