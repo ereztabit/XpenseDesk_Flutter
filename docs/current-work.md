@@ -2,8 +2,9 @@
 
 ## Currently Working On
 
-### Tranzila Hosted Fields POC
- 
+- [ ] Onboarding → subscription flow (phase 1 done: company init + pending payment banner)
+  - Phase 1 ✓ — `subscriptionStatus` added to `CompanyInfo`; `companyProvider` invalidated after OTP so dashboard sees fresh company data; amber `PendingPaymentBanner` in `AppHeader` for `PendingPayment` status
+  - Phase 2 — build the subscription setup screens (plan selection, Tranzila payment, coupon)
 
 
 ## TODO (Backlog)

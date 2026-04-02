@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../models/onboarding/company_submit_request.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/company_provider.dart';
 import '../../../providers/onboarding_provider.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../theme/app_theme.dart';
@@ -213,6 +214,10 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
 
       final userInfo = await authService.getUserInfo();
       ref.read(userInfoProvider.notifier).setUserInfo(userInfo);
+
+      // Invalidate any stale company data so the fresh company
+      // (and its subscriptionStatus) is fetched when the dashboard loads.
+      ref.invalidate(companyProvider);
 
       ref.read(onboardingStateProvider.notifier).reset();
 

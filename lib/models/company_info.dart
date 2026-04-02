@@ -26,6 +26,9 @@ class CompanyInfo {
   final String timeZoneName;
   final String timeZoneDisplayName;
 
+  // Subscription
+  final String subscriptionStatus;
+
   const CompanyInfo({
     required this.companyId,
     required this.companyName,
@@ -44,6 +47,7 @@ class CompanyInfo {
     required this.timeZoneId,
     required this.timeZoneName,
     required this.timeZoneDisplayName,
+    required this.subscriptionStatus,
   });
 
   factory CompanyInfo.fromJson(Map<String, dynamic> json) {
@@ -65,6 +69,7 @@ class CompanyInfo {
       timeZoneId: json['timeZoneId'] as int,
       timeZoneName: json['timeZoneName'] as String,
       timeZoneDisplayName: json['timeZoneDisplayName'] as String,
+      subscriptionStatus: json['subscriptionStatus'] as String? ?? 'Unknown',
     );
   }
 }

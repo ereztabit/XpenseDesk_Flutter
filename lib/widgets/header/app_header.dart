@@ -12,6 +12,8 @@ import '../language_switcher.dart';
 import '../expenses/receipt_analyzer_dialog.dart';
 import '../cycle/cycle_compact_badge.dart';
 import '../../providers/cycle_provider.dart';
+import '../../providers/company_provider.dart';
+import 'pending_payment_banner.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 ///
@@ -252,7 +254,12 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
 
     final initials = MenuItems.getInitials(userInfo.fullName, userInfo.email);
 
-    return Container(
+    final companyAsync = ref.watch(companyProvider);
+    final isPendingPayment = companyAsync.whenOrNull(
+      data: (company) => company.subscriptionStatus == 'PendingPayment',
+    ) == true;
+
+    final headerBar = Container(
       height: 56,
       decoration: const BoxDecoration(
         color: AppTheme.card,
@@ -426,6 +433,16 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
           ),
         ),
       ),
+    );
+
+    if (!isPendingPayment) return headerBar;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        headerBar,
+        const PendingPaymentBanner(),
+      ],
     );
   }
 }

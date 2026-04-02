@@ -382,5 +382,8 @@
   "monthlyBreakdown": "Monthly Breakdown",
   "clearAll": "Clear All",
   "selectMonth": "Click a month to analyze",
-  "analysisNoData": "No expense data found for the selected filters. Try adjusting the filters or check back once expenses have been submitted."
+  "analysisNoData": "No expense data found for the selected filters. Try adjusting the filters or check back once expenses have been submitted.",
+
+  "pendingPaymentBannerMessage": "Your company setup isn\u2019t complete.",
+  "pendingPaymentBannerAction": "Complete subscription"
 }
