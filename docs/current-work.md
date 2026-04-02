@@ -7,7 +7,8 @@
 
 
 ## TODO (Backlog)
-- [ ] add logos to the tranzila page
+- [ ] add logos to the authorize page
+- [ ] we can remove the phone number and the country code from the authorization page
 - [ ] build the entire billing module
 
 ## report bugs (pending)
@@ -28,7 +29,7 @@
 - [ ] we need a admin view to see compaines usage
 - [ ] we need to connect google analytics / GTM
 - [ ] we need to translate better to hebrew
-- [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/post-login-deep-linking-spec.md
+- [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/in-progress/post-login-deep-linking-spec.md
 
 ## submit an expense
 
@@ -39,7 +40,7 @@
 
 ## manager expenses report
 
-- [ ] build the spend overview widget for manager and employee spend-overview-spec.md
+- [ ] build the spend overview widget for manager and employee docs/in-progress/spend-overview-spec.md
 * Missing rejection reason field for manager - new feature
 * Missing invite users option after signup - quick onboarding flow to allow manager invite users
 

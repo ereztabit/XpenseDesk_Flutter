@@ -8,8 +8,8 @@ I am a senior developer with 20+ years of coding experience, specializing in .NE
 
 This Flutter application is **XpenseDesk** — an AI-powered expense approval tool for small businesses. The complete product specification and MVP scope are defined in:
 
-- [AI Expense Approval MVP North Star](docs/ai_expense_approval_mvp_north_star.md) — Complete product vision, feature set, user journeys, and business rules
-- [MVP Screen Map](docs/mvp_screen_map.md) — Screen definitions and user flows
+- [AI Expense Approval MVP North Star](docs/product/ai_expense_approval_mvp_north_star.md) — Complete product vision, feature set, user journeys, and business rules
+- [MVP Screen Map](docs/product/mvp_screen_map.md) — Screen definitions and user flows
 
 **These documents are the source of truth for what we're building.** All implementation decisions should align with the MVP definition and user journeys described in these specifications.
 
@@ -72,22 +72,24 @@ assets/
     └── app_config_prod.yaml
 
 docs/                            # Guides and dev implementation notes
-    ├── ai_expense_approval_mvp_north_star.md   # Product vision & MVP scope (source of truth)
-    ├── mvp_screen_map.md                        # Screen definitions and user flows (source of truth)
-    ├── authentication_client_guide.md
-    ├── client-onboarding-company-api-guide.md
-    ├── employee-expenses-implementation-plan.md
-    ├── Exmployee-expenses-design.md
-    ├── expense-api-guide.md
-    ├── login.md
-    ├── menu_system.md
-    ├── onboarding-implementation-plan.md
-    ├── user_profile_screen.md
-    ├── users_api_documentation.md
-    ├── users_management_ux.md
-    ├── users_managment_gotodev.md
     ├── current-work.md                          # Active work + backlog TODOs
-    └── README.md
+    ├── README.md                                # Docs index
+    ├── product/                                 # Source of truth
+    │   ├── ai_expense_approval_mvp_north_star.md
+    │   └── mvp_screen_map.md
+    ├── api-guides/                              # API reference docs
+    │   ├── authentication_client_guide.md
+    │   ├── client-onboarding-company-api-guide.md
+    │   ├── expense-api-guide.md
+    │   ├── users_api_documentation.md
+    │   └── expenses-analysis-api-guide.md
+    ├── in-progress/                             # Features not yet shipped
+    │   ├── card-on-file-flow.md
+    │   ├── tranzila_hosted_fields_spec.md
+    │   ├── credit-card-authorize-plan.md
+    │   ├── spend-overview-spec.md
+    │   └── post-login-deep-linking-spec.md
+    └── completed/                               # Shipped feature specs
 ```
 
 **Principles:**
