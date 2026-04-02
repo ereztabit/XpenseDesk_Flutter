@@ -9,6 +9,7 @@ import '../providers/billing_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/company_config/billing_current_plan_card.dart';
 import '../widgets/company_config/billing_payment_method_card.dart';
+import '../widgets/company_config/billing_information_card.dart';
 import '../widgets/app_button.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
@@ -35,6 +36,9 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 
   late final TabController _tabController;
 
+  /// Billing info form dirty state — updated by BillingInformationCard
+  final _billingInfoDirty = ValueNotifier<bool>(false);
+
   // Used to initialize form fields exactly once after first data load
   bool _initialized = false;
   late String _initialCompanyName;
@@ -43,10 +47,16 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 
   @override
   bool get hasUnsavedChanges {
-    if (!_initialized) return false;
-    return _companyNameController.text.trim() != _initialCompanyName ||
-        _selectedLanguageId != _initialLanguageId ||
-        _accountantEmailController.text.trim() != _initialAccountantEmail;
+    // General tab dirty
+    if (_initialized &&
+        (_companyNameController.text.trim() != _initialCompanyName ||
+            _selectedLanguageId != _initialLanguageId ||
+            _accountantEmailController.text.trim() != _initialAccountantEmail)) {
+      return true;
+    }
+    // Billing tab dirty (billing info form)
+    if (_billingInfoDirty.value) return true;
+    return false;
   }
 
   void _initializeFromCompany(CompanyInfo company) {
@@ -80,6 +90,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _billingInfoDirty.dispose();
     _companyNameController.dispose();
     _companyNameFocusNode.dispose();
     _accountantEmailController.dispose();
@@ -147,11 +158,23 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
   /// first and only calls animateTo when the user has accepted discarding.
   Future<void> _handleTabTap(int index) async {
     if (_tabController.index == index) return;
-    if (_tabController.index == 0 && index != 0 && hasUnsavedChanges) {
+
+    // Leaving General tab with unsaved changes
+    if (_tabController.index == 0 && hasUnsavedChanges) {
       final canLeave = await confirmDiscard();
       if (!canLeave || !mounted) return;
       _resetForm();
     }
+
+    // Leaving Billing tab with unsaved billing info
+    if (_tabController.index == 1 && _billingInfoDirty.value) {
+      final canLeave = await confirmDiscard();
+      if (!canLeave || !mounted) return;
+      _billingInfoDirty.value = false;
+      // Refresh billing data to reset the form
+      ref.invalidate(billingProvider);
+    }
+
     _tabController.animateTo(index);
   }
 
@@ -284,7 +307,9 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                     RefreshableScrollView(
                       padding: const EdgeInsets.only(top: 16, bottom: 24),
                       child: ConstrainedContent(
-                        child: const _BillingTabContent(),
+                        child: _BillingTabContent(
+                          billingInfoDirty: _billingInfoDirty,
+                        ),
                       ),
                     ),
 
@@ -526,7 +551,9 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 /// Billing tab content: refresh button row + the plan card.
 /// Kept as a separate ConsumerWidget so it can watch billingProvider directly.
 class _BillingTabContent extends ConsumerWidget {
-  const _BillingTabContent();
+  const _BillingTabContent({required this.billingInfoDirty});
+
+  final ValueNotifier<bool> billingInfoDirty;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -557,6 +584,17 @@ class _BillingTabContent extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 24),
             child: BillingPaymentMethodCard(
               paymentMethod: billing.paymentMethod,
+            ),
+          ),
+        ) ?? const SizedBox.shrink(),
+
+        // Billing Information card (collapsible)
+        billingAsync.whenOrNull(
+          data: (billing) => Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: BillingInformationCard(
+              billingInfo: billing.billingInfo,
+              dirtyNotifier: billingInfoDirty,
             ),
           ),
         ) ?? const SizedBox.shrink(),

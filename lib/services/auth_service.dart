@@ -260,6 +260,33 @@ class AuthService {
     return BillingSubscription.fromJson(data);
   }
 
+  /// Save billing information
+  /// PUT /api/company/billing/info
+  Future<void> saveBillingInfo({
+    required String billingName,
+    required String taxId,
+    String? countryCode,
+    String? address,
+    String? phone,
+  }) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.put(
+      '/api/company/billing/info',
+      {
+        'billingName': billingName,
+        'taxId': taxId,
+        'countryCode': countryCode,
+        'address': address,
+        'phone': phone,
+      },
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to save billing information');
+  }
+
   /// Update user profile (full name and language)
   /// Returns updated UserInfo from /api/users/update-details
   Future<UserInfo> updateUserProfile(String fullName, int languageId) async {

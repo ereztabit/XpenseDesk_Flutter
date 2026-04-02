@@ -21,6 +21,26 @@ class BillingNotifier extends AsyncNotifier<CompanyBilling> {
     });
   }
 
+  /// Saves billing information and refreshes billing state.
+  Future<void> saveBillingInfo({
+    required String billingName,
+    required String taxId,
+    String? countryCode,
+    String? address,
+    String? phone,
+  }) async {
+    final authService = ref.read(authServiceProvider);
+    await authService.saveBillingInfo(
+      billingName: billingName,
+      taxId: taxId,
+      countryCode: countryCode,
+      address: address,
+      phone: phone,
+    );
+    // Refresh to get updated billingInfo from server
+    await refresh();
+  }
+
   /// Calls DELETE /api/company/subscription/future-plan and patches state
   /// with the updated subscription returned by the server.
   Future<void> cancelFuturePlan() async {
