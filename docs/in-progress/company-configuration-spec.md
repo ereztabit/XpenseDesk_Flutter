@@ -14,7 +14,7 @@ This document describes the Company Configuration screen in full detail, coverin
 
 | # | Story | Status |
 |---|-------|--------|
-| 1 | Tab shell — General / Billing / Billing History tabs | `pending` |
+| 1 | Tab shell — General / Billing / Billing History tabs | `waiting for validation` |
 | 2 | Billing overview — Current Plan card (read-only) | `pending` |
 | 3 | Payment method card (read-only, card health warnings) | `pending` |
 | 4 | Billing information form (collapsible, save) | `pending` |

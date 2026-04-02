@@ -5,7 +5,7 @@
 ### Company Configuration — Billing Module
 Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 
-- [ ] Story 1 — Tab shell (General / Billing / Billing History tabs)
+- [~] Story 1 — Tab shell (General / Billing / Billing History tabs) — **waiting for validation**
 - [ ] Story 2 — Billing overview read-only (Current Plan card)
 - [ ] Story 3 — Payment method read-only (card info + status warnings)
 - [ ] Story 4 — Billing information form (collapsible, save)

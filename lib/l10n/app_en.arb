@@ -213,6 +213,9 @@
   "companyConfigInvalidEmail": "Please enter a valid email address",
   "companyConfigReadOnly": "Company Information",
   "companyConfigEditable": "Settings",
+  "companyConfigTabGeneral": "General",
+  "companyConfigTabBilling": "Billing",
+  "companyConfigTabHistory": "Billing History",
 
   "employeeOnboardingTitle": "Welcome to XpenseDesk",
   "employeeOnboardingSubtitle": "Enter your details to get started",

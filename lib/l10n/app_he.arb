@@ -213,6 +213,9 @@
   "companyConfigInvalidEmail": "אנא הזן כתובת אימייל תקינה",
   "companyConfigReadOnly": "פרטי החברה",
   "companyConfigEditable": "הגדרות",
+  "companyConfigTabGeneral": "כללי",
+  "companyConfigTabBilling": "חיוב",
+  "companyConfigTabHistory": "היסטוריית חיובים",
 
   "employeeOnboardingTitle": "ברוכים הבאים ל-XpenseDesk",
   "employeeOnboardingSubtitle": "הזן את פרטיך כדי להתחיל",

@@ -15,7 +15,7 @@ class CompanyConfigScreen extends ConsumerStatefulWidget {
 }
 
 class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
-    with FormBehaviorMixin {
+    with FormBehaviorMixin, TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _companyNameController = TextEditingController();
   final _companyNameFocusNode = FocusNode();
@@ -26,6 +26,8 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
   bool _isLoading = false;
   String? _successMessage;
   String? _errorMessage;
+
+  late final TabController _tabController;
 
   // Used to initialize form fields exactly once after first data load
   bool _initialized = false;
@@ -55,6 +57,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _companyNameFocusNode.addListener(() {
       if (!_companyNameFocusNode.hasFocus) _formKey.currentState?.validate();
     });
@@ -66,6 +69,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 
   @override
   void dispose() {
+    _tabController.dispose();
     _companyNameController.dispose();
     _companyNameFocusNode.dispose();
     _accountantEmailController.dispose();
@@ -129,6 +133,30 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
     }
   }
 
+  /// Guards tab switches: if leaving General tab with unsaved changes, confirms
+  /// first and only calls animateTo when the user has accepted discarding.
+  Future<void> _handleTabTap(int index) async {
+    if (_tabController.index == index) return;
+    if (_tabController.index == 0 && index != 0 && hasUnsavedChanges) {
+      final canLeave = await confirmDiscard();
+      if (!canLeave || !mounted) return;
+      _resetForm();
+    }
+    _tabController.animateTo(index);
+  }
+
+  /// Resets form fields back to the last saved values.
+  void _resetForm() {
+    setState(() {
+      _companyNameController.text = _initialCompanyName;
+      _selectedLanguageId = _initialLanguageId;
+      _accountantEmailController.text = _initialAccountantEmail;
+      _successMessage = null;
+      _errorMessage = null;
+    });
+    _formKey.currentState?.reset();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -139,17 +167,22 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 
     return buildWithNavigationGuard(
       child: Scaffold(
-        backgroundColor: AppTheme.background,
-        body: Column(
-          children: [
-            const AppHeader(),
-            Expanded(
-              child: RefreshableScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+          backgroundColor: AppTheme.background,
+          body: Column(
+            children: [
+              const AppHeader(),
+
+              // ── Sticky header: back btn + page title + tab bar ──────────
+              Container(
+                decoration: const BoxDecoration(
+                  color: AppTheme.background,
+                ),
                 child: ConstrainedContent(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 20),
+
                       // Back button
                       TextButton.icon(
                         onPressed: () => handleBackNavigation('/dashboard'),
@@ -159,30 +192,97 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
-                      companyAsync.when(
-                        loading: () => const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(64),
-                            child: CircularProgressIndicator(),
+                      // Page title
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.business_outlined,
+                            size: 20,
+                            color: AppTheme.foreground,
                           ),
-                        ),
-                        error: (err, _) => _ErrorCard(
-                          message: l10n.companyConfigFailedToLoad,
-                          onRetry: () => ref.invalidate(companyProvider),
-                        ),
-                        data: (company) => _buildContent(context, l10n, company),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.companyConfigTitle,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.foreground,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Tab bar — custom buttons so we can await the guard
+                      // before actually switching (TabBar.onTap is not awaited
+                      // by Flutter, so the standard approach doesn't work).
+                      AnimatedBuilder(
+                        animation: _tabController,
+                        builder: (context, _) {
+                          final active = _tabController.index;
+                          final tabs = [
+                            l10n.companyConfigTabGeneral,
+                            l10n.companyConfigTabBilling,
+                            l10n.companyConfigTabHistory,
+                          ];
+                          return Row(
+                            children: [
+                              for (int i = 0; i < tabs.length; i++)
+                                _GuardedTab(
+                                  label: tabs[i],
+                                  isActive: active == i,
+                                  onTap: () => _handleTabTap(i),
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            const AppFooter(),
-          ],
+
+              // ── Tab content ──────────────────────────────────────────────
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    // Tab 1: General (existing form)
+                    RefreshableScrollView(
+                      padding: const EdgeInsets.only(top: 16, bottom: 24),
+                      child: ConstrainedContent(
+                        child: companyAsync.when(
+                          loading: () => const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(64),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          error: (err, _) => _ErrorCard(
+                            message: l10n.companyConfigFailedToLoad,
+                            onRetry: () => ref.invalidate(companyProvider),
+                          ),
+                          data: (company) => _buildContent(context, l10n, company),
+                        ),
+                      ),
+                    ),
+
+                    // Tab 2: Billing — placeholder (Story 2+)
+                    const _TabPlaceholder(),
+
+                    // Tab 3: Billing History — placeholder (Story 9)
+                    const _TabPlaceholder(),
+                  ],
+                ),
+              ),
+
+              const AppFooter(),
+            ],
+          ),
         ),
-      ),
     );
   }
 
@@ -586,6 +686,60 @@ class _ErrorCard extends StatelessWidget {
                 label: const Text('Retry'),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Empty placeholder widget used for Billing and Billing History tabs
+/// while those stories are pending implementation.
+class _TabPlaceholder extends StatelessWidget {
+  const _TabPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox.expand();
+  }
+}
+
+/// A single custom tab button that delegates tap handling to the parent so
+/// the parent can await a guard dialog before calling animateTo.
+class _GuardedTab extends StatelessWidget {
+  const _GuardedTab({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 4, bottom: 8),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isActive
+                ? AppTheme.primary.withAlpha(20)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              color: isActive ? AppTheme.primary : AppTheme.mutedForeground,
+            ),
           ),
         ),
       ),
