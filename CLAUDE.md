@@ -518,6 +518,36 @@ When implementing navigation, ensure all paths work:
 
 ---
 
+## Buttons — AppButton Widget
+
+**ALWAYS use `AppButton` (`lib/widgets/app_button.dart`) for all buttons. Never use raw `ElevatedButton`, `FilledButton`, or `OutlinedButton` directly.**
+
+```dart
+import '../widgets/app_button.dart';
+
+AppButton(
+  label: l10n.saveChanges,
+  variant: AppButtonVariant.primary,
+  onPressed: _handleSave,
+  icon: Icons.save,       // optional
+  isLoading: _isSaving,   // optional — shows spinner, disables tap
+)
+```
+
+**Available variants:**
+
+| Variant | Regular | Hover |
+|---------|---------|-------|
+| `primary` | Purple bg, white text | Lighter purple |
+| `destructive` | Pink/red bg, white text | Lighter pink |
+| `success` | Green bg, white text | Lighter green |
+| `normal` | Gray bg, dark text, gray border | Purple bg, white text |
+| `ghost` | Transparent, dark text | Light gray bg |
+
+All variants enforce: `borderRadius: 12`, pointer cursor on web, standard padding, consistent hover transitions.
+
+---
+
 ## Email Validation
 
 **ALWAYS use the `email_validator` package. Never write regex for email validation.**

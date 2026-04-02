@@ -245,6 +245,8 @@
   "billingCardExpiringSoon": "תוקף הכרטיס שלך פג בעוד",
   "billingCardExpiringSoonMonths": "חודש/ים.",
   "billingUpdateCard": "עדכן כרטיס",
+  "billingNoPaymentMethod": "לא קיים אמצעי תשלום. אנא הוסף כרטיס כדי להמשיך בחיוב.",
+  "billingAddCard": "הוסף כרטיס",
   "retry": "נסה שוב",
 
   "employeeOnboardingTitle": "ברוכים הבאים ל-XpenseDesk",

@@ -28,7 +28,11 @@
       "Bash(dotnet test:*)",
       "Bash(curl -s -o /dev/null -w '%{http_code}' -k https://localhost:7223/api/health/check-rate-limiter)",
       "Bash(taskkill //F //PID 40744)",
-      "Bash(/c/Projects/XpenseDesk/BackEnd/XpenseDeskServer/KillServer/bin/Debug/net10.0/KillServer.exe)"
+      "Bash(/c/Projects/XpenseDesk/BackEnd/XpenseDeskServer/KillServer/bin/Debug/net10.0/KillServer.exe)",
+      "Bash(curl -sk -X OPTIONS -H \"Origin: https://localhost:8080\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type,authorization\" -D - -o /dev/null https://127.0.0.1:7223/api/auth/try-login)",
+      "Bash(curl -sk -X POST -H \"Origin: https://localhost:8080\" -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"test@test.com\"\"\"\"}' -D - https://127.0.0.1:7223/api/auth/try-login)",
+      "Bash(curl -sk -X POST -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"test@test.com\"\"}' https://127.0.0.1:7223/api/auth/try-login -D -)",
+      "Bash(curl -sk -X POST -H \"Origin: https://localhost:8080\" -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"erez@xpensedesk.com\"\"}' https://127.0.0.1:7223/api/auth/try-login -D -)"
     ]
   }
 }

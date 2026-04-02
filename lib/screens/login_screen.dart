@@ -204,7 +204,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               width: double.infinity,
                               height: 48,
                               child: OutlinedButton(
-                                onPressed: () => _handleDevLogin('erez0502760106@gmail.com'),
+                                onPressed: () => _handleDevLogin('admin@xpensedesk.com'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.orange,
                                   side: const BorderSide(color: Colors.orange),
@@ -224,7 +224,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               width: double.infinity,
                               height: 48,
                               child: OutlinedButton(
-                                onPressed: () => _handleDevLogin('erez@tabit.cloud'),
+                                onPressed: () => _handleDevLogin('user@xpensedesk.com'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.orange,
                                   side: const BorderSide(color: Colors.orange),

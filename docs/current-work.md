@@ -8,19 +8,20 @@ Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 
 - [x] Story 1 — Tab shell (General / Billing / Billing History tabs)
 - [x] Story 2 — Billing overview read-only (Current Plan card)
-- [ ] Story 3 — Payment method read-only (card info + status warnings)
+- [x] Story 3 — Payment method read-only (card info + status warnings)
 - [ ] Story 4 — Billing information form (collapsible, save)
 - [ ] Story 5 — Cancel subscription dialog
 - [ ] Story 6 — Resume subscription dialog
 - [ ] Story 7 — Switch plan dialog (upgrade / downgrade + cancel scheduled switch)
-- [ ] Story 8 — Update payment card (Tranzila iframe)
 - [ ] Story 9 — Billing History tab (transactions table)
+- [ ] Story 8 — Update payment card (Tranzila iframe) ← last, after all flows/screens are done
 - [ ] Onboarding → subscription flow (phase 1 done: company init + pending payment banner)
   - Phase 1 ✓ — `subscriptionStatus` added to `CompanyInfo`; `companyProvider` invalidated after OTP so dashboard sees fresh company data; amber `PendingPaymentBanner` in `AppHeader` for `PendingPayment` status
   - Phase 2 — build the subscription setup screens (plan selection, Tranzila payment, coupon)
 
 
 ## TODO (Backlog)
+- [ ] Migrate all existing buttons across the app to use `AppButton` (`lib/widgets/app_button.dart`) — all new buttons must use `AppButton` from now on
 - [ ] we need to fix the amber alert banner for many subscription issues - lovable is ok -get the md file from there
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page

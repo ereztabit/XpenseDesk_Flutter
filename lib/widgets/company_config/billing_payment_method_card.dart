@@ -12,11 +12,12 @@ class BillingPaymentMethodCard extends StatelessWidget {
     required this.paymentMethod,
   });
 
-  final BillingPaymentMethod paymentMethod;
+  final BillingPaymentMethod? paymentMethod;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final pm = paymentMethod;
 
     return Card(
       elevation: 0,
@@ -37,26 +38,30 @@ class BillingPaymentMethodCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _CardInfoBlock(paymentMethod: paymentMethod, l10n: l10n),
-            const SizedBox(height: 12),
-            if (paymentMethod.isDeclined)
-              _DeclinedBanner(l10n: l10n)
-            else if (paymentMethod.isExpired)
-              _ExpiredBanner(l10n: l10n)
-            else if (paymentMethod.isExpiringSoon)
-              _ExpiringSoonBanner(
-                monthsLeft: paymentMethod.monthsUntilExpiry,
-                l10n: l10n,
-              )
-            else
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: AppButton(
-                  label: l10n.billingUpdateCard,
-                  variant: AppButtonVariant.normal,
-                  onPressed: () {}, // Story 8
+            if (pm == null)
+              _NoPaymentMethodBanner(l10n: l10n)
+            else ...[
+              _CardInfoBlock(paymentMethod: pm, l10n: l10n),
+              const SizedBox(height: 12),
+              if (pm.isDeclined)
+                _DeclinedBanner(l10n: l10n)
+              else if (pm.isExpired)
+                _ExpiredBanner(l10n: l10n)
+              else if (pm.isExpiringSoon)
+                _ExpiringSoonBanner(
+                  monthsLeft: pm.monthsUntilExpiry,
+                  l10n: l10n,
+                )
+              else
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: AppButton(
+                    label: l10n.billingUpdateCard,
+                    variant: AppButtonVariant.normal,
+                    onPressed: () {}, // Story 8
+                  ),
                 ),
-              ),
+            ],
           ],
         ),
       ),
@@ -245,6 +250,48 @@ class _ExpiringSoonBanner extends StatelessWidget {
           AppButton(
             label: l10n.billingUpdateCard,
             variant: AppButtonVariant.normal,
+            onPressed: () {}, // Story 8
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── No payment method banner (red) ─────────────────────────────────────────
+
+class _NoPaymentMethodBanner extends StatelessWidget {
+  const _NoPaymentMethodBanner({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.destructive.withAlpha(25),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.destructive.withAlpha(77)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.credit_card_off_outlined, size: 18, color: AppTheme.destructive),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              l10n.billingNoPaymentMethod,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppTheme.destructive,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          AppButton(
+            label: l10n.billingAddCard,
+            variant: AppButtonVariant.destructive,
             onPressed: () {}, // Story 8
           ),
         ],

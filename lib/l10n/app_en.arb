@@ -245,6 +245,8 @@
   "billingCardExpiringSoon": "Your card expires in",
   "billingCardExpiringSoonMonths": "month(s).",
   "billingUpdateCard": "Update card",
+  "billingNoPaymentMethod": "No payment method on file. Please add a card to continue billing.",
+  "billingAddCard": "Add card",
   "retry": "Retry",
 
   "employeeOnboardingTitle": "Welcome to XpenseDesk",

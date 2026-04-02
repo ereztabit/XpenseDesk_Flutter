@@ -551,17 +551,14 @@ class _BillingTabContent extends ConsumerWidget {
         const SizedBox(height: 8),
         const BillingCurrentPlanCard(),
 
-        // Payment Method card — only when billing data has loaded with a payment method
+        // Payment Method card — shows when billing data has loaded
         billingAsync.whenOrNull(
-          data: (billing) {
-            if (billing.paymentMethod == null) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(top: 24),
-              child: BillingPaymentMethodCard(
-                paymentMethod: billing.paymentMethod!,
-              ),
-            );
-          },
+          data: (billing) => Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: BillingPaymentMethodCard(
+              paymentMethod: billing.paymentMethod,
+            ),
+          ),
         ) ?? const SizedBox.shrink(),
       ],
     );
