@@ -44,8 +44,9 @@ class AuthService {
   }
 
   /// Request magic link - calls API
-  /// Always succeeds (API returns 200 even if email doesn't exist)
-  Future<void> tryToLogin(String email) async {
+  /// Always succeeds (API returns 200 even if email doesn't exist).
+  /// Returns the response map so callers can check for a magicLink field.
+  Future<Map<String, dynamic>> tryToLogin(String email) async {
     final normalizedEmail = email.trim().toLowerCase();
 
     // Validate email format
@@ -54,7 +55,7 @@ class AuthService {
     }
 
     // Call API - always returns success
-    await _apiService.post('/api/auth/try-login', {'email': normalizedEmail});
+    return await _apiService.post('/api/auth/try-login', {'email': normalizedEmail});
   }
 
   // ==================== DEV-ONLY CODE START ====================

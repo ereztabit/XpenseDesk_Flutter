@@ -44,8 +44,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      await authService.tryToLogin(email);
-      
+      final response = await authService.tryToLogin(email);
+
+      final data = response['data'] as Map<String, dynamic>?;
+      final magicLink = data?['magicLink'] as String?;
+      if (magicLink != null && magicLink.isNotEmpty) {
+        await launchUrl(Uri.parse(magicLink), mode: LaunchMode.externalApplication);
+      }
+
       setState(() {
         _successMessage = l10n.checkEmailForMagicLink;
       });
