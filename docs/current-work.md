@@ -2,6 +2,18 @@
 
 ## Currently Working On
 
+### Company Configuration — Billing Module
+Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
+
+- [ ] Story 1 — Tab shell (General / Billing / Billing History tabs)
+- [ ] Story 2 — Billing overview read-only (Current Plan card)
+- [ ] Story 3 — Payment method read-only (card info + status warnings)
+- [ ] Story 4 — Billing information form (collapsible, save)
+- [ ] Story 5 — Cancel subscription dialog
+- [ ] Story 6 — Resume subscription dialog
+- [ ] Story 7 — Switch plan dialog (upgrade / downgrade + cancel scheduled switch)
+- [ ] Story 8 — Update payment card (Tranzila iframe)
+- [ ] Story 9 — Billing History tab (transactions table)
 - [ ] Onboarding → subscription flow (phase 1 done: company init + pending payment banner)
   - Phase 1 ✓ — `subscriptionStatus` added to `CompanyInfo`; `companyProvider` invalidated after OTP so dashboard sees fresh company data; amber `PendingPaymentBanner` in `AppHeader` for `PendingPayment` status
   - Phase 2 — build the subscription setup screens (plan selection, Tranzila payment, coupon)
