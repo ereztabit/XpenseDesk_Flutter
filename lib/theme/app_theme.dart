@@ -108,6 +108,8 @@ class AppTheme {
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         ),
       ),
 
@@ -119,6 +121,8 @@ class AppTheme {
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         ),
       ),
 
@@ -133,12 +137,41 @@ class AppTheme {
             borderRadius: BorderRadius.circular(borderRadius),
           ),
           minimumSize: const Size(0, 50),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Remove extra padding
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           textStyle: GoogleFonts.assistant(
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+        ),
+      ),
+
+      // Outlined Button Theme
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: foreground,
+          side: const BorderSide(color: border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          textStyle: GoogleFonts.assistant(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ).copyWith(
+          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed)) {
+              return const Color(0x1A000000); // ~10% black
+            }
+            if (states.contains(WidgetState.hovered)) {
+              return const Color(0x0D000000); // ~5% black
+            }
+            return null;
+          }),
         ),
       ),
 

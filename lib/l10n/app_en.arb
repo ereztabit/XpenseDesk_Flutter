@@ -238,6 +238,13 @@
   "billingUpgradeSubtitle": "$300/year · Takes effect immediately",
   "billingFailedToLoad": "Failed to load billing information",
   "billingNoPlanYet": "No subscription information available yet.",
+  "billingPaymentMethod": "Payment Method",
+  "billingCardExpires": "Expires",
+  "billingCardDeclined": "Your card was declined. Please update your payment method.",
+  "billingCardExpired": "Your card has expired. Please update your payment method.",
+  "billingCardExpiringSoon": "Your card expires in",
+  "billingCardExpiringSoonMonths": "month(s).",
+  "billingUpdateCard": "Update card",
   "retry": "Retry",
 
   "employeeOnboardingTitle": "Welcome to XpenseDesk",

@@ -116,6 +116,23 @@ class BillingPaymentMethod {
     this.paymentProviderErrorCode,
   });
 
+  // Status IDs: 1=Active, 2=Declined, 3=ExpiringSoon, 4=Expired
+  bool get isActive => paymentMethodStatusId == 1;
+  bool get isDeclined => paymentMethodStatusId == 2;
+  bool get isExpiringSoon => paymentMethodStatusId == 3;
+  bool get isExpired => paymentMethodStatusId == 4;
+
+  /// Months remaining until card expiry (from today). 0 or negative = expired.
+  int get monthsUntilExpiry {
+    final now = DateTime.now();
+    return (expiryYear - now.year) * 12 + (expiryMonth - now.month);
+  }
+
+  String get expiryDisplay {
+    final m = expiryMonth.toString().padLeft(2, '0');
+    return '$m/$expiryYear';
+  }
+
   factory BillingPaymentMethod.fromJson(Map<String, dynamic> json) {
     return BillingPaymentMethod(
       brand: json['brand'] as String,

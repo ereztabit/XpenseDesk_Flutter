@@ -238,6 +238,13 @@
   "billingUpgradeSubtitle": "$300/שנה · נכנס לתוקף מיד",
   "billingFailedToLoad": "טעינת פרטי החיוב נכשלה",
   "billingNoPlanYet": "אין עדיין מידע מנוי זמין.",
+  "billingPaymentMethod": "אמצעי תשלום",
+  "billingCardExpires": "תוקף",
+  "billingCardDeclined": "הכרטיס שלך נדחה. אנא עדכן את אמצעי התשלום.",
+  "billingCardExpired": "פג תוקף הכרטיס שלך. אנא עדכן את אמצעי התשלום.",
+  "billingCardExpiringSoon": "תוקף הכרטיס שלך פג בעוד",
+  "billingCardExpiringSoonMonths": "חודש/ים.",
+  "billingUpdateCard": "עדכן כרטיס",
   "retry": "נסה שוב",
 
   "employeeOnboardingTitle": "ברוכים הבאים ל-XpenseDesk",

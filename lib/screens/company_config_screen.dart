@@ -8,6 +8,8 @@ import '../providers/company_provider.dart';
 import '../providers/billing_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/company_config/billing_current_plan_card.dart';
+import '../widgets/company_config/billing_payment_method_card.dart';
+import '../widgets/app_button.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
   const CompanyConfigScreen({super.key, this.initialTab = 0});
@@ -416,18 +418,11 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
               // Save button
               Align(
                 alignment: Alignment.centerRight,
-                child: FilledButton(
-                  onPressed: _isLoading ? null : _handleSave,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Text(l10n.saveChanges),
+                child: AppButton(
+                  label: l10n.saveChanges,
+                  variant: AppButtonVariant.primary,
+                  isLoading: _isLoading,
+                  onPressed: _handleSave,
                 ),
               ),
             ],
@@ -536,6 +531,7 @@ class _BillingTabContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final billingAsync = ref.watch(billingProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,6 +550,19 @@ class _BillingTabContent extends ConsumerWidget {
         ),
         const SizedBox(height: 8),
         const BillingCurrentPlanCard(),
+
+        // Payment Method card — only when billing data has loaded with a payment method
+        billingAsync.whenOrNull(
+          data: (billing) {
+            if (billing.paymentMethod == null) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: BillingPaymentMethodCard(
+                paymentMethod: billing.paymentMethod!,
+              ),
+            );
+          },
+        ) ?? const SizedBox.shrink(),
       ],
     );
   }
