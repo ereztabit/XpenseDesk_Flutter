@@ -2,11 +2,12 @@
 
 ## Currently Working On
 
+
 ### Company Configuration — Billing Module
 Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 
-- [~] Story 1 — Tab shell (General / Billing / Billing History tabs) — **waiting for validation**
-- [ ] Story 2 — Billing overview read-only (Current Plan card)
+- [x] Story 1 — Tab shell (General / Billing / Billing History tabs)
+- [x] Story 2 — Billing overview read-only (Current Plan card)
 - [ ] Story 3 — Payment method read-only (card info + status warnings)
 - [ ] Story 4 — Billing information form (collapsible, save)
 - [ ] Story 5 — Cancel subscription dialog
@@ -20,6 +21,7 @@ Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 
 
 ## TODO (Backlog)
+- [ ] we need to fix the amber alert banner for many subscription issues - lovable is ok -get the md file from there
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
 - [ ] build the entire billing module

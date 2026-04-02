@@ -5,10 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/company_info.dart';
 import '../providers/company_provider.dart';
+import '../providers/billing_provider.dart';
 import '../services/auth_service.dart';
+import '../widgets/company_config/billing_current_plan_card.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
-  const CompanyConfigScreen({super.key});
+  const CompanyConfigScreen({super.key, this.initialTab = 0});
+
+  final int initialTab;
 
   @override
   ConsumerState<CompanyConfigScreen> createState() => _CompanyConfigScreenState();
@@ -57,7 +61,11 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 2),
+    );
     _companyNameFocusNode.addListener(() {
       if (!_companyNameFocusNode.hasFocus) _formKey.currentState?.validate();
     });
@@ -270,8 +278,13 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                       ),
                     ),
 
-                    // Tab 2: Billing — placeholder (Story 2+)
-                    const _TabPlaceholder(),
+                    // Tab 2: Billing
+                    RefreshableScrollView(
+                      padding: const EdgeInsets.only(top: 16, bottom: 24),
+                      child: ConstrainedContent(
+                        child: const _BillingTabContent(),
+                      ),
+                    ),
 
                     // Tab 3: Billing History — placeholder (Story 9)
                     const _TabPlaceholder(),
@@ -514,6 +527,37 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 }
 
 // ─── Private helpers ────────────────────────────────────────────────────────
+
+/// Billing tab content: refresh button row + the plan card.
+/// Kept as a separate ConsumerWidget so it can watch billingProvider directly.
+class _BillingTabContent extends ConsumerWidget {
+  const _BillingTabContent();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Refresh button — top-right aligned
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: TextButton.icon(
+            onPressed: () => ref.invalidate(billingProvider),
+            icon: const Icon(Icons.refresh, size: 16),
+            label: Text(l10n.billingRefresh),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const BillingCurrentPlanCard(),
+      ],
+    );
+  }
+}
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({

@@ -111,11 +111,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
 
     case '/manager/company-config':
+      final tab = uri.queryParameters['tab'];
+      final initialTab = tab == 'billing' ? 1 : tab == 'history' ? 2 : 0;
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const AuthGate(
+        builder: (_) => AuthGate(
           mode: AuthGateMode.managerOnly,
-          child: CompanyConfigScreen(),
+          child: CompanyConfigScreen(initialTab: initialTab),
         ),
       );
 

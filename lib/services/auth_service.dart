@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import '../models/user_info.dart';
+import '../models/company_billing.dart';
 import '../models/company_info.dart';
 
 /// Exception thrown when authentication fails
@@ -213,6 +214,49 @@ class AuthService {
 
     // Backend returns no data on success — re-fetch to get updated state
     return await getCompany();
+  }
+
+  /// Get billing overview (subscription, payment method, billing info)
+  /// Returns CompanyBilling from GET /api/company/billing
+  Future<CompanyBilling> getBilling() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/company/billing',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to get billing details');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return CompanyBilling.fromJson(data);
+  }
+
+  /// Cancel a scheduled future plan switch
+  /// DELETE /api/company/subscription/future-plan
+  /// Returns updated BillingSubscription on success
+  Future<BillingSubscription> cancelFuturePlan() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.delete(
+      '/api/company/subscription/future-plan',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to cancel scheduled change');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return BillingSubscription.fromJson(data);
   }
 
   /// Update user profile (full name and language)

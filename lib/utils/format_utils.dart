@@ -16,9 +16,21 @@ extension CompanyDateFormat on DateTime {
   /// Short numeric date in company locale (dd.mm.yyyy for Hebrew, mm/dd/yyyy for English, etc.)
   String toCompanyDate(String companyLocale) =>
       DateFormat.yMd(companyLocale).format(toLocal());
+
+  /// Medium date in company locale (e.g., "Apr 30, 2026" for English)
+  String toMediumDate(String companyLocale) =>
+      DateFormat.yMMMd(companyLocale).format(toLocal());
 }
 
 extension CompanyCurrencyFormat on num {
+  /// Currency with symbol, dropping trailing .00 for whole amounts (e.g. "$30" not "$30.00").
+  String toSmartCurrency(String companyLocale, String currencyCode) {
+    final symbol = NumberFormat.simpleCurrency(locale: 'en', name: currencyCode)
+        .currencySymbol;
+    final formatted = NumberFormat('#,##0.##', companyLocale).format(this);
+    return '$symbol$formatted';
+  }
+
   /// Currency with symbol always on the left, number in company locale format.
   String toCurrency(String companyLocale, String currencyCode) {
     final symbol = NumberFormat.simpleCurrency(locale: 'en', name: currencyCode)
