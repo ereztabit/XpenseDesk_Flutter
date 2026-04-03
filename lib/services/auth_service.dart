@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import '../models/user_info.dart';
 import '../models/company_billing.dart';
+import '../models/billing_transaction.dart';
 import '../models/company_info.dart';
 
 /// Exception thrown when authentication fails
@@ -391,6 +392,30 @@ class AuthService {
     );
 
     _validateResponse(response, 'Failed to save billing information');
+  }
+
+  /// Get billing transactions
+  /// GET /api/company/billing/transactions
+  Future<List<BillingTransaction>> getBillingTransactions() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/company/billing/transactions',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to get billing transactions');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      return [];
+    }
+
+    final transactions = data['transactions'] as List<dynamic>? ?? [];
+    return transactions
+        .map((e) => BillingTransaction.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// Update user profile (full name and language)

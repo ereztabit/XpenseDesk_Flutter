@@ -11,6 +11,7 @@ import '../widgets/company_config/billing_current_plan_card.dart';
 import '../widgets/company_config/billing_payment_method_card.dart';
 import '../widgets/company_config/billing_information_card.dart';
 import '../widgets/company_config/billing_danger_zone_card.dart';
+import '../widgets/company_config/billing_history_tab.dart';
 import '../widgets/app_button.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
@@ -314,8 +315,13 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                       ),
                     ),
 
-                    // Tab 3: Billing History — placeholder (Story 9)
-                    const _TabPlaceholder(),
+                    // Tab 3: Billing History
+                    RefreshableScrollView(
+                      padding: const EdgeInsets.only(top: 16, bottom: 24),
+                      child: ConstrainedContent(
+                        child: const BillingHistoryTab(),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -794,17 +800,6 @@ class _ErrorCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Empty placeholder widget used for Billing and Billing History tabs
-/// while those stories are pending implementation.
-class _TabPlaceholder extends StatelessWidget {
-  const _TabPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.expand();
   }
 }
 

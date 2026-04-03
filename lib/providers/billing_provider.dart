@@ -1,6 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/company_billing.dart';
+import '../models/billing_transaction.dart';
 import 'auth_provider.dart';
+
+/// Loads billing transactions lazily when the Billing History tab is shown.
+final billingTransactionsProvider =
+    FutureProvider<List<BillingTransaction>>((ref) async {
+  final authService = ref.read(authServiceProvider);
+  return authService.getBillingTransactions();
+});
 
 final billingProvider = AsyncNotifierProvider<BillingNotifier, CompanyBilling>(
   BillingNotifier.new,

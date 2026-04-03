@@ -13,7 +13,7 @@ Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 - [x] Story 5 — Cancel subscription dialog
 - [x] Story 6 — Resume subscription dialog
 - [x] Story 7 — Switch plan dialog (upgrade / downgrade + cancel scheduled switch)
-- [ ] Story 9 — Billing History tab (transactions table)
+- [x] Story 9 — Billing History tab (transactions table)
 - [ ] Story 8 — Update payment card (Tranzila iframe) ← last, after all flows/screens are done
 - [ ] Onboarding → subscription flow (phase 1 done: company init + pending payment banner)
   - Phase 1 ✓ — `subscriptionStatus` added to `CompanyInfo`; `companyProvider` invalidated after OTP so dashboard sees fresh company data; amber `PendingPaymentBanner` in `AppHeader` for `PendingPayment` status
