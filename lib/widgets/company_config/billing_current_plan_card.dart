@@ -6,6 +6,8 @@ import '../../models/company_billing.dart';
 import '../../providers/billing_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/format_utils.dart';
+import '../app_button.dart';
+import 'resume_subscription_dialog.dart';
 
 /// Renders the Billing tab content for Story 2.
 /// Watches [billingProvider] internally so it loads lazily when the tab
@@ -35,8 +37,11 @@ class BillingCurrentPlanCard extends ConsumerWidget {
         if (subscription == null) {
           return _NoPlanCard(l10n: l10n);
         }
+        final pm = billing.paymentMethod;
+        final hasValidPayment = pm != null && pm.isActive || pm != null && pm.isExpiringSoon;
         return _PlanCard(
           subscription: subscription,
+          canResume: hasValidPayment,
           l10n: l10n,
           locale: ref.watch(companyLocaleProvider),
         );
@@ -50,13 +55,23 @@ class BillingCurrentPlanCard extends ConsumerWidget {
 class _PlanCard extends StatelessWidget {
   const _PlanCard({
     required this.subscription,
+    required this.canResume,
     required this.l10n,
     required this.locale,
   });
 
   final BillingSubscription subscription;
+  /// True only when a valid payment method exists (not null, not expired, not declined).
+  final bool canResume;
   final AppLocalizations l10n;
   final String locale;
+
+  void _showResumeDialog(BuildContext context, BillingSubscription sub) {
+    showDialog<bool>(
+      context: context,
+      builder: (_) => ResumeSubscriptionDialog(subscription: sub),
+    );
+  }
 
   String _planDisplayName() {
     switch (subscription.planName.toLowerCase()) {
@@ -109,10 +124,11 @@ class _PlanCard extends StatelessWidget {
               ),
             ],
 
-            // Upgrade prompt — monthly + active + no pending switch
+            // Upgrade prompt — monthly + active + no pending switch + valid payment
             if (subscription.isActive &&
                 subscription.planName.toLowerCase() == 'monthly' &&
-                !subscription.hasPendingSwitch) ...[
+                !subscription.hasPendingSwitch &&
+                canResume) ...[
               const SizedBox(height: 12),
               _UpgradePromptBanner(l10n: l10n),
             ],
@@ -125,6 +141,18 @@ class _PlanCard extends StatelessWidget {
                 currentPlanName: subscription.planName,
                 l10n: l10n,
                 locale: locale,
+              ),
+            ],
+
+            // Resume button — cancelled state only
+            if (subscription.isCancelled) ...[
+              const SizedBox(height: 16),
+              AppButton(
+                label: l10n.billingResumeSubscription,
+                variant: AppButtonVariant.primary,
+                onPressed: canResume
+                    ? () => _showResumeDialog(context, subscription)
+                    : null,
               ),
             ],
           ],

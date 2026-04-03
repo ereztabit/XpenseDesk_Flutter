@@ -260,6 +260,38 @@ class AuthService {
     return BillingSubscription.fromJson(data);
   }
 
+  /// Resume a cancelled subscription
+  /// POST /api/company/subscription/resume
+  /// Returns updated BillingSubscription on success
+  /// Throws AuthException with declineReason on SUBSCRIPTION_RESUME_PAYMENT_FAILED
+  Future<BillingSubscription> resumeSubscription() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/company/subscription/resume',
+      {},
+      authToken: sessionToken,
+    );
+
+    // Check for payment failure with decline reason
+    final errorCode = response['errorCode'] as String?;
+    if (errorCode == 'SUBSCRIPTION_RESUME_PAYMENT_FAILED') {
+      final data = response['data'] as Map<String, dynamic>?;
+      final reason = data?['declineReason'] as String? ?? 'Payment failed';
+      throw AuthException(reason);
+    }
+
+    _validateResponse(response, 'Failed to resume subscription');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return BillingSubscription.fromJson(data);
+  }
+
   /// Cancel subscription
   /// POST /api/company/subscription/cancel
   /// Returns updated BillingSubscription on success
