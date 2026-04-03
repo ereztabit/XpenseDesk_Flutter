@@ -394,6 +394,69 @@ class AuthService {
     _validateResponse(response, 'Failed to save billing information');
   }
 
+  /// Get Tranzila handshake token for payment setup
+  /// GET /api/company/payment-setup
+  Future<String> getPaymentSetupToken() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/company/payment-setup',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to get payment setup token');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return data['thtk'] as String;
+  }
+
+  /// Log payment provider response for audit
+  /// POST /api/company/payment-provider/audit (fire and forget)
+  Future<void> auditPaymentResponse({
+    required String paymentProviderToken,
+    required Map<String, dynamic> paymentProviderResponse,
+  }) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    try {
+      await _apiService.post(
+        '/api/company/payment-provider/audit',
+        {
+          'paymentProviderToken': paymentProviderToken,
+          'paymentProviderResponse': paymentProviderResponse,
+        },
+        authToken: sessionToken,
+      );
+    } catch (_) {
+      // Fire and forget — don't block the user flow on audit failure
+    }
+  }
+
+  /// Save payment method after Tranzila tokenization
+  /// POST /api/company/payment-method
+  Future<void> savePaymentMethod({
+    required Map<String, dynamic> paymentProviderResponse,
+  }) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/company/payment-method',
+      {
+        'paymentProviderResponse': paymentProviderResponse,
+      },
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to save payment method');
+  }
+
   /// Get billing transactions
   /// GET /api/company/billing/transactions
   Future<List<BillingTransaction>> getBillingTransactions() async {

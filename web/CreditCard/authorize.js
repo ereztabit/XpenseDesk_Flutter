@@ -235,34 +235,26 @@ function init() {
       }
 
       const tx = response.transaction_response;
+
+      // Always notify parent — success or failure — so it can audit
+      if (window.opener) {
+        const resultMsg = {
+          type:                 'tranzila_result',
+          success:              !!(tx && tx.success),
+          errors:               response.errors || null,
+          transaction_response: tx || null
+        };
+        devLog('▶ send', resultMsg);
+        window.opener.postMessage(resultMsg, '*');
+      }
+
       if (tx && tx.success) {
         // Warn if any expected fields are absent
         ['token', 'card_mask', 'card_type', 'expiry_month', 'expiry_year'].forEach(function (f) {
           if (!tx[f]) console.error('tranzila_result: missing field "' + f + '"', tx);
         });
 
-        const cardTypeMap = { 1: 'MasterCard', 2: 'Visa', 3: 'Diners', 4: 'Amex', 5: 'Isracard', 6: 'Maestro' };
-        const cardType = cardTypeMap[parseInt(tx.card_type)] || tx.card_type_name || 'Unknown';
-
         showBanner(S.bannerSuccess, 'success');
-        resultDiv.style.display = 'block';
-        resultDiv.innerHTML =
-          '<table style="border-collapse:collapse;width:100%;font-size:13px;">' +
-          '<tr><td style="padding:6px 10px;color:#6b7280;width:80px;">Type</td><td style="padding:6px 10px;font-weight:600;">' + cardType + '</td></tr>' +
-          '<tr style="background:#f9fafb"><td style="padding:6px 10px;color:#6b7280;">Card</td><td style="padding:6px 10px;font-weight:600;font-family:monospace;">' + tx.card_mask + '</td></tr>' +
-          '<tr><td style="padding:6px 10px;color:#6b7280;">Expiry</td><td style="padding:6px 10px;font-weight:600;">' + tx.expiry_month + '/' + tx.expiry_year + '</td></tr>' +
-          '<tr style="background:#f9fafb"><td style="padding:6px 10px;color:#6b7280;">Token</td><td style="padding:6px 10px;font-weight:600;font-family:monospace;word-break:break-all;">' + tx.token + '</td></tr>' +
-          '</table>';
-
-        if (window.opener) {
-          const resultMsg = {
-            type:                 'tranzila_result',
-            success:              true,
-            transaction_response: tx
-          };
-          devLog('▶ send', resultMsg);
-          window.opener.postMessage(resultMsg, '*');
-        }
         setTimeout(function () { window.close(); }, 1500);
       } else {
         // Resolve human-readable error: errorMap → tx.error → generic fallback

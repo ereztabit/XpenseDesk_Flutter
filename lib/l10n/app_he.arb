@@ -311,6 +311,13 @@
   "billingHistoryStatusFree": "חינם",
   "billingHistoryEmpty": "אין עדיין חיובים.",
   "billingHistoryFailedToLoad": "טעינת היסטוריית החיובים נכשלה",
+  "billingUpdatePaymentTitle": "עדכון אמצעי תשלום",
+  "billingUpdatePaymentSubtitle": "פרטי הכרטיס מוזנים בחלון מאובטח של ספק התשלומים שלנו.",
+  "billingEnterCardDetails": "הזן פרטי כרטיס",
+  "billingCardSavedSuccessfully": "הכרטיס עודכן בהצלחה",
+  "billingCardSaveFailed": "שמירת הכרטיס נכשלה",
+  "billingPopupBlocked": "הדפדפן חסם את חלון התשלום. אנא אפשר חלונות קופצים לאתר זה ונסה שוב.",
+  "billingPaymentLoading": "טוען טופס תשלום...",
   "retry": "נסה שוב",
 
   "employeeOnboardingTitle": "ברוכים הבאים ל-XpenseDesk",

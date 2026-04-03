@@ -311,6 +311,13 @@
   "billingHistoryStatusFree": "Free",
   "billingHistoryEmpty": "No billing transactions yet.",
   "billingHistoryFailedToLoad": "Failed to load billing history",
+  "billingUpdatePaymentTitle": "Update payment method",
+  "billingUpdatePaymentSubtitle": "Your card details are entered in a secure window hosted by our payment provider.",
+  "billingEnterCardDetails": "Enter card details",
+  "billingCardSavedSuccessfully": "Card updated successfully",
+  "billingCardSaveFailed": "Failed to save card",
+  "billingPopupBlocked": "Your browser blocked the payment window. Please allow popups for this site and try again.",
+  "billingPaymentLoading": "Loading payment form...",
   "retry": "Retry",
 
   "employeeOnboardingTitle": "Welcome to XpenseDesk",
