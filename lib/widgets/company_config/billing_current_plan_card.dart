@@ -11,14 +11,7 @@ import 'resume_subscription_dialog.dart';
 import 'switch_plan_dialog.dart';
 
 /// Renders the Current Plan card. Data is passed in — no provider watching here.
-/// Renders the Current Plan card. Data is passed in — no provider watching here.
 class BillingCurrentPlanCard extends ConsumerWidget {
-  const BillingCurrentPlanCard({
-    super.key,
-    required this.billing,
-  });
-
-  final CompanyBilling billing;
   const BillingCurrentPlanCard({
     super.key,
     required this.billing,
@@ -29,17 +22,6 @@ class BillingCurrentPlanCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final subscription = billing.subscription;
-    if (subscription == null) {
-      return _NoPlanCard(l10n: l10n);
-    }
-    final pm = billing.paymentMethod;
-    final hasValidPayment = pm != null && (pm.isActive || pm.isExpiringSoon);
-    return _PlanCard(
-      subscription: subscription,
-      canResume: hasValidPayment,
-      l10n: l10n,
-      locale: ref.watch(companyLocaleProvider),
     final subscription = billing.subscription;
     if (subscription == null) {
       return _NoPlanCard(l10n: l10n);
