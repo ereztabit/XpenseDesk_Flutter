@@ -80,8 +80,9 @@ class _BillingPaymentMethodCardState
           ? '/CreditCard/AuthorizeCard3DS.html'
           : '/CreditCard/Authorize.html';
 
+      final ts = DateTime.now().millisecondsSinceEpoch;
       final dynamic popup = html.window.open(
-        '$page?lang=$lang',
+        '$page?lang=$lang&v=$ts',
         'card-tokenization',
         'width=520,height=640,toolbar=no,menubar=no,location=no,status=no,resizable=no',
       );

@@ -105,8 +105,9 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
 
     // Open immediately (synchronous — keeps user gesture context for popup blocker).
     // Sensitive data (thtk, cardholder) is sent via postMessage once popup signals ready.
+    final ts = DateTime.now().millisecondsSinceEpoch;
     final dynamic popup = html.window.open(
-      '$page?lang=$lang',
+      '$page?lang=$lang&v=$ts',
       'card-tokenization',
       'width=520,height=640,toolbar=no,menubar=no,location=no,status=no,resizable=no',
     );
