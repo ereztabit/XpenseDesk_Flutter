@@ -4,6 +4,8 @@ import 'package:web/web.dart' as web;
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../generated/l10n/app_localizations.dart';
+import '../widgets/app_button.dart';
 
 class LoginCallbackScreen extends ConsumerStatefulWidget {
   final String? token;
@@ -120,11 +122,12 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
-                      FilledButton(
+                      AppButton(
+                        label: AppLocalizations.of(context)!.backToLogin,
+                        variant: AppButtonVariant.primary,
                         onPressed: () {
                           Navigator.of(context).pushReplacementNamed('/');
                         },
-                        child: const Text('Back to Login'),
                       ),
                     ],
                   ],

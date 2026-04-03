@@ -567,60 +567,92 @@ class _BillingTabContent extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final billingAsync = ref.watch(billingProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Refresh button — top-right aligned
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: TextButton.icon(
-            onPressed: () => ref.invalidate(billingProvider),
-            icon: const Icon(Icons.refresh, size: 16),
-            label: Text(l10n.billingRefresh),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+    return billingAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(64),
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (err, _) => SizedBox(
+        width: double.infinity,
+        child: Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppTheme.border),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                Icon(Icons.error_outline,
+                    color: AppTheme.destructive, size: 32),
+                const SizedBox(height: 12),
+                Text(l10n.billingFailedToLoad, textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                AppButton(
+                  label: l10n.retry,
+                  variant: AppButtonVariant.normal,
+                  icon: Icons.refresh,
+                  onPressed: () => ref.invalidate(billingProvider),
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        const BillingCurrentPlanCard(),
-
-        // Payment Method card — shows when billing data has loaded
-        billingAsync.whenOrNull(
-          data: (billing) => Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: BillingPaymentMethodCard(
-              paymentMethod: billing.paymentMethod,
-            ),
-          ),
-        ) ?? const SizedBox.shrink(),
-
-        // Billing Information card (collapsible)
-        billingAsync.whenOrNull(
-          data: (billing) => Padding(
-            padding: const EdgeInsets.only(top: 24),
-            child: BillingInformationCard(
-              billingInfo: billing.billingInfo,
-              dirtyNotifier: billingInfoDirty,
-            ),
-          ),
-        ) ?? const SizedBox.shrink(),
-
-        // Danger Zone card — active subscriptions only
-        billingAsync.whenOrNull(
-          data: (billing) {
-            final sub = billing.subscription;
-            if (sub == null || !sub.isActive) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(top: 24),
-              child: BillingDangerZoneCard(
-                subscription: sub,
-                locale: ref.watch(companyLocaleProvider),
+      ),
+      data: (billing) {
+        final sub = billing.subscription;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Refresh button — top-right aligned
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                onPressed: () => ref.invalidate(billingProvider),
+                icon: const Icon(Icons.refresh, size: 16),
+                label: Text(l10n.billingRefresh),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
               ),
-            );
-          },
-        ) ?? const SizedBox.shrink(),
-      ],
+            ),
+            const SizedBox(height: 8),
+
+            // Current Plan card
+            BillingCurrentPlanCard(billing: billing),
+
+            // Payment Method card
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: BillingPaymentMethodCard(
+                paymentMethod: billing.paymentMethod,
+              ),
+            ),
+
+            // Billing Information card (collapsible)
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: BillingInformationCard(
+                billingInfo: billing.billingInfo,
+                dirtyNotifier: billingInfoDirty,
+              ),
+            ),
+
+            // Danger Zone card — active subscriptions only
+            if (sub != null && sub.isActive)
+              Padding(
+                padding: const EdgeInsets.only(top: 24),
+                child: BillingDangerZoneCard(
+                  subscription: sub,
+                  locale: ref.watch(companyLocaleProvider),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -790,10 +822,11 @@ class _ErrorCard extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              OutlinedButton.icon(
+              AppButton(
+                label: AppLocalizations.of(context)!.retry,
+                variant: AppButtonVariant.normal,
+                icon: Icons.refresh,
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
               ),
             ],
           ),

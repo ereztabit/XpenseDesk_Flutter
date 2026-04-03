@@ -318,6 +318,7 @@
   "billingCardSaveFailed": "שמירת הכרטיס נכשלה",
   "billingPopupBlocked": "הדפדפן חסם את חלון התשלום. אנא אפשר חלונות קופצים לאתר זה ונסה שוב.",
   "billingPaymentLoading": "טוען טופס תשלום...",
+  "backToLogin": "חזרה להתחברות",
   "retry": "נסה שוב",
 
   "employeeOnboardingTitle": "ברוכים הבאים ל-XpenseDesk",

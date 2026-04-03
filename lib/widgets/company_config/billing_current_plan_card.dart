@@ -10,43 +10,29 @@ import '../app_button.dart';
 import 'resume_subscription_dialog.dart';
 import 'switch_plan_dialog.dart';
 
-/// Renders the Billing tab content for Story 2.
-/// Watches [billingProvider] internally so it loads lazily when the tab
-/// is first shown, not on screen entry.
+/// Renders the Current Plan card. Data is passed in — no provider watching here.
 class BillingCurrentPlanCard extends ConsumerWidget {
-  const BillingCurrentPlanCard({super.key});
+  const BillingCurrentPlanCard({
+    super.key,
+    required this.billing,
+  });
+
+  final CompanyBilling billing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final billingAsync = ref.watch(billingProvider);
-
-    return billingAsync.when(
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(64),
-          child: CircularProgressIndicator(),
-        ),
-      ),
-      error: (err, _) => _BillingErrorCard(
-        message: l10n.billingFailedToLoad,
-        retryLabel: l10n.retry,
-        onRetry: () => ref.invalidate(billingProvider),
-      ),
-      data: (billing) {
-        final subscription = billing.subscription;
-        if (subscription == null) {
-          return _NoPlanCard(l10n: l10n);
-        }
-        final pm = billing.paymentMethod;
-        final hasValidPayment = pm != null && pm.isActive || pm != null && pm.isExpiringSoon;
-        return _PlanCard(
-          subscription: subscription,
-          canResume: hasValidPayment,
-          l10n: l10n,
-          locale: ref.watch(companyLocaleProvider),
-        );
-      },
+    final subscription = billing.subscription;
+    if (subscription == null) {
+      return _NoPlanCard(l10n: l10n);
+    }
+    final pm = billing.paymentMethod;
+    final hasValidPayment = pm != null && (pm.isActive || pm.isExpiringSoon);
+    return _PlanCard(
+      subscription: subscription,
+      canResume: hasValidPayment,
+      l10n: l10n,
+      locale: ref.watch(companyLocaleProvider),
     );
   }
 }
@@ -655,43 +641,3 @@ class _NoPlanCard extends StatelessWidget {
   }
 }
 
-// ─── Error card ───────────────────────────────────────────────────────────────
-
-class _BillingErrorCard extends StatelessWidget {
-  const _BillingErrorCard({
-    required this.message,
-    required this.retryLabel,
-    required this.onRetry,
-  });
-
-  final String message;
-  final String retryLabel;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.border),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(Icons.error_outline,
-                color: AppTheme.destructive, size: 32),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: onRetry,
-              child: Text(retryLabel),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
