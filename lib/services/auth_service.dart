@@ -260,6 +260,29 @@ class AuthService {
     return BillingSubscription.fromJson(data);
   }
 
+  /// Cancel subscription
+  /// POST /api/company/subscription/cancel
+  /// Returns updated BillingSubscription on success
+  Future<BillingSubscription> cancelSubscription() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/company/subscription/cancel',
+      {},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to cancel subscription');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return BillingSubscription.fromJson(data);
+  }
+
   /// Save billing information
   /// PUT /api/company/billing/info
   Future<void> saveBillingInfo({

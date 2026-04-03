@@ -634,6 +634,21 @@ When building multi-platform features:
 
 ---
 
+## Cross-Project References
+
+- **Backend backlog:** `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\001_Backlog.md` — server-side bugs, features, and test suite tracking
+
+### Filing a Backend Bug
+
+1. Create a new `.md` file in `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\bugs/` with a descriptive kebab-case name
+2. Write in plain text with three sections:
+   - **Problem** — what's wrong, business perspective
+   - **Reproduce** — steps to trigger it
+   - **Suggested Solution** — what should happen, business-level (not code-level)
+3. Add a one-line item to `001_Backlog.md` referencing `docs/bugs/<filename>.md`
+
+---
+
 ## Quick .NET → Flutter Reference
 
 | .NET | Flutter/Dart |

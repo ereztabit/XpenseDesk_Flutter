@@ -10,6 +10,7 @@ import '../services/auth_service.dart';
 import '../widgets/company_config/billing_current_plan_card.dart';
 import '../widgets/company_config/billing_payment_method_card.dart';
 import '../widgets/company_config/billing_information_card.dart';
+import '../widgets/company_config/billing_danger_zone_card.dart';
 import '../widgets/app_button.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
@@ -597,6 +598,21 @@ class _BillingTabContent extends ConsumerWidget {
               dirtyNotifier: billingInfoDirty,
             ),
           ),
+        ) ?? const SizedBox.shrink(),
+
+        // Danger Zone card — active subscriptions only
+        billingAsync.whenOrNull(
+          data: (billing) {
+            final sub = billing.subscription;
+            if (sub == null || !sub.isActive) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: BillingDangerZoneCard(
+                subscription: sub,
+                locale: ref.watch(companyLocaleProvider),
+              ),
+            );
+          },
         ) ?? const SizedBox.shrink(),
       ],
     );

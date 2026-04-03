@@ -21,6 +21,22 @@ class BillingNotifier extends AsyncNotifier<CompanyBilling> {
     });
   }
 
+  /// Cancels the subscription and patches state with updated subscription.
+  Future<void> cancelSubscription() async {
+    final authService = ref.read(authServiceProvider);
+    final updatedSubscription = await authService.cancelSubscription();
+    final current = state.value;
+    if (current != null) {
+      state = AsyncData(
+        CompanyBilling(
+          subscription: updatedSubscription,
+          paymentMethod: current.paymentMethod,
+          billingInfo: current.billingInfo,
+        ),
+      );
+    }
+  }
+
   /// Saves billing information and refreshes billing state.
   Future<void> saveBillingInfo({
     required String billingName,
