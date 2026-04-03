@@ -11,8 +11,8 @@ Spec: `docs/in-progress/company-configuration-spec.md` (§0.2)
 - [x] Story 3 — Payment method read-only (card info + status warnings)
 - [x] Story 4 — Billing information form (collapsible, save)
 - [x] Story 5 — Cancel subscription dialog
-- [ ] Story 6 — Resume subscription dialog
-- [ ] Story 7 — Switch plan dialog (upgrade / downgrade + cancel scheduled switch)
+- [x] Story 6 — Resume subscription dialog
+- [x] Story 7 — Switch plan dialog (upgrade / downgrade + cancel scheduled switch)
 - [ ] Story 9 — Billing History tab (transactions table)
 - [ ] Story 8 — Update payment card (Tranzila iframe) ← last, after all flows/screens are done
 - [ ] Onboarding → subscription flow (phase 1 done: company init + pending payment banner)

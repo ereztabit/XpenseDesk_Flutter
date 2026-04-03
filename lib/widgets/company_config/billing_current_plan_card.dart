@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../utils/format_utils.dart';
 import '../app_button.dart';
 import 'resume_subscription_dialog.dart';
+import 'switch_plan_dialog.dart';
 
 /// Renders the Billing tab content for Story 2.
 /// Watches [billingProvider] internally so it loads lazily when the tab
@@ -65,6 +66,13 @@ class _PlanCard extends StatelessWidget {
   final bool canResume;
   final AppLocalizations l10n;
   final String locale;
+
+  void _showSwitchDialog(BuildContext context, BillingSubscription sub) {
+    showDialog<bool>(
+      context: context,
+      builder: (_) => SwitchPlanDialog(subscription: sub),
+    );
+  }
 
   void _showResumeDialog(BuildContext context, BillingSubscription sub) {
     showDialog<bool>(
@@ -130,7 +138,22 @@ class _PlanCard extends StatelessWidget {
                 !subscription.hasPendingSwitch &&
                 canResume) ...[
               const SizedBox(height: 12),
-              _UpgradePromptBanner(l10n: l10n),
+              _UpgradePromptBanner(
+                l10n: l10n,
+                subscription: subscription,
+              ),
+            ],
+
+            // Downgrade button — annual + active + no pending switch
+            if (subscription.isActive &&
+                subscription.planName.toLowerCase() == 'annual' &&
+                !subscription.hasPendingSwitch) ...[
+              const SizedBox(height: 12),
+              AppButton(
+                label: l10n.billingSwitchToMonthlyButton,
+                variant: AppButtonVariant.normal,
+                onPressed: () => _showSwitchDialog(context, subscription),
+              ),
             ],
 
             // Pending switch banner
@@ -344,9 +367,13 @@ class _CancelledBadge extends StatelessWidget {
 // ─── Upgrade prompt banner (monthly → annual) ────────────────────────────────
 
 class _UpgradePromptBanner extends StatefulWidget {
-  const _UpgradePromptBanner({required this.l10n});
+  const _UpgradePromptBanner({
+    required this.l10n,
+    required this.subscription,
+  });
 
   final AppLocalizations l10n;
+  final BillingSubscription subscription;
 
   @override
   State<_UpgradePromptBanner> createState() => _UpgradePromptBannerState();
@@ -362,8 +389,10 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
-        // Story 7 will wire this to the Switch Plan dialog
-        onTap: () {},
+        onTap: () => showDialog<bool>(
+          context: context,
+          builder: (_) => SwitchPlanDialog(subscription: widget.subscription),
+        ),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -475,6 +504,29 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
       widget.currentPlanName.toLowerCase() != 'free';
 
   Future<void> _handleCancel() async {
+    // Confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(widget.l10n.billingCancelScheduledChange),
+        content: Text(widget.l10n.billingCancelScheduledChangeConfirm),
+        actions: [
+          AppButton(
+            label: widget.l10n.billingDoNothing,
+            variant: AppButtonVariant.normal,
+            onPressed: () => Navigator.of(ctx).pop(false),
+          ),
+          AppButton(
+            label: widget.l10n.billingCancelScheduledChange,
+            variant: AppButtonVariant.destructive,
+            onPressed: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
     setState(() => _cancelling = true);
     try {
       await ref.read(billingProvider.notifier).cancelFuturePlan();
@@ -505,48 +557,54 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.primary.withAlpha(13),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppTheme.primary.withAlpha(51)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Icons.access_time_outlined, size: 16, color: AppTheme.primary),
-          const SizedBox(width: 8),
+          Icon(Icons.access_time_outlined, size: 18, color: AppTheme.primary),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              '${widget.l10n.billingPendingSwitchTo} ${_futurePlanShortName()} '
-              '${widget.l10n.billingPendingSwitchOn} '
-              '${widget.futurePlan.startDate.toMediumDate(widget.locale)}',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.primary,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${widget.l10n.billingPendingSwitchTo} ${_futurePlanShortName()}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${widget.l10n.billingPendingSwitchOn} '
+                  '${widget.futurePlan.startDate.toMediumDate(widget.locale)}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
             ),
           ),
           if (_canCancel) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             _cancelling
                 ? const SizedBox(
-                    width: 16,
-                    height: 16,
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : OutlinedButton(
+                : AppButton(
+                    label: widget.l10n.billingCancelScheduledChange,
+                    variant: AppButtonVariant.destructive,
                     onPressed: _handleCancel,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      side: BorderSide(color: AppTheme.primary.withAlpha(128)),
-                      foregroundColor: AppTheme.primary,
-                      textStyle: const TextStyle(fontSize: 12),
-                    ),
-                    child: Text(widget.l10n.billingCancelScheduledChange),
                   ),
           ],
         ],

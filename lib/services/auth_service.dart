@@ -260,6 +260,57 @@ class AuthService {
     return BillingSubscription.fromJson(data);
   }
 
+  /// Upgrade from Monthly to Annual (immediate charge)
+  /// POST /api/company/subscription/move-to-annual
+  Future<BillingSubscription> moveToAnnual() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/company/subscription/move-to-annual',
+      {},
+      authToken: sessionToken,
+    );
+
+    final errorCode = response['errorCode'] as String?;
+    if (errorCode == 'SUBSCRIPTION_SWITCH_PAYMENT_FAILED') {
+      final data = response['data'] as Map<String, dynamic>?;
+      final reason = data?['declineReason'] as String? ?? 'Payment failed';
+      throw AuthException(reason);
+    }
+
+    _validateResponse(response, 'Failed to switch plan');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return BillingSubscription.fromJson(data);
+  }
+
+  /// Downgrade from Annual to Monthly (effective at next renewal)
+  /// POST /api/company/subscription/move-to-monthly
+  Future<BillingSubscription> moveToMonthly() async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/company/subscription/move-to-monthly',
+      {},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to switch plan');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    return BillingSubscription.fromJson(data);
+  }
+
   /// Resume a cancelled subscription
   /// POST /api/company/subscription/resume
   /// Returns updated BillingSubscription on success

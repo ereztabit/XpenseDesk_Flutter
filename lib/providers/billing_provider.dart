@@ -21,36 +21,32 @@ class BillingNotifier extends AsyncNotifier<CompanyBilling> {
     });
   }
 
+  /// Upgrades from Monthly to Annual and patches state.
+  Future<void> moveToAnnual() async {
+    final authService = ref.read(authServiceProvider);
+    final updated = await authService.moveToAnnual();
+    _patchSubscription(updated);
+  }
+
+  /// Downgrades from Annual to Monthly and patches state.
+  Future<void> moveToMonthly() async {
+    final authService = ref.read(authServiceProvider);
+    final updated = await authService.moveToMonthly();
+    _patchSubscription(updated);
+  }
+
   /// Resumes a cancelled subscription and patches state.
   Future<void> resumeSubscription() async {
     final authService = ref.read(authServiceProvider);
-    final updatedSubscription = await authService.resumeSubscription();
-    final current = state.value;
-    if (current != null) {
-      state = AsyncData(
-        CompanyBilling(
-          subscription: updatedSubscription,
-          paymentMethod: current.paymentMethod,
-          billingInfo: current.billingInfo,
-        ),
-      );
-    }
+    final updated = await authService.resumeSubscription();
+    _patchSubscription(updated);
   }
 
-  /// Cancels the subscription and patches state with updated subscription.
+  /// Cancels the subscription and patches state.
   Future<void> cancelSubscription() async {
     final authService = ref.read(authServiceProvider);
-    final updatedSubscription = await authService.cancelSubscription();
-    final current = state.value;
-    if (current != null) {
-      state = AsyncData(
-        CompanyBilling(
-          subscription: updatedSubscription,
-          paymentMethod: current.paymentMethod,
-          billingInfo: current.billingInfo,
-        ),
-      );
-    }
+    final updated = await authService.cancelSubscription();
+    _patchSubscription(updated);
   }
 
   /// Saves billing information and refreshes billing state.
@@ -69,20 +65,23 @@ class BillingNotifier extends AsyncNotifier<CompanyBilling> {
       address: address,
       phone: phone,
     );
-    // Refresh to get updated billingInfo from server
     await refresh();
   }
 
-  /// Calls DELETE /api/company/subscription/future-plan and patches state
-  /// with the updated subscription returned by the server.
+  /// Cancels a scheduled future plan switch and patches state.
   Future<void> cancelFuturePlan() async {
     final authService = ref.read(authServiceProvider);
-    final updatedSubscription = await authService.cancelFuturePlan();
+    final updated = await authService.cancelFuturePlan();
+    _patchSubscription(updated);
+  }
+
+  /// Patches only the subscription in the current billing state.
+  void _patchSubscription(BillingSubscription updated) {
     final current = state.value;
     if (current != null) {
       state = AsyncData(
         CompanyBilling(
-          subscription: updatedSubscription,
+          subscription: updated,
           paymentMethod: current.paymentMethod,
           billingInfo: current.billingInfo,
         ),
