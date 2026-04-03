@@ -495,5 +495,22 @@
   "analysisNoData": "No expense data found for the selected filters. Try adjusting the filters or check back once expenses have been submitted.",
 
   "pendingPaymentBannerMessage": "Your company setup isn\u2019t complete.",
-  "pendingPaymentBannerAction": "Complete subscription"
+  "pendingPaymentBannerAction": "Complete subscription",
+
+  "choosePlan": "Choose Your Plan",
+  "bestValue": "Best Value",
+  "savePercent": "Save 17%",
+  "selected": "Selected",
+  "perMonth": "/month",
+  "perYear": "/year",
+  "haveCoupon": "Have a coupon?",
+  "enterCouponCode": "Enter coupon code",
+  "applyCoupon": "Apply",
+  "couponAccepted": "Coupon accepted:",
+  "couponOneMonthFree": "1 free month",
+  "couponMonthsFree": "free months",
+  "invalidCoupon": "Invalid coupon code",
+  "proceedToPayment": "Proceed to Payment",
+  "backToDashboard": "Back to dashboard",
+  "removeCoupon": "Remove"
 }

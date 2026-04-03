@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../config/app_config.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../models/company_billing.dart';
@@ -7,6 +8,8 @@ import '../../providers/billing_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/format_utils.dart';
 import '../app_button.dart';
+import '../plan_selection/plan_card.dart';
+import '../plan_selection/coupon_section.dart';
 import 'resume_subscription_dialog.dart';
 import 'switch_plan_dialog.dart';
 
@@ -601,13 +604,31 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
 
 // ─── No plan yet ─────────────────────────────────────────────────────────────
 
-class _NoPlanCard extends StatelessWidget {
+class _NoPlanCard extends StatefulWidget {
   const _NoPlanCard({required this.l10n});
 
   final AppLocalizations l10n;
 
   @override
+  State<_NoPlanCard> createState() => _NoPlanCardState();
+}
+
+class _NoPlanCardState extends State<_NoPlanCard> {
+  /// Matches config planId values. Defaults to annual.
+  late int _selectedPlanId;
+  String? _couponCode;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPlanId = AppConfig.instance.annualPlanId;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final config = AppConfig.instance;
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -615,46 +636,80 @@ class _NoPlanCard extends StatelessWidget {
         side: const BorderSide(color: AppTheme.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title
             Text(
-              l10n.billingNoPlanTitle,
+              l10n.choosePlan,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.w600,
-                color: AppTheme.mutedForeground,
               ),
             ),
-            const SizedBox(height: 12),
-            const Divider(height: 1, thickness: 1),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
 
-            // Body
-            Text(
-              l10n.billingNoPlanBody,
-              style: const TextStyle(fontSize: 14),
+            // Plan cards
+            _buildPlanCards(l10n, config),
+            const SizedBox(height: 24),
+
+            // Coupon section
+            CouponSection(
+              onCouponResult: (code) {
+                setState(() => _couponCode = code);
+              },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-            // CTA — hug start edge (far-left in RTL)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                AppButton(
-                  label: l10n.selectAPlan,
-                  variant: AppButtonVariant.primary,
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed('/complete-payment'),
-                ),
-              ],
+            // Proceed button
+            SizedBox(
+              width: double.infinity,
+              child: AppButton(
+                label: l10n.proceedToPayment,
+                variant: AppButtonVariant.primary,
+                onPressed: _handleProceed,
+              ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildPlanCards(AppLocalizations l10n, AppConfig config) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: PlanCard(
+              price: '\$${config.monthlyPrice}',
+              period: l10n.perMonth,
+              isSelected: _selectedPlanId == config.monthlyPlanId,
+              onTap: () =>
+                  setState(() => _selectedPlanId = config.monthlyPlanId),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: PlanCard(
+              price: '\$${config.annualPrice}',
+              period: l10n.perYear,
+              isSelected: _selectedPlanId == config.annualPlanId,
+              onTap: () =>
+                  setState(() => _selectedPlanId = config.annualPlanId),
+              badgeLabel: l10n.bestValue,
+              savingsLabel: l10n.savePercent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleProceed() {
+    // Step A3 will wire in the Tranzila popup here.
   }
 }
 

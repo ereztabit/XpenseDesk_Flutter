@@ -481,6 +481,26 @@ class AuthService {
         .toList();
   }
 
+  /// Validate a coupon code.
+  /// GET /api/onboarding/coupon/validate?code=XXX
+  /// Returns {isValid, freeMonths} from the API.
+  Future<({bool isValid, int freeMonths})> validateCoupon(String code) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/onboarding/coupon/validate',
+      authToken: sessionToken,
+      queryParams: {'code': code},
+    );
+
+    final data = response['data'] as Map<String, dynamic>?;
+    return (
+      isValid: data?['isValid'] as bool? ?? false,
+      freeMonths: data?['freeMonths'] as int? ?? 0,
+    );
+  }
+
   /// Update user profile (full name and language)
   /// Returns updated UserInfo from /api/users/update-details
   Future<UserInfo> updateUserProfile(String fullName, int languageId) async {

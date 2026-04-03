@@ -495,5 +495,22 @@
   "analysisNoData": "לא נמצאו נתוני הוצאות עבור הסינון שנבחר. נסה לשנות את הפילטרים או חזור לאחר שיוגשו הוצאות.",
 
   "pendingPaymentBannerMessage": "הגדרת החברה לא הושלמה.",
-  "pendingPaymentBannerAction": "השלם מנוי"
+  "pendingPaymentBannerAction": "השלם מנוי",
+
+  "choosePlan": "בחר תוכנית",
+  "bestValue": "הכי משתלם",
+  "savePercent": "חסוך 17%",
+  "selected": "נבחר",
+  "perMonth": "/חודש",
+  "perYear": "/שנה",
+  "haveCoupon": "יש לך קופון?",
+  "enterCouponCode": "הכנס קוד קופון",
+  "applyCoupon": "החל",
+  "couponAccepted": "קופון התקבל בהצלחה:",
+  "couponOneMonthFree": "חודש אחד במתנה",
+  "couponMonthsFree": "חודשים במתנה",
+  "invalidCoupon": "קוד קופון לא תקין",
+  "proceedToPayment": "המשך לתשלום",
+  "backToDashboard": "חזור ללוח הבקרה",
+  "removeCoupon": "הסר"
 }

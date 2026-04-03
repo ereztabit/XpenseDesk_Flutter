@@ -624,13 +624,14 @@ class _BillingTabContent extends ConsumerWidget {
             // Current Plan card
             BillingCurrentPlanCard(billing: billing),
 
-            // Payment Method card
-            Padding(
-              padding: const EdgeInsets.only(top: 24),
-              child: BillingPaymentMethodCard(
-                paymentMethod: billing.paymentMethod,
+            // Payment Method card — only when a subscription exists
+            if (sub != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 24),
+                child: BillingPaymentMethodCard(
+                  paymentMethod: billing.paymentMethod,
+                ),
               ),
-            ),
 
             // Billing Information card (collapsible)
             Padding(
