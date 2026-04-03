@@ -615,24 +615,41 @@ class _NoPlanCard extends StatelessWidget {
         side: const BorderSide(color: AppTheme.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title
             Text(
-              l10n.billingCurrentPlan,
+              l10n.billingNoPlanTitle,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.billingNoPlanYet,
-              style: const TextStyle(
-                fontSize: 14,
                 color: AppTheme.mutedForeground,
               ),
+            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, thickness: 1),
+            const SizedBox(height: 12),
+
+            // Body
+            Text(
+              l10n.billingNoPlanBody,
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+
+            // CTA — hug start edge (far-left in RTL)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                AppButton(
+                  label: l10n.selectAPlan,
+                  variant: AppButtonVariant.primary,
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed('/complete-payment'),
+                ),
+              ],
             ),
           ],
         ),

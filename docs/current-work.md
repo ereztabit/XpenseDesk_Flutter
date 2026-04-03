@@ -14,8 +14,8 @@
 - [ ] we can remove the phone number and the country code from the authorization page
 
 ## report bugs (pending)
-
-* onboarding bug - landing on dashboard with info of previous company after new signup
+- [ ] pull to refresh doesnt work in company configuration screen
+- [ ] onboarding bug - landing on dashboard with info of previous company after new signup
 
 ## general environment
 
