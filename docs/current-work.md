@@ -16,8 +16,6 @@
 ## report bugs (pending)
 
 * onboarding bug - landing on dashboard with info of previous company after new signup
-* `login_callback_screen.dart` — hardcoded English string `'Back to Login'` bypasses l10n — fix when doing AppButton migration
-* `company_config_screen.dart` — hardcoded English string `'Retry'` on error-state card bypasses l10n — fix when doing AppButton migration - might have been fixed already by loading company on the start - require verification.
 
 ## general environment
 

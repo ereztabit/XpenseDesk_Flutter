@@ -318,6 +318,7 @@
   "billingCardSaveFailed": "Failed to save card",
   "billingPopupBlocked": "Your browser blocked the payment window. Please allow popups for this site and try again.",
   "billingPaymentLoading": "Loading payment form...",
+  "backToLogin": "Back to Login",
   "retry": "Retry",
 
   "employeeOnboardingTitle": "Welcome to XpenseDesk",
