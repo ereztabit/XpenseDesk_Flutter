@@ -16,13 +16,13 @@ This document describes the Company Configuration screen in full detail, coverin
 |---|-------|--------|
 | 1 | Tab shell — General / Billing / Billing History tabs | `done` |
 | 2 | Billing overview — Current Plan card (read-only) | `done` |
-| 3 | Payment method card (read-only, card health warnings) | `pending` |
-| 4 | Billing information form (collapsible, save) | `pending` |
-| 5 | Cancel subscription dialog | `pending` |
-| 6 | Resume subscription dialog | `pending` |
-| 7 | Switch plan dialog (upgrade / downgrade / cancel scheduled switch) | `pending` |
-| 8 | Update payment card (Tranzila iframe) | `pending` |
-| 9 | Billing history tab (transactions table) | `pending` |
+| 3 | Payment method card (read-only, card health warnings) | `done` |
+| 4 | Billing information form (collapsible, save) | `done` |
+| 5 | Cancel subscription dialog | `done` |
+| 6 | Resume subscription dialog | `done` |
+| 7 | Switch plan dialog (upgrade / downgrade / cancel scheduled switch) | `done` |
+| 8 | Update payment card (Tranzila popup) | `done` |
+| 9 | Billing history tab (transactions table) | `done` |
 
 ---
 
