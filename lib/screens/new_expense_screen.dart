@@ -8,6 +8,7 @@ import 'package:web/web.dart' as web;
 import 'dart:js_interop';
 import 'screen_imports.dart';
 import '../utils/responsive_utils.dart';
+import '../widgets/app_button.dart';
 import '../utils/format_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
@@ -1485,19 +1486,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   }
 
   Widget _buildActionButtons(AppLocalizations l10n, BuildContext context) {
-    final submitButton = ElevatedButton(
+    final submitButton = AppButton(
+      label: l10n.finish,
+      variant: _canSubmit ? AppButtonVariant.success : AppButtonVariant.primary,
+      isLoading: _isSubmitting,
       onPressed: (_canAttemptSubmit && !_isSubmitting) ? _submit : null,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: _canSubmit ? AppTheme.success : null,
-        foregroundColor: _canSubmit ? Colors.white : null,
-      ),
-      child: _isSubmitting
-          ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Text(l10n.finish),
     );
 
     final errorRow = _submitError != null
@@ -1693,15 +1686,12 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton.icon(
+                      AppButton(
+                        label: l10n.backToDashboard,
+                        variant: AppButtonVariant.ghost,
+                        icon: Icons.arrow_back,
                         onPressed: () =>
                             handleBackNavigation('/user/dashboard'),
-                        icon: const Icon(Icons.arrow_back, size: 18),
-                        label: Text(l10n.backToDashboard),
-                        style: TextButton.styleFrom(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 8),
-                        ),
                       ),
                       const SizedBox(height: 8),
                       Card(
@@ -1749,19 +1739,12 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                   Align(
                                     alignment:
                                         AlignmentDirectional.centerEnd,
-                                    child: ElevatedButton(
+                                    child: AppButton(
+                                      label: l10n.continueButton,
+                                      variant: AppButtonVariant.success,
                                       onPressed: _fileBytes != null
                                           ? _analyze
                                           : null,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: _fileBytes != null
-                                            ? AppTheme.success
-                                            : null,
-                                        foregroundColor: _fileBytes != null
-                                            ? Colors.white
-                                            : null,
-                                      ),
-                                      child: Text(l10n.continueButton),
                                     ),
                                   ),
                                 ],
