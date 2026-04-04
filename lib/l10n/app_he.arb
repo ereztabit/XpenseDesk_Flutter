@@ -512,5 +512,7 @@
   "invalidCoupon": "קוד קופון לא תקין",
   "proceedToPayment": "המשך לתשלום",
   "backToDashboard": "חזור ללוח הבקרה",
-  "removeCoupon": "הסר"
+  "removeCoupon": "הסר",
+  "subscriptionCreatedSuccess": "המנוי הופעל בהצלחה!",
+  "subscriptionCreationFailed": "קרתה תקלה בעיבוד התשלום, רענן את המסך ונסה שוב."
 }

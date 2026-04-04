@@ -17,7 +17,7 @@ We implement in two phases:
 |------|------|--------|-------|
 | A1 | Billing Tab — "No Plan" State | ✅ Validated | |
 | A2 | Inline Plan Selection in Billing Tab | ✅ Validated | UX changed: inline in billing, not standalone screen |
-| A3 | Tranzila Payment Integration | ⬜ Not started | Reuses billing widget |
+| A3 | Tranzila Payment Integration | 🔄 In progress | UX validated; blocked on backend 500 from POST /api/onboarding/subscription |
 | B1 | Onboarding Step 4 — Plan Selection | ⬜ Not started | After Phase A is validated |
 | B2 | Onboarding Step 5 — Payment | ⬜ Not started | After B1 is validated |
 

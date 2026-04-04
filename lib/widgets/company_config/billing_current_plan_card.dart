@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/app_config.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../../services/tranzila_popup_service.dart';
 import '../../theme/app_theme.dart';
 import '../../models/company_billing.dart';
 import '../../providers/billing_provider.dart';
+import '../../providers/company_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/format_utils.dart';
 import '../app_button.dart';
@@ -604,24 +606,122 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
 
 // ─── No plan yet ─────────────────────────────────────────────────────────────
 
-class _NoPlanCard extends StatefulWidget {
+class _NoPlanCard extends ConsumerStatefulWidget {
   const _NoPlanCard({required this.l10n});
 
   final AppLocalizations l10n;
 
   @override
-  State<_NoPlanCard> createState() => _NoPlanCardState();
+  ConsumerState<_NoPlanCard> createState() => _NoPlanCardState();
 }
 
-class _NoPlanCardState extends State<_NoPlanCard> {
+class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
   /// Matches config planId values. Defaults to annual.
   late int _selectedPlanId;
   String? _couponCode;
+  bool _busy = false;
+  String? _errorMessage;
+  TranzilaPopupService? _popupService;
 
   @override
   void initState() {
     super.initState();
     _selectedPlanId = AppConfig.instance.annualPlanId;
+    _initPopupService();
+  }
+
+  void _initPopupService() {
+    debugPrint('[NoPlanCard] _initPopupService — setting up Tranzila listener');
+    final userInfo = ref.read(userInfoProvider);
+    _popupService = TranzilaPopupService(
+      authService: ref.read(authServiceProvider),
+      userFullName: userInfo?.fullName ?? '',
+      userEmail: userInfo?.email ?? '',
+      userDialingCode: userInfo?.dailingCode ?? '',
+    );
+    _popupService!.onResult = _onTranzilaResult;
+    _popupService!.onPopupBlocked = () {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() {
+        _errorMessage = l10n.billingPopupBlocked;
+        _busy = false;
+      });
+    };
+    _popupService!.onError = (_) {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() {
+        _errorMessage = l10n.subscriptionCreationFailed;
+        _busy = false;
+      });
+    };
+    _popupService!.startListening();
+  }
+
+  @override
+  void dispose() {
+    _popupService?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleProceed() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _errorMessage = null;
+    });
+    final lang = Localizations.localeOf(context).languageCode;
+    await _popupService!.openPopup(lang: lang);
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _onTranzilaResult(TranzilaPopupResult result) async {
+    debugPrint('[NoPlanCard] onTranzilaResult: success=${result.success} token=${result.token} error=${result.error}');
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+
+    if (!result.success) {
+      setState(() {
+        _errorMessage = result.error ?? l10n.subscriptionCreationFailed;
+      });
+      return;
+    }
+
+    // Card tokenized successfully → create subscription
+    debugPrint('[NoPlanCard] Card tokenized OK — creating subscription planId=$_selectedPlanId coupon=$_couponCode');
+    setState(() => _busy = true);
+    try {
+      final authService = ref.read(authServiceProvider);
+      await authService.createSubscription(
+        paymentProviderResponse: result.tranzilaResponse,
+        billingPlanId: _selectedPlanId,
+        couponCode: _couponCode,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.subscriptionCreatedSuccess),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      // Refresh company data so dashboard sees subscriptionStatus = Active
+      ref.invalidate(companyProvider);
+
+      // Navigate to dashboard
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        '/dashboard',
+        (route) => false,
+      );
+    } catch (e) {
+      debugPrint('[NoPlanCard] createSubscription error: $e');
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = l10n.subscriptionCreationFailed;
+        _busy = false;
+      });
+    }
   }
 
   @override
@@ -662,12 +762,35 @@ class _NoPlanCardState extends State<_NoPlanCard> {
             ),
             const SizedBox(height: 24),
 
+            // Inline error
+            if (_errorMessage != null) ...[
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.destructive.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.destructive.withAlpha(77)),
+                ),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.destructive,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             // Proceed button
             SizedBox(
               width: double.infinity,
               child: AppButton(
                 label: l10n.proceedToPayment,
                 variant: AppButtonVariant.primary,
+                isLoading: _busy,
                 onPressed: _handleProceed,
               ),
             ),
@@ -706,10 +829,6 @@ class _NoPlanCardState extends State<_NoPlanCard> {
         ],
       ),
     );
-  }
-
-  void _handleProceed() {
-    // Step A3 will wire in the Tranzila popup here.
   }
 }
 

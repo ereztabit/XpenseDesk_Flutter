@@ -501,6 +501,35 @@ class AuthService {
     );
   }
 
+  /// Create a subscription (onboarding final step).
+  /// POST /api/onboarding/subscription
+  /// Saves card + creates plan + optional coupon in one call.
+  /// Throws on PAYMENT_METHOD_CHARGE_FAILED, COUPON_FAILED_TO_APPLY, etc.
+  Future<void> createSubscription({
+    required Map<String, dynamic> paymentProviderResponse,
+    required int billingPlanId,
+    String? couponCode,
+  }) async {
+    final sessionToken = await getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final body = <String, dynamic>{
+      'paymentProviderResponse': paymentProviderResponse,
+      'billingPlanId': billingPlanId,
+    };
+    if (couponCode != null) {
+      body['couponCode'] = couponCode;
+    }
+
+    final response = await _apiService.post(
+      '/api/onboarding/subscription',
+      body,
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Subscription creation failed');
+  }
+
   /// Update user profile (full name and language)
   /// Returns updated UserInfo from /api/users/update-details
   Future<UserInfo> updateUserProfile(String fullName, int languageId) async {

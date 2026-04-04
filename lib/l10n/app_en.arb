@@ -512,5 +512,7 @@
   "invalidCoupon": "Invalid coupon code",
   "proceedToPayment": "Proceed to Payment",
   "backToDashboard": "Back to dashboard",
-  "removeCoupon": "Remove"
+  "removeCoupon": "Remove",
+  "subscriptionCreatedSuccess": "Subscription activated successfully!",
+  "subscriptionCreationFailed": "There was a problem processing the payment. Please refresh the page and try again."
 }
