@@ -514,5 +514,7 @@
   "backToDashboard": "חזור ללוח הבקרה",
   "removeCoupon": "הסר",
   "subscriptionCreatedSuccess": "המנוי הופעל בהצלחה!",
-  "subscriptionCreationFailed": "קרתה תקלה בעיבוד התשלום, רענן את המסך ונסה שוב."
+  "subscriptionCreationFailed": "קרתה תקלה בעיבוד התשלום, רענן את המסך ונסה שוב.",
+  "plansIncludeTrial": "שתי התוכניות כוללות ניסיון חינם של 14 יום",
+  "skipForNow": "דלג בינתיים"
 }

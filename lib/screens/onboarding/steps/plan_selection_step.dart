@@ -1,0 +1,259 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../config/app_config.dart';
+import '../../../generated/l10n/app_localizations.dart';
+import '../../../theme/app_theme.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../providers/company_provider.dart';
+import '../../../services/tranzila_popup_service.dart';
+import '../../../widgets/app_button.dart';
+import '../../../widgets/plan_selection/plan_card.dart';
+import '../../../widgets/plan_selection/coupon_section.dart';
+
+/// Onboarding Step 4 — Plan Selection + Payment.
+///
+/// Reuses [PlanCard] and [CouponSection] from the shared widgets.
+/// "Proceed to Payment" opens the Tranzila popup (same as billing tab).
+/// "Skip for now" navigates straight to the dashboard (trial mode).
+class PlanSelectionStep extends ConsumerStatefulWidget {
+  const PlanSelectionStep({super.key});
+
+  @override
+  ConsumerState<PlanSelectionStep> createState() => _PlanSelectionStepState();
+}
+
+class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
+  late int _selectedPlanId;
+  String? _couponCode;
+  bool _busy = false;
+  String? _errorMessage;
+  TranzilaPopupService? _popupService;
+
+  // Captured from context in didChangeDependencies — safe to use in async
+  // callbacks that fire after the widget tree may have been torn down.
+  late ScaffoldMessengerState _messenger;
+  late NavigatorState _navigator;
+  late String _successMsg;
+  late String _failMsg;
+  late String _popupBlockedMsg;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPlanId = AppConfig.instance.annualPlanId;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l10n = AppLocalizations.of(context)!;
+    _messenger = ScaffoldMessenger.of(context);
+    _navigator = Navigator.of(context);
+    _successMsg = l10n.subscriptionCreatedSuccess;
+    _failMsg = l10n.subscriptionCreationFailed;
+    _popupBlockedMsg = l10n.billingPopupBlocked;
+
+    // Init popup service here — needs context-derived values
+    if (_popupService == null) {
+      _initPopupService();
+    }
+  }
+
+  void _initPopupService() {
+    final userInfo = ref.read(userInfoProvider);
+    _popupService = TranzilaPopupService(
+      authService: ref.read(authServiceProvider),
+      userFullName: userInfo?.fullName ?? '',
+      userEmail: userInfo?.email ?? '',
+      userDialingCode: userInfo?.dailingCode ?? '',
+    );
+    _popupService!.onResult = _onTranzilaResult;
+    _popupService!.onPopupBlocked = () {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = _popupBlockedMsg;
+        _busy = false;
+      });
+    };
+    _popupService!.onError = (_) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = _failMsg;
+        _busy = false;
+      });
+    };
+    _popupService!.startListening();
+  }
+
+  @override
+  void dispose() {
+    _popupService?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleProceed() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _errorMessage = null;
+    });
+    final lang = Localizations.localeOf(context).languageCode;
+    await _popupService!.openPopup(lang: lang);
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _onTranzilaResult(TranzilaPopupResult result) async {
+    if (!result.success) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = result.error ?? _failMsg;
+      });
+      return;
+    }
+
+    if (mounted) setState(() => _busy = true);
+
+    try {
+      final authService = ref.read(authServiceProvider);
+      await authService.createSubscription(
+        paymentProviderResponse: result.tranzilaResponse,
+        billingPlanId: _selectedPlanId,
+        couponCode: _couponCode,
+      );
+    } catch (e) {
+      debugPrint('[PlanSelectionStep] createSubscription failed: $e');
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = _failMsg;
+        _busy = false;
+      });
+      return;
+    }
+
+    // Subscription created — navigate to dashboard.
+    // Navigate FIRST, then invalidate. This avoids the deactivated-widget
+    // race where invalidate tears down the widget tree before navigate runs.
+    try {
+      _navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
+      ref.invalidate(companyProvider);
+    } catch (_) {
+      // Widget tree already torn down — verify status and force navigate.
+      try {
+        final company = await ref.read(authServiceProvider).getCompany();
+        if (company.subscriptionStatus == 'Active') {
+          _navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
+        }
+      } catch (_) {}
+    }
+  }
+
+  void _skipForNow() {
+    _navigator.pushNamedAndRemoveUntil(
+      '/dashboard',
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final config = AppConfig.instance;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Static trial message
+        Text(
+          l10n.plansIncludeTrial,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.primary,
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Plan cards — always side by side
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: PlanCard(
+                  price: '\$${config.monthlyPrice}',
+                  period: l10n.perMonth,
+                  isSelected: _selectedPlanId == config.monthlyPlanId,
+                  onTap: () =>
+                      setState(() => _selectedPlanId = config.monthlyPlanId),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: PlanCard(
+                  price: '\$${config.annualPrice}',
+                  period: l10n.perYear,
+                  isSelected: _selectedPlanId == config.annualPlanId,
+                  onTap: () =>
+                      setState(() => _selectedPlanId = config.annualPlanId),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Coupon section
+        CouponSection(
+          onCouponResult: (code) {
+            setState(() => _couponCode = code);
+          },
+        ),
+        const SizedBox(height: 24),
+
+        // Inline error
+        if (_errorMessage != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppTheme.destructive.withAlpha(25),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppTheme.destructive.withAlpha(77)),
+            ),
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppTheme.destructive,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Proceed to Payment
+        SizedBox(
+          width: double.infinity,
+          child: AppButton(
+            label: l10n.proceedToPayment,
+            variant: AppButtonVariant.primary,
+            isLoading: _busy,
+            onPressed: _handleProceed,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Skip for now
+        SizedBox(
+          width: double.infinity,
+          child: AppButton(
+            label: l10n.skipForNow,
+            variant: AppButtonVariant.ghost,
+            onPressed: _busy ? null : _skipForNow,
+          ),
+        ),
+      ],
+    );
+  }
+}

@@ -11,6 +11,7 @@ import '../../widgets/onboarding/step_shell.dart';
 import 'steps/personal_details_step.dart';
 import 'steps/company_details_step.dart';
 import 'steps/otp_verification_step.dart';
+import 'steps/plan_selection_step.dart';
 
 /// Onboarding wizard root.
 /// Manages the current step (1–5) and renders each step's content.
@@ -62,8 +63,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       l10n.onboardingSubtitleStep5,
     ];
 
-    // Step 2 (company) gets wider card
-    final double maxWidth = _currentStep == 2 ? 672 : 448;
+    // Steps 2 (company) and 4 (plan selection) get wider card
+    final double maxWidth = (_currentStep == 2 || _currentStep == 4) ? 672 : 448;
 
     return Scaffold(
       body: Column(
@@ -175,7 +176,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 3:
         return OtpVerificationStep(
           onBack: () => setState(() => _currentStep = 1),
+          onVerified: _nextStep,
         );
+      case 4:
+        return const PlanSelectionStep();
       default:
         return _StepPlaceholder(
           step: _currentStep,

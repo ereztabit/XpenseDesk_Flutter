@@ -514,5 +514,7 @@
   "backToDashboard": "Back to dashboard",
   "removeCoupon": "Remove",
   "subscriptionCreatedSuccess": "Subscription activated successfully!",
-  "subscriptionCreationFailed": "There was a problem processing the payment. Please refresh the page and try again."
+  "subscriptionCreationFailed": "There was a problem processing the payment. Please refresh the page and try again.",
+  "plansIncludeTrial": "Both plans include a 14-day free trial",
+  "skipForNow": "Skip for now"
 }

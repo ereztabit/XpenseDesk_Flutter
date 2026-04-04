@@ -17,9 +17,9 @@ class UserInfoNotifier extends Notifier<UserInfo?> {
   @override
   UserInfo? build() => null;
 
-  void setUserInfo(UserInfo? userInfo) {
+  void setUserInfo(UserInfo? userInfo, {bool syncLocale = true}) {
     state = userInfo;
-    if (userInfo != null) {
+    if (userInfo != null && syncLocale) {
       _setLocaleFromUserInfo(userInfo);
     }
   }

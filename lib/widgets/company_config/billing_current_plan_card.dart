@@ -623,15 +623,37 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
   String? _errorMessage;
   TranzilaPopupService? _popupService;
 
+  // Captured from context in didChangeDependencies — safe to use in async
+  // callbacks that fire from dart:html postMessage after the widget tree
+  // may have been torn down.
+  late ScaffoldMessengerState _messenger;
+  late NavigatorState _navigator;
+  late String _successMsg;
+  late String _failMsg;
+  late String _popupBlockedMsg;
+
   @override
   void initState() {
     super.initState();
     _selectedPlanId = AppConfig.instance.annualPlanId;
-    _initPopupService();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l10n = AppLocalizations.of(context)!;
+    _messenger = ScaffoldMessenger.of(context);
+    _navigator = Navigator.of(context);
+    _successMsg = l10n.subscriptionCreatedSuccess;
+    _failMsg = l10n.subscriptionCreationFailed;
+    _popupBlockedMsg = l10n.billingPopupBlocked;
+
+    if (_popupService == null) {
+      _initPopupService();
+    }
   }
 
   void _initPopupService() {
-    debugPrint('[NoPlanCard] _initPopupService — setting up Tranzila listener');
     final userInfo = ref.read(userInfoProvider);
     _popupService = TranzilaPopupService(
       authService: ref.read(authServiceProvider),
@@ -642,17 +664,15 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
     _popupService!.onResult = _onTranzilaResult;
     _popupService!.onPopupBlocked = () {
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
       setState(() {
-        _errorMessage = l10n.billingPopupBlocked;
+        _errorMessage = _popupBlockedMsg;
         _busy = false;
       });
     };
     _popupService!.onError = (_) {
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
       setState(() {
-        _errorMessage = l10n.subscriptionCreationFailed;
+        _errorMessage = _failMsg;
         _busy = false;
       });
     };
@@ -677,20 +697,16 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
   }
 
   Future<void> _onTranzilaResult(TranzilaPopupResult result) async {
-    debugPrint('[NoPlanCard] onTranzilaResult: success=${result.success} token=${result.token} error=${result.error}');
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-
     if (!result.success) {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = result.error ?? l10n.subscriptionCreationFailed;
+        _errorMessage = result.error ?? _failMsg;
       });
       return;
     }
 
-    // Card tokenized successfully → create subscription
-    debugPrint('[NoPlanCard] Card tokenized OK — creating subscription planId=$_selectedPlanId coupon=$_couponCode');
-    setState(() => _busy = true);
+    if (mounted) setState(() => _busy = true);
+
     try {
       final authService = ref.read(authServiceProvider);
       await authService.createSubscription(
@@ -698,29 +714,30 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
         billingPlanId: _selectedPlanId,
         couponCode: _couponCode,
       );
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.subscriptionCreatedSuccess),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      // Refresh company data so dashboard sees subscriptionStatus = Active
-      ref.invalidate(companyProvider);
-
-      // Navigate to dashboard
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/dashboard',
-        (route) => false,
-      );
     } catch (e) {
-      debugPrint('[NoPlanCard] createSubscription error: $e');
+      debugPrint('[NoPlanCard] createSubscription failed: $e');
       if (!mounted) return;
       setState(() {
-        _errorMessage = l10n.subscriptionCreationFailed;
+        _errorMessage = _failMsg;
         _busy = false;
       });
+      return;
+    }
+
+    // Subscription created — navigate to dashboard.
+    // Navigate FIRST, then invalidate. This avoids the deactivated-widget
+    // race where invalidate tears down the widget tree before navigate runs.
+    try {
+      _navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
+      ref.invalidate(companyProvider);
+    } catch (_) {
+      // Widget tree already torn down — verify status and force navigate.
+      try {
+        final company = await ref.read(authServiceProvider).getCompany();
+        if (company.subscriptionStatus == 'Active') {
+          _navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
+        }
+      } catch (_) {}
     }
   }
 

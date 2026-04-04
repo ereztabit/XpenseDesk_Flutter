@@ -26,10 +26,14 @@ const int _kTimerDurationSeconds = 600; // 10 minutes
 /// On success: stores the session token, loads user info via GET /api/users/me,
 /// and navigates to /dashboard.
 class OtpVerificationStep extends ConsumerStatefulWidget {
-  const OtpVerificationStep({super.key, required this.onBack});
+  const OtpVerificationStep({super.key, required this.onBack, this.onVerified});
 
   /// Called when the user taps "Wrong email address?" to go back to Step 2.
   final VoidCallback onBack;
+
+  /// Called after OTP is verified and session is initialized.
+  /// If null, navigates to /dashboard directly.
+  final VoidCallback? onVerified;
 
   @override
   ConsumerState<OtpVerificationStep> createState() =>
@@ -213,7 +217,9 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
       await authService.storeSessionToken(sessionToken);
 
       final userInfo = await authService.getUserInfo();
-      ref.read(userInfoProvider.notifier).setUserInfo(userInfo);
+      // Don't sync locale during onboarding — respect the language
+      // the user chose at the start of the flow.
+      ref.read(userInfoProvider.notifier).setUserInfo(userInfo, syncLocale: false);
 
       // Invalidate any stale company data so the fresh company
       // (and its subscriptionStatus) is fetched when the dashboard loads.
@@ -222,7 +228,11 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
       ref.read(onboardingStateProvider.notifier).reset();
 
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        if (widget.onVerified != null) {
+          widget.onVerified!();
+        } else {
+          Navigator.of(context).pushReplacementNamed('/dashboard');
+        }
       }
     } on OnboardingException catch (_) {
       if (!mounted) return;
