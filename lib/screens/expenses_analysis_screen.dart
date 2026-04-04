@@ -1,5 +1,6 @@
 import 'screen_imports.dart';
 import '../services/excel_export_service.dart';
+import '../widgets/app_button.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/analysis/analysis_filter_card.dart';
 import '../widgets/analysis/detail_card.dart';
@@ -238,20 +239,22 @@ class _ExpensesAnalysisScreenState
                 const SizedBox(height: 16),
                 Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: TextButton(
+                  child: AppButton(
+                    label: l10n.clearAll,
+                    variant: AppButtonVariant.ghost,
                     onPressed: () => setS(() {
                       pendingEmp = {};
                       pendingCat = {};
                     }),
-                    child: Text(l10n.clearAll),
                   ),
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    icon: const Icon(Icons.play_arrow, size: 16),
-                    label: Text(l10n.runReport),
+                  child: AppButton(
+                    label: l10n.runReport,
+                    variant: AppButtonVariant.primary,
+                    icon: Icons.play_arrow,
                     onPressed: () {
                       setState(() {
                         _pendingEmployees = pendingEmp;
