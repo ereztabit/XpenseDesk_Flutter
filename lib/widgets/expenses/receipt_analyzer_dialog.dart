@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../app_button.dart';
 import 'package:web/web.dart' as web;
 import 'dart:js_interop';
 import '../../generated/l10n/app_localizations.dart';
@@ -274,10 +275,11 @@ class _ReceiptAnalyzerDialogState extends ConsumerState<ReceiptAnalyzerDialog> {
               const SizedBox(height: 20),
               Row(
                 children: [
-                  ElevatedButton.icon(
+                  AppButton(
+                    label: l10n.receiptAnalyzerPickImage,
+                    variant: AppButtonVariant.normal,
+                    icon: Icons.upload_file,
                     onPressed: _isLoading ? null : _pickFile,
-                    icon: const Icon(Icons.upload_file, size: 18),
-                    label: Text(l10n.receiptAnalyzerPickImage),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -307,15 +309,15 @@ class _ReceiptAnalyzerDialogState extends ConsumerState<ReceiptAnalyzerDialog> {
                 ],
               ),
               const SizedBox(height: 8),
-              ElevatedButton(
+              AppButton(
+                label: _isLoading
+                    ? l10n.receiptAnalyzerAnalyzing
+                    : l10n.receiptAnalyzerAnalyze,
+                variant: AppButtonVariant.primary,
+                isLoading: _isLoading,
                 onPressed: (_selectedBytes != null && !_isLoading)
                     ? _analyze
                     : null,
-                child: Text(
-                  _isLoading
-                      ? l10n.receiptAnalyzerAnalyzing
-                      : l10n.receiptAnalyzerAnalyze,
-                ),
               ),
               if (_result != null) ...[
                 const SizedBox(height: 20),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/expense_provider.dart';
+import '../app_button.dart';
 import '../../services/expense_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -41,9 +42,10 @@ class DeleteExpenseDialog extends ConsumerStatefulWidget {
             style: const TextStyle(fontSize: 14, color: AppTheme.mutedForeground),
           ),
           actions: [
-            FilledButton(
+            AppButton(
+              label: l10n.ok,
+              variant: AppButtonVariant.primary,
               onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(l10n.ok),
             ),
           ],
         ),
@@ -105,33 +107,19 @@ class _DeleteExpenseDialogState extends ConsumerState<DeleteExpenseDialog> {
         style: const TextStyle(fontSize: 14, color: AppTheme.mutedForeground),
       ),
       actions: [
-        TextButton(
+        AppButton(
+          label: l10n.cancel,
+          variant: AppButtonVariant.ghost,
           onPressed: _isDeleting
               ? null
               : () =>
                   Navigator.of(context).pop((deleted: false, error: null)),
-          style: TextButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-            ),
-            minimumSize: const Size(0, 50),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          child: Text(l10n.cancel),
         ),
-        FilledButton(
+        AppButton(
+          label: l10n.delete,
+          variant: AppButtonVariant.destructive,
+          isLoading: _isDeleting,
           onPressed: _isDeleting ? null : _handleDelete,
-          style: FilledButton.styleFrom(backgroundColor: AppTheme.destructive),
-          child: _isDeleting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : Text(l10n.delete),
         ),
       ],
     );

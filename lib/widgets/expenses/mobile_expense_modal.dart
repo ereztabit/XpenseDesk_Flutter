@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../app_button.dart';
 import '../../models/expense_detail.dart';
 import '../../models/expense_summary.dart';
 import '../../models/expense_category.dart';
@@ -624,20 +625,13 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
                             ],
                             SizedBox(
                               width: double.infinity,
-                              child: FilledButton.icon(
+                              child: AppButton(
+                                label: l10n.updateExpenseDetails,
+                                variant: AppButtonVariant.primary,
+                                icon: Icons.save_outlined,
+                                isLoading: _isSaving,
                                 onPressed:
                                     _canSave && !_isSaving ? _save : null,
-                                icon: _isSaving
-                                    ? const SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white),
-                                      )
-                                    : const Icon(Icons.save_outlined,
-                                        size: 16),
-                                label: Text(l10n.updateExpenseDetails),
                               ),
                             ),
                           ],

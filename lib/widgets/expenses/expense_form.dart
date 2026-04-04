@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../app_button.dart';
 import '../../models/expense_category.dart';
 import '../../models/expense_currency.dart';
 import '../../providers/auth_provider.dart';
@@ -302,20 +303,11 @@ class ExpenseForm extends ConsumerWidget {
                     : Alignment.centerRight,
                 child: SizedBox(
                   width: context.isMobile ? double.infinity : null,
-                  child: FilledButton(
+                  child: AppButton(
+                    label: l10n.submitExpense,
+                    variant: AppButtonVariant.primary,
+                    isLoading: isLoading,
                     onPressed: isLoading ? null : onSubmit,
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppTheme.primaryForeground,
-                              ),
-                            ),
-                          )
-                        : Text(l10n.submitExpense),
                   ),
                 ),
               ),

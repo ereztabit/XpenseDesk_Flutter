@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../app_button.dart';
 
 /// Empty state shown when no expenses exist in a section.
 ///
@@ -63,10 +64,11 @@ class ExpensesEmptyState extends StatelessWidget {
 
             if (onNewExpense != null && newExpenseLabel != null) ...[
               const SizedBox(height: 16),
-              FilledButton.icon(
+              AppButton(
+                label: newExpenseLabel!,
+                variant: AppButtonVariant.primary,
+                icon: Icons.add,
                 onPressed: onNewExpense,
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(newExpenseLabel!),
               ),
             ],
           ],
