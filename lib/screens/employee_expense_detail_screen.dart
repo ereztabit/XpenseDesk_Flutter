@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'screen_imports.dart';
 import '../models/expense_detail.dart';
+import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
 import '../models/expense_currency.dart';
 import '../models/update_expense_request.dart';
@@ -667,25 +668,20 @@ class _EmployeeExpenseDetailScreenState
           mainAxisSize: MainAxisSize.min,
           children: [
             if (showApprove)
-              FilledButton.icon(
+              AppButton(
+                label: l10n.approve,
+                variant: AppButtonVariant.success,
+                icon: Icons.check,
+                isLoading: _isSaving,
                 onPressed: _isSaving ? null : _approve,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.success,
-                  foregroundColor: Colors.white,
-                ),
-                icon: _isSaving ? spinner : const Icon(Icons.check, size: 16),
-                label: Text(l10n.approve),
               ),
             if (showApprove && showDecline) const SizedBox(width: 12),
             if (showDecline)
-              FilledButton.icon(
+              AppButton(
+                label: l10n.decline,
+                variant: AppButtonVariant.destructive,
+                icon: Icons.close,
                 onPressed: _isSaving ? null : _decline,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.destructive,
-                  foregroundColor: Colors.white,
-                ),
-                icon: const Icon(Icons.close, size: 16),
-                label: Text(l10n.decline),
               ),
           ],
         ),
@@ -698,15 +694,12 @@ class _EmployeeExpenseDetailScreenState
     // Manager: Update button shown only when editing is enabled
     if (widget.isManagerMode) {
       if (!_isEditingEnabled) return const SizedBox.shrink();
-      return FilledButton.icon(
+      return AppButton(
+        label: l10n.updateExpenseDetails,
+        variant: AppButtonVariant.primary,
+        icon: Icons.save_outlined,
+        isLoading: _isSaving,
         onPressed: _canSave && !_isSaving ? _save : null,
-        icon: _isSaving
-            ? const SizedBox(
-                width: 14, height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Icon(Icons.save_outlined, size: 16),
-        label: Text(l10n.updateExpenseDetails),
       );
     }
 
@@ -734,19 +727,17 @@ class _EmployeeExpenseDetailScreenState
           )
         : null;
 
-    final saveBtn = FilledButton.icon(
+    final saveBtn = AppButton(
+      label: l10n.updateExpenseDetails,
+      variant: AppButtonVariant.primary,
+      icon: Icons.save_outlined,
+      isLoading: _isSaving,
       onPressed: _canSave && !_isSaving ? _save : null,
-      icon: _isSaving
-          ? const SizedBox(
-              width: 14, height: 14,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            )
-          : const Icon(Icons.save_outlined, size: 16),
-      label: Text(l10n.updateExpenseDetails),
     );
-    final discardBtn = OutlinedButton(
+    final discardBtn = AppButton(
+      label: l10n.discard,
+      variant: AppButtonVariant.normal,
       onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-      child: Text(l10n.discard),
     );
 
     return Column(
@@ -779,9 +770,10 @@ class _EmployeeExpenseDetailScreenState
               style: const TextStyle(
                   fontSize: 16, color: AppTheme.mutedForeground)),
           const SizedBox(height: 16),
-          OutlinedButton(
+          AppButton(
+            label: l10n.backToDashboard,
+            variant: AppButtonVariant.ghost,
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.backToDashboard),
           ),
         ],
       ),
@@ -796,8 +788,10 @@ class _EmployeeExpenseDetailScreenState
           Text(_loadError ?? l10n.anErrorOccurred,
               style: const TextStyle(color: AppTheme.destructive)),
           const SizedBox(height: 16),
-          OutlinedButton(
-              onPressed: _loadExpense, child: Text(l10n.continueButton)),
+          AppButton(
+              label: l10n.continueButton,
+              variant: AppButtonVariant.normal,
+              onPressed: _loadExpense),
         ],
       ),
     );
@@ -816,10 +810,11 @@ class _EmployeeExpenseDetailScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!widget.dialogMode)
-              TextButton.icon(
+              AppButton(
+                label: l10n.backToDashboard,
+                variant: AppButtonVariant.ghost,
+                icon: Icons.arrow_back,
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back, size: 16),
-                label: Text(l10n.backToDashboard),
               ),
             if (!widget.dialogMode) const SizedBox(height: 12),
             Card(

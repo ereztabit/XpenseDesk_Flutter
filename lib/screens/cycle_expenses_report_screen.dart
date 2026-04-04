@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:web/web.dart' as web;
 import 'screen_imports.dart';
 import '../models/expense_category.dart';
+import '../widgets/app_button.dart';
 import '../models/expense_cycle.dart';
 import '../models/cycle_expense_row.dart';
 import '../providers/expense_provider.dart';
@@ -405,7 +406,9 @@ class _CycleExpensesReportScreenState
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton(
+                    child: AppButton(
+                      label: l10n.applyFilters,
+                      variant: AppButtonVariant.primary,
                       onPressed: () {
                         setState(() {
                           _selectedCycleId = pendingCycleId;
@@ -415,7 +418,6 @@ class _CycleExpensesReportScreenState
                         Navigator.of(dialogContext).pop();
                         _loadReport();
                       },
-                      child: Text(l10n.applyFilters),
                     ),
                   ),
                 ],
@@ -693,19 +695,14 @@ class _CycleExpensesReportScreenState
           ),
         ] else ...[
           const SizedBox(width: 12),
-          FilledButton.icon(
+          AppButton(
+            label: l10n.export,
+            variant: AppButtonVariant.normal,
+            icon: Icons.download,
+            isLoading: _isExporting,
             onPressed: (_loading || _isExporting || _selectedCycleId == null)
                 ? null
                 : _exportExcel,
-            icon: _isExporting
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.download, size: 16),
-            label: Text(l10n.export),
           ),
         ],
       ],
