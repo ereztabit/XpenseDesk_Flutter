@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:email_validator/email_validator.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../app_button.dart';
 import '../../providers/users_provider.dart';
 import '../../services/users_service.dart';
 import '../../theme/app_theme.dart';
@@ -151,22 +152,19 @@ class _InviteUsersDialogState extends ConsumerState<InviteUsersDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
+                AppButton(
+                  label: l10n.cancel,
+                  variant: AppButtonVariant.ghost,
                   onPressed: _isLoading ? null : () => Navigator.pop(context),
-                  child: Text(l10n.cancel),
                 ),
                 const SizedBox(width: 12),
-                FilledButton(
+                AppButton(
+                  label: l10n.inviteUsers,
+                  variant: AppButtonVariant.primary,
+                  isLoading: _isLoading,
                   onPressed: _emailList.isEmpty || _isLoading
                       ? null
                       : _handleInvite,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.inviteUsers),
                 ),
               ],
             ),

@@ -1,5 +1,6 @@
 import 'screen_imports.dart';
 import '../providers/users_provider.dart';
+import '../widgets/app_button.dart';
 import '../widgets/users/user_list_card.dart';
 import '../widgets/users/invite_users_dialog.dart';
 import '../utils/responsive_utils.dart';
@@ -32,14 +33,11 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                     // Back button
                     Align(
                       alignment: AlignmentDirectional.centerStart,
-                      child: TextButton.icon(
+                      child: AppButton(
+                        label: l10n.backToDashboard,
+                        variant: AppButtonVariant.ghost,
+                        icon: Icons.arrow_back,
                         onPressed: () => Navigator.pushReplacementNamed(context, '/dashboard'),
-                        icon: const Icon(Icons.arrow_back),
-                        label: Text(l10n.backToDashboard),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.foreground,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -70,9 +68,10 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                               const SizedBox(height: 12),
                               SizedBox(
                                 width: double.infinity,
-                                child: FilledButton.icon(
-                                  icon: const Icon(Icons.person_add_alt_1),
-                                  label: Text(l10n.inviteUsers),
+                                child: AppButton(
+                                  label: l10n.inviteUsers,
+                                  variant: AppButtonVariant.primary,
+                                  icon: Icons.person_add_alt_1,
                                   onPressed: userStats.hasRemainingSlots
                                       ? () => _showInviteDialog(context, ref, userStats.remaining)
                                       : null,
@@ -101,9 +100,10 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                                   ],
                                 ),
                               ),
-                              FilledButton.icon(
-                                icon: const Icon(Icons.person_add_alt_1),
-                                label: Text(l10n.inviteUsers),
+                              AppButton(
+                                label: l10n.inviteUsers,
+                                variant: AppButtonVariant.primary,
+                                icon: Icons.person_add_alt_1,
                                 onPressed: userStats.hasRemainingSlots
                                     ? () => _showInviteDialog(context, ref, userStats.remaining)
                                     : null,

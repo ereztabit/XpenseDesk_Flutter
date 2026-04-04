@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/user_list_item.dart';
+import '../app_button.dart';
 import '../../providers/users_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/users_service.dart';
@@ -364,13 +365,15 @@ class UserListCard extends ConsumerWidget {
                   : '${l10n.demoteConfirmPrefix}$userName ${l10n.demoteConfirmSuffix}',
             ),
             actions: [
-              TextButton(
+              AppButton(
+                label: l10n.cancel,
+                variant: AppButtonVariant.ghost,
                 onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.cancel),
               ),
-              FilledButton(
+              AppButton(
+                label: l10n.confirm,
+                variant: AppButtonVariant.primary,
                 onPressed: () => Navigator.pop(context, true),
-                child: Text(l10n.confirm),
               ),
             ],
           ),
@@ -458,14 +461,15 @@ class UserListCard extends ConsumerWidget {
               '${l10n.deleteConfirmPrefix}$userName${l10n.deleteConfirmSuffix}',
             ),
             actions: [
-              TextButton(
+              AppButton(
+                label: l10n.cancel,
+                variant: AppButtonVariant.ghost,
                 onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.cancel),
               ),
-              FilledButton(
+              AppButton(
+                label: l10n.deleteUser,
+                variant: AppButtonVariant.destructive,
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(l10n.deleteUser),
               ),
             ],
           ),
@@ -488,14 +492,15 @@ class UserListCard extends ConsumerWidget {
               '${l10n.disableConfirmPrefix}$userName${l10n.disableConfirmSuffix}',
             ),
             actions: [
-              TextButton(
+              AppButton(
+                label: l10n.cancel,
+                variant: AppButtonVariant.ghost,
                 onPressed: () => Navigator.pop(context, false),
-                child: Text(l10n.cancel),
               ),
-              FilledButton(
+              AppButton(
+                label: l10n.disable,
+                variant: AppButtonVariant.destructive,
                 onPressed: () => Navigator.pop(context, true),
-                style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                child: Text(l10n.disable),
               ),
             ],
           ),

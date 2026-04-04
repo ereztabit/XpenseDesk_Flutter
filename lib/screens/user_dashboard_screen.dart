@@ -1,5 +1,6 @@
 import 'screen_imports.dart';
 import '../models/expense_summary.dart';
+import '../widgets/app_button.dart';
 import '../providers/expense_provider.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
@@ -298,12 +299,13 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                             ),
                             Row(
                               children: [
-                                FilledButton.icon(
+                                AppButton(
+                                  label: l10n.newExpense,
+                                  variant: AppButtonVariant.primary,
+                                  icon: Icons.add,
                                   onPressed: () => Navigator.of(context)
                                       .pushNamed('/employee/new-expense')
                                       .then((_) => ref.invalidate(expenseSearchProvider)),
-                                  icon: const Icon(Icons.add, size: 18),
-                                  label: Text(l10n.newExpense),
                                 ),
                               ],
                             ),
