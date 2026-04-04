@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../widgets/app_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 import '../../../providers/onboarding_provider.dart';
@@ -190,28 +191,12 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
 
           // Continue button
           SizedBox(
-            height: 40,
-            child: ElevatedButton(
+            width: double.infinity,
+            child: AppButton(
+              label: l10n.continueButton,
+              variant: AppButtonVariant.primary,
+              isLoading: _isCheckingEmail,
               onPressed: (_canContinue && !_isCheckingEmail) ? _handleContinue : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryDark,
-                foregroundColor: AppTheme.primaryForeground,
-                disabledBackgroundColor: AppTheme.muted,
-                disabledForegroundColor: AppTheme.mutedForeground,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                ),
-              ),
-              child: _isCheckingEmail
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppTheme.primaryForeground,
-                      ),
-                    )
-                  : Text(l10n.continueButton),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../widgets/app_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../models/onboarding/company_submit_request.dart';
 import '../../../models/onboarding/reference_data.dart';
@@ -470,48 +471,18 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
           // ── Action buttons ────────────────────────────────────────────────
           Row(
             children: [
-              OutlinedButton(
+              AppButton(
+                label: l10n.back,
+                variant: AppButtonVariant.normal,
                 onPressed: _isSubmitting ? null : _handleBack,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                  ),
-                  side: const BorderSide(color: AppTheme.borderMedium),
-                ),
-                child: Text(
-                  l10n.back,
-                  style: const TextStyle(color: AppTheme.mutedForeground),
-                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: SizedBox(
-                  height: 40,
-                  child: ElevatedButton(
-                    onPressed: _canContinue ? _handleContinue : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryDark,
-                      foregroundColor: AppTheme.primaryForeground,
-                      disabledBackgroundColor: AppTheme.muted,
-                      disabledForegroundColor: AppTheme.mutedForeground,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.borderRadius,
-                        ),
-                      ),
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppTheme.primaryForeground,
-                            ),
-                          )
-                        : Text(l10n.continueButton),
-                  ),
+                child: AppButton(
+                  label: l10n.continueButton,
+                  variant: AppButtonVariant.primary,
+                  isLoading: _isSubmitting,
+                  onPressed: _canContinue ? _handleContinue : null,
                 ),
               ),
             ],

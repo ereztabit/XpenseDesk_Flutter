@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../widgets/app_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../generated/l10n/app_localizations.dart';
@@ -457,28 +458,12 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
 
         // Verify button
         SizedBox(
-          height: 40,
-          child: ElevatedButton(
+          width: double.infinity,
+          child: AppButton(
+            label: l10n.onboardingOtpVerify,
+            variant: AppButtonVariant.primary,
+            isLoading: _isSubmitting,
             onPressed: (_isSubmitting || _otpValue.length < 6) ? null : _submit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryDark,
-              foregroundColor: AppTheme.primaryForeground,
-              disabledBackgroundColor: AppTheme.muted,
-              disabledForegroundColor: AppTheme.mutedForeground,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-              ),
-            ),
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppTheme.primaryForeground,
-                    ),
-                  )
-                : Text(l10n.onboardingOtpVerify),
           ),
         ),
       ],
@@ -625,17 +610,11 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
         ),
         const SizedBox(height: 24),
         SizedBox(
-          height: 40,
-          child: ElevatedButton(
+          width: double.infinity,
+          child: AppButton(
+            label: l10n.onboardingOtpStartOver,
+            variant: AppButtonVariant.ghost,
             onPressed: _startOver,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryDark,
-              foregroundColor: AppTheme.primaryForeground,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-              ),
-            ),
-            child: Text(l10n.onboardingOtpStartOver),
           ),
         ),
       ],

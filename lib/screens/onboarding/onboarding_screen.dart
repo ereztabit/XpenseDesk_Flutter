@@ -7,6 +7,7 @@ import '../../models/onboarding/reference_data.dart';
 import '../../widgets/header/login_header.dart';
 import '../../widgets/app_footer.dart';
 import '../../widgets/onboarding/onboarding_progress.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/onboarding/step_shell.dart';
 import 'steps/personal_details_step.dart';
 import 'steps/company_details_step.dart';
@@ -228,37 +229,19 @@ class _StepPlaceholder extends StatelessWidget {
         const SizedBox(height: 24),
         Row(
           children: [
-            if (onBack != null) ...[  
-              OutlinedButton(
+            if (onBack != null) ...[
+              AppButton(
+                label: l10n.back,
+                variant: AppButtonVariant.normal,
                 onPressed: onBack,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                  ),
-                  side: const BorderSide(color: AppTheme.borderMedium),
-                ),
-                child: Text(
-                  l10n.back,
-                  style: const TextStyle(color: AppTheme.mutedForeground),
-                ),
               ),
               const SizedBox(width: 12),
             ],
             Expanded(
-              child: SizedBox(
-                height: 40,
-                child: ElevatedButton(
-                  onPressed: onNext,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryDark,
-                    foregroundColor: AppTheme.primaryForeground,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-                    ),
-                  ),
-                  child: Text(step == 5 ? l10n.finish : l10n.next),
-                ),
+              child: AppButton(
+                label: step == 5 ? l10n.finish : l10n.next,
+                variant: AppButtonVariant.primary,
+                onPressed: onNext,
               ),
             ),
           ],
