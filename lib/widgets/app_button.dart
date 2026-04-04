@@ -128,10 +128,16 @@ class AppButton extends StatelessWidget {
   }) {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) return AppTheme.muted;
         if (states.contains(WidgetState.hovered)) return bgHover;
         return bg;
       }),
-      foregroundColor: WidgetStateProperty.all(fg),
+      foregroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return AppTheme.mutedForeground;
+        }
+        return fg;
+      }),
       overlayColor: WidgetStateProperty.all(Colors.transparent),
       side: WidgetStateProperty.all(BorderSide.none),
       shape: WidgetStateProperty.all(

@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'screen_imports.dart';
+import '../widgets/app_button.dart';
 import '../providers/locale_provider.dart';
 import '../services/auth_service.dart';
 import '../widgets/header/login_header.dart';
@@ -380,30 +381,12 @@ class _EmployeeOnboardingScreenState
 
                             // Submit button
                             SizedBox(
-                              height: 48,
-                              child: ElevatedButton(
+                              width: double.infinity,
+                              child: AppButton(
+                                label: l10n.employeeOnboardingSubmit,
+                                variant: AppButtonVariant.primary,
+                                isLoading: _isSubmitting,
                                 onPressed: _canSubmit ? _handleSubmit : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.primaryDark,
-                                  foregroundColor: AppTheme.primaryForeground,
-                                  disabledBackgroundColor: AppTheme.muted,
-                                  disabledForegroundColor:
-                                      AppTheme.mutedForeground,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        AppTheme.borderRadius),
-                                  ),
-                                ),
-                                child: _isSubmitting
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: AppTheme.primaryForeground,
-                                        ),
-                                      )
-                                    : Text(l10n.employeeOnboardingSubmit),
                               ),
                             ),
                           ],
