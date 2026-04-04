@@ -2,18 +2,7 @@
 
 ## Currently Working On
 
-### Onboarding → Subscription Flow (Phase 2)
-- Phase 1 done: `subscriptionStatus` added to `CompanyInfo`; `companyProvider` invalidated after OTP so dashboard sees fresh company data; amber `PendingPaymentBanner` in `AppHeader` for `PendingPayment` status
-- Phase 2 — build the subscription setup screens (plan selection, Tranzila payment, coupon)
-- [x] A1 — Billing Tab "No Plan" state
-- [x] A2 — Inline plan selection in billing tab (prices from config, equal-height cards, coupon with API validation)
-- [x] A3 — Tranzila popup wired to "Proceed to Payment" + POST /api/onboarding/subscription (UX done)
-
-**Resume checklist (next session):**
-- [ ] Fix backend 500 on `POST /api/onboarding/subscription` — then re-test full happy path (card → subscription → dashboard redirect)
-- [ ] Test coupon code flow end-to-end: apply coupon → proceed to payment → verify couponCode sent in subscription request body
-- [ ] Test error codes: `PAYMENT_METHOD_CHARGE_FAILED`, `COUPON_FAILED_TO_APPLY`, `PAYMENT_METHOD_INVALID_TOKEN`
-- [ ] After A3 is green → B1 (onboarding step 4 plan selection) → B2 (onboarding step 5 payment)
+Nothing active — pick next task from backlog.
 
 
 ## TODO (Backlog)

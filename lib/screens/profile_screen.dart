@@ -1,5 +1,6 @@
 import 'screen_imports.dart';
 import '../services/auth_service.dart';
+import '../widgets/app_button.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -148,13 +149,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Back button
-                        TextButton.icon(
+                        AppButton(
+                          label: l10n.backToDashboard,
+                          variant: AppButtonVariant.ghost,
+                          icon: Icons.arrow_back,
                           onPressed: () => handleBackNavigation('/dashboard'),
-                          icon: const Icon(Icons.arrow_back, size: 18),
-                          label: Text(l10n.backToDashboard),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                          ),
                         ),
                         const SizedBox(height: 16),
                         
@@ -380,18 +379,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
               // Save Button
               Align(
                 alignment: Alignment.centerRight,
-                child: FilledButton(
+                child: AppButton(
+                  label: l10n.saveChanges,
+                  variant: AppButtonVariant.primary,
+                  isLoading: _isLoading,
                   onPressed: _isLoading ? null : _handleSave,
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : Text(l10n.saveChanges),
                 ),
               ),
                       ],

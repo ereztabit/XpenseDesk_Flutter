@@ -8,6 +8,7 @@ import '../widgets/app_footer.dart';
 import '../widgets/error_alert.dart';
 import '../widgets/email_input_field.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_button.dart';
 // ==================== DEV-ONLY IMPORT START ====================
 import 'package:url_launcher/url_launcher.dart';
 // ==================== DEV-ONLY IMPORT END ======================
@@ -190,10 +191,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             // Continue Button
                             SizedBox(
                               width: double.infinity,
-                              height: 48,
-                              child: ElevatedButton(
+                              child: AppButton(
+                                label: l10n.continueButton,
+                                variant: AppButtonVariant.primary,
                                 onPressed: isEmailEmpty ? null : _handleLogin,
-                                child: Text(l10n.continueButton),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -251,11 +252,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                                 const SizedBox(width: 4),
-                                TextButton(
+                                AppButton(
+                                  label: l10n.createAccount,
+                                  variant: AppButtonVariant.ghost,
                                   onPressed: () {
                                     Navigator.of(context).pushNamed('/onboarding');
                                   },
-                                  child: Text(l10n.createAccount),
                                 ),
                               ],
                             ),
