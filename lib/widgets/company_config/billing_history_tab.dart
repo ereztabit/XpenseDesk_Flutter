@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../app_button.dart';
 import '../../models/billing_transaction.dart';
 import '../../providers/billing_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -24,13 +25,11 @@ class BillingHistoryTab extends ConsumerWidget {
         // Refresh button
         Align(
           alignment: AlignmentDirectional.centerEnd,
-          child: TextButton.icon(
+          child: AppButton(
+            label: l10n.billingRefresh,
+            variant: AppButtonVariant.ghost,
+            icon: Icons.refresh,
             onPressed: () => ref.invalidate(billingTransactionsProvider),
-            icon: const Icon(Icons.refresh, size: 16),
-            label: Text(l10n.billingRefresh),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
           ),
         ),
         const SizedBox(height: 8),
@@ -255,9 +254,10 @@ class _ErrorCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            OutlinedButton(
+            AppButton(
+              label: retryLabel,
+              variant: AppButtonVariant.normal,
               onPressed: onRetry,
-              child: Text(retryLabel),
             ),
           ],
         ),

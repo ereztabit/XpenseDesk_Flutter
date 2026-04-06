@@ -219,13 +219,11 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                       const SizedBox(height: 20),
 
                       // Back button
-                      TextButton.icon(
+                      AppButton(
+                        label: l10n.backToDashboard,
+                        variant: AppButtonVariant.ghost,
+                        icon: Icons.arrow_back,
                         onPressed: () => handleBackNavigation('/dashboard'),
-                        icon: const Icon(Icons.arrow_back, size: 18),
-                        label: Text(l10n.backToDashboard),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
                       ),
                       const SizedBox(height: 12),
 
@@ -610,13 +608,11 @@ class _BillingTabContent extends ConsumerWidget {
             // Refresh button — top-right aligned
             Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: TextButton.icon(
+              child: AppButton(
+                label: l10n.billingRefresh,
+                variant: AppButtonVariant.ghost,
+                icon: Icons.refresh,
                 onPressed: () => ref.invalidate(billingProvider),
-                icon: const Icon(Icons.refresh, size: 16),
-                label: Text(l10n.billingRefresh),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
               ),
             ),
             const SizedBox(height: 8),

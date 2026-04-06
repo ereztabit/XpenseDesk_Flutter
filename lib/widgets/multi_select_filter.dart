@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
+import 'app_button.dart';
 
 /// A filter control that renders a labelled [OutlinedButton] and opens an
 /// [AlertDialog] with a scrollable list of checkboxes.
@@ -50,13 +51,15 @@ class MultiSelectFilter<T> extends StatelessWidget {
                 if (!singleSelect) ...[
                   Row(
                     children: [
-                      TextButton(
+                      AppButton(
+                        label: l10n.selectAll,
+                        variant: AppButtonVariant.ghost,
                         onPressed: () => setS(() => working.addAll(allItems)),
-                        child: Text(l10n.selectAll),
                       ),
-                      TextButton(
+                      AppButton(
+                        label: l10n.clear,
+                        variant: AppButtonVariant.ghost,
                         onPressed: () => setS(() => working.clear()),
-                        child: Text(l10n.clear),
                       ),
                     ],
                   ),
@@ -96,9 +99,10 @@ class MultiSelectFilter<T> extends StatelessWidget {
             ),
           ),
           actions: [
-            TextButton(
+            AppButton(
+              label: l10n.done,
+              variant: AppButtonVariant.primary,
               onPressed: () => Navigator.pop(context),
-              child: Text(l10n.done),
             ),
           ],
         ),

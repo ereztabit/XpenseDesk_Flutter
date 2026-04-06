@@ -7,7 +7,7 @@ Nothing active — pick next task from backlog.
 
 ## TODO (Backlog)
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
-- [ ] Migrate all existing buttons to `AppButton` — full plan in `docs/in-progress/app-button-migration-spec.md` (87 buttons, 14 steps, variant mapping)
+- [x] Migrate all existing buttons to `AppButton` — done (spec moved to `docs/completed/app-button-migration-spec.md`). ~10 compact buttons deferred until `size: small` is added to AppButton.
 - [ ] we need to fix the amber alert banner for many subscription issues - lovable is ok - get the md file from there
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page

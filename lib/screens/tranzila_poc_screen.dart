@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/app_button.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/header/app_header.dart';
@@ -180,10 +181,11 @@ class _TranzilaPocScreenState extends ConsumerState<TranzilaPocScreen> {
       iconColor: AppTheme.primary,
       title: 'Add Payment Card',
       subtitle: 'Your card details are entered in a secure window hosted by our payment provider.',
-      action: ElevatedButton.icon(
+      action: AppButton(
+        label: 'Enter Card Details',
+        variant: AppButtonVariant.primary,
+        icon: Icons.open_in_new,
         onPressed: _openPopup,
-        icon: const Icon(Icons.open_in_new, size: 18),
-        label: const Text('Enter Card Details'),
       ),
     );
   }

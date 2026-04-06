@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../app_button.dart';
 
 /// Full-width warning banner rendered below the AppHeader when the company's
 /// subscriptionStatus is "PendingPayment".
@@ -45,19 +46,13 @@ class PendingPaymentBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          TextButton(
-            onPressed: null, // TODO: navigate to subscription screen (phase 2)
-            style: TextButton.styleFrom(
-              foregroundColor: AppTheme.amber,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              textStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+          AppButton(
+            label: l10n.pendingPaymentBannerAction,
+            variant: AppButtonVariant.ghost,
+            onPressed: () => Navigator.of(context).pushNamed(
+              '/manager/company-config',
+              arguments: {'tab': 'billing'},
             ),
-            child: Text(l10n.pendingPaymentBannerAction),
           ),
         ],
       ),

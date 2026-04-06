@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:web/web.dart' as web;
 import 'dart:js_interop';
 import 'screen_imports.dart';
+import '../widgets/app_button.dart';
 import '../providers/expense_provider.dart';
 
 class ReceiptAnalyzerScreen extends ConsumerStatefulWidget {
@@ -100,10 +101,11 @@ class _ReceiptAnalyzerScreenState extends ConsumerState<ReceiptAnalyzerScreen>
                       const SizedBox(height: 24),
                       Row(
                         children: [
-                          ElevatedButton.icon(
+                          AppButton(
+                            label: l10n.receiptAnalyzerPickImage,
+                            variant: AppButtonVariant.normal,
+                            icon: Icons.upload_file,
                             onPressed: _isLoading ? null : _pickFile,
-                            icon: const Icon(Icons.upload_file),
-                            label: Text(l10n.receiptAnalyzerPickImage),
                           ),
                           const SizedBox(width: 16),
                           Text(
@@ -113,15 +115,15 @@ class _ReceiptAnalyzerScreenState extends ConsumerState<ReceiptAnalyzerScreen>
                         ],
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
+                      AppButton(
+                        label: _isLoading
+                            ? l10n.receiptAnalyzerAnalyzing
+                            : l10n.receiptAnalyzerAnalyze,
+                        variant: AppButtonVariant.primary,
+                        isLoading: _isLoading,
                         onPressed: (_selectedBytes != null && !_isLoading)
                             ? _analyze
                             : null,
-                        child: Text(
-                          _isLoading
-                              ? l10n.receiptAnalyzerAnalyzing
-                              : l10n.receiptAnalyzerAnalyze,
-                        ),
                       ),
                       if (_result != null) ...[
                         const SizedBox(height: 24),

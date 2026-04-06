@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../providers/navigation_guard_provider.dart';
+import 'app_button.dart';
 
 /// Lightweight guard mixin for onboarding step states (and any ConsumerState
 /// that is NOT an authenticated screen using FormBehaviorMixin).
@@ -32,14 +33,15 @@ mixin StepGuardMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
         title: Text(l10n.unsavedChanges),
         content: Text(l10n.unsavedChangesMessage),
         actions: [
-          TextButton(
+          AppButton(
+            label: l10n.keepEditing,
+            variant: AppButtonVariant.ghost,
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.keepEditing),
           ),
-          TextButton(
+          AppButton(
+            label: l10n.leaveWithoutSaving,
+            variant: AppButtonVariant.destructive,
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text(l10n.leaveWithoutSaving),
           ),
         ],
       ),
