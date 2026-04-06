@@ -8,13 +8,14 @@ Nothing active — pick next task from backlog.
 ## TODO (Backlog)
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
 - [x] Migrate all existing buttons to `AppButton` — done (spec moved to `docs/completed/app-button-migration-spec.md`). ~10 compact buttons deferred until `size: small` is added to AppButton.
-- [ ] we need to fix the amber alert banner for many subscription issues - lovable is ok - get the md file from there
+- [x] billing alert banners — all 6 states implemented, manager-only, spec at `docs/in-progress/billing-alert-banners-spec.md`
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
 
 ## report bugs (pending)
 - [ ] pull to refresh doesnt work in company configuration screen
 - [ ] onboarding bug - landing on dashboard with info of previous company after new signup
+- [ ] analysis screen back button → blank page on direct URL landing — see `docs/bugs/analysis-screen-back-blank-page.md`
 
 ## general environment
 

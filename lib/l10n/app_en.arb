@@ -497,6 +497,18 @@
   "pendingPaymentBannerMessage": "Your company setup isn\u2019t complete.",
   "pendingPaymentBannerAction": "Complete subscription",
 
+  "billingBannerTrialActivePrefix": "Your free trial ends in ",
+  "billingBannerTrialActiveSuffix": " days.",
+  "billingBannerTrialLastDay": "Your free trial ends today.",
+  "billingBannerTrialExpired": "Your free trial has expired. Please complete your payment to continue using the system.",
+  "billingBannerSubscriptionExpired": "Your subscription has expired. Please reactivate to continue using the system.",
+  "billingBannerCardDeclined": "Your last payment failed. Please update your payment method.",
+  "billingBannerCardExpired": "Your credit card has expired. Please update your payment method.",
+  "billingBannerCardExpiringSoon": "Your credit card is about to expire. Please update your payment method.",
+  "billingBannerCompletePayment": "Complete payment",
+  "billingBannerReactivate": "Reactivate",
+  "billingBannerManagePayment": "Manage payment",
+
   "choosePlan": "Choose Your Plan",
   "bestValue": "Best Value",
   "savePercent": "Save 17%",

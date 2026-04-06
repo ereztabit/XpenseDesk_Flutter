@@ -3,6 +3,20 @@ import '../models/company_billing.dart';
 import '../models/billing_transaction.dart';
 import 'auth_provider.dart';
 
+/// Session-scoped set of dismissed billing banner types.
+/// Resets on app reload (in-memory only).
+final dismissedBillingBannersProvider =
+    NotifierProvider<DismissedBannersNotifier, Set<String>>(
+  DismissedBannersNotifier.new,
+);
+
+class DismissedBannersNotifier extends Notifier<Set<String>> {
+  @override
+  Set<String> build() => {};
+
+  void dismiss(String bannerType) => state = {...state, bannerType};
+}
+
 /// Loads billing transactions lazily when the Billing History tab is shown.
 final billingTransactionsProvider =
     FutureProvider<List<BillingTransaction>>((ref) async {

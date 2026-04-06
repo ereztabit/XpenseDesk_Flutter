@@ -497,6 +497,18 @@
   "pendingPaymentBannerMessage": "הגדרת החברה לא הושלמה.",
   "pendingPaymentBannerAction": "השלם מנוי",
 
+  "billingBannerTrialActivePrefix": "תקופת הניסיון שלך מסתיימת בעוד ",
+  "billingBannerTrialActiveSuffix": " ימים.",
+  "billingBannerTrialLastDay": "תקופת הניסיון שלך מסתיימת היום.",
+  "billingBannerTrialExpired": "תקופת הניסיון שלך הסתיימה. אנא השלם את התשלום כדי להמשיך להשתמש במערכת.",
+  "billingBannerSubscriptionExpired": "המנוי שלך פג. אנא הפעל מחדש כדי להמשיך להשתמש במערכת.",
+  "billingBannerCardDeclined": "התשלום האחרון נכשל. אנא עדכן את אמצעי התשלום.",
+  "billingBannerCardExpired": "פג תוקף כרטיס האשראי שלך. אנא עדכן את אמצעי התשלום.",
+  "billingBannerCardExpiringSoon": "כרטיס האשראי שלך עומד לפוג בקרוב. אנא עדכן את אמצעי התשלום.",
+  "billingBannerCompletePayment": "השלם תשלום",
+  "billingBannerReactivate": "הפעל מחדש",
+  "billingBannerManagePayment": "נהל תשלום",
+
   "choosePlan": "בחר תוכנית",
   "bestValue": "הכי משתלם",
   "savePercent": "חסוך 17%",

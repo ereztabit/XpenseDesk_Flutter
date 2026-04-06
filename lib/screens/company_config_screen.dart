@@ -43,6 +43,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
 
   // Used to initialize form fields exactly once after first data load
   bool _initialized = false;
+  bool _billingRefreshed = false;
   late String _initialCompanyName;
   late int _initialLanguageId;
   late String _initialAccountantEmail;
@@ -87,6 +88,17 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
       if (!_accountantEmailFocusNode.hasFocus) _formKey.currentState?.validate();
     });
     // Session restore is preloaded from MyApp during app startup.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh billing data so the Billing tab shows up-to-date info.
+    // Must be here (not initState) because ref depends on inherited widgets.
+    if (!_billingRefreshed) {
+      _billingRefreshed = true;
+      ref.invalidate(billingProvider);
+    }
   }
 
   @override

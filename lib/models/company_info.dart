@@ -28,6 +28,20 @@ class CompanyInfo {
 
   // Subscription
   final String subscriptionStatus;
+  final DateTime? trialEndDate;
+  final bool isInTrial;
+  final bool hasCardOnFile;
+
+  /// Days remaining in trial (0 if expired or not in trial).
+  int get trialDaysRemaining {
+    if (!isInTrial || trialEndDate == null) return 0;
+    final days = trialEndDate!.difference(DateTime.now()).inDays;
+    return days > 0 ? days : 0;
+  }
+
+  /// True when the company is in trial and the trial end date has passed.
+  bool get isTrialExpired =>
+      isInTrial && trialEndDate != null && trialEndDate!.isBefore(DateTime.now());
 
   const CompanyInfo({
     required this.companyId,
@@ -48,6 +62,9 @@ class CompanyInfo {
     required this.timeZoneName,
     required this.timeZoneDisplayName,
     required this.subscriptionStatus,
+    this.trialEndDate,
+    this.isInTrial = false,
+    this.hasCardOnFile = false,
   });
 
   factory CompanyInfo.fromJson(Map<String, dynamic> json) {
@@ -70,6 +87,11 @@ class CompanyInfo {
       timeZoneName: json['timeZoneName'] as String,
       timeZoneDisplayName: json['timeZoneDisplayName'] as String,
       subscriptionStatus: json['subscriptionStatus'] as String? ?? 'Unknown',
+      trialEndDate: json['trialEndDate'] != null
+          ? DateTime.parse(json['trialEndDate'] as String)
+          : null,
+      isInTrial: json['isInTrial'] as bool? ?? false,
+      hasCardOnFile: json['hasCardOnFile'] as bool? ?? false,
     );
   }
 }

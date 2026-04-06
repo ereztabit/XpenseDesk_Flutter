@@ -50,8 +50,7 @@ class PendingPaymentBanner extends StatelessWidget {
             label: l10n.pendingPaymentBannerAction,
             variant: AppButtonVariant.ghost,
             onPressed: () => Navigator.of(context).pushNamed(
-              '/manager/company-config',
-              arguments: {'tab': 'billing'},
+              '/manager/company-config?tab=billing',
             ),
           ),
         ],
