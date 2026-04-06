@@ -15,7 +15,7 @@ Nothing active — pick next task from backlog.
 ## report bugs (pending)
 - [ ] pull to refresh doesnt work in company configuration screen
 - [ ] onboarding bug - landing on dashboard with info of previous company after new signup
-- [ ] analysis screen back button → blank page on direct URL landing — see `docs/bugs/analysis-screen-back-blank-page.md`
+- [x] analysis screen + users screen back button → blank page on direct URL landing — fixed via `navigateToDashboard()` in `app_navigator.dart`
 
 ## general environment
 

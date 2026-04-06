@@ -4,6 +4,7 @@ import '../widgets/app_button.dart';
 import '../widgets/users/user_list_card.dart';
 import '../widgets/users/invite_users_dialog.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/app_navigator.dart';
 
 class UsersScreen extends ConsumerStatefulWidget {
   const UsersScreen({super.key});
@@ -37,7 +38,10 @@ class _UsersScreenState extends ConsumerState<UsersScreen> {
                         label: l10n.backToDashboard,
                         variant: AppButtonVariant.ghost,
                         icon: Icons.arrow_back,
-                        onPressed: () => Navigator.pushReplacementNamed(context, '/dashboard'),
+                        onPressed: () => navigateToDashboard(
+                          context,
+                          roleId: ref.read(userInfoProvider)?.roleId ?? 1,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

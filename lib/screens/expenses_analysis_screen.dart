@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../services/excel_export_service.dart';
 import '../widgets/app_button.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/app_navigator.dart';
 import '../widgets/analysis/analysis_filter_card.dart';
 import '../widgets/analysis/detail_card.dart';
 import '../widgets/analysis/master_card.dart';
@@ -371,7 +372,10 @@ class _ExpensesAnalysisScreenState
       children: [
         IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => navigateToDashboard(
+            context,
+            roleId: ref.read(userInfoProvider)?.roleId ?? 1,
+          ),
           tooltip: l10n.back,
         ),
         const SizedBox(width: 4),
