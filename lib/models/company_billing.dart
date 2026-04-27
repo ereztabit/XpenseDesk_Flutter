@@ -30,6 +30,7 @@ class BillingSubscription {
   final String planName;
   final int subscriptionStatusId;
   final String subscriptionStatusName;
+  final DateTime? startDate;
   final DateTime endDate;
   final double nextChargeAmount;
   final int freeMonthsRemaining;
@@ -40,6 +41,7 @@ class BillingSubscription {
     required this.planName,
     required this.subscriptionStatusId,
     required this.subscriptionStatusName,
+    this.startDate,
     required this.endDate,
     required this.nextChargeAmount,
     required this.freeMonthsRemaining,
@@ -57,6 +59,9 @@ class BillingSubscription {
       planName: json['planName'] as String,
       subscriptionStatusId: json['subscriptionStatusId'] as int,
       subscriptionStatusName: json['subscriptionStatusName'] as String,
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate'] as String)
+          : null,
       endDate: DateTime.parse(json['endDate'] as String),
       nextChargeAmount: (json['nextChargeAmount'] as num).toDouble(),
       freeMonthsRemaining: json['freeMonthsRemaining'] as int,

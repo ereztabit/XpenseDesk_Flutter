@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-Nothing active — pick next task from backlog.
+Current Plan Box — billing tab rework per `docs/in-progress/current-plan-box-spec.md`
 
 
 ## TODO (Backlog)

@@ -509,6 +509,17 @@
   "billingBannerReactivate": "הפעל מחדש",
   "billingBannerManagePayment": "נהל תשלום",
 
+  "billingBadgeTrial": "ניסיון",
+  "billingFreeTrial": "תקופת ניסיון",
+  "billingFreeTrialEnds": "מסתיימת ב-",
+  "billingFreeTrialDays": "ימים",
+  "billingLastCharged": "חיוב אחרון",
+  "billingLastChargedOn": "בתאריך",
+  "billingFreeMonthsUntil": "עד",
+  "billingTrialDaysLeft": "נותרו לך ",
+  "billingTrialDaysLeftSuffix": " ימים בתקופת הניסיון.",
+  "billingTrialChargeNote": "כרטיס האשראי שלך יחויב רק בתום תקופת הניסיון.",
+
   "choosePlan": "בחר תוכנית",
   "bestValue": "הכי משתלם",
   "savePercent": "חסוך 17%",

@@ -509,6 +509,17 @@
   "billingBannerReactivate": "Reactivate",
   "billingBannerManagePayment": "Manage payment",
 
+  "billingBadgeTrial": "Trial",
+  "billingFreeTrial": "Free Trial",
+  "billingFreeTrialEnds": "ends",
+  "billingFreeTrialDays": "days",
+  "billingLastCharged": "Last charged",
+  "billingLastChargedOn": "on",
+  "billingFreeMonthsUntil": "until",
+  "billingTrialDaysLeft": "You have ",
+  "billingTrialDaysLeftSuffix": " days left on your trial.",
+  "billingTrialChargeNote": "Your credit card will only be charged when the trial ends.",
+
   "choosePlan": "Choose Your Plan",
   "bestValue": "Best Value",
   "savePercent": "Save 17%",

@@ -35,7 +35,8 @@
       "Bash(curl -sk -X POST -H \"Origin: https://localhost:8080\" -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"erez@xpensedesk.com\"\"}' https://127.0.0.1:7223/api/auth/try-login -D -)",
       "Bash(ls \"C:\\\\Projects\\\\XpenseDesk\\\\BackEnd\"/*.md)",
       "Bash(find C:ProjectsXpenseDeskBackEnd -maxdepth 2 -name *.md)",
-      "Bash(ls \"C:\\\\Projects\\\\XpenseDesk\\\\FrontEnd\\\\xpensedesk_flutter\\\\XpenseDesk_Flutter\\\\lib\\\\widgets\\\\plan_selection\"\" 2>&1 || echo \"DIR_NOT_FOUND \")"
+      "Bash(ls \"C:\\\\Projects\\\\XpenseDesk\\\\FrontEnd\\\\xpensedesk_flutter\\\\XpenseDesk_Flutter\\\\lib\\\\widgets\\\\plan_selection\"\" 2>&1 || echo \"DIR_NOT_FOUND \")",
+      "Bash(flutter clean:*)"
     ]
   }
 }

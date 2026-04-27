@@ -5,6 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../services/tranzila_popup_service.dart';
 import '../../theme/app_theme.dart';
 import '../../models/company_billing.dart';
+import '../../models/company_info.dart';
 import '../../providers/billing_provider.dart';
 import '../../providers/company_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -15,7 +16,7 @@ import '../plan_selection/coupon_section.dart';
 import 'resume_subscription_dialog.dart';
 import 'switch_plan_dialog.dart';
 
-/// Renders the Current Plan card. Data is passed in — no provider watching here.
+/// Renders the Current Plan card. Watches companyProvider for trial state.
 class BillingCurrentPlanCard extends ConsumerWidget {
   const BillingCurrentPlanCard({
     super.key,
@@ -27,14 +28,19 @@ class BillingCurrentPlanCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final companyAsync = ref.watch(companyProvider);
+    final company = companyAsync.whenOrNull(data: (c) => c);
+
     final subscription = billing.subscription;
     if (subscription == null) {
-      return _NoPlanCard(l10n: l10n);
+      return _NoPlanCard(l10n: l10n, company: company);
     }
     final pm = billing.paymentMethod;
     final hasValidPayment = pm != null && (pm.isActive || pm.isExpiringSoon);
     return _PlanCard(
       subscription: subscription,
+      billing: billing,
+      company: company,
       canResume: hasValidPayment,
       l10n: l10n,
       locale: ref.watch(companyLocaleProvider),
@@ -47,16 +53,22 @@ class BillingCurrentPlanCard extends ConsumerWidget {
 class _PlanCard extends StatelessWidget {
   const _PlanCard({
     required this.subscription,
+    required this.billing,
+    this.company,
     required this.canResume,
     required this.l10n,
     required this.locale,
   });
 
   final BillingSubscription subscription;
+  final CompanyBilling billing;
+  final CompanyInfo? company;
   /// True only when a valid payment method exists (not null, not expired, not declined).
   final bool canResume;
   final AppLocalizations l10n;
   final String locale;
+
+  bool get _isInTrial => company?.isInTrial ?? false;
 
   void _showSwitchDialog(BuildContext context, BillingSubscription sub) {
     showDialog<bool>(
@@ -73,10 +85,10 @@ class _PlanCard extends StatelessWidget {
   }
 
   String _planDisplayName() {
-    switch (subscription.planName.toLowerCase()) {
-      case 'annual':
+    switch (subscription.planId) {
+      case 1:
         return l10n.billingPlanAnnual;
-      case 'monthly':
+      case 2:
         return l10n.billingPlanMonthly;
       default:
         return subscription.planName;
@@ -96,26 +108,41 @@ class _PlanCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Card title
-            Text(
-              l10n.billingCurrentPlan,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+            // Card title + status badge
+            Row(
+              children: [
+                Text(
+                  l10n.billingCurrentPlan,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                if (_isInTrial)
+                  _TrialBadge(l10n: l10n)
+                else if (subscription.isActive)
+                  _ActiveBadge(l10n: l10n)
+                else if (subscription.isCancelled)
+                  _CancelledBadge(l10n: l10n),
+              ],
             ),
             const SizedBox(height: 16),
 
             // Plan info block
             _PlanInfoBlock(
               subscription: subscription,
+              billing: billing,
+              company: company,
               planDisplayName: _planDisplayName(),
               l10n: l10n,
               locale: locale,
             ),
 
-            // Free months promo banner
-            if (subscription.isActive && subscription.hasFreeMonths) ...[
+            // Free months promo banner (not during trial — coupon shown in plan info)
+            if (!_isInTrial &&
+                subscription.isActive &&
+                subscription.hasFreeMonths) ...[
               const SizedBox(height: 12),
               _FreeMonthsBanner(
                 count: subscription.freeMonthsRemaining,
@@ -123,9 +150,10 @@ class _PlanCard extends StatelessWidget {
               ),
             ],
 
-            // Upgrade prompt — monthly + active + no pending switch + valid payment
-            if (subscription.isActive &&
-                subscription.planName.toLowerCase() == 'monthly' &&
+            // Upgrade prompt — monthly + active + not in trial + no pending switch + valid payment
+            if (!_isInTrial &&
+                subscription.isActive &&
+                subscription.planId == 2 &&
                 !subscription.hasPendingSwitch &&
                 canResume) ...[
               const SizedBox(height: 12),
@@ -135,9 +163,10 @@ class _PlanCard extends StatelessWidget {
               ),
             ],
 
-            // Downgrade button — annual + active + no pending switch
-            if (subscription.isActive &&
-                subscription.planName.toLowerCase() == 'annual' &&
+            // Downgrade button — annual + active + not in trial + no pending switch
+            if (!_isInTrial &&
+                subscription.isActive &&
+                subscription.planId == 1 &&
                 !subscription.hasPendingSwitch) ...[
               const SizedBox(height: 12),
               AppButton(
@@ -152,7 +181,7 @@ class _PlanCard extends StatelessWidget {
               const SizedBox(height: 12),
               _PendingSwitchBanner(
                 futurePlan: subscription.futurePlan!,
-                currentPlanName: subscription.planName,
+                currentPlanId: subscription.planId,
                 l10n: l10n,
                 locale: locale,
               ),
@@ -181,15 +210,21 @@ class _PlanCard extends StatelessWidget {
 class _PlanInfoBlock extends StatelessWidget {
   const _PlanInfoBlock({
     required this.subscription,
+    required this.billing,
+    this.company,
     required this.planDisplayName,
     required this.l10n,
     required this.locale,
   });
 
   final BillingSubscription subscription;
+  final CompanyBilling billing;
+  final CompanyInfo? company;
   final String planDisplayName;
   final AppLocalizations l10n;
   final String locale;
+
+  bool get _isInTrial => company?.isInTrial ?? false;
 
   @override
   Widget build(BuildContext context) {
@@ -204,42 +239,42 @@ class _PlanInfoBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Plan name row (with optional status badge at trailing edge)
-          Row(
-            children: [
-              Text(
-                planDisplayName,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              if (subscription.isActive)
-                _ActiveBadge(l10n: l10n)
-              else if (subscription.isCancelled)
-                _CancelledBadge(l10n: l10n),
+          // --- Trial state ---
+          if (_isInTrial) ...[
+            _buildTrialInfo(),
+            if (subscription.hasFreeMonths) ...[
+              const SizedBox(height: 8),
+              _buildCouponLine(),
             ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, thickness: 1),
-          const SizedBox(height: 12),
-
-          // Active state: two info rows
-          if (subscription.isActive) ...[
-            _InfoRow(
-              label: l10n.billingRenewsOn,
-              value: subscription.endDate.toMediumDate(locale),
-            ),
-            const SizedBox(height: 8),
+          ]
+          // --- Active state ---
+          else if (subscription.isActive) ...[
+            _buildActivePlanInfo(),
+            const SizedBox(height: 12),
+            const Divider(height: 1, thickness: 1),
+            const SizedBox(height: 12),
             _InfoRow(
               label: l10n.billingNextCharge,
               value: subscription.nextChargeAmount.toSmartCurrency(locale, 'USD'),
             ),
-          ],
-
-          // Cancelled state: two body text lines
-          if (subscription.isCancelled) ...[
+            const SizedBox(height: 8),
+            _InfoRow(
+              label: l10n.billingRenewsOn,
+              value: subscription.endDate.toMediumDate(locale),
+            ),
+          ]
+          // --- Cancelled state ---
+          else if (subscription.isCancelled) ...[
+            Text(
+              planDisplayName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, thickness: 1),
+            const SizedBox(height: 12),
             Text.rich(
               TextSpan(
                 text: '${l10n.billingSubscriptionActiveUntil} ',
@@ -260,6 +295,98 @@ class _PlanInfoBlock extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  /// "Free Trial - ends Apr 20, 2026 (13 days)" in amber
+  Widget _buildTrialInfo() {
+    final trialEnd = company?.trialEndDate;
+    final daysLeft = company?.trialDaysRemaining ?? 0;
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: l10n.billingFreeTrial,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (trialEnd != null) ...[
+            TextSpan(
+              text: ' - ${l10n.billingFreeTrialEnds} ${trialEnd.toMediumDate(locale)} ($daysLeft ${l10n.billingFreeTrialDays})',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF92400E), // amber-800
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// "🏷️ 1 free month(s) applied until [date]" in green
+  Widget _buildCouponLine() {
+    final trialEnd = company?.trialEndDate;
+    String couponEndStr = '';
+    if (trialEnd != null) {
+      final couponEnd = DateTime(
+        trialEnd.year,
+        trialEnd.month + subscription.freeMonthsRemaining,
+        trialEnd.day,
+      );
+      couponEndStr = ' ${l10n.billingFreeMonthsUntil} ${couponEnd.toMediumDate(locale)}';
+    }
+    return Row(
+      children: [
+        const Icon(Icons.local_offer, size: 16, color: AppTheme.success),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            '${subscription.freeMonthsRemaining} ${l10n.billingFreeMonthsApplied}$couponEndStr',
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.success,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// "Monthly Plan - Last charged $30 on Apr 1, 2026"
+  Widget _buildActivePlanInfo() {
+    final lastChargeDate = billing.paymentMethod?.lastTransactionDate;
+    if (lastChargeDate != null) {
+      return Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: planDisplayName,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextSpan(
+              text: ' - ${l10n.billingLastCharged} ${subscription.nextChargeAmount.toSmartCurrency(locale, 'USD')} ${l10n.billingLastChargedOn} ${lastChargeDate.toMediumDate(locale)}',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.mutedForeground,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return Text(
+      planDisplayName,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -295,6 +422,34 @@ class _InfoRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Active badge ────────────────────────────────────────────────────────────
+
+class _TrialBadge extends StatelessWidget {
+  const _TrialBadge({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppTheme.amber.withAlpha(25),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: AppTheme.amber.withAlpha(77)),
+      ),
+      child: Text(
+        l10n.billingBadgeTrial,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF92400E), // amber-800
+        ),
+      ),
     );
   }
 }
@@ -471,13 +626,13 @@ class _FreeMonthsBanner extends StatelessWidget {
 class _PendingSwitchBanner extends ConsumerStatefulWidget {
   const _PendingSwitchBanner({
     required this.futurePlan,
-    required this.currentPlanName,
+    required this.currentPlanId,
     required this.l10n,
     required this.locale,
   });
 
   final BillingFuturePlan futurePlan;
-  final String currentPlanName;
+  final int currentPlanId;
   final AppLocalizations l10n;
   final String locale;
 
@@ -489,10 +644,9 @@ class _PendingSwitchBanner extends ConsumerStatefulWidget {
 class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
   bool _cancelling = false;
 
-  /// Free plan: the future plan is required (coupon period ends → paid plan kicks in).
+  /// Free plan (planId 3): the future plan is required (coupon period ends → paid plan kicks in).
   /// The API returns FUTURE_PLAN_NOT_CANCELLABLE for this case, so hide the button.
-  bool get _canCancel =>
-      widget.currentPlanName.toLowerCase() != 'free';
+  bool get _canCancel => widget.currentPlanId != 3;
 
   Future<void> _handleCancel() async {
     // Confirmation dialog
@@ -535,10 +689,10 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
   }
 
   String _futurePlanShortName() {
-    switch (widget.futurePlan.planName.toLowerCase()) {
-      case 'annual':
+    switch (widget.futurePlan.planId) {
+      case 1:
         return widget.l10n.billingPlanAnnualShort;
-      case 'monthly':
+      case 2:
         return widget.l10n.billingPlanMonthlyShort;
       default:
         return widget.futurePlan.planName.toLowerCase();
@@ -607,9 +761,10 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
 // ─── No plan yet ─────────────────────────────────────────────────────────────
 
 class _NoPlanCard extends ConsumerStatefulWidget {
-  const _NoPlanCard({required this.l10n});
+  const _NoPlanCard({required this.l10n, this.company});
 
   final AppLocalizations l10n;
+  final CompanyInfo? company;
 
   @override
   ConsumerState<_NoPlanCard> createState() => _NoPlanCardState();
@@ -765,6 +920,45 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
                 fontWeight: FontWeight.w600,
               ),
             ),
+
+            // Trial info — shown when user is in trial
+            if (widget.company?.isInTrial == true) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppTheme.amber.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.amber.withAlpha(77)),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.billingTrialDaysLeft +
+                          (widget.company?.trialDaysRemaining ?? 0).toString() +
+                          l10n.billingTrialDaysLeftSuffix,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF92400E), // amber-800
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.billingTrialChargeNote,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             // Plan cards
