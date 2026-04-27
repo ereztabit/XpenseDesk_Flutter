@@ -95,6 +95,20 @@ class _PlanCard extends StatelessWidget {
     }
   }
 
+  /// First-charge date for a trial-with-commitment user.
+  ///
+  /// Charge fires the day after the trial ends; if the user has free coupon
+  /// months, those stack on top of the trial. The month-add uses
+  /// `DateTime(y, m + n, d)` which rolls over for end-of-month dates
+  /// (Jan 31 + 1 month → Mar 3) — acceptable until the API exposes a
+  /// canonical `firstChargeDate` field.
+  DateTime _firstChargeDateAfterTrial(DateTime trialEnd, int freeMonths) {
+    final base = freeMonths > 0
+        ? DateTime(trialEnd.year, trialEnd.month + freeMonths, trialEnd.day)
+        : trialEnd;
+    return base.add(const Duration(days: 1));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -138,6 +152,25 @@ class _PlanCard extends StatelessWidget {
               l10n: l10n,
               locale: locale,
             ),
+
+            // Next Charge box — trial + active subscription (committed during trial).
+            // Date is derived from trialEndDate (+ free months), not subscription.endDate
+            // which represents the end of the full paid cycle.
+            if (_isInTrial &&
+                subscription.isActive &&
+                company?.trialEndDate != null) ...[
+              const SizedBox(height: 12),
+              _NextChargeBox(
+                planDisplayName: _planDisplayName(),
+                chargeDate: _firstChargeDateAfterTrial(
+                  company!.trialEndDate!,
+                  subscription.freeMonthsRemaining,
+                ),
+                chargeAmount: subscription.nextChargeAmount,
+                l10n: l10n,
+                locale: locale,
+              ),
+            ],
 
             // Free months promo banner (not during trial — coupon shown in plan info)
             if (!_isInTrial &&
@@ -422,6 +455,70 @@ class _InfoRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Next Charge box ─────────────────────────────────────────────────────────
+
+/// Tinted box showing what will be charged next: plan, date, amount.
+/// Currently used only for trial-with-commitment states. Active subscription
+/// states still render their charge info inside [_PlanInfoBlock].
+class _NextChargeBox extends StatelessWidget {
+  const _NextChargeBox({
+    required this.planDisplayName,
+    required this.chargeDate,
+    required this.chargeAmount,
+    required this.l10n,
+    required this.locale,
+  });
+
+  final String planDisplayName;
+  final DateTime chargeDate;
+  final double chargeAmount;
+  final AppLocalizations l10n;
+  final String locale;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.muted.withAlpha(77),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.billingNextCharge,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.mutedForeground,
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, thickness: 1),
+          const SizedBox(height: 12),
+          _InfoRow(
+            label: l10n.billingNextChargePlan,
+            value: planDisplayName,
+          ),
+          const SizedBox(height: 8),
+          _InfoRow(
+            label: l10n.billingNextChargeDate,
+            value: chargeDate.toMediumDate(locale),
+          ),
+          const SizedBox(height: 8),
+          _InfoRow(
+            label: l10n.billingNextChargeAmount,
+            value: chargeAmount.toSmartCurrency(locale, 'USD'),
+          ),
+        ],
+      ),
     );
   }
 }

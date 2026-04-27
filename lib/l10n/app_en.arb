@@ -519,6 +519,9 @@
   "billingTrialDaysLeft": "You have ",
   "billingTrialDaysLeftSuffix": " days left on your trial.",
   "billingTrialChargeNote": "Your credit card will only be charged when the trial ends.",
+  "billingNextChargePlan": "Plan",
+  "billingNextChargeDate": "Date",
+  "billingNextChargeAmount": "Amount",
 
   "choosePlan": "Choose Your Plan",
   "bestValue": "Best Value",

@@ -2,20 +2,15 @@
 
 ## Currently Working On
 
-Current Plan Box — billing tab rework per `docs/in-progress/current-plan-box-spec.md`
+Trial Commitment — Next Charge box per `docs/in-progress/trial-commitment-next-charge-spec.md`
 
 
 ## TODO (Backlog)
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
-- [x] Migrate all existing buttons to `AppButton` — done (spec moved to `docs/completed/app-button-migration-spec.md`). ~10 compact buttons deferred until `size: small` is added to AppButton.
-- [x] billing alert banners — all 6 states implemented, manager-only, spec at `docs/in-progress/billing-alert-banners-spec.md`
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
 
 ## report bugs (pending)
-- [ ] pull to refresh doesnt work in company configuration screen
-- [ ] onboarding bug - landing on dashboard with info of previous company after new signup
-- [x] analysis screen + users screen back button → blank page on direct URL landing — fixed via `navigateToDashboard()` in `app_navigator.dart`
 
 ## general environment
 

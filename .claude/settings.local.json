@@ -36,7 +36,8 @@
       "Bash(ls \"C:\\\\Projects\\\\XpenseDesk\\\\BackEnd\"/*.md)",
       "Bash(find C:ProjectsXpenseDeskBackEnd -maxdepth 2 -name *.md)",
       "Bash(ls \"C:\\\\Projects\\\\XpenseDesk\\\\FrontEnd\\\\xpensedesk_flutter\\\\XpenseDesk_Flutter\\\\lib\\\\widgets\\\\plan_selection\"\" 2>&1 || echo \"DIR_NOT_FOUND \")",
-      "Bash(flutter clean:*)"
+      "Bash(flutter clean:*)",
+      "Bash(git mv *)"
     ]
   }
 }

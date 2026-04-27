@@ -519,6 +519,9 @@
   "billingTrialDaysLeft": "נותרו לך ",
   "billingTrialDaysLeftSuffix": " ימים בתקופת הניסיון.",
   "billingTrialChargeNote": "כרטיס האשראי שלך יחויב רק בתום תקופת הניסיון.",
+  "billingNextChargePlan": "מסלול",
+  "billingNextChargeDate": "תאריך",
+  "billingNextChargeAmount": "סכום",
 
   "choosePlan": "בחר תוכנית",
   "bestValue": "הכי משתלם",
