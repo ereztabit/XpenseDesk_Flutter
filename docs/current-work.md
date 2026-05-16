@@ -9,6 +9,7 @@ Trial Commitment — Next Charge box per `docs/in-progress/trial-commitment-next
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
+- [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear
 
 ## report bugs (pending)
 
