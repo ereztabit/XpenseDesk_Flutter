@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../ai_badge.dart';
 import '../app_button.dart';
 import '../../models/expense_detail.dart';
 import '../../models/expense_summary.dart';
@@ -302,27 +303,7 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
     );
   }
 
-  Widget _buildAiChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withAlpha(230),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.auto_awesome, size: 10, color: Colors.white),
-          SizedBox(width: 4),
-          Text('AI',
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
-        ],
-      ),
-    );
-  }
+  Widget _buildAiChip() => const AiBadge(variant: AiBadgeVariant.chip);
 
   Widget _buildAiDetectedPanel(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {

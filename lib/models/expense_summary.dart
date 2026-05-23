@@ -22,6 +22,13 @@ class ExpenseSummary {
   final DateTime? reviewedAt;
   final bool isAiData;
 
+  /// Parent sheet linkage (nullable for older payloads + compact nested
+  /// projections inside `ExpenseSheetDetail.expenses[]`). On the post-sheets
+  /// API, top-level `/api/expenses/search` rows always populate these.
+  final String? expenseSheetId;
+  final int? expenseSheetStatusId;
+  final String? expenseSheetStatusAlias;
+
   const ExpenseSummary({
     required this.expenseId,
     required this.companyId,
@@ -42,6 +49,9 @@ class ExpenseSummary {
     this.reviewedBy,
     this.reviewedAt,
     this.isAiData = false,
+    this.expenseSheetId,
+    this.expenseSheetStatusId,
+    this.expenseSheetStatusAlias,
   });
 
   factory ExpenseSummary.fromJson(Map<String, dynamic> json) {
@@ -67,6 +77,9 @@ class ExpenseSummary {
           ? DateTime.parse(json['reviewedAt'] as String)
           : null,
       isAiData: json['isAiData'] as bool? ?? false,
+      expenseSheetId: json['expenseSheetId'] as String?,
+      expenseSheetStatusId: (json['expenseSheetStatusId'] as num?)?.toInt(),
+      expenseSheetStatusAlias: json['expenseSheetStatusAlias'] as String?,
     );
   }
 }

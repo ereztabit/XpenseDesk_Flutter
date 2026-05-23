@@ -565,6 +565,22 @@ Applies to: `_canContinue`/`_isFormValid` getters, `TextFormField` validators, s
 
 ---
 
+## Code Review — Mandatory After Every Change
+
+**ABSOLUTE RULE: every code change must be followed by a CR pass per [.claude/commands/code-review.md](.claude/commands/code-review.md).**
+
+The CR enforces six rules:
+1. No file > 200 lines; every visible UI component is its own widget in its own file.
+2. Pure functions on domain data live in `lib/utils/<theme>_utils.dart`; HTTP/business logic lives in `lib/services/<theme>_service.dart`. Widgets do not house derived-data math.
+3. No hardcoded currency symbols — every amount uses `num.toCurrency(companyLocale, currencyCode)`.
+4. No hardcoded captions — every user-visible string uses `AppLocalizations.of(context)!`. Brand initialisms like `'AI'` live in **one** shared widget, not copy-pasted.
+5. Flutter modern-patterns hygiene — no `withOpacity`, no `EdgeInsets.only(left:|right:)`, no `TextAlign.left|right`, no `arrow_back_ios`, no raw `http.*` outside `ApiService`, no ARB placeholders.
+6. Responsive overflow risk — icon-button columns inside `Row` use `SizedBox(width: N)` not `Expanded(flex:)` so they have a hard minimum at narrow viewports.
+
+Invoke `/code-review` after every change. Findings categorized blocker / should-fix / nit. Wait for user approval before applying fixes.
+
+---
+
 ## Step-by-Step Implementation
 
 When implementing complex features:

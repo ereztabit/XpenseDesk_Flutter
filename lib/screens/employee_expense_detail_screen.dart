@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'screen_imports.dart';
 import '../models/expense_detail.dart';
+import '../widgets/ai_badge.dart';
 import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
 import '../models/expense_currency.dart';
@@ -447,27 +448,7 @@ class _EmployeeExpenseDetailScreenState
     );
   }
 
-  Widget _buildAiChip() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: AppTheme.primary.withAlpha(230),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.auto_awesome, size: 10, color: Colors.white),
-          SizedBox(width: 4),
-          Text('AI',
-              style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
-        ],
-      ),
-    );
-  }
+  Widget _buildAiChip() => const AiBadge(variant: AiBadgeVariant.chip);
 
   Widget _buildAiDetectedPanel(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {

@@ -6,6 +6,8 @@ import 'auth_service.dart';
 import '../models/expense_cycle.dart';
 import '../models/cycle_expense_row.dart';
 import '../models/expense_detail.dart';
+import '../models/expense_sheet_detail.dart';
+import '../models/expense_sheet_list_item.dart';
 import '../models/expense_summary.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/update_expense_request.dart';
@@ -30,6 +32,25 @@ class ExpenseNotFoundException implements Exception {
 /// Thrown when trying to update a closed (non-pending) expense (409).
 class ExpenseClosedException implements Exception {
   const ExpenseClosedException();
+}
+
+/// Thrown when an expense sheet does not exist OR the caller isn't allowed to
+/// see it (the server returns the same 404 for both so it doesn't leak
+/// existence cross-employee — see ExpenseSheetsEvolution.md §2.4).
+class ExpenseSheetNotFoundException implements Exception {
+  const ExpenseSheetNotFoundException();
+}
+
+/// Thrown on create/update when `expenseDate` is older than 12 months
+/// (server errorCode `ExpenseDateTooOld`).
+class ExpenseDateTooOldException implements Exception {
+  const ExpenseDateTooOldException();
+}
+
+/// Thrown when the employee tries to edit an Approved expense that lives on a
+/// Declined sheet (server errorCode `ExpenseEditApprovedExpenseOnDeclinedSheet`).
+class EditApprovedExpenseOnDeclinedSheetException implements Exception {
+  const EditApprovedExpenseOnDeclinedSheetException();
 }
 
 /// Service for the XpenseDesk Expense API.
@@ -63,13 +84,19 @@ class ExpenseService {
   ///
   /// Employees see only their own expenses.
   /// Managers see all company expenses.
-  Future<List<ExpenseSummary>> searchExpenses() async {
+  ///
+  /// Pass [expenseSheetId] to scope the result to a single sheet's expenses
+  /// (used by the employee dashboard's per-sheet list view).
+  Future<List<ExpenseSummary>> searchExpenses({String? expenseSheetId}) async {
     final sessionToken = await _authService.getSessionToken();
     _validateSessionToken(sessionToken);
 
     final response = await _apiService.get(
       '/api/expenses/search',
       authToken: sessionToken,
+      queryParams: (expenseSheetId != null && expenseSheetId.isNotEmpty)
+          ? {'expenseSheetId': expenseSheetId}
+          : null,
     );
 
     _validateResponse(response, 'Failed to load expenses');
@@ -82,6 +109,61 @@ class ExpenseService {
     return data
         .map((json) => ExpenseSummary.fromJson(json as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Fetch the caller's own non-finalised expense sheets.
+  ///
+  /// Returns every sheet the employee owns across cycles (Draft, Submitted,
+  /// Approved, Declined). The employee dashboard filters Approved client-side
+  /// — those are finalised and live in history.
+  ///
+  /// Pass [cycleId] to scope to a single cycle.
+  Future<List<ExpenseSheetListItem>> getMySheets({String? cycleId}) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/expense-sheets/me',
+      authToken: sessionToken,
+      queryParams: (cycleId != null && cycleId.isNotEmpty)
+          ? {'expenseCycleId': cycleId}
+          : null,
+    );
+
+    _validateResponse(response, 'Failed to load your sheets');
+
+    final data = response['data'] as List<dynamic>?;
+    if (data == null) return const [];
+
+    return data
+        .map((json) =>
+            ExpenseSheetListItem.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Fetch the full detail for a single expense sheet (header + expenses +
+  /// status-log audit trail).
+  ///
+  /// Throws [ExpenseSheetNotFoundException] when the sheet doesn't exist OR
+  /// when the caller isn't permitted to see it — the server collapses both
+  /// cases into a 404 by design.
+  Future<ExpenseSheetDetail> getSheetDetail(String expenseSheetId) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/expense-sheets/$expenseSheetId',
+      authToken: sessionToken,
+    );
+
+    if (response['success'] != true) {
+      throw const ExpenseSheetNotFoundException();
+    }
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) throw const ExpenseSheetNotFoundException();
+
+    return ExpenseSheetDetail.fromJson(data);
   }
 
   /// Permanently delete a pending expense.

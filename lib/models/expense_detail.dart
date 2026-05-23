@@ -23,6 +23,12 @@ class ExpenseDetail {
   final DateTime? reviewedAt;
   final bool isAiData;
 
+  /// Parent sheet linkage (nullable for older payloads). On the post-sheets
+  /// API, `/api/expenses/{id}` always populates these.
+  final String? expenseSheetId;
+  final int? expenseSheetStatusId;
+  final String? expenseSheetStatusAlias;
+
   const ExpenseDetail({
     required this.expenseId,
     required this.companyId,
@@ -45,6 +51,9 @@ class ExpenseDetail {
     this.reviewedByName,
     this.reviewedAt,
     this.isAiData = false,
+    this.expenseSheetId,
+    this.expenseSheetStatusId,
+    this.expenseSheetStatusAlias,
   });
 
   bool get isPending => expenseStatusId == 1;
@@ -74,6 +83,9 @@ class ExpenseDetail {
           ? DateTime.parse(json['reviewedAt'] as String)
           : null,
       isAiData: json['isAiData'] as bool? ?? false,
+      expenseSheetId: json['expenseSheetId'] as String?,
+      expenseSheetStatusId: (json['expenseSheetStatusId'] as num?)?.toInt(),
+      expenseSheetStatusAlias: json['expenseSheetStatusAlias'] as String?,
     );
   }
 }

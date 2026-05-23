@@ -22,6 +22,21 @@ extension CompanyDateFormat on DateTime {
       DateFormat.yMMMd(companyLocale).format(toLocal());
 }
 
+extension CycleLabelFormat on String {
+  /// Parses a cycle label like `"2026/05"` and formats it as the locale's
+  /// long month + year (e.g. "May 2026" / "מאי 2026"). Returns the raw string
+  /// unchanged if the format isn't `YYYY/MM`.
+  String toCycleLongMonth(String companyLocale) {
+    final parts = split('/');
+    if (parts.length != 2) return this;
+    final year = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    if (year == null || month == null) return this;
+    if (month < 1 || month > 12) return this;
+    return DateFormat.yMMMM(companyLocale).format(DateTime(year, month));
+  }
+}
+
 extension CompanyCurrencyFormat on num {
   /// Currency with symbol, dropping trailing .00 for whole amounts (e.g. "$30" not "$30.00").
   String toSmartCurrency(String companyLocale, String currencyCode) {
