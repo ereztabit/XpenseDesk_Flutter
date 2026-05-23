@@ -59,6 +59,7 @@ Every behavior rule is in §2. Every server-contract concern is in §3. Tasks ar
   - Row 1: icon (destructive alert for Declined, neutral document otherwise) · cycle label (locale long-month, e.g. "March 2026") · status badge on trailing edge
   - Row 2: meta line (muted, 12px) — `sentForApprovalOn {date}` for Submitted, `itemsCount {count}` otherwise · trailing total amount with currency **symbol as suffix** (e.g. `115.00₪`)
 - Dropdown panel ≤320px, never wider than `viewport - 32px`. Respects RTL.
+- The **currently selected item** in the dropdown renders a **leading checkmark icon** plus a muted background. Hovered (non-selected) items render the muted background only.
 - Declined mode: trigger border = destructive 40%, background = destructive 5%.
 - **Status badge mapping.** The badge widget supports all four server statuses so it can be reused by the manager dashboard (story 02). The employee dashboard only ever renders three of them (Approved sheets are finalised and live in history — they don't appear in the picker).
 
