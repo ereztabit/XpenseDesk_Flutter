@@ -13,6 +13,16 @@ Trial Commitment — Next Charge box per `docs/in-progress/trial-commitment-next
 
 ## report bugs (pending)
 
+- [ ] canceled annual subscription with coupon still shows as "about to renew" on the billing screen
+  - Reproduce:
+    1. create a new company
+    2. end its trial
+    3. subscribe to annual with coupon code
+    4. cancel subscription
+  - Expected: subscription shows as canceled
+  - Actual: still displays as about to renew
+- [ ] after renewing a subscription, the billing screen doesn't refresh to reflect the new state
+
 ## general environment
 
 - [ ] create a real privacy policy
