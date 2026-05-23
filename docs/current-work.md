@@ -2,7 +2,13 @@
 
 ## Currently Working On
 
-Trial Commitment — Next Charge box per `docs/in-progress/trial-commitment-next-charge-spec.md`
+- **Expense Sheets transformation** — server has shipped sheet-centric approvals (Story 1, Part 2). Building the Flutter UX + activating the new APIs, story by story.
+  - Server discovery: [docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md](in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md)
+  - Stories folder: [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md)
+  - Active story: [01 — Employee Dashboard](in-progress/ExpenseSheetsTransformation/01-EmployeeDashboard.md) — **starting now** (§3 server-contract reconciliation resolved 2026-05-23: drop the `reopened` flag, drop the Resubmit button, use a passive Declined-sheet banner driven by server auto-eval).
+  - Next: [02 — Manager Dashboard](in-progress/ExpenseSheetsTransformation/02-ManagerDashboard.md) — specced; blocked on server delivery of `GET /api/expense-sheets` (paged list endpoint, decisions locked 2026-05-23).
+
+Open bugs (see `## report bugs (pending)` below)
 
 
 ## TODO (Backlog)
