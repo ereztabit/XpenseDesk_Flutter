@@ -43,7 +43,12 @@
       "Bash(rmdir \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/.claude/skills\")",
       "Bash(grep -nB1 -A8 \"Text\\('AI'\" \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/screens/employee_expense_detail_screen.dart\" \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/widgets/expenses/mobile_expense_modal.dart\")",
       "Bash(git add *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" add docs/001_Backlog.md docs/currency-converter-story.md docs/invoice-after-payment-story.md docs/manager-submit-expense-story.md)",
+      "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" status --short)",
+      "Bash(git -C C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer commit -m '@ *)",
+      "Bash(git -C C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer commit --amend -m 'docs: clean completed items from backlog; add server story docs *)",
+      "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" log -1 --pretty=format:\"%s\")"
     ]
   }
 }

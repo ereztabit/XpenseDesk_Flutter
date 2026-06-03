@@ -61,6 +61,25 @@ class InvalidExpenseSheetStatusForListingException implements Exception {
   const InvalidExpenseSheetStatusForListingException();
 }
 
+/// Thrown when a sheet approve/decline is attempted on a sheet that is no
+/// longer `WaitingForApproval` (server errorCode `ExpenseSheetWrongStatusForAction`,
+/// HTTP 409). The sheet changed state between list-fetch and action.
+class ExpenseSheetWrongStatusException implements Exception {
+  const ExpenseSheetWrongStatusException();
+}
+
+/// Thrown when a whole-sheet decline is submitted without a comment
+/// (server errorCode `ExpenseSheetDeclineCommentRequired`, HTTP 400).
+class DeclineCommentRequiredException implements Exception {
+  const DeclineCommentRequiredException();
+}
+
+/// Thrown when an action is blocked by the company's subscription block-mode
+/// (server errorCode `SubscriptionRequired`, HTTP 403).
+class SubscriptionRequiredException implements Exception {
+  const SubscriptionRequiredException();
+}
+
 /// Service for the XpenseDesk Expense API.
 class ExpenseService {
   final ApiService _apiService;
@@ -241,6 +260,70 @@ class ExpenseService {
     if (data == null) throw const ExpenseSheetNotFoundException();
 
     return ExpenseSheetDetail.fromJson(data);
+  }
+
+  /// Maps a failed sheet-action envelope to a typed exception by errorCode.
+  /// Shared by [approveSheet] and [declineSheet].
+  Never _throwSheetActionError(
+    Map<String, dynamic> response,
+    String defaultMessage,
+  ) {
+    final errorCode = response['errorCode'] as String?;
+    switch (errorCode) {
+      case 'ExpenseSheetWrongStatusForAction':
+        throw const ExpenseSheetWrongStatusException();
+      case 'ExpenseSheetNotFound':
+        throw const ExpenseSheetNotFoundException();
+      case 'ExpenseSheetDeclineCommentRequired':
+        throw const DeclineCommentRequiredException();
+      case 'SubscriptionRequired':
+        throw const SubscriptionRequiredException();
+      default:
+        final message = response['message'] as String? ?? defaultMessage;
+        throw ExpenseException(message, errorCode: errorCode);
+    }
+  }
+
+  /// Whole-sheet approve (manager only). Flips every still-pending expense on
+  /// the sheet to Approved; the sheet transitions to Approved.
+  ///
+  /// Throws [ExpenseSheetWrongStatusException] (409), [ExpenseSheetNotFoundException]
+  /// (404), or [SubscriptionRequiredException] (403 block-mode).
+  Future<void> approveSheet(String expenseSheetId) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/expense-sheets/$expenseSheetId/approve',
+      {},
+      authToken: sessionToken,
+    );
+
+    if (response['success'] != true) {
+      _throwSheetActionError(response, 'Failed to approve sheet');
+    }
+  }
+
+  /// Whole-sheet decline (manager only). Requires a non-empty [comment].
+  /// Flips every still-pending expense to Declined; the sheet transitions to
+  /// Declined and the comment is recorded on the status-log row.
+  ///
+  /// Throws [DeclineCommentRequiredException] (400),
+  /// [ExpenseSheetWrongStatusException] (409), [ExpenseSheetNotFoundException]
+  /// (404), or [SubscriptionRequiredException] (403 block-mode).
+  Future<void> declineSheet(String expenseSheetId, String comment) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/expense-sheets/$expenseSheetId/decline',
+      {'comment': comment},
+      authToken: sessionToken,
+    );
+
+    if (response['success'] != true) {
+      _throwSheetActionError(response, 'Failed to decline sheet');
+    }
   }
 
   /// Permanently delete a pending expense.

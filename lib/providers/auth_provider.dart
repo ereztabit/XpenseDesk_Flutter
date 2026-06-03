@@ -96,8 +96,13 @@ final authBootstrapProvider = FutureProvider<void>((ref) async {
   await ref.read(userInfoProvider.notifier).loadFromSession();
 });
 
-/// Derived provider: company locale string for date/currency formatting.
-/// Falls back to 'en' if no user is logged in.
+/// Derived provider: locale string for date/currency formatting.
+///
+/// Tracks the **live** UI locale ([localeProvider]) rather than the persisted
+/// `userInfo.languageCode`, so dates and amounts follow the header language
+/// switcher immediately (the switcher only sets [localeProvider]; it doesn't
+/// persist to the profile). On login [localeProvider] is initialised from the
+/// user's saved language, so the two agree until the user toggles the header.
 final companyLocaleProvider = Provider<String>((ref) {
-  return ref.watch(userInfoProvider)?.languageCode ?? 'en';
+  return ref.watch(localeProvider).languageCode;
 });
