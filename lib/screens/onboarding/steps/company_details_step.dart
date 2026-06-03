@@ -113,6 +113,23 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
       if (saved.timeZoneId != null) {
         _selectedTimeZoneId = saved.timeZoneId;
       }
+    } else {
+      // Fresh onboarding — pre-select Israel and apply its defaults.
+      const defaultCountryCode = 'IL';
+      final country = widget.refData.countries
+          .where((c) => c.countryCode == defaultCountryCode)
+          .firstOrNull;
+      if (country != null) {
+        _selectedCountryCode = defaultCountryCode;
+        _selectedCurrencyCode = country.defaultCurrencyCode;
+        _selectedTimeZoneId = country.defaultTimeZoneId;
+        // Always default to Hebrew for Israel regardless of the backend's
+        // country defaultLanguageId, which may still return English.
+        final hebrew = widget.refData.languages
+            .where((l) => l.languageCode == 'he')
+            .firstOrNull;
+        _selectedLanguageId = hebrew?.languageId ?? country.defaultLanguageId;
+      }
     }
     if (saved.cutoverDay != null) {
       _selectedCutoverDay = saved.cutoverDay;
