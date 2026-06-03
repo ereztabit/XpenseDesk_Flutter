@@ -42,7 +42,8 @@
       "Bash(rmdir \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/.claude/skills/code-review\")",
       "Bash(rmdir \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/.claude/skills\")",
       "Bash(grep -nB1 -A8 \"Text\\('AI'\" \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/screens/employee_expense_detail_screen.dart\" \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/widgets/expenses/mobile_expense_modal.dart\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git push *)"
     ]
   }
 }

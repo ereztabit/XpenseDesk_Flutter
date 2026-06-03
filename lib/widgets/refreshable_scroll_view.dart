@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../utils/responsive_utils.dart';
 import '../providers/expense_provider.dart';
+import '../providers/expense_sheet_provider.dart';
+import '../providers/manager_dashboard_provider.dart';
 import '../providers/users_provider.dart';
 import '../providers/company_provider.dart';
 
@@ -11,10 +13,23 @@ import '../providers/company_provider.dart';
 /// Only providers that are currently being watched will trigger a re-fetch;
 /// inactive providers are silently reset.
 Future<void> refreshAllProviders(WidgetRef ref) async {
+  // Generic data providers
   ref.invalidate(expenseSearchProvider);
   ref.invalidate(cyclesProvider);
   ref.invalidate(usersListProvider);
   ref.invalidate(companyProvider);
+
+  // Sheet providers (employee dashboard)
+  ref.invalidate(mySheetsProvider);
+  ref.invalidate(sheetDetailProvider);
+
+  // Manager dashboard providers — invalidating the family wipes every
+  // currently-cached `userId` filter combination.
+  ref.invalidate(companyEmployeesProvider);
+  ref.invalidate(approvalsQueueProvider);
+  ref.invalidate(returnedSheetsProvider);
+  ref.invalidate(approvedSheetsProvider);
+
   // Brief pause so the indicator is visible before content loading takes over.
   await Future.delayed(const Duration(milliseconds: 400));
 }

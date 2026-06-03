@@ -10,9 +10,10 @@ Output: a CR markdown next to the relevant implementation doc (typically `docs/i
 
 - Every **widget / screen** Dart file under 200 lines. Run `wc -l <files>`.
 - Util / service modules may exceed 200 lines when they contain multiple grouped static-method classes by theme (mirrors `lib/utils/format_utils.dart`, `lib/utils/sheet_utils.dart`). The rule is about not bloating individual *widgets* — domain helpers are correctly consolidated.
-- Every visible UI component is its own widget in its own file. Run `grep '^class _\w\+ '` over touched dirs.
+- **Substantial** UI components are their own widget in their own file. Run `grep '^class _\w\+ '` over touched dirs.
   - The conventional `_FooState extends ConsumerState<Foo>` for stateful widgets is allowed (it's the state pair of the public widget).
-  - Anything else — `_HeaderRow`, `_TabButton`, `_BodyRow`, `_ExpensesArea`, etc. — is a violation. Extract to its own file.
+  - Substantial private widgets — `_HeaderRow`, `_TabButton`, `_BodyRow`, `_ExpensesArea`, anything that owns a real chunk of layout (~40+ lines, structural elements like rows / headers / list items) — are violations. Extract.
+  - **Exception:** trivial styling micro-helpers under ~30 lines (small badges, pills, switch dispatchers) may stay private to their parent file. They're noise to extract and don't drive file bloat.
 
 ### Rule 2 — Logic in services, helpers in utils
 

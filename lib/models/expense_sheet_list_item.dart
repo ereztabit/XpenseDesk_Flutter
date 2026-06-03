@@ -11,7 +11,9 @@ import 'expense_sheet_status.dart';
 /// land on all four together).
 class ExpenseSheetListItem {
   final String expenseSheetId;
-  final String createdByUserId;
+
+  /// `CreatedByUserId` on the server DTO is `Guid?` — kept nullable here for parity.
+  final String? createdByUserId;
   final String createdByName;
   final String? createdByEmail;
   final String expenseCycleId;
@@ -21,14 +23,13 @@ class ExpenseSheetListItem {
   final DateTime? createdAt;
   final DateTime? submittedAt;
   final DateTime? reviewedAt;
-  final String? reviewedByName;
   final int expenseCount;
   final double? totalAmount;
   final String? currencyCode;
 
   const ExpenseSheetListItem({
     required this.expenseSheetId,
-    required this.createdByUserId,
+    this.createdByUserId,
     required this.createdByName,
     this.createdByEmail,
     required this.expenseCycleId,
@@ -38,7 +39,6 @@ class ExpenseSheetListItem {
     this.createdAt,
     this.submittedAt,
     this.reviewedAt,
-    this.reviewedByName,
     required this.expenseCount,
     this.totalAmount,
     this.currencyCode,
@@ -53,7 +53,7 @@ class ExpenseSheetListItem {
 
     return ExpenseSheetListItem(
       expenseSheetId: json['expenseSheetId'] as String,
-      createdByUserId: json['createdByUserId'] as String,
+      createdByUserId: json['createdByUserId'] as String?,
       createdByName: json['createdByName'] as String? ?? '',
       createdByEmail: json['createdByEmail'] as String?,
       expenseCycleId: json['expenseCycleId'] as String,
@@ -63,7 +63,6 @@ class ExpenseSheetListItem {
       createdAt: parseDate(json['createdAt'] as String?),
       submittedAt: parseDate(json['submittedAt'] as String?),
       reviewedAt: parseDate(json['reviewedAt'] as String?),
-      reviewedByName: json['reviewedByName'] as String?,
       expenseCount: (json['expenseCount'] as num?)?.toInt() ?? 0,
       totalAmount: (json['totalAmount'] as num?)?.toDouble(),
       currencyCode: json['currencyCode'] as String?,

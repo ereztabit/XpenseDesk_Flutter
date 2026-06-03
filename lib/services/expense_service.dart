@@ -8,6 +8,7 @@ import '../models/cycle_expense_row.dart';
 import '../models/expense_detail.dart';
 import '../models/expense_sheet_detail.dart';
 import '../models/expense_sheet_list_item.dart';
+import '../models/paged_expense_sheets.dart';
 import '../models/expense_summary.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/update_expense_request.dart';
@@ -51,6 +52,13 @@ class ExpenseDateTooOldException implements Exception {
 /// Declined sheet (server errorCode `ExpenseEditApprovedExpenseOnDeclinedSheet`).
 class EditApprovedExpenseOnDeclinedSheetException implements Exception {
   const EditApprovedExpenseOnDeclinedSheetException();
+}
+
+/// Thrown when `GET /api/expense-sheets` is called with `statusId` outside
+/// `{2, 3, 4}` (server errorCode `InvalidExpenseSheetStatusForListing`).
+/// Defensive — shouldn't fire under normal use.
+class InvalidExpenseSheetStatusForListingException implements Exception {
+  const InvalidExpenseSheetStatusForListingException();
 }
 
 /// Service for the XpenseDesk Expense API.
@@ -139,6 +147,75 @@ class ExpenseService {
         .map((json) =>
             ExpenseSheetListItem.fromJson(json as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Fetch the manager's pending-review queue (top 12 server-enforced).
+  /// Returns the paged envelope with `grandTotalAmount` across the whole
+  /// bucket (not just the page).
+  ///
+  /// Manager-only — server returns 403 for non-managers.
+  Future<PagedExpenseSheets> getApprovalsQueue() async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/expense-sheets/queue',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load approvals queue');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) return PagedExpenseSheets.empty;
+    return PagedExpenseSheets.fromJson(data);
+  }
+
+  /// Fetch a paged company-wide sheet list filtered by status.
+  ///
+  /// [statusId] must be 2 (WaitingForApproval), 3 (Approved), or 4 (Declined).
+  /// Other values return `400` with `InvalidExpenseSheetStatusForListing`.
+  ///
+  /// Manager-only — server returns 403 for non-managers.
+  /// `userId` belonging to another company is silently scoped out → empty
+  /// envelope with `totalCount: 0` (no existence leak).
+  /// `pageSize` is clamped to 1–100 server-side.
+  Future<PagedExpenseSheets> getCompanyExpenseSheets({
+    required int statusId,
+    String? userId,
+    String? cycleId,
+    int page = 1,
+    int pageSize = 12,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final query = <String, String>{
+      'statusId': '$statusId',
+      'page': '$page',
+      'pageSize': '$pageSize',
+    };
+    if (userId != null && userId.isNotEmpty) query['userId'] = userId;
+    if (cycleId != null && cycleId.isNotEmpty) query['cycleId'] = cycleId;
+
+    final response = await _apiService.get(
+      '/api/expense-sheets',
+      authToken: sessionToken,
+      queryParams: query,
+    );
+
+    if (response['success'] != true) {
+      final errorCode = response['errorCode'] as String?;
+      if (errorCode == 'InvalidExpenseSheetStatusForListing') {
+        throw const InvalidExpenseSheetStatusForListingException();
+      }
+      final message =
+          response['message'] as String? ?? 'Failed to load sheets';
+      throw ExpenseException(message, errorCode: errorCode);
+    }
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) return PagedExpenseSheets.empty;
+    return PagedExpenseSheets.fromJson(data);
   }
 
   /// Fetch the full detail for a single expense sheet (header + expenses +
