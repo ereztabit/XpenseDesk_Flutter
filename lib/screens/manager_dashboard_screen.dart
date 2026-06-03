@@ -46,20 +46,13 @@ class _ManagerDashboardScreenState
     ref.invalidate(approvedSheetsProvider);
   }
 
-  /// Row tap → eventual Sheet Review navigation (story 03).
-  ///
-  /// **TODO(story-03):** replace the placeholder snackbar with
-  /// `Navigator.of(context).pushNamed('/manager/sheet/${sheet.expenseSheetId}')
-  ///   .then((_) => _refreshSheetProviders());`
-  /// The refresh contract is already wired — story 03 just swaps the body.
+  /// Row tap → Sheet Review (story 03). On return, refresh the bucket
+  /// providers — the sheet may have moved buckets (e.g. approved → leaves
+  /// Pending, lands in Approved).
   void _onRowTap(ExpenseSheetListItem sheet) {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.sheetReviewComingSoon),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    Navigator.of(context)
+        .pushNamed('/manager/sheet/${sheet.expenseSheetId}')
+        .then((_) => _refreshSheetProviders());
   }
 
   @override

@@ -13,7 +13,7 @@ Story-driven plan for adapting the Flutter client to the new sheet-centric appro
 |---|---|---|
 | 01 | [Employee Dashboard](01-EmployeeDashboard.md) | ✅ **Shipped** — built end-to-end, CR'd ([CR](01-EmployeeDashboard-CR.md)), build clean |
 | 02 | [Manager Dashboard](02-ManagerDashboard.md) | ✅ **Shipped** — built end-to-end against the live server endpoint, CR'd ([CR](02-ManagerDashboard-CR.md)), build clean. Row tap → Sheet Review is a placeholder snackbar until story 03 |
-| 03 | Sheet Review (whole-sheet approve/decline + per-line review) | **Next** — opens on a row tap from the manager dashboard; refresh-on-return contract already wired |
+| 03 | [Sheet Review](03-SheetReview.md) | ✅ **Shipped** — whole-sheet approve/decline + per-line review + activity timeline, verified against live server, CR'd ([CR](03-SheetReview-CR.md)), build clean. Block-mode pre-gating deferred (handles 403 gracefully) |
 
 ### Done in stories 01 + 02 (manual UI verification by the user, iterating)
 

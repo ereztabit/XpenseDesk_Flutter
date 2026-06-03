@@ -20,6 +20,33 @@ extension CompanyDateFormat on DateTime {
   /// Medium date in company locale (e.g., "Apr 30, 2026" for English)
   String toMediumDate(String companyLocale) =>
       DateFormat.yMMMd(companyLocale).format(toLocal());
+
+  /// Long, human-readable date.
+  /// English: "May 1st 2025" (full month + ordinal day + year).
+  /// Other locales: the locale's natural long form (e.g. "1 במאי 2025").
+  String toLongDate(String companyLocale) {
+    final d = toLocal();
+    if (companyLocale.startsWith('en')) {
+      final month = DateFormat.MMMM('en').format(d);
+      return '$month ${d.day}${_ordinalSuffix(d.day)} ${d.year}';
+    }
+    return DateFormat.yMMMMd(companyLocale).format(d);
+  }
+}
+
+/// English ordinal suffix for a day-of-month (1 → "st", 2 → "nd", 11 → "th").
+String _ordinalSuffix(int day) {
+  if (day >= 11 && day <= 13) return 'th';
+  switch (day % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
+  }
 }
 
 extension CycleLabelFormat on String {

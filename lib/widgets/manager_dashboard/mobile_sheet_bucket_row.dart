@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_list_item.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../app_button.dart';
 import 'sheet_bucket_enums.dart';
 
 /// One compact mobile list row for the sheet-bucket card body.
@@ -117,7 +118,11 @@ class MobileSheetBucketRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  _MobileBucketAction(style: actionStyle, l10n: l10n),
+                  _MobileBucketAction(
+                    style: actionStyle,
+                    l10n: l10n,
+                    onTap: onTap,
+                  ),
                 ],
               ),
             ],
@@ -131,35 +136,36 @@ class MobileSheetBucketRow extends StatelessWidget {
 // Micro-helper — stay private per CR Rule 1 exception (trivial styling
 // dispatcher under ~40 lines).
 class _MobileBucketAction extends StatelessWidget {
-  const _MobileBucketAction({required this.style, required this.l10n});
+  const _MobileBucketAction({
+    required this.style,
+    required this.l10n,
+    required this.onTap,
+  });
 
   final SheetBucketActionStyle style;
   final AppLocalizations l10n;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     switch (style) {
       case SheetBucketActionStyle.reviewButton:
+        return AppButton(
+          label: l10n.reviewSheet,
+          variant: AppButtonVariant.primary,
+          onPressed: onTap,
+        );
       case SheetBucketActionStyle.viewButton:
-        final label = style == SheetBucketActionStyle.reviewButton
-            ? l10n.reviewSheet
-            : l10n.view;
-        final tone = style == SheetBucketActionStyle.reviewButton
-            ? AppTheme.primary
-            : AppTheme.foreground;
-        return Text(
-          '$label →',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: tone,
-          ),
+        return AppButton(
+          label: l10n.view,
+          variant: AppButtonVariant.normal,
+          onPressed: onTap,
         );
       case SheetBucketActionStyle.eyeIcon:
-        return const Icon(
-          Icons.remove_red_eye_outlined,
-          size: 16,
-          color: AppTheme.mutedForeground,
+        return AppButton(
+          label: l10n.view,
+          variant: AppButtonVariant.ghost,
+          onPressed: onTap,
         );
     }
   }

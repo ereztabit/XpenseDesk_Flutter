@@ -7,12 +7,14 @@
   - Stories folder: [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md)
   - ✅ [01 — Employee Dashboard](in-progress/ExpenseSheetsTransformation/01-EmployeeDashboard.md) — shipped, CR'd, build clean. Under manual UI verification.
   - ✅ [02 — Manager Dashboard](in-progress/ExpenseSheetsTransformation/02-ManagerDashboard.md) — shipped against the live `GET /api/expense-sheets` endpoint, CR'd, build clean. Under manual UI verification.
-  - ⏭ **Next: 03 — Sheet Review** — whole-sheet approve/decline + per-line review. Opens on a manager-dashboard row tap (placeholder snackbar wired now; refresh-on-return contract in place).
+  - ✅ [03 — Sheet Review](in-progress/ExpenseSheetsTransformation/03-SheetReview.md) — whole-sheet approve/decline + per-line review + activity timeline. Verified against live server, CR'd, build clean. Under manual UI verification.
+  - Deferred follow-up: block-mode pre-gating on approve/decline CTAs (currently handles the 403 gracefully; pre-gating needs `blockMode` surfaced into a provider — cross-cutting).
 
 Open bugs (see `## report bugs (pending)` below)
 
 
 ## TODO (Backlog)
+- [ ] Coupon lockout UX -- when server returns 429 CouponLocked, show error message and disable the field visibly. See docs/in-progress/coupon-lockout-ux-spec.md
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page

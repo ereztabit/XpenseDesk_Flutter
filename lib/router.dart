@@ -12,6 +12,7 @@ import 'screens/new_expense_screen.dart';
 import 'screens/receipt_analyzer_screen.dart';
 import 'screens/employee_expense_detail_screen.dart';
 import 'screens/manager_dashboard_screen.dart';
+import 'screens/sheet_review_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
 import 'screens/expenses_analysis_screen.dart';
 import 'screens/tranzila_poc_screen.dart';
@@ -207,6 +208,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           builder: (_) => AuthGate(
             mode: AuthGateMode.managerOnly,
             child: EmployeeExpenseDetailScreen(expenseId: id, isManagerMode: true),
+          ),
+        );
+      }
+      // /manager/sheet/:id
+      if (uri.path.startsWith('/manager/sheet/')) {
+        final id = uri.pathSegments.last;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => AuthGate(
+            mode: AuthGateMode.managerOnly,
+            child: SheetReviewScreen(expenseSheetId: id),
           ),
         );
       }

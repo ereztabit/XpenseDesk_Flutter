@@ -36,17 +36,20 @@ Output: a CR markdown next to the relevant implementation doc (typically `docs/i
   ```
 - Dart string interpolation (`'$variable'`, `'${l10n.foo}'`) is fine — the `$` is syntax, not a currency.
 
-### Rule 4 — No hardcoded captions
+### Rule 4 — No hardcoded captions ⚠️ RECURRING OFFENDER — MANDATORY GATE
+
+**This has slipped through 3+ times. Treat the grep below as a hard gate: run it on every touched file and paste the (empty) result into the CR before signing off. No "looks fine by eye".**
 
 - Every user-visible string uses `AppLocalizations.of(context)!`.
 - ARB keys (EN + HE) are added **before** widget code per CLAUDE.md.
-- Grep checks:
+- Required grep (must return zero on the changed files):
   ```
-  grep -RIn "Text('[A-Za-z]" lib/widgets lib/screens
-  grep -RIn "tooltip:\s*'[A-Za-z]\\|label:\s*'[A-Za-z]\\|hintText:\s*'[A-Za-z]\\|labelText:\s*'[A-Za-z]" lib/widgets lib/screens
+  grep -nE "Text\('[A-Za-z]|tooltip:\s*'[A-Za-z]|hintText:\s*'[A-Za-z]|label:\s*'[A-Za-z]|labelText:\s*'[A-Za-z]" <changed files>
   ```
-- **Typographic characters are OK** — `'—'` (em dash), `' · '` (middle dot), `'#'` (hash). They're universal punctuation and don't translate.
-- **Brand initialisms** (e.g. `'AI'`) should still live in **one shared widget** (`lib/widgets/ai_badge.dart`), not be copy-pasted across files. The literal is acceptable; the duplication is not.
+- Also eyeball any new `'...'` string passed to `SnackBar`, `AlertDialog`, `Tooltip`, `semanticLabel`, enum→label switches, and `'$x ...'` interpolations — greps miss strings built by concatenation.
+- **Verify BOTH locales:** when you add an ARB key, confirm it exists in `app_en.arb` AND `app_he.arb`. A key present only in EN silently falls back to the key name in HE.
+- **Typographic characters are OK** — `'—'` (em dash), `' · '` (middle dot), `'#'` (hash), `'←' / '→'` (arrow glyphs). Universal punctuation; they don't translate.
+- **Brand initialisms** (e.g. `'AI'`) live in **one shared widget** (`lib/widgets/ai_badge.dart`), not copy-pasted. The literal is acceptable; the duplication is not.
 
 ### Rule 5 — Flutter modern-patterns hygiene (per CLAUDE.md)
 
@@ -58,13 +61,19 @@ Output: a CR markdown next to the relevant implementation doc (typically `docs/i
 - No `DropdownButtonFormField` (deprecated) — use `DropdownMenu` or `MenuAnchor`.
 - ARB keys: no `{placeholder}` syntax — concat in widget.
 
-### Rule 6 — Responsive overflow risk
+### Rule 6 — Responsive overflow + RTL correctness
 
-A class of bug we've already hit once on this codebase (story 01 desktop table actions column):
+Layout/RTL bugs this codebase has repeatedly hit — check each on any new layout:
 
-- When a `Row` puts intrinsic-width content (icon buttons, fixed-width components) inside an `Expanded(flex: ...)`, the column can overflow at narrow viewports if the flex math doesn't reserve enough pixels.
-- **Prefer `SizedBox(width: N)` for icon-button columns** instead of `Expanded` so the column has a hard minimum.
-- Test the layout at the project's two breakpoints (`< 600`, `< 768`, `>= 768`) before signing off.
+**Overflow:**
+- A `Row` with intrinsic-width content (icon buttons, fixed widgets) inside `Expanded(flex:)` can overflow at narrow viewports. **Use `SizedBox(width: N)` for icon-button columns**, not `Expanded`.
+- `IntrinsicHeight` + `Expanded` + text can sub-pixel-overflow under dart2js (the "OVERFLOWED BY 1.00 PIXELS" stripe). Avoid `IntrinsicHeight`; size with a `Stack` + `PositionedDirectional` instead.
+- Test at the project breakpoints (`< 600`, `< 768`, `>= 768`).
+
+**RTL (verify with the app switched to Hebrew):**
+- **Directional Material icons auto-mirror in RTL.** `Icons.arrow_back` / `arrow_forward` (and other `matchTextDirection` glyphs) flip automatically — correct for nav back/forward buttons, but it means you must NOT manually pick `arrow_back` to mean "left". For a manually-direction-chosen arrow (e.g. a status transition), use a plain glyph in a `Text` (`'←' / '→'`) forced to `TextDirection.ltr` so it renders verbatim.
+- **Don't concatenate mixed-direction content into one string** (e.g. an English name + a Hebrew date: `'$name · $date'`). Bidi reordering scrambles it. Split into separate `Text` runs in a `Row` so each keeps its own direction.
+- Use `EdgeInsetsDirectional` / `start`/`end` / `PositionedDirectional`, never `left`/`right`.
 
 ## How to apply
 
