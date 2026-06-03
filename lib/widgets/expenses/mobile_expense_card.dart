@@ -15,6 +15,7 @@ class MobileExpenseCard extends ConsumerWidget {
     super.key,
     required this.expense,
     this.onEdit,
+    this.onView,
     this.onViewReceipt,
     this.margin = const EdgeInsets.symmetric(vertical: 6),
     this.showEmployeeName = false,
@@ -23,6 +24,7 @@ class MobileExpenseCard extends ConsumerWidget {
 
   final ExpenseSummary expense;
   final VoidCallback? onEdit;
+  final VoidCallback? onView;
   final VoidCallback? onViewReceipt;
   final EdgeInsetsGeometry margin;
   final bool showEmployeeName;
@@ -183,7 +185,9 @@ class MobileExpenseCard extends ConsumerWidget {
                 ],
               ),
             ],
-            if (onEdit != null || (_isProcessed && onViewReceipt != null)) ...[
+            if (onEdit != null ||
+                onView != null ||
+                (_isProcessed && onViewReceipt != null)) ...[
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -204,7 +208,9 @@ class MobileExpenseCard extends ConsumerWidget {
                         foregroundColor: AppTheme.foreground,
                       ),
                     ),
-                  if (_isProcessed && onViewReceipt != null && onEdit != null)
+                  if (_isProcessed &&
+                      onViewReceipt != null &&
+                      (onEdit != null || onView != null))
                     const SizedBox(width: 8),
                   if (onEdit != null)
                     FilledButton.icon(
@@ -218,6 +224,22 @@ class MobileExpenseCard extends ConsumerWidget {
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
+                      ),
+                    )
+                  else if (onView != null)
+                    OutlinedButton.icon(
+                      onPressed: onView,
+                      icon: const Icon(Icons.remove_red_eye_outlined, size: 14),
+                      label: Text(l10n.view),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 36),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        side: const BorderSide(color: AppTheme.borderMedium),
+                        foregroundColor: AppTheme.foreground,
                       ),
                     ),
                 ],

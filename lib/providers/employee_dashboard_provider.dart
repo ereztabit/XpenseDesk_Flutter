@@ -22,12 +22,12 @@ final selectedSheetIdProvider =
   SelectedSheetIdNotifier.new,
 );
 
-/// Active per-expense bucket on the declined-sheet filter tabs.
-/// Default is Rejected; the widget auto-corrects to the first non-empty
-/// bucket if Rejected is empty.
+/// Active per-expense bucket on the Submitted / Declined sheet filter tabs.
+/// Defaults to Pending — the tabs show all three buckets (even at count 0),
+/// so Pending is the most useful landing bucket across both sheet states.
 class SelectedFilterTabNotifier extends Notifier<FilterTab> {
   @override
-  FilterTab build() => FilterTab.rejected;
+  FilterTab build() => FilterTab.pending;
 
   void set(FilterTab tab) => state = tab;
 }

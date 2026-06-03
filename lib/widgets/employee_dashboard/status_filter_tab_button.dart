@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 
-/// One pill / tab button in the StatusFilterTabs row.
+/// One pill / tab button in a status filter tab row (SheetReviewFilterTabs).
 ///
 /// Mobile = full-radius pill, equal-width flex.
 /// Desktop = top-rounded corners (first/last only), butting onto the table

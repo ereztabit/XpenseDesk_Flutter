@@ -4,23 +4,21 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_utils.dart';
 import '../app_button.dart';
-import 'view_mode_toggle.dart';
 
 /// Page header for the employee dashboard.
 ///
 /// Leading: title.
-/// Trailing cluster: view-mode toggle (mobile + Draft + has expenses) and
-/// the New-expense button (enabled only when [newExpenseEnabled]).
+/// Trailing: the New-expense button (enabled only when [newExpenseEnabled]).
+/// The card/list view toggle now lives above the expense list (below the
+/// filter tabs), mirroring the manager Sheet Review layout.
 class PageHeaderRow extends StatelessWidget {
   const PageHeaderRow({
     super.key,
     required this.newExpenseEnabled,
-    required this.showViewModeToggle,
     required this.onNewExpense,
   });
 
   final bool newExpenseEnabled;
-  final bool showViewModeToggle;
   final VoidCallback onNewExpense;
 
   @override
@@ -44,20 +42,11 @@ class PageHeaderRow extends StatelessWidget {
                   fontSize: context.isMobile ? 18 : 24,
                 ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showViewModeToggle) ...[
-                const ViewModeToggle(),
-                const SizedBox(width: 8),
-              ],
-              AppButton(
-                label: l10n.newExpense,
-                variant: AppButtonVariant.primary,
-                icon: Icons.add,
-                onPressed: newExpenseEnabled ? onNewExpense : null,
-              ),
-            ],
+          AppButton(
+            label: l10n.newExpense,
+            variant: AppButtonVariant.primary,
+            icon: Icons.add,
+            onPressed: newExpenseEnabled ? onNewExpense : null,
           ),
         ],
       ),

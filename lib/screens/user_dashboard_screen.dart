@@ -2,7 +2,6 @@ import 'screen_imports.dart';
 import '../models/expense_sheet_list_item.dart';
 import '../providers/employee_dashboard_provider.dart';
 import '../providers/expense_sheet_provider.dart';
-import '../utils/responsive_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../widgets/employee_dashboard/employee_dashboard_body.dart';
 import '../widgets/employee_dashboard/page_header_row.dart';
@@ -116,7 +115,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
         children: [
           PageHeaderRow(
             newExpenseEnabled: true,
-            showViewModeToggle: false,
             onNewExpense: () => Navigator.of(context)
                 .pushNamed('/employee/new-expense')
                 .then((_) => ref.invalidate(mySheetsProvider)),
@@ -153,15 +151,12 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
 
     final isCurrentDraft =
         SheetSelection.isCurrentCycleDraft(selectedSheet, allSheets);
-    final showViewModeToggle =
-        context.isMobile && isCurrentDraft && selectedSheet.expenseCount > 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageHeaderRow(
           newExpenseEnabled: isCurrentDraft,
-          showViewModeToggle: showViewModeToggle,
           onNewExpense: () => Navigator.of(context)
               .pushNamed('/employee/new-expense')
               .then((_) {

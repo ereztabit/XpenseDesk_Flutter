@@ -137,27 +137,6 @@ class SheetExpenseBuckets {
       FilterTab.approved: approved,
     };
   }
-
-  /// Map of `FilterTab → sum of amounts`. Null amounts contribute 0.
-  static Map<FilterTab, double> totalsPerTab(List<ExpenseSummary> all) {
-    var rejected = 0.0, pending = 0.0, approved = 0.0;
-    for (final e in all) {
-      final amount = e.amount ?? 0;
-      switch (e.expenseStatusId) {
-        case 1:
-          pending += amount;
-        case 2:
-          approved += amount;
-        case 3:
-          rejected += amount;
-      }
-    }
-    return {
-      FilterTab.rejected: rejected,
-      FilterTab.pending: pending,
-      FilterTab.approved: approved,
-    };
-  }
 }
 
 // ─── Permissions ────────────────────────────────────────────────────────────

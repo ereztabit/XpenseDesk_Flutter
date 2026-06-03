@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/expense_sheet_detail.dart';
 import '../../models/expense_sheet_list_item.dart';
 import '../../models/expense_sheet_status.dart';
 import '../../providers/auth_provider.dart';
@@ -9,12 +10,14 @@ import '../../providers/employee_dashboard_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/expense_sheet_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/responsive_utils.dart';
 import '../../utils/sheet_utils.dart';
 import 'declined_sheet_banner.dart';
 import 'returned_sheets_global_alert.dart';
+import '../sheet_review/sheet_review_filter_tabs.dart';
 import 'sheet_expenses_area.dart';
 import 'sheet_picker_dropdown.dart';
-import 'status_filter_tabs.dart';
+import 'view_mode_toggle.dart';
 
 /// Composes everything below the page header — the returned-sheets alert,
 /// the picker, the optional declined banner, the optional filter tabs, and
@@ -84,9 +87,6 @@ class EmployeeDashboardBody extends ConsumerWidget {
           ),
           data: (detail) {
             if (_isDeclined) {
-              final activeTab = ref.watch(selectedFilterTabProvider);
-              final tabStatusId =
-                  SheetExpenseBuckets.statusIdForTab(activeTab);
               final declinedItems = detail.expenses
                   .where((e) => e.expenseStatusId == 3)
                   .length;
@@ -98,45 +98,99 @@ class EmployeeDashboardBody extends ConsumerWidget {
                     declinedCount: declinedItems,
                   ),
                   const SizedBox(height: 12),
-                  StatusFilterTabs(
-                    counts: SheetExpenseBuckets.countsPerTab(detail.expenses),
-                    totals: SheetExpenseBuckets.totalsPerTab(detail.expenses),
-                    currencyCode: selectedSheet.currencyCode,
-                  ),
-                  const SizedBox(height: 12),
-                  SheetExpensesArea(
-                    expenses: SheetExpenseBuckets.filterByTab(
-                      detail.expenses,
-                      activeTab,
-                    ),
-                    companyLocale: companyLocale,
-                    canEdit: SheetPermissions.canEditExpense(
-                      sheetStatusId: selectedSheet.expenseSheetStatusId,
-                      expenseStatusId: tabStatusId,
-                      isManager: false,
-                    ),
-                    canDelete: SheetPermissions.canDeleteExpense(
-                      sheetStatusId: selectedSheet.expenseSheetStatusId,
-                      expenseStatusId: tabStatusId,
-                      isManager: false,
-                    ),
-                    onRefresh: () => _refreshAll(ref),
-                  ),
+                  _tabbedExpenses(context, ref, detail, companyLocale,
+                      isDeclined: true),
                 ],
               );
             }
-            return SheetExpensesArea(
-              expenses: detail.expenses,
-              companyLocale: companyLocale,
-              canEdit: _isDraft,
-              canDelete: _isDraft,
-              isDraft: _isDraft,
-              isReadOnly: _isSubmitted,
-              onRefresh: () => _refreshAll(ref),
+            if (_isSubmitted) {
+              return _tabbedExpenses(context, ref, detail, companyLocale,
+                  isDeclined: false);
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _viewToggle(context, hasRecords: detail.expenses.isNotEmpty),
+                SheetExpensesArea(
+                  expenses: detail.expenses,
+                  companyLocale: companyLocale,
+                  canEdit: _isDraft,
+                  canDelete: _isDraft,
+                  isDraft: _isDraft,
+                  isReadOnly: _isSubmitted,
+                  onRefresh: () => _refreshAll(ref),
+                ),
+              ],
             );
           },
         ),
       ],
+    );
+  }
+
+  /// Filter tabs (Pending / Approved / Declined) plus the per-tab expenses
+  /// area. Shared by the Declined and Submitted views.
+  ///
+  /// On a Declined sheet the employee may edit/delete within certain buckets
+  /// (per [SheetPermissions]); on a Submitted sheet everything is read-only
+  /// while the manager reviews, but per-line statuses can still differ as the
+  /// manager approves/declines individual expenses.
+  Widget _tabbedExpenses(
+    BuildContext context,
+    WidgetRef ref,
+    ExpenseSheetDetail detail,
+    String companyLocale, {
+    required bool isDeclined,
+  }) {
+    final activeTab = ref.watch(selectedFilterTabProvider);
+    final tabStatusId = SheetExpenseBuckets.statusIdForTab(activeTab);
+    final filtered = SheetExpenseBuckets.filterByTab(detail.expenses, activeTab);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SheetReviewFilterTabs(
+          counts: SheetExpenseBuckets.countsPerTab(detail.expenses),
+          selected: activeTab,
+          onSelected: (tab) =>
+              ref.read(selectedFilterTabProvider.notifier).set(tab),
+        ),
+        const SizedBox(height: 12),
+        _viewToggle(context, hasRecords: filtered.isNotEmpty),
+        SheetExpensesArea(
+          expenses: filtered,
+          companyLocale: companyLocale,
+          canEdit: isDeclined
+              ? SheetPermissions.canEditExpense(
+                  sheetStatusId: selectedSheet.expenseSheetStatusId,
+                  expenseStatusId: tabStatusId,
+                  isManager: false,
+                )
+              : false,
+          canDelete: isDeclined
+              ? SheetPermissions.canDeleteExpense(
+                  sheetStatusId: selectedSheet.expenseSheetStatusId,
+                  expenseStatusId: tabStatusId,
+                  isManager: false,
+                )
+              : false,
+          isReadOnly: !isDeclined,
+          onRefresh: () => _refreshAll(ref),
+        ),
+      ],
+    );
+  }
+
+  /// Right-aligned card/list toggle placed above the expense list, mobile only
+  /// and only when the list has records. Mirrors the manager Sheet Review
+  /// layout ([SheetReviewLineSection]). Collapses to nothing otherwise.
+  Widget _viewToggle(BuildContext context, {required bool hasRecords}) {
+    if (!context.isMobile || !hasRecords) return const SizedBox.shrink();
+    return const Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: Align(
+        alignment: AlignmentDirectional.centerEnd,
+        child: ViewModeToggle(),
+      ),
     );
   }
 }

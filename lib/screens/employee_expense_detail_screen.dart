@@ -11,6 +11,7 @@ import '../providers/expense_provider.dart';
 import '../services/excel_export_service.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
+import '../utils/sheet_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
@@ -68,9 +69,20 @@ class _EmployeeExpenseDetailScreenState
   bool _isEditingEnabled = false;
 
   bool get _isEditable {
-    if (widget.readOnly) return false;
-    if (widget.isManagerMode) return _isEditingEnabled && !_isClosed;
-    return _expense?.isPending == true && !_isClosed;
+    if (widget.readOnly || _isClosed) return false;
+    if (widget.isManagerMode) return _isEditingEnabled;
+    final expense = _expense;
+    if (expense == null) return false;
+    final sheetStatusId = expense.expenseSheetStatusId;
+    // Older payloads without sheet linkage: fall back to pending-only.
+    if (sheetStatusId == null) return expense.isPending;
+    // The sheet status gates editability: a Pending expense on a Submitted
+    // sheet is read-only; Draft and Declined sheets allow edits per the matrix.
+    return SheetPermissions.canEditExpense(
+      sheetStatusId: sheetStatusId,
+      expenseStatusId: expense.expenseStatusId,
+      isManager: false,
+    );
   }
 
   bool get _canSave =>
@@ -621,11 +633,6 @@ class _EmployeeExpenseDetailScreenState
     final showApprove = statusId != 2;
     final showDecline = statusId != 3;
     if (!showApprove && !showDecline) return const SizedBox.shrink();
-
-    const spinner = SizedBox(
-      width: 14, height: 14,
-      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,

@@ -68,6 +68,8 @@ class _MobileSheetExpenseCarouselState
         return MobileExpenseCard(
           expense: expense,
           onEdit:
+              widget.onEdit != null ? () => widget.onEdit!(expense) : null,
+          onView:
               widget.onView != null ? () => widget.onView!(expense) : null,
         );
       }),
