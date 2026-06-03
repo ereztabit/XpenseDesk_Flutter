@@ -61,21 +61,26 @@ class SheetExpensesArea extends ConsumerWidget {
       final emptyTitle = l10n.employeeEmptyStateTitle;
       final emptyDesc =
           isDraft ? l10n.employeeEmptyStateDesc : l10n.noExpensesPendingDesc;
-      return Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppTheme.border),
-        ),
-        child: SheetExpenseEmptyState(
-          title: emptyTitle,
-          description: emptyDesc,
-          actionLabel: isDraft ? l10n.newExpense : null,
-          onAction: isDraft
-              ? () => Navigator.of(context)
-                  .pushNamed('/employee/new-expense')
-                  .then((_) => onRefresh())
-              : null,
+      return ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 280),
+        child: Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: AppTheme.border),
+          ),
+          child: Center(
+            child: SheetExpenseEmptyState(
+              title: emptyTitle,
+              description: emptyDesc,
+              actionLabel: isDraft ? l10n.newExpense : null,
+              onAction: isDraft
+                  ? () => Navigator.of(context)
+                      .pushNamed('/employee/new-expense')
+                      .then((_) => onRefresh())
+                  : null,
+            ),
+          ),
         ),
       );
     }

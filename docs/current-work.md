@@ -22,7 +22,6 @@ Open bugs (see `## report bugs (pending)` below)
 
 ## report bugs (pending)
 
-- [ ] Employee dashboard empty state not centered on mobile -- see docs/bugs/employee-dashboard-empty-state-not-centered-mobile.md
 - [ ] Manager sheet review desktop layout -- content too narrow, date column wraps, invisible row borders, no edit icon -- see docs/bugs/manager-sheet-review-desktop-layout-issues.md
 - [ ] Employee cannot edit a declined expense -- _isEditable only checks isPending, misses Declined status on Declined sheet -- see docs/bugs/employee-cannot-edit-declined-expense.md
 - [ ] Decline sheet dialog -- no 200-char limit enforced in UI, missing employee name and post-decline explanation -- see docs/bugs/decline-sheet-dialog-char-limit-and-missing-context.md

@@ -122,19 +122,24 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                 .then((_) => ref.invalidate(mySheetsProvider)),
           ),
           const SizedBox(height: 24),
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: AppTheme.border),
-            ),
-            child: SheetExpenseEmptyState(
-              title: l10n.employeeEmptyStateTitle,
-              description: l10n.employeeEmptyStateDesc,
-              actionLabel: l10n.newExpense,
-              onAction: () => Navigator.of(context)
-                  .pushNamed('/employee/new-expense')
-                  .then((_) => ref.invalidate(mySheetsProvider)),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 280),
+            child: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: AppTheme.border),
+              ),
+              child: Center(
+                child: SheetExpenseEmptyState(
+                  title: l10n.employeeEmptyStateTitle,
+                  description: l10n.employeeEmptyStateDesc,
+                  actionLabel: l10n.newExpense,
+                  onAction: () => Navigator.of(context)
+                      .pushNamed('/employee/new-expense')
+                      .then((_) => ref.invalidate(mySheetsProvider)),
+                ),
+              ),
             ),
           ),
         ],
