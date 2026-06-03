@@ -65,36 +65,39 @@ class CycleSelector extends StatelessWidget {
             ),
             menuChildren: cycles
                 .map(
-                  (cycle) => MenuItemButton(
-                    onPressed: isEnabled
-                        ? () {
-                            if (cycle.expenseCycleId != selectedCycleId) {
-                              onChanged(cycle.expenseCycleId);
+                  (cycle) => SizedBox(
+                    width: width,
+                    child: MenuItemButton(
+                      onPressed: isEnabled
+                          ? () {
+                              if (cycle.expenseCycleId != selectedCycleId) {
+                                onChanged(cycle.expenseCycleId);
+                              }
                             }
-                          }
-                        : null,
-                    style: ButtonStyle(
-                      padding: const WidgetStatePropertyAll(
-                        EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          : null,
+                      style: ButtonStyle(
+                        padding: const WidgetStatePropertyAll(
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        ),
+                        foregroundColor:
+                            const WidgetStatePropertyAll(AppTheme.foreground),
+                        textStyle: const WidgetStatePropertyAll(
+                          TextStyle(fontSize: 13),
+                        ),
                       ),
-                      foregroundColor:
-                          const WidgetStatePropertyAll(AppTheme.foreground),
-                      textStyle: const WidgetStatePropertyAll(
-                        TextStyle(fontSize: 13),
+                      leadingIcon: Icon(
+                        cycle.expenseCycleId == selectedCycleId
+                            ? Icons.check
+                            : Icons.circle_outlined,
+                        size: 16,
+                        color: cycle.expenseCycleId == selectedCycleId
+                            ? AppTheme.primary
+                            : AppTheme.mutedForeground,
                       ),
-                    ),
-                    leadingIcon: Icon(
-                      cycle.expenseCycleId == selectedCycleId
-                          ? Icons.check
-                          : Icons.circle_outlined,
-                      size: 16,
-                      color: cycle.expenseCycleId == selectedCycleId
-                          ? AppTheme.primary
-                          : AppTheme.mutedForeground,
-                    ),
-                    child: _CycleMenuLabel(
-                      cycle: cycle,
-                      activeLabel: l10n.activeLabel,
+                      child: _CycleMenuLabel(
+                        cycle: cycle,
+                        activeLabel: l10n.activeLabel,
+                      ),
                     ),
                   ),
                 )

@@ -2,6 +2,7 @@
 
 ## Currently Working On
 
+
 - **Expense Sheets transformation** — server has shipped sheet-centric approvals (Story 1, Part 2). Building the Flutter UX + activating the new APIs, story by story.
   - Server discovery: [docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md](in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md)
   - Stories folder: [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md)
@@ -14,7 +15,6 @@ Open bugs (see `## report bugs (pending)` below)
 
 
 ## TODO (Backlog)
-- [ ] Coupon lockout UX -- when server returns 429 CouponLocked, show error message and disable the field visibly. See docs/in-progress/coupon-lockout-ux-spec.md
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
@@ -22,12 +22,17 @@ Open bugs (see `## report bugs (pending)` below)
 
 ## report bugs (pending)
 
+- [ ] Employee dashboard empty state not centered on mobile -- see docs/bugs/employee-dashboard-empty-state-not-centered-mobile.md
+- [ ] Manager sheet review desktop layout -- content too narrow, date column wraps, invisible row borders, no edit icon -- see docs/bugs/manager-sheet-review-desktop-layout-issues.md
+- [ ] Employee cannot edit a declined expense -- _isEditable only checks isPending, misses Declined status on Declined sheet -- see docs/bugs/employee-cannot-edit-declined-expense.md
+- [ ] Decline sheet dialog -- no 200-char limit enforced in UI, missing employee name and post-decline explanation -- see docs/bugs/decline-sheet-dialog-char-limit-and-missing-context.md
+- [ ] Approve sheet dialog -- wrong text, word duplication ("items items"), missing amount and employee name, missing edit-lock warning -- see docs/bugs/approve-sheet-dialog-wrong-text.md
+- [ ] Manager expense detail edit mode -- no cancel button, approve/decline active during edit, date shows wrong format -- see docs/bugs/manager-expense-detail-edit-mode-issues.md
+- [ ] Sheet review -- no prompt after all expenses reviewed: auto-approve when all approved, show resolution dialog when some declined -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
+- [ ] Employee dashboard expense list -- 4 issues: missing status tabs on Submitted sheets, mobile approved expense opens in edit mode (wrong param in carousel), swipe-to-delete missing for declined expenses, status pill missing from desktop table -- see docs/bugs/employee-dashboard-expense-list-issues.md
 - [ ] New Expense — date validation error shows in English while UI is in Hebrew (should be localized + ideally caught client-side before server). See docs/bugs/new-expense-date-validation-english-in-hebrew-ui.md
 - [ ] Company onboarding — Israel should be the default country (no need to select). See docs/bugs/onboarding-default-country-israel.md
-- [ ] Cycles menu — dropdown width doesn't match the trigger; menu should be the same width. See docs/bugs/cycles-menu-width-mismatch.md
-- [ ] Remove the Receipt Analyzer from the menu. See docs/bugs/remove-receipt-analyzer-from-menu.md
 - [ ] Manager navigation menu — no link to the main dashboard; add one. See docs/bugs/manager-nav-missing-main-dashboard-link.md
-- [ ] Remove the Payment POC. See docs/bugs/remove-payment-poc.md
 - [ ] User dashboard (mobile) — missing the layout/table toggle. See docs/bugs/user-dashboard-mobile-missing-layout-toggle.md
 - [ ] Edit expense — cancel button shows wrong Hebrew caption ("התעלם" should be "בטל"). See docs/bugs/edit-expense-cancel-button-wrong-hebrew-caption.md
 - [ ] Remove the receipt number from the card layout. See docs/bugs/remove-receipt-number-from-card-layout.md

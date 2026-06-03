@@ -483,8 +483,9 @@ class AuthService {
 
   /// Validate a coupon code.
   /// GET /api/onboarding/coupon/validate?code=XXX
-  /// Returns {isValid, freeMonths} from the API.
-  Future<({bool isValid, int freeMonths})> validateCoupon(String code) async {
+  /// Returns {isValid, freeMonths, isLocked} from the API.
+  /// isLocked is true when the server returns errorCode CouponLocked (429).
+  Future<({bool isValid, int freeMonths, bool isLocked})> validateCoupon(String code) async {
     final sessionToken = await getSessionToken();
     _validateSessionToken(sessionToken);
 
@@ -494,10 +495,15 @@ class AuthService {
       queryParams: {'code': code},
     );
 
+    if (response['errorCode'] == 'CouponLocked') {
+      return (isValid: false, freeMonths: 0, isLocked: true);
+    }
+
     final data = response['data'] as Map<String, dynamic>?;
     return (
       isValid: data?['isValid'] as bool? ?? false,
       freeMonths: data?['freeMonths'] as int? ?? 0,
+      isLocked: false,
     );
   }
 

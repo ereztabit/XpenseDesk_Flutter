@@ -40,45 +40,51 @@ class _SheetPickerDropdownState extends ConsumerState<SheetPickerDropdown> {
     final sheets = SheetSelection.pickerOrder(widget.sheets);
     final selectedId = widget.selectedSheet.expenseSheetId;
 
-    return MenuAnchor(
-      controller: _controller,
-      style: MenuStyle(
-        backgroundColor: const WidgetStatePropertyAll(AppTheme.card),
-        elevation: const WidgetStatePropertyAll(4),
-        maximumSize:
-            const WidgetStatePropertyAll(Size(320, double.infinity)),
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(vertical: 4),
-        ),
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      ),
-      alignmentOffset: const Offset(0, 4),
-      builder: (context, controller, _) => SheetPickerTile(
-        sheet: widget.selectedSheet,
-        companyLocale: companyLocale,
-        onTap: () =>
-            controller.isOpen ? controller.close() : controller.open(),
-      ),
-      menuChildren: [
-        for (final sheet in sheets)
-          SizedBox(
-            width: 320,
-            child: SheetPickerTile(
-              sheet: sheet,
-              companyLocale: companyLocale,
-              isInsideMenu: true,
-              isSelected: sheet.expenseSheetId == selectedId,
-              onTap: () {
-                ref
-                    .read(selectedSheetIdProvider.notifier)
-                    .set(sheet.expenseSheetId);
-                _controller.close();
-              },
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        return MenuAnchor(
+          controller: _controller,
+          crossAxisUnconstrained: false,
+          style: MenuStyle(
+            backgroundColor: const WidgetStatePropertyAll(AppTheme.card),
+            elevation: const WidgetStatePropertyAll(4),
+            minimumSize: WidgetStatePropertyAll(Size(width, 0)),
+            maximumSize: WidgetStatePropertyAll(Size(width, double.infinity)),
+            padding: const WidgetStatePropertyAll(
+              EdgeInsets.symmetric(vertical: 4),
+            ),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
           ),
-      ],
+          alignmentOffset: const Offset(0, 4),
+          builder: (context, controller, _) => SheetPickerTile(
+            sheet: widget.selectedSheet,
+            companyLocale: companyLocale,
+            onTap: () =>
+                controller.isOpen ? controller.close() : controller.open(),
+          ),
+          menuChildren: [
+            for (final sheet in sheets)
+              SizedBox(
+                width: width,
+                child: SheetPickerTile(
+                  sheet: sheet,
+                  companyLocale: companyLocale,
+                  isInsideMenu: true,
+                  isSelected: sheet.expenseSheetId == selectedId,
+                  onTap: () {
+                    ref
+                        .read(selectedSheetIdProvider.notifier)
+                        .set(sheet.expenseSheetId);
+                    _controller.close();
+                  },
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

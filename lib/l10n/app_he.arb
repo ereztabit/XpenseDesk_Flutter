@@ -536,6 +536,7 @@
   "couponOneMonthFree": "חודש אחד במתנה",
   "couponMonthsFree": "חודשים במתנה",
   "invalidCoupon": "קוד קופון לא תקין",
+  "couponValidationLocked": "יותר מדי ניסיונות. אימות הקופון נחסם.",
   "proceedToPayment": "המשך לתשלום",
   "backToDashboard": "חזור ללוח הבקרה",
   "removeCoupon": "הסר",

@@ -67,7 +67,16 @@ class _CouponSectionState extends ConsumerState<CouponSection> {
       final authService = ref.read(authServiceProvider);
       final result = await authService.validateCoupon(code);
       if (!mounted) return;
-      if (result.isValid) {
+      if (result.isLocked) {
+        setState(() {
+          _blocked = true;
+          _isExpanded = false;
+          _isApplying = false;
+          _isValid = null;
+        });
+        _controller.clear();
+        widget.onCouponResult(null);
+      } else if (result.isValid) {
         setState(() {
           _isValid = true;
           _freeMonths = result.freeMonths;
@@ -134,8 +143,17 @@ class _CouponSectionState extends ConsumerState<CouponSection> {
     final l10n = AppLocalizations.of(context)!;
     final isLocked = _isValid == true;
 
-    // Blocked — hide everything
-    if (_blocked) return const SizedBox.shrink();
+    // Blocked — show a permanent locked message
+    if (_blocked) {
+      return Text(
+        l10n.couponValidationLocked,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.destructive,
+        ),
+      );
+    }
 
     // Collapsed — just the clickable label
     if (!_isExpanded) {

@@ -9,13 +9,11 @@ import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
 import 'screens/new_expense_screen.dart';
-import 'screens/receipt_analyzer_screen.dart';
 import 'screens/employee_expense_detail_screen.dart';
 import 'screens/manager_dashboard_screen.dart';
 import 'screens/sheet_review_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
 import 'screens/expenses_analysis_screen.dart';
-import 'screens/tranzila_poc_screen.dart';
 import 'screens/complete_payment_screen.dart';
 import 'widgets/auth_gate.dart';
 
@@ -37,12 +35,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const PingScreen(),
-      );
-
-    case '/dev/receipt-analyzer':
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) => const ReceiptAnalyzerScreen(),
       );
 
     // --- Auth ---
@@ -100,15 +92,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
             initialEmployeeId: args['employees'],
             initialCategoryAlias: args['categories'],
           ),
-        ),
-      );
-
-    case '/manager/payment-poc':
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) => const AuthGate(
-          mode: AuthGateMode.managerOnly,
-          child: TranzilaPocScreen(),
         ),
       );
 

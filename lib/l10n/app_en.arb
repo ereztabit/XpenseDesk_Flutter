@@ -536,6 +536,7 @@
   "couponOneMonthFree": "1 free month",
   "couponMonthsFree": "free months",
   "invalidCoupon": "Invalid coupon code",
+  "couponValidationLocked": "Too many attempts. Coupon validation is locked.",
   "proceedToPayment": "Proceed to Payment",
   "backToDashboard": "Back to dashboard",
   "removeCoupon": "Remove",
