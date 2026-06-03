@@ -22,6 +22,15 @@ Open bugs (see `## report bugs (pending)` below)
 
 ## report bugs (pending)
 
+- [ ] New Expense — date validation error shows in English while UI is in Hebrew (should be localized + ideally caught client-side before server). See docs/bugs/new-expense-date-validation-english-in-hebrew-ui.md
+- [ ] Company onboarding — Israel should be the default country (no need to select). See docs/bugs/onboarding-default-country-israel.md
+- [ ] Cycles menu — dropdown width doesn't match the trigger; menu should be the same width. See docs/bugs/cycles-menu-width-mismatch.md
+- [ ] Remove the Receipt Analyzer from the menu. See docs/bugs/remove-receipt-analyzer-from-menu.md
+- [ ] Manager navigation menu — no link to the main dashboard; add one. See docs/bugs/manager-nav-missing-main-dashboard-link.md
+- [ ] Remove the Payment POC. See docs/bugs/remove-payment-poc.md
+- [ ] User dashboard (mobile) — missing the layout/table toggle. See docs/bugs/user-dashboard-mobile-missing-layout-toggle.md
+- [ ] Edit expense — cancel button shows wrong Hebrew caption ("התעלם" should be "בטל"). See docs/bugs/edit-expense-cancel-button-wrong-hebrew-caption.md
+- [ ] Remove the receipt number from the card layout. See docs/bugs/remove-receipt-number-from-card-layout.md
 - [ ] canceled annual subscription with coupon still shows as "about to renew" on the billing screen
   - Reproduce:
     1. create a new company
