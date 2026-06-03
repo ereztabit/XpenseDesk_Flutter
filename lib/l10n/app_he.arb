@@ -425,7 +425,7 @@
   "newExpenseFormPlaceholder": "תוכן הטופס יופיע כאן",
   "newExpenseDetectedDetails": "פרטים שזוהו",
   "newExpenseModify": "ערוך",
-  "newExpenseUndoAi": "בטל AI",
+  "newExpenseUndoAi": "בטל",
   "newExpenseSubmitButton": "שלח",
   "newExpenseDiscardButton": "בטל",
   "newExpenseScanningTipsTitle": "טיפים לסריקה",
@@ -434,7 +434,7 @@
   "newExpenseScanningTip3": "חתוך את התמונה בצמוד לקבלה",
   "newExpenseAiFailedTooltip": "לא ניתן היה לזהות את הקבלה. אנא הזן פרטים ידנית.",
   "expenseDateInvalidFormat": "תאריך לא תקין. הפורמט הנדרש:",
-  "expenseDateTooOld": "התאריך ישן מדי",
+  "expenseDateTooOld": "ניתן לדווח על הוצאה מה 12 חודשים האחרונים בלבד",
   "expenseDateInFuture": "לא ניתן להזין תאריך עתידי",
 
   "expenseDetail": "פרטי הוצאה",

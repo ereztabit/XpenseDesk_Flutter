@@ -425,7 +425,7 @@
   "newExpenseFormPlaceholder": "Form content will appear here",
   "newExpenseDetectedDetails": "Detected Details",
   "newExpenseModify": "Modify",
-  "newExpenseUndoAi": "Undo AI",
+  "newExpenseUndoAi": "Cancel",
   "newExpenseSubmitButton": "Submit",
   "newExpenseDiscardButton": "Discard",
   "newExpenseScanningTipsTitle": "Scanning Tips",
@@ -434,7 +434,7 @@
   "newExpenseScanningTip3": "Crop the image tightly to the receipt",
   "newExpenseAiFailedTooltip": "Receipt couldn't be detected. Please enter details manually.",
   "expenseDateInvalidFormat": "Invalid date. Expected:",
-  "expenseDateTooOld": "Date is too far in the past",
+  "expenseDateTooOld": "You can only add expenses from the last 12 months.",
   "expenseDateInFuture": "Date cannot be in the future",
 
   "expenseDetail": "Expense Detail",

@@ -29,9 +29,9 @@ Open bugs (see `## report bugs (pending)` below)
 - [ ] Manager expense detail edit mode -- no cancel button, approve/decline active during edit, date shows wrong format -- see docs/bugs/manager-expense-detail-edit-mode-issues.md
 - [ ] Sheet review -- no prompt after all expenses reviewed: auto-approve when all approved, show resolution dialog when some declined -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
 - [ ] Employee dashboard expense list -- 4 issues: missing status tabs on Submitted sheets, mobile approved expense opens in edit mode (wrong param in carousel), swipe-to-delete missing for declined expenses, status pill missing from desktop table -- see docs/bugs/employee-dashboard-expense-list-issues.md
-- [ ] New Expense — date validation error shows in English while UI is in Hebrew (should be localized + ideally caught client-side before server). See docs/bugs/new-expense-date-validation-english-in-hebrew-ui.md
 - [ ] Onboarding country selector -- disable it for now (Israel only); re-enable when multi-country is supported -- see docs/bugs/onboarding-country-selector-disable-for-now.md
 - [ ] Onboarding cycle day -- should be radio buttons, label should explain it is the monthly expense submission date -- see docs/bugs/onboarding-cycle-day-should-be-radio-buttons.md
+- [ ] Footer not full width on mobile -- see docs/bugs/footer-not-full-width-mobile.md
 - [ ] Manager navigation menu — no link to the main dashboard; add one. See docs/bugs/manager-nav-missing-main-dashboard-link.md
 - [ ] User dashboard (mobile) — missing the layout/table toggle. See docs/bugs/user-dashboard-mobile-missing-layout-toggle.md
 - [ ] Edit expense — cancel button shows wrong Hebrew caption ("התעלם" should be "בטל"). See docs/bugs/edit-expense-cancel-button-wrong-hebrew-caption.md

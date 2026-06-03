@@ -304,7 +304,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     }
     setState(() {
       _isModifying = false;
-      _selectedCategoryId = result.categoryId;
+      // Category and note keep whatever the user selected — not overridden on cancel.
       _selectedCurrencyCode = result.currencyCode ?? 'ILS';
       _selectedDate = result.expenseDate != null
           ? DateTime.tryParse(result.expenseDate!)
@@ -318,7 +318,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _merchantController.text = result.merchantName ?? '';
       _receiptRefController.text = result.receiptNumber ?? '';
     });
-    _syncCategoryController(result.categoryId);
   }
 
   String _formatAmount(double amount) {
@@ -453,6 +452,13 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (!mounted) return;
       ref.invalidate(expenseSearchProvider);
       Navigator.of(context).pushReplacementNamed('/user/dashboard');
+    } on ExpenseDateTooOldException {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() {
+        _isSubmitting = false;
+        _submitError = l10n.expenseDateTooOld;
+      });
     } on ExpenseException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -1434,11 +1440,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           '${l10n.expenseDateInvalidFormat} ${_dateFormatHint(companyLocale)}';
     } else {
       final today = DateTime.now();
-      final sixMonthsAgo =
-          DateTime(today.year, today.month - 6, today.day);
+      final twelveMonthsAgo =
+          DateTime(today.year - 1, today.month, today.day);
       if (parsed.isAfter(today)) {
         error = l10n.expenseDateInFuture;
-      } else if (parsed.isBefore(sixMonthsAgo)) {
+      } else if (parsed.isBefore(twelveMonthsAgo)) {
         error = l10n.expenseDateTooOld;
       }
     }

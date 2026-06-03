@@ -97,6 +97,9 @@ class ExpenseService {
     if (!success) {
       final message = response['message'] as String? ?? defaultErrorMessage;
       final errorCode = response['errorCode'] as String?;
+      if (errorCode == 'ExpenseDateTooOld') {
+        throw const ExpenseDateTooOldException();
+      }
       throw ExpenseException(message, errorCode: errorCode);
     }
   }
