@@ -5,9 +5,10 @@ import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
 import 'desktop_sheet_review_row.dart';
 
-/// Desktop Sheet Review line-item table — header + a sequence of
-/// [DesktopSheetReviewRow]s. Per-line action callbacks are passed through;
-/// when null, rows render read-only (no ✓/✗ column content).
+/// Desktop Sheet Review line-item table. Built on a [Table] so column gridlines
+/// (vertical) and row separators (horizontal) come from a single [TableBorder]
+/// — no per-cell divider widgets, no `IntrinsicHeight`. Per-line action
+/// callbacks pass through; when null, rows render read-only (no ✓/✗).
 class DesktopSheetReviewTable extends StatelessWidget {
   const DesktopSheetReviewTable({
     super.key,
@@ -26,70 +27,73 @@ class DesktopSheetReviewTable extends StatelessWidget {
   final void Function(ExpenseSummary)? onDeclineLine;
   final void Function(ExpenseSummary)? onDeleteLine;
 
+  // Date 20 · Merchant 24 · Category 20 · Amount 15 · Status 12 (flex) +
+  // fixed 132px Actions (fits up to 4 × 32px icon buttons).
+  static const Map<int, TableColumnWidth> _columnWidths = {
+    0: FlexColumnWidth(20),
+    1: FlexColumnWidth(24),
+    2: FlexColumnWidth(20),
+    3: FlexColumnWidth(15),
+    4: FlexColumnWidth(12),
+    5: FixedColumnWidth(132),
+  };
+
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: AppTheme.border),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          children: [
-            const _HeaderRow(),
-            ...expenses.map((e) => DesktopSheetReviewRow(
-                  expense: e,
-                  companyLocale: companyLocale,
-                  onTap: () => onTapLine(e),
-                  onApprove: onApproveLine == null
-                      ? null
-                      : () => onApproveLine!(e),
-                  onDecline: onDeclineLine == null
-                      ? null
-                      : () => onDeclineLine!(e),
-                  onDelete: onDeleteLine == null
-                      ? null
-                      : () => onDeleteLine!(e),
-                )),
-          ],
+      child: Table(
+        columnWidths: _columnWidths,
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+        border: const TableBorder(
+          horizontalInside: BorderSide(color: AppTheme.borderMedium, width: 1),
+          verticalInside: BorderSide(color: AppTheme.borderMedium, width: 1),
         ),
+        children: [
+          _buildHeader(context),
+          ...expenses.map(
+            (e) => buildSheetReviewRow(
+              context,
+              expense: e,
+              companyLocale: companyLocale,
+              onTap: () => onTapLine(e),
+              onApprove: onApproveLine == null ? null : () => onApproveLine!(e),
+              onDecline: onDeclineLine == null ? null : () => onDeclineLine!(e),
+              onDelete: onDeleteLine == null ? null : () => onDeleteLine!(e),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class _HeaderRow extends StatelessWidget {
-  const _HeaderRow();
-
-  static const _style = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-    color: AppTheme.mutedForeground,
-  );
-
-  @override
-  Widget build(BuildContext context) {
+  // Header is a TableRow (not a Widget), so it must be assembled here inside
+  // Table.children rather than extracted to its own widget class.
+  TableRow _buildHeader(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppTheme.border, width: 1)),
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 16, child: Text(l10n.tableDateHeader, style: _style)),
-          Expanded(
-              flex: 24, child: Text(l10n.tableMerchantHeader, style: _style)),
-          Expanded(
-              flex: 24, child: Text(l10n.tableCategoryHeader, style: _style)),
-          Expanded(
-              flex: 15, child: Text(l10n.tableAmountHeader, style: _style)),
-          Expanded(flex: 12, child: Text(l10n.status, style: _style)),
-          const SizedBox(width: 88),
-        ],
-      ),
+    const style = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: AppTheme.mutedForeground,
+    );
+    Widget cell(String label) => Padding(
+      padding: kSheetReviewCellPadding,
+      child: Text(label, style: style),
+    );
+    return TableRow(
+      children: [
+        cell(l10n.tableDateHeader),
+        cell(l10n.tableMerchantHeader),
+        cell(l10n.tableCategoryHeader),
+        cell(l10n.tableAmountHeader),
+        cell(l10n.status),
+        const SizedBox.shrink(),
+      ],
     );
   }
 }

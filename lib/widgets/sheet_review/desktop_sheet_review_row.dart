@@ -9,151 +9,150 @@ import '../action_icon_button.dart';
 import '../ai_badge.dart';
 import '../expenses/expense_status_badge.dart';
 
-/// One line row in the desktop Sheet Review table.
+/// Shared cell padding for the desktop Sheet Review [Table] (header + rows).
+const EdgeInsets kSheetReviewCellPadding = EdgeInsets.symmetric(
+  horizontal: 12,
+  vertical: 12,
+);
+
+const TextStyle _cellTextStyle = TextStyle(
+  fontSize: 14,
+  color: AppTheme.foreground,
+);
+
+/// Builds one data [TableRow] for the desktop Sheet Review table. Columns mirror
+/// the header: Date · Merchant · Category · Amount · Status · Actions.
 ///
-/// Columns: Date (16) · Merchant (24) · Category (24) · Amount (15) ·
-/// Status (12) · Actions (fixed 88px). Per-line ✓/✗ render only when
-/// [onApprove]/[onDecline] are non-null (sheet is WaitingForApproval).
-class DesktopSheetReviewRow extends StatelessWidget {
-  const DesktopSheetReviewRow({
-    super.key,
-    required this.expense,
-    required this.companyLocale,
-    required this.onTap,
-    this.onApprove,
-    this.onDecline,
-    this.onDelete,
-  });
+/// A view icon is always present (the whole row is also tappable via
+/// [TableRowInkWell]); per-line ✓/✗ render only when [onApprove]/[onDecline]
+/// are non-null (sheet is WaitingForApproval). Gridlines come from the parent
+/// [Table]'s [TableBorder] — this builder owns no separators.
+TableRow buildSheetReviewRow(
+  BuildContext context, {
+  required ExpenseSummary expense,
+  required String companyLocale,
+  required VoidCallback onTap,
+  VoidCallback? onApprove,
+  VoidCallback? onDecline,
+  VoidCallback? onDelete,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  final uiLocale = Localizations.localeOf(context);
+  final amountText = expense.amount != null && expense.currencyCode != null
+      ? expense.amount!.toCurrency(companyLocale, expense.currencyCode!)
+      : expense.amount?.toFormattedNumber(companyLocale) ?? '—';
+  final categoryText =
+      ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
+      expense.categoryName;
+  final merchant = expense.merchantName?.trim();
+  final showApprove = onApprove != null && expense.expenseStatusId != 2;
+  final showDecline = onDecline != null && expense.expenseStatusId != 3;
+  final showDelete = onDelete != null;
 
-  final ExpenseSummary expense;
-  final String companyLocale;
-  final VoidCallback onTap;
-  final VoidCallback? onApprove;
-  final VoidCallback? onDecline;
-  final VoidCallback? onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final uiLocale = Localizations.localeOf(context);
-    final amountText = expense.amount != null && expense.currencyCode != null
-        ? expense.amount!.toCurrency(companyLocale, expense.currencyCode!)
-        : expense.amount?.toFormattedNumber(companyLocale) ?? '—';
-    final categoryText =
-        ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
-            expense.categoryName;
-    final merchant = expense.merchantName?.trim();
-    final showApprove = onApprove != null && expense.expenseStatusId != 2;
-    final showDecline = onDecline != null && expense.expenseStatusId != 3;
-    final showDelete = onDelete != null;
-    final hasActions = showApprove || showDecline || showDelete;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: const BoxDecoration(
-            border:
-                Border(bottom: BorderSide(color: AppTheme.border, width: 1)),
+  return TableRow(
+    children: [
+      _tapCell(
+        onTap,
+        Text(
+          expense.expenseDate.toLongDate(companyLocale),
+          style: _cellTextStyle,
+        ),
+      ),
+      _tapCell(
+        onTap,
+        Text(
+          (merchant != null && merchant.isNotEmpty) ? merchant : '—',
+          style: _cellTextStyle,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      _tapCell(
+        onTap,
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                categoryText,
+                style: _cellTextStyle,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (expense.isAiData) ...[
+              const SizedBox(width: 6),
+              const AiBadge(),
+            ],
+          ],
+        ),
+      ),
+      _tapCell(
+        onTap,
+        Text(
+          amountText,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.foreground,
           ),
+        ),
+      ),
+      _tapCell(
+        onTap,
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: ExpenseStatusBadge(
+            expenseStatusId: expense.expenseStatusId,
+            isAiData: expense.isAiData,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                flex: 16,
-                child: Text(
-                  expense.expenseDate.toLongDate(companyLocale),
-                  style: const TextStyle(
-                      fontSize: 14, color: AppTheme.foreground),
+              ActionIconButton(
+                icon: Icons.visibility_outlined,
+                tooltip: l10n.view,
+                color: AppTheme.primary,
+                onPressed: onTap,
+              ),
+              if (showApprove)
+                ActionIconButton(
+                  icon: Icons.check,
+                  tooltip: l10n.approve,
+                  color: AppTheme.success,
+                  onPressed: onApprove,
                 ),
-              ),
-              Expanded(
-                flex: 24,
-                child: Text(
-                  (merchant != null && merchant.isNotEmpty) ? merchant : '—',
-                  style: const TextStyle(
-                      fontSize: 14, color: AppTheme.foreground),
-                  overflow: TextOverflow.ellipsis,
+              if (showDecline)
+                ActionIconButton(
+                  icon: Icons.close,
+                  tooltip: l10n.decline,
+                  color: AppTheme.destructive,
+                  onPressed: onDecline,
                 ),
-              ),
-              Expanded(
-                flex: 24,
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        categoryText,
-                        style: const TextStyle(
-                            fontSize: 14, color: AppTheme.foreground),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (expense.isAiData) ...[
-                      const SizedBox(width: 6),
-                      const AiBadge(),
-                    ],
-                  ],
+              if (showDelete)
+                ActionIconButton(
+                  icon: Icons.delete_outline,
+                  tooltip: l10n.delete,
+                  color: AppTheme.destructive,
+                  onPressed: onDelete,
                 ),
-              ),
-              Expanded(
-                flex: 15,
-                child: Text(
-                  amountText,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.foreground,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 12,
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: ExpenseStatusBadge(
-                    expenseStatusId: expense.expenseStatusId,
-                    isAiData: expense.isAiData,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 88,
-                child: hasActions
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (showApprove)
-                            ActionIconButton(
-                              icon: Icons.check,
-                              tooltip: l10n.approve,
-                              color: AppTheme.success,
-                              onPressed: onApprove!,
-                            ),
-                          if (showDecline)
-                            ActionIconButton(
-                              icon: Icons.close,
-                              tooltip: l10n.decline,
-                              color: AppTheme.destructive,
-                              onPressed: onDecline!,
-                            ),
-                          if (showDelete)
-                            ActionIconButton(
-                              icon: Icons.delete_outline,
-                              tooltip: l10n.delete,
-                              color: AppTheme.destructive,
-                              onPressed: onDelete!,
-                            ),
-                        ],
-                      )
-                    : const SizedBox.shrink(),
-              ),
             ],
           ),
         ),
       ),
-    );
-  }
+    ],
+  );
+}
+
+/// A padded, full-row-tappable data cell. [TableRowInkWell] paints its hover /
+/// splash across the entire table row, preserving the row-tap-to-open UX.
+Widget _tapCell(VoidCallback onTap, Widget child) {
+  return TableRowInkWell(
+    onTap: onTap,
+    child: Padding(padding: kSheetReviewCellPadding, child: child),
+  );
 }

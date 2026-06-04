@@ -236,6 +236,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
               child: RefreshableScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ConstrainedContent(
+                  maxWidth: 1100,
                   child: detailAsync.when(
                     loading: () => const Padding(
                       padding: EdgeInsets.symmetric(vertical: 64),

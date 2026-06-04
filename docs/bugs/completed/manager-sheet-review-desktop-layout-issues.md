@@ -1,3 +1,7 @@
+# Bug: Manager Sheet Review desktop layout issues
+
+> **Status: done**
+
 ## Problem
 
 Four layout and UX issues on the manager Sheet Review screen (desktop).
@@ -67,3 +71,28 @@ Issue 4 -- lib/widgets/sheet_review/desktop_sheet_review_row.dart line 116:
     ActionIconButton(icon: Icons.edit_outlined, tooltip: l10n.view, onPressed: onTap)
   Widen SizedBox from width: 88 to width: 120.
   Apply matching change to the header SizedBox in desktop_sheet_review_table.dart line 85.
+
+## Resolution
+
+Shipped and verified on-screen by the user (manager Sheet Review desktop).
+
+1. Width -- sheet_review_screen.dart now passes ConstrainedContent(maxWidth: 1100),
+   so the review content uses the wide-desktop width instead of the 720px strip.
+2. Date column -- rebalanced column widths (Date 20, Merchant 24, Category 20,
+   Amount 15, Status 12) so long dates no longer wrap.
+3. Row separators -- switched from AppTheme.border (too light) to the darker
+   AppTheme.borderMedium, now drawn as the table gridline.
+4. Clickability -- added an always-present view (eye) icon as the first action,
+   plus widened the actions column; the whole row remains tappable.
+
+Implementation note: the desktop table was rebuilt on Flutter's Table widget with a
+single TableBorder(horizontalInside, verticalInside) in borderMedium, giving both
+horizontal row separators and vertical column separators (the latter requested
+during the fix). TableRowInkWell preserves full-row tap-to-open. This replaced an
+earlier IntrinsicHeight + stretch approach that collapsed the rows. The status pill
+(original issue 4) already existed by the time of the fix.
+
+Key files:
+- lib/screens/sheet_review_screen.dart
+- lib/widgets/sheet_review/desktop_sheet_review_table.dart
+- lib/widgets/sheet_review/desktop_sheet_review_row.dart
