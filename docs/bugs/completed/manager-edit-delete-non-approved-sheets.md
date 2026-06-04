@@ -1,8 +1,7 @@
 # Bug: Manager Can Edit/Delete Any Expense Unless the Sheet Is Approved
 
-> **Status: RESOLVED (client shipped; server procs applied).** See the
-> Resolution section at the end. Remaining gate: backend test suite
-> verification for the four proc changes (handled by the backend agent).
+> **Status: done.** Shipped end-to-end -- client across all layouts and the four
+> server procs applied; verified. See the Resolution section at the end.
 
 ## Problem
 
@@ -111,4 +110,4 @@ Server (`XpenseDeskServer`, procs applied via MCP by the user):
 - `proc_ApproveExpense` -- manager per-line approve allowed on Declined sheets.
 - `proc_EvaluateExpenseSheet` -- Declined sheet stays Declined while a declined
   expense remains.
-- Backend test suite must be re-run for these proc changes (separate backend agent).
+- Backend test suite re-run and verified green for these proc changes.
