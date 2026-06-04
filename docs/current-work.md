@@ -3,18 +3,15 @@
 ## Currently Working On
 
 
-- **Expense Sheets transformation** — server has shipped sheet-centric approvals (Story 1, Part 2). Building the Flutter UX + activating the new APIs, story by story.
-  - Server discovery: [docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md](in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md)
-  - Stories folder: [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md)
-  - ✅ [01 — Employee Dashboard](in-progress/ExpenseSheetsTransformation/01-EmployeeDashboard.md) — shipped, CR'd, build clean. Under manual UI verification.
-  - ✅ [02 — Manager Dashboard](in-progress/ExpenseSheetsTransformation/02-ManagerDashboard.md) — shipped against the live `GET /api/expense-sheets` endpoint, CR'd, build clean. Under manual UI verification.
-  - ✅ [03 — Sheet Review](in-progress/ExpenseSheetsTransformation/03-SheetReview.md) — whole-sheet approve/decline + per-line review + activity timeline. Verified against live server, CR'd, build clean. Under manual UI verification.
-  - Deferred follow-up: block-mode pre-gating on approve/decline CTAs (currently handles the 403 gracefully; pre-gating needs `blockMode` surfaced into a provider — cross-cutting).
-
 Open bugs (see `## report bugs (pending)` below)
+
+The Expense Sheets transformation (stories 01–03) shipped; its record lives in
+[docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md).
 
 
 ## TODO (Backlog)
+- [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
+- [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
