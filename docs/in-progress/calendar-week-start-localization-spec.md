@@ -3,7 +3,7 @@
 ## Status
 
 Post-MVP enhancement. Not blocking. Filed as a separate story from the
-"expense editor calendar not loading" bug (docs/bugs/expense-editor-calendar-not-loaded.md),
+"expense editor calendar not loading" bug (docs/bugs/completed/expense-editor-calendar-not-loaded.md),
 which is purely about the picker failing to open and is unrelated to which day
 the week starts on.
 
