@@ -25,6 +25,7 @@ class ManagerSwipeableExpenseCard extends StatefulWidget {
   final VoidCallback? onPeekPlayed;
   final VoidCallback? onApprove;
   final VoidCallback? onDecline;
+  final VoidCallback? onDelete;
   final VoidCallback? onEdit;
 
   const ManagerSwipeableExpenseCard({
@@ -35,6 +36,7 @@ class ManagerSwipeableExpenseCard extends StatefulWidget {
     this.onPeekPlayed,
     this.onApprove,
     this.onDecline,
+    this.onDelete,
     this.onEdit,
   });
 
@@ -46,9 +48,17 @@ class ManagerSwipeableExpenseCard extends StatefulWidget {
 class _ManagerSwipeableExpenseCardState
     extends State<ManagerSwipeableExpenseCard>
     with TickerProviderStateMixin {
-  // Pending: 2 buttons × 60px = 120px; single-action tabs: 60px
-  double get _actionWidth =>
-      widget.expense.expenseStatusId == 1 ? 120.0 : 60.0;
+  // One 60px button per visible action (decline / approve / delete).
+  int get _visibleActionCount {
+    final s = widget.expense.expenseStatusId;
+    var n = 0;
+    if (widget.onDecline != null && s != 3) n++;
+    if (widget.onApprove != null && s != 2) n++;
+    if (widget.onDelete != null) n++;
+    return n;
+  }
+
+  double get _actionWidth => _visibleActionCount * 60.0;
   double get _snapThreshold => _actionWidth * 0.6;
   double get _peekDistance => _actionWidth * 0.7;
 
@@ -197,6 +207,18 @@ class _ManagerSwipeableExpenseCardState
     action?.call();
   }
 
+  /// Like an action tap but without the fly-away dismiss — used for Delete,
+  /// which opens its own confirm dialog. The list rebuilds on refresh if the
+  /// user confirms; the card stays put if they cancel.
+  void _runWithoutDismiss(VoidCallback? action) {
+    if (_isDismissing) return;
+    _cancelAutoClose();
+    if (_isOpen) setState(() => _isOpen = false);
+    _animateSlideTo(0);
+    widget.openCardNotifier.value = null;
+    action?.call();
+  }
+
   @override
   void dispose() {
     widget.openCardNotifier.removeListener(_onNotifierChanged);
@@ -215,7 +237,9 @@ class _ManagerSwipeableExpenseCardState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final statusId = widget.expense.expenseStatusId;
-    final isPending = statusId == 1;
+    final showApprove = widget.onApprove != null && statusId != 2;
+    final showDecline = widget.onDecline != null && statusId != 3;
+    final showDelete = widget.onDelete != null;
 
     const cardRadius = BorderRadius.all(Radius.circular(AppTheme.borderRadius));
 
@@ -251,7 +275,7 @@ class _ManagerSwipeableExpenseCardState
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  if (isPending || statusId == 2)
+                                  if (showDecline)
                                     _ActionButton(
                                       width: 60,
                                       color: AppTheme.destructive,
@@ -260,7 +284,7 @@ class _ManagerSwipeableExpenseCardState
                                       onTap: () =>
                                           _handleAction(widget.onDecline),
                                     ),
-                                  if (isPending || statusId == 3)
+                                  if (showApprove)
                                     _ActionButton(
                                       width: 60,
                                       color: AppTheme.success,
@@ -268,6 +292,15 @@ class _ManagerSwipeableExpenseCardState
                                       label: l10n.approve,
                                       onTap: () =>
                                           _handleAction(widget.onApprove),
+                                    ),
+                                  if (showDelete)
+                                    _ActionButton(
+                                      width: 60,
+                                      color: AppTheme.destructive,
+                                      icon: Icons.delete_outline,
+                                      label: l10n.delete,
+                                      onTap: () =>
+                                          _runWithoutDismiss(widget.onDelete),
                                     ),
                                 ],
                               ),

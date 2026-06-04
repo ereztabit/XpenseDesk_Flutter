@@ -8,6 +8,7 @@ import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/app_button.dart';
+import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/sheet_review/approve_sheet_confirm_dialog.dart';
 import '../widgets/sheet_review/decline_sheet_dialog.dart';
 import '../widgets/sheet_review/sheet_review_actions.dart';
@@ -104,12 +105,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     if (error is DeclineCommentRequiredException) {
       return l10n.declineSheetCommentRequired;
     }
-    // Surface the server's actual message for anything not specially mapped,
-    // instead of a generic "Error".
+    // Surface the server's actual message for anything not specially mapped.
     if (error is ExpenseException) {
       return error.message;
     }
-    return l10n.errorTitle;
+    // Truly unknown / non-API error (e.g. network): friendly, apologetic copy
+    // instead of repeating the "Error" title.
+    return l10n.genericErrorRetry;
   }
 
   Future<void> _handleApprove(ExpenseSheetDetail sheet) async {
@@ -130,21 +132,27 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     if (!confirmed || !mounted) return;
 
     setState(() => _isBusy = true);
+    Object? error;
     try {
       await ref
           .read(expenseServiceProvider)
           .approveSheet(widget.expenseSheetId);
-      if (!mounted) return;
-      // After approval, return to the dashboard; its row-tap .then() refreshes
-      // the buckets so the approved sheet leaves the Pending queue.
-      _showMessage(l10n.sheetApprovedToast);
-      _toDashboard();
     } catch (e) {
-      _showActionError(_errorMessage(e, l10n));
-      _refresh(); // re-sync — sheet may have changed under us
+      error = e;
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
+
+    if (!mounted) return;
+    if (error != null) {
+      _showActionError(_errorMessage(error, l10n));
+      _refresh(); // re-sync — sheet may have changed under us
+      return;
+    }
+    // Approval succeeded. UI work (toast + navigation) lives outside the try so
+    // a navigation/toast hiccup can never masquerade as a failed approval.
+    _showMessage(l10n.sheetApprovedToast);
+    _toDashboard();
   }
 
   Future<void> _handleLineApprove(ExpenseSummary expense) async {
@@ -169,6 +177,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     }
   }
 
+  /// Per-line delete (manager escape hatch on Draft/Declined sheets). The
+  /// shared dialog confirms + surfaces its own errors; on success re-sync.
+  Future<void> _handleLineDelete(ExpenseSummary expense) async {
+    final deleted = await DeleteExpenseDialog.show(context, expense.expenseId);
+    if (deleted && mounted) _refresh();
+  }
+
   Future<void> _handleDecline() async {
     final l10n = AppLocalizations.of(context)!;
     final sheet =
@@ -180,21 +195,27 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     if (comment == null || !mounted) return;
 
     setState(() => _isBusy = true);
+    Object? error;
     try {
       await ref
           .read(expenseServiceProvider)
           .declineSheet(widget.expenseSheetId, comment);
-      if (!mounted) return;
-      // After declining, return to the dashboard; its row-tap .then() refreshes
-      // the buckets so the sheet moves into the returned/declined view.
-      _showMessage(l10n.sheetDeclinedToast);
-      _toDashboard();
     } catch (e) {
-      _showActionError(_errorMessage(e, l10n));
-      _refresh();
+      error = e;
     } finally {
       if (mounted) setState(() => _isBusy = false);
     }
+
+    if (!mounted) return;
+    if (error != null) {
+      _showActionError(_errorMessage(error, l10n));
+      _refresh();
+      return;
+    }
+    // Decline succeeded. UI work (toast + navigation) lives outside the try so a
+    // navigation/toast hiccup can never masquerade as a failed decline.
+    _showMessage(l10n.sheetDeclinedToast);
+    _toDashboard();
   }
 
   @override
@@ -249,6 +270,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     ExpenseSheetDetail sheet,
   ) {
     final actionable = _isActionable(sheet);
+    final isDeclinedSheet =
+        sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
+    // Manager per-line escape hatch: approve on WaitingForApproval or Declined;
+    // decline only on WaitingForApproval; delete on any sheet except Approved.
+    final canApproveLines = actionable || isDeclinedSheet;
+    final canDeleteLines =
+        sheet.expenseSheetStatusId != ExpenseSheetStatus.approved.id;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -268,8 +296,9 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
         SheetReviewLineSection(
           expenses: sheet.expenses,
           onTapLine: _openLineDetail,
-          onApproveLine: actionable ? _handleLineApprove : null,
+          onApproveLine: canApproveLines ? _handleLineApprove : null,
           onDeclineLine: actionable ? _handleLineDecline : null,
+          onDeleteLine: canDeleteLines ? _handleLineDelete : null,
         ),
         const SizedBox(height: 16),
         SheetActivityTimeline(log: sheet.log),

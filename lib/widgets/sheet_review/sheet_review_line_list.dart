@@ -23,12 +23,14 @@ class SheetReviewLineList extends ConsumerWidget {
     required this.onTapLine,
     this.onApproveLine,
     this.onDeclineLine,
+    this.onDeleteLine,
   });
 
   final List<ExpenseSummary> expenses;
   final void Function(ExpenseSummary) onTapLine;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
+  final void Function(ExpenseSummary)? onDeleteLine;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,6 +43,7 @@ class SheetReviewLineList extends ConsumerWidget {
         onTapLine: onTapLine,
         onApproveLine: onApproveLine,
         onDeclineLine: onDeclineLine,
+        onDeleteLine: onDeleteLine,
       );
     }
 
@@ -52,6 +55,7 @@ class SheetReviewLineList extends ConsumerWidget {
         onTapLine: onTapLine,
         onApproveLine: onApproveLine,
         onDeclineLine: onDeclineLine,
+        onDeleteLine: onDeleteLine,
       );
     }
     return MobileSheetReviewList(
@@ -59,6 +63,7 @@ class SheetReviewLineList extends ConsumerWidget {
       onTapLine: onTapLine,
       onApproveLine: onApproveLine,
       onDeclineLine: onDeclineLine,
+      onDeleteLine: onDeleteLine,
     );
   }
 }

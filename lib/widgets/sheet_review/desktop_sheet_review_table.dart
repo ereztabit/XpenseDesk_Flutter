@@ -16,6 +16,7 @@ class DesktopSheetReviewTable extends StatelessWidget {
     required this.onTapLine,
     this.onApproveLine,
     this.onDeclineLine,
+    this.onDeleteLine,
   });
 
   final List<ExpenseSummary> expenses;
@@ -23,6 +24,7 @@ class DesktopSheetReviewTable extends StatelessWidget {
   final void Function(ExpenseSummary) onTapLine;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
+  final void Function(ExpenseSummary)? onDeleteLine;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,9 @@ class DesktopSheetReviewTable extends StatelessWidget {
                   onDecline: onDeclineLine == null
                       ? null
                       : () => onDeclineLine!(e),
+                  onDelete: onDeleteLine == null
+                      ? null
+                      : () => onDeleteLine!(e),
                 )),
           ],
         ),

@@ -15,6 +15,7 @@ import '../utils/format_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
+import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
 
 class EmployeeExpenseDetailScreen extends ConsumerStatefulWidget {
@@ -79,9 +80,14 @@ class _EmployeeExpenseDetailScreenState
   String? _initialCurrencyCode;
   bool _initialIsAiData = false;
 
+  /// True when the parent sheet is finalised (Approved) — locked for everyone,
+  /// including the manager escape hatch.
+  bool get _isSheetApproved =>
+      _expense?.expenseSheetStatusId == ExpenseSheetStatus.approved.id;
+
   bool get _isEditable {
     if (widget.readOnly || _isClosed) return false;
-    if (widget.isManagerMode) return _isEditingEnabled;
+    if (widget.isManagerMode) return _isEditingEnabled && !_isSheetApproved;
     final expense = _expense;
     if (expense == null) return false;
     final sheetStatusId = expense.expenseSheetStatusId;
@@ -312,6 +318,16 @@ class _EmployeeExpenseDetailScreenState
       if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
     } catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.toString(); });
+    }
+  }
+
+  /// Manager delete (escape hatch). Confirms via the shared dialog; on success
+  /// the expense is gone, so leave the detail screen — the sheet review
+  /// refreshes on return.
+  Future<void> _delete() async {
+    final deleted = await DeleteExpenseDialog.show(context, widget.expenseId);
+    if (deleted && mounted) {
+      Navigator.of(context).pop();
     }
   }
 
@@ -657,15 +673,12 @@ class _EmployeeExpenseDetailScreenState
             ],
           ),
         ),
-        if (!_isEditingEnabled && !widget.readOnly)
-          TextButton.icon(
+        if (!_isEditingEnabled && !widget.readOnly && !_isSheetApproved)
+          AppButton(
+            label: l10n.edit,
+            variant: AppButtonVariant.normal,
+            icon: Icons.edit_outlined,
             onPressed: () => setState(() => _isEditingEnabled = true),
-            icon: const Icon(Icons.edit_outlined, size: 14),
-            label: Text(l10n.edit),
-            style: TextButton.styleFrom(
-              textStyle: const TextStyle(fontSize: 13),
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-            ),
           ),
       ],
     );
@@ -676,18 +689,27 @@ class _EmployeeExpenseDetailScreenState
     if (widget.readOnly) return const SizedBox.shrink();
     final expense = _expense;
     if (expense == null) return const SizedBox.shrink();
-    // Per-line approve/decline only applies while the parent sheet is awaiting
-    // approval. On a finalised (Approved) or returned (Declined) sheet there is
-    // nothing to act on, so hide the row entirely.
+    // Manager line actions:
+    //   Approve -> WaitingForApproval or Declined sheets (any not-yet-approved
+    //              expense). On a Declined sheet this is the escape hatch to
+    //              resolve a returned line on the employee's behalf.
+    //   Decline -> WaitingForApproval only (per-line decline requires WfA).
+    //   Delete  -> Draft or Declined sheets (manager escape hatch).
     final sheetStatusId = expense.expenseSheetStatusId;
-    if (sheetStatusId != null &&
-        sheetStatusId != ExpenseSheetStatus.waitingForApproval.id) {
+    final isWfa = sheetStatusId == ExpenseSheetStatus.waitingForApproval.id;
+    final isDeclinedSheet = sheetStatusId == ExpenseSheetStatus.declined.id;
+    final statusId = expense.expenseStatusId;
+    final showApprove = (isWfa || isDeclinedSheet) && statusId != 2;
+    final showDecline = isWfa && statusId != 3;
+    final showDelete = sheetStatusId != null &&
+        SheetPermissions.canDeleteExpense(
+          sheetStatusId: sheetStatusId,
+          expenseStatusId: statusId,
+          isManager: true,
+        );
+    if (!showApprove && !showDecline && !showDelete) {
       return const SizedBox.shrink();
     }
-    final statusId = expense.expenseStatusId;
-    final showApprove = statusId != 2;
-    final showDecline = statusId != 3;
-    if (!showApprove && !showDecline) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -710,6 +732,15 @@ class _EmployeeExpenseDetailScreenState
           mainAxisAlignment: MainAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (showDelete)
+              AppButton(
+                label: l10n.delete,
+                variant: AppButtonVariant.destructive,
+                icon: Icons.delete_outline,
+                onPressed: (_isSaving || _isEditingEnabled) ? null : _delete,
+              ),
+            if (showDelete && (showApprove || showDecline))
+              const SizedBox(width: 12),
             if (showApprove)
               AppButton(
                 label: l10n.approve,

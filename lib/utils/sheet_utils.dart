@@ -177,7 +177,8 @@ class SheetPermissions {
 
   /// Can the current user delete this expense?
   ///
-  /// Manager: only when the sheet is Draft or Declined (never WfA / Approved).
+  /// Manager: any sheet except Approved (escape hatch — Draft, WaitingForApproval
+  /// or Declined are all deletable).
   /// Employee:
   ///   - Draft sheet → Pending only.
   ///   - WaitingForApproval / Approved → no.
@@ -188,7 +189,8 @@ class SheetPermissions {
     required bool isManager,
   }) {
     if (isManager) {
-      return sheetStatusId == 1 || sheetStatusId == 4;
+      // Escape hatch: delete on any sheet except Approved.
+      return sheetStatusId != 3; // 3 = Approved
     }
     switch (sheetStatusId) {
       case 1: // Draft

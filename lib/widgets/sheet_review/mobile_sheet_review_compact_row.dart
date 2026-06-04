@@ -22,6 +22,7 @@ class MobileSheetReviewCompactRow extends StatelessWidget {
     required this.onTap,
     this.onApprove,
     this.onDecline,
+    this.onDelete,
   });
 
   final ExpenseSummary expense;
@@ -30,6 +31,7 @@ class MobileSheetReviewCompactRow extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onApprove;
   final VoidCallback? onDecline;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -42,9 +44,9 @@ class MobileSheetReviewCompactRow extends StatelessWidget {
         ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
             expense.categoryName;
     final merchant = expense.merchantName?.trim();
-    // Per-line actions only make sense on a still-pending line.
-    final canAct =
-        onApprove != null && onDecline != null && expense.expenseStatusId == 1;
+    final showApprove = onApprove != null && expense.expenseStatusId != 2;
+    final showDecline = onDecline != null && expense.expenseStatusId != 3;
+    final showDelete = onDelete != null;
 
     return Material(
       color: Colors.transparent,
@@ -121,20 +123,29 @@ class MobileSheetReviewCompactRow extends StatelessWidget {
                   ),
                 ],
               ),
-              if (canAct) ...[
+              if (showApprove || showDecline || showDelete) ...[
                 const SizedBox(width: 4),
-                ActionIconButton(
-                  icon: Icons.check,
-                  tooltip: l10n.approve,
-                  color: AppTheme.success,
-                  onPressed: onApprove!,
-                ),
-                ActionIconButton(
-                  icon: Icons.close,
-                  tooltip: l10n.decline,
-                  color: AppTheme.destructive,
-                  onPressed: onDecline!,
-                ),
+                if (showApprove)
+                  ActionIconButton(
+                    icon: Icons.check,
+                    tooltip: l10n.approve,
+                    color: AppTheme.success,
+                    onPressed: onApprove!,
+                  ),
+                if (showDecline)
+                  ActionIconButton(
+                    icon: Icons.close,
+                    tooltip: l10n.decline,
+                    color: AppTheme.destructive,
+                    onPressed: onDecline!,
+                  ),
+                if (showDelete)
+                  ActionIconButton(
+                    icon: Icons.delete_outline,
+                    tooltip: l10n.delete,
+                    color: AppTheme.destructive,
+                    onPressed: onDelete!,
+                  ),
               ],
             ],
           ),

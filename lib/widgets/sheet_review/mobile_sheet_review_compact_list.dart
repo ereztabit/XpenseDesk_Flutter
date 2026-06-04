@@ -14,6 +14,7 @@ class MobileSheetReviewCompactList extends StatelessWidget {
     required this.onTapLine,
     this.onApproveLine,
     this.onDeclineLine,
+    this.onDeleteLine,
   });
 
   final List<ExpenseSummary> expenses;
@@ -21,6 +22,7 @@ class MobileSheetReviewCompactList extends StatelessWidget {
   final void Function(ExpenseSummary) onTapLine;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
+  final void Function(ExpenseSummary)? onDeleteLine;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +42,7 @@ class MobileSheetReviewCompactList extends StatelessWidget {
             onTap: () => onTapLine(e),
             onApprove: onApproveLine == null ? null : () => onApproveLine!(e),
             onDecline: onDeclineLine == null ? null : () => onDeclineLine!(e),
+            onDelete: onDeleteLine == null ? null : () => onDeleteLine!(e),
           );
         }),
       ),

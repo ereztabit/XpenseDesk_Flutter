@@ -24,12 +24,14 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
     required this.onTapLine,
     this.onApproveLine,
     this.onDeclineLine,
+    this.onDeleteLine,
   });
 
   final List<ExpenseSummary> expenses;
   final void Function(ExpenseSummary) onTapLine;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
+  final void Function(ExpenseSummary)? onDeleteLine;
 
   @override
   ConsumerState<SheetReviewLineSection> createState() =>
@@ -71,6 +73,7 @@ class _SheetReviewLineSectionState
             onTapLine: widget.onTapLine,
             onApproveLine: widget.onApproveLine,
             onDeclineLine: widget.onDeclineLine,
+            onDeleteLine: widget.onDeleteLine,
           )
         else
           _EmptyBucket(message: l10n.sheetReviewNoLinesForFilter),
