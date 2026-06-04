@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/dashboard_ui_state.dart';
 import '../../models/expense_sheet_detail.dart';
 import '../../models/expense_sheet_list_item.dart';
 import '../../models/expense_sheet_status.dart';
@@ -142,6 +143,22 @@ class EmployeeDashboardBody extends ConsumerWidget {
     String companyLocale, {
     required bool isDeclined,
   }) {
+    // One-shot per-sheet default: a Declined sheet with declined expenses opens
+    // on the Declined bucket; every other tabbed sheet opens on Pending. Tracked
+    // per sheet id so we never re-apply on rebuild or override a manual choice.
+    if (ref.read(tabFocusedSheetProvider) != selectedSheet.expenseSheetId) {
+      final declinedCount =
+          detail.expenses.where((e) => e.expenseStatusId == 3).length;
+      final desiredTab = isDeclined && declinedCount > 0
+          ? FilterTab.rejected
+          : FilterTab.pending;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedFilterTabProvider.notifier).set(desiredTab);
+        ref
+            .read(tabFocusedSheetProvider.notifier)
+            .set(selectedSheet.expenseSheetId);
+      });
+    }
     final activeTab = ref.watch(selectedFilterTabProvider);
     final tabStatusId = SheetExpenseBuckets.statusIdForTab(activeTab);
     final filtered = SheetExpenseBuckets.filterByTab(detail.expenses, activeTab);

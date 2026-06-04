@@ -11,9 +11,27 @@ import '../app_button.dart';
 /// and reliably tappable in a narrow row.
 /// Desktop: the labelled ghost button.
 class SheetReviewBackRow extends StatelessWidget {
-  const SheetReviewBackRow({super.key, required this.title});
+  const SheetReviewBackRow({
+    super.key,
+    required this.title,
+    this.fallbackRoute = '/dashboard',
+  });
 
   final String title;
+
+  /// Where to go when there is nothing to pop — e.g. Sheet Review was opened via
+  /// a deep link or after a browser refresh, so it is the only route on the
+  /// stack and `maybePop()` would silently do nothing.
+  final String fallbackRoute;
+
+  void _back(BuildContext context) {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
+    } else {
+      nav.pushReplacementNamed(fallbackRoute);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +43,7 @@ class SheetReviewBackRow extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
             tooltip: l10n.backToDashboard,
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: () => _back(context),
           ),
           const SizedBox(width: 4),
           Expanded(
@@ -47,7 +65,7 @@ class SheetReviewBackRow extends StatelessWidget {
           label: l10n.backToDashboard,
           variant: AppButtonVariant.ghost,
           icon: Icons.arrow_back,
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () => _back(context),
         ),
         const SizedBox(width: 12),
         Expanded(

@@ -37,6 +37,24 @@ final selectedFilterTabProvider =
   SelectedFilterTabNotifier.new,
 );
 
+/// Tracks the sheet id for which the per-sheet default filter tab has been
+/// applied. On first entry to a sheet's tabbed view the active tab is set to a
+/// sensible default (a Declined sheet with declined expenses focuses the
+/// Declined bucket; every other tabbed sheet focuses Pending), once per sheet id
+/// -- so it never re-applies on rebuild or fights a manual tab choice. See
+/// employee_dashboard_body.dart.
+class TabFocusedSheetNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? sheetId) => state = sheetId;
+}
+
+final tabFocusedSheetProvider =
+    NotifierProvider<TabFocusedSheetNotifier, String?>(
+  TabFocusedSheetNotifier.new,
+);
+
 /// Tracks which set of returned sheets the user has already dismissed the
 /// global alert for. The key is `sorted returned-sheet ids joined by '|'` —
 /// when the set changes, the key changes and the alert reappears.

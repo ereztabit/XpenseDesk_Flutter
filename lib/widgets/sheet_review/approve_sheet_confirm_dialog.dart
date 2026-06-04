@@ -7,14 +7,26 @@ import '../app_button.dart';
 /// Light confirm before a whole-sheet approve (prevents fat-finger bulk
 /// approve). Returns `true` if the manager confirmed.
 class ApproveSheetConfirmDialog extends StatelessWidget {
-  const ApproveSheetConfirmDialog({super.key, required this.itemCount});
+  const ApproveSheetConfirmDialog({
+    super.key,
+    required this.amountText,
+    required this.employeeName,
+  });
 
-  final int itemCount;
+  final String amountText;
+  final String employeeName;
 
-  static Future<bool> show(BuildContext context, int itemCount) async {
+  static Future<bool> show(
+    BuildContext context, {
+    required String amountText,
+    required String employeeName,
+  }) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (_) => ApproveSheetConfirmDialog(itemCount: itemCount),
+      builder: (_) => ApproveSheetConfirmDialog(
+        amountText: amountText,
+        employeeName: employeeName,
+      ),
     );
     return result ?? false;
   }
@@ -22,14 +34,15 @@ class ApproveSheetConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final unit = itemCount == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural;
     return AlertDialog(
       title: Text(
         l10n.approveSheetConfirmTitle,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
       content: Text(
-        '${l10n.approveSheetConfirmBodyPrefix} $itemCount $unit ${l10n.approveSheetConfirmBodySuffix}',
+        '${l10n.approveSheetConfirmBodyAmount} $amountText '
+        '${l10n.approveSheetConfirmBodyFor} $employeeName?'
+        '\n${l10n.approveSheetConfirmEditWarning}',
         style: const TextStyle(fontSize: 14, color: AppTheme.mutedForeground),
       ),
       actions: [

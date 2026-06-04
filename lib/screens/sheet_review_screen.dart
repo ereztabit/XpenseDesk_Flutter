@@ -5,7 +5,9 @@ import '../models/expense_summary.dart';
 import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../services/expense_service.dart';
+import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
+import '../widgets/app_button.dart';
 import '../widgets/sheet_review/approve_sheet_confirm_dialog.dart';
 import '../widgets/sheet_review/decline_sheet_dialog.dart';
 import '../widgets/sheet_review/sheet_review_actions.dart';
@@ -42,6 +44,18 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   void _refresh() =>
       ref.invalidate(sheetDetailProvider(widget.expenseSheetId));
 
+  /// Return to the dashboard — pop if Sheet Review was pushed, otherwise (deep
+  /// link / browser refresh, where it is the only route) navigate there so the
+  /// action never leaves the manager stranded.
+  void _toDashboard() {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
+    } else {
+      nav.pushReplacementNamed('/dashboard');
+    }
+  }
+
   void _openLineDetail(ExpenseSummary expense) {
     Navigator.of(context)
         .pushNamed('/manager/expense/${expense.expenseId}')
@@ -52,6 +66,27 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  /// Blocking error dialog for a failed sheet action — unmissable, unlike a
+  /// transient SnackBar, and surfaces the server's actual reason.
+  void _showActionError(String message) {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.errorTitle),
+        content: Text(message),
+        actions: [
+          AppButton(
+            label: l10n.ok,
+            variant: AppButtonVariant.primary,
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -69,13 +104,29 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     if (error is DeclineCommentRequiredException) {
       return l10n.declineSheetCommentRequired;
     }
+    // Surface the server's actual message for anything not specially mapped,
+    // instead of a generic "Error".
+    if (error is ExpenseException) {
+      return error.message;
+    }
     return l10n.errorTitle;
   }
 
   Future<void> _handleApprove(ExpenseSheetDetail sheet) async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed =
-        await ApproveSheetConfirmDialog.show(context, sheet.expenses.length);
+    final companyLocale = ref.read(companyLocaleProvider);
+    final total =
+        sheet.expenses.fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
+    final currencyCode =
+        sheet.expenses.isNotEmpty ? sheet.expenses.first.currencyCode : null;
+    final amountText = currencyCode != null
+        ? total.toCurrency(companyLocale, currencyCode)
+        : total.toFormattedNumber(companyLocale);
+    final confirmed = await ApproveSheetConfirmDialog.show(
+      context,
+      amountText: amountText,
+      employeeName: sheet.createdByName,
+    );
     if (!confirmed || !mounted) return;
 
     setState(() => _isBusy = true);
@@ -83,10 +134,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
       await ref
           .read(expenseServiceProvider)
           .approveSheet(widget.expenseSheetId);
+      if (!mounted) return;
+      // After approval, return to the dashboard; its row-tap .then() refreshes
+      // the buckets so the approved sheet leaves the Pending queue.
       _showMessage(l10n.sheetApprovedToast);
-      _refresh();
+      _toDashboard();
     } catch (e) {
-      _showMessage(_errorMessage(e, l10n));
+      _showActionError(_errorMessage(e, l10n));
       _refresh(); // re-sync — sheet may have changed under us
     } finally {
       if (mounted) setState(() => _isBusy = false);
@@ -130,10 +184,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
       await ref
           .read(expenseServiceProvider)
           .declineSheet(widget.expenseSheetId, comment);
+      if (!mounted) return;
+      // After declining, return to the dashboard; its row-tap .then() refreshes
+      // the buckets so the sheet moves into the returned/declined view.
       _showMessage(l10n.sheetDeclinedToast);
-      _refresh();
+      _toDashboard();
     } catch (e) {
-      _showMessage(_errorMessage(e, l10n));
+      _showActionError(_errorMessage(e, l10n));
       _refresh();
     } finally {
       if (mounted) setState(() => _isBusy = false);

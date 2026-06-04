@@ -12,6 +12,15 @@ class SheetReviewErrorView extends StatelessWidget {
 
   final bool isNotFound;
 
+  void _back(BuildContext context) {
+    final nav = Navigator.of(context);
+    if (nav.canPop()) {
+      nav.pop();
+    } else {
+      nav.pushReplacementNamed('/dashboard');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -32,7 +41,7 @@ class SheetReviewErrorView extends StatelessWidget {
             label: l10n.backToDashboard,
             variant: AppButtonVariant.normal,
             icon: Icons.arrow_back,
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: () => _back(context),
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'screen_imports.dart';
 import '../models/expense_detail.dart';
+import '../models/expense_sheet_status.dart';
 import '../widgets/ai_badge.dart';
 import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
@@ -68,6 +69,16 @@ class _EmployeeExpenseDetailScreenState
   /// Manager-mode: fields start locked; toggled by the Edit button.
   bool _isEditingEnabled = false;
 
+  // Baseline of the loaded expense, for dirty detection (#8).
+  double? _initialAmount;
+  String _initialMerchant = '';
+  String _initialNote = '';
+  String _initialReceiptRef = '';
+  DateTime? _initialDate;
+  int? _initialCategoryId;
+  String? _initialCurrencyCode;
+  bool _initialIsAiData = false;
+
   bool get _isEditable {
     if (widget.readOnly || _isClosed) return false;
     if (widget.isManagerMode) return _isEditingEnabled;
@@ -91,6 +102,21 @@ class _EmployeeExpenseDetailScreenState
       _merchantController.text.trim().isNotEmpty &&
       _selectedDate != null;
 
+  /// True when any field differs from the loaded baseline (#8). Gates the
+  /// save/update button so an unchanged form cannot be submitted.
+  bool get _isDirty {
+    final currentAmount =
+        double.tryParse(_amountController.text.replaceAll(',', ''));
+    return currentAmount != _initialAmount ||
+        _merchantController.text != _initialMerchant ||
+        _noteController.text != _initialNote ||
+        _receiptRefController.text != _initialReceiptRef ||
+        _selectedDate != _initialDate ||
+        _selectedCategoryId != _initialCategoryId ||
+        _selectedCurrencyCode != _initialCurrencyCode ||
+        _isAiData != _initialIsAiData;
+  }
+
   @override
   bool get hasUnsavedChanges => false;
 
@@ -99,6 +125,8 @@ class _EmployeeExpenseDetailScreenState
     super.initState();
     _amountController.addListener(() => setState(() {}));
     _merchantController.addListener(() => setState(() {}));
+    _noteController.addListener(() => setState(() {}));
+    _receiptRefController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadExpense());
   }
 
@@ -140,6 +168,23 @@ class _EmployeeExpenseDetailScreenState
     _selectedCurrencyCode = expense.currencyCode ?? 'ILS';
     _isAiData = expense.isAiData;
     _isModifying = false;
+
+    // Baseline snapshot for dirty detection (#8).
+    _initialAmount = expense.amount;
+    _initialMerchant = _merchantController.text;
+    _initialNote = _noteController.text;
+    _initialReceiptRef = _receiptRefController.text;
+    _initialDate = expense.expenseDate;
+    _initialCategoryId = expense.categoryId;
+    _initialCurrencyCode = _selectedCurrencyCode;
+    _initialIsAiData = expense.isAiData;
+  }
+
+  /// Manager-mode cancel: restore the loaded values and exit edit mode.
+  void _cancelManagerEdit() {
+    final expense = _expense;
+    if (expense != null) _initForm(expense);
+    setState(() => _isEditingEnabled = false);
   }
 
   Future<void> _pickDate() async {
@@ -603,7 +648,7 @@ class _EmployeeExpenseDetailScreenState
               ),
               const SizedBox(height: 2),
               Text(
-                expense.createdAt.toCompanyDate(companyLocale),
+                expense.createdAt.toLongDate(companyLocale),
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppTheme.mutedForeground,
@@ -631,6 +676,14 @@ class _EmployeeExpenseDetailScreenState
     if (widget.readOnly) return const SizedBox.shrink();
     final expense = _expense;
     if (expense == null) return const SizedBox.shrink();
+    // Per-line approve/decline only applies while the parent sheet is awaiting
+    // approval. On a finalised (Approved) or returned (Declined) sheet there is
+    // nothing to act on, so hide the row entirely.
+    final sheetStatusId = expense.expenseSheetStatusId;
+    if (sheetStatusId != null &&
+        sheetStatusId != ExpenseSheetStatus.waitingForApproval.id) {
+      return const SizedBox.shrink();
+    }
     final statusId = expense.expenseStatusId;
     final showApprove = statusId != 2;
     final showDecline = statusId != 3;
@@ -663,7 +716,7 @@ class _EmployeeExpenseDetailScreenState
                 variant: AppButtonVariant.success,
                 icon: Icons.check,
                 isLoading: _isSaving,
-                onPressed: _isSaving ? null : _approve,
+                onPressed: (_isSaving || _isEditingEnabled) ? null : _approve,
               ),
             if (showApprove && showDecline) const SizedBox(width: 12),
             if (showDecline)
@@ -671,7 +724,7 @@ class _EmployeeExpenseDetailScreenState
                 label: l10n.decline,
                 variant: AppButtonVariant.destructive,
                 icon: Icons.close,
-                onPressed: _isSaving ? null : _decline,
+                onPressed: (_isSaving || _isEditingEnabled) ? null : _decline,
               ),
           ],
         ),
@@ -684,12 +737,23 @@ class _EmployeeExpenseDetailScreenState
     // Manager: Update button shown only when editing is enabled
     if (widget.isManagerMode) {
       if (!_isEditingEnabled) return const SizedBox.shrink();
-      return AppButton(
-        label: l10n.updateExpenseDetails,
-        variant: AppButtonVariant.primary,
-        icon: Icons.save_outlined,
-        isLoading: _isSaving,
-        onPressed: _canSave && !_isSaving ? _save : null,
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          AppButton(
+            label: l10n.discard,
+            variant: AppButtonVariant.normal,
+            onPressed: _isSaving ? null : _cancelManagerEdit,
+          ),
+          const SizedBox(width: 12),
+          AppButton(
+            label: l10n.updateExpenseDetails,
+            variant: AppButtonVariant.primary,
+            icon: Icons.save_outlined,
+            isLoading: _isSaving,
+            onPressed: _canSave && _isDirty && !_isSaving ? _save : null,
+          ),
+        ],
       );
     }
 
@@ -722,7 +786,7 @@ class _EmployeeExpenseDetailScreenState
       variant: AppButtonVariant.primary,
       icon: Icons.save_outlined,
       isLoading: _isSaving,
-      onPressed: _canSave && !_isSaving ? _save : null,
+      onPressed: _canSave && _isDirty && !_isSaving ? _save : null,
     );
     final discardBtn = AppButton(
       label: l10n.discard,
