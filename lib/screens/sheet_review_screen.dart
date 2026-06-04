@@ -117,7 +117,12 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
 
   Future<void> _handleDecline() async {
     final l10n = AppLocalizations.of(context)!;
-    final comment = await DeclineSheetDialog.show(context);
+    final sheet =
+        ref.read(sheetDetailProvider(widget.expenseSheetId)).asData?.value;
+    final comment = await DeclineSheetDialog.show(
+      context,
+      employeeName: sheet?.createdByName ?? '',
+    );
     if (comment == null || !mounted) return;
 
     setState(() => _isBusy = true);

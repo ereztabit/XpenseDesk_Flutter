@@ -23,14 +23,10 @@ Open bugs (see `## report bugs (pending)` below)
 ## report bugs (pending)
 
 - [ ] Manager sheet review desktop layout -- content too narrow, date column wraps, invisible row borders, no edit icon -- see docs/bugs/manager-sheet-review-desktop-layout-issues.md
-- [ ] Decline sheet dialog -- no 200-char limit enforced in UI, missing employee name and post-decline explanation -- see docs/bugs/decline-sheet-dialog-char-limit-and-missing-context.md
 - [ ] Approve sheet dialog -- wrong text, word duplication ("items items"), missing amount and employee name, missing edit-lock warning -- see docs/bugs/approve-sheet-dialog-wrong-text.md
 - [ ] Manager expense detail edit mode -- no cancel button, approve/decline active during edit, date shows wrong format -- see docs/bugs/manager-expense-detail-edit-mode-issues.md
 - [ ] Sheet review -- no prompt after all expenses reviewed: auto-approve when all approved, show resolution dialog when some declined -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
 - [ ] Employee dashboard expense list -- 2 remaining issues: swipe-to-delete missing for declined expenses, status pill missing from desktop table (DONE: status tabs on Submitted sheets, mobile read-only View action) -- see docs/bugs/employee-dashboard-expense-list-issues.md
-- [ ] Onboarding country selector -- disable it for now (Israel only); re-enable when multi-country is supported -- see docs/bugs/onboarding-country-selector-disable-for-now.md
-- [ ] Onboarding cycle day -- should be radio buttons, label should explain it is the monthly expense submission date -- see docs/bugs/onboarding-cycle-day-should-be-radio-buttons.md
-- [ ] Edit expense — cancel button shows wrong Hebrew caption ("התעלם" should be "בטל"). See docs/bugs/edit-expense-cancel-button-wrong-hebrew-caption.md
 - [ ] canceled annual subscription with coupon still shows as "about to renew" on the billing screen
   - Reproduce:
     1. create a new company

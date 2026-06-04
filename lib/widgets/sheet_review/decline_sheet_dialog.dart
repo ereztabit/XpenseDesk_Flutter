@@ -9,9 +9,14 @@ import '../app_button.dart';
 /// mobile. [show] returns the trimmed comment on confirm, or null on cancel.
 /// The Decline button stays disabled until the comment is non-empty.
 class DeclineSheetDialog extends StatefulWidget {
-  const DeclineSheetDialog({super.key});
+  const DeclineSheetDialog({super.key, required this.employeeName});
 
-  static Future<String?> show(BuildContext context) {
+  final String employeeName;
+
+  static Future<String?> show(
+    BuildContext context, {
+    required String employeeName,
+  }) {
     if (context.isMobile) {
       return showModalBottomSheet<String>(
         context: context,
@@ -20,7 +25,7 @@ class DeclineSheetDialog extends StatefulWidget {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (_) => const DeclineSheetDialog(),
+        builder: (_) => DeclineSheetDialog(employeeName: employeeName),
       );
     }
     return showDialog<String>(
@@ -28,7 +33,7 @@ class DeclineSheetDialog extends StatefulWidget {
       builder: (_) => Dialog(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 448),
-          child: const DeclineSheetDialog(),
+          child: DeclineSheetDialog(employeeName: employeeName),
         ),
       ),
     );
@@ -85,7 +90,17 @@ class _DeclineSheetDialogState extends State<DeclineSheetDialog> {
               color: AppTheme.destructive,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
+          Text(
+            widget.employeeName.isEmpty
+                ? l10n.declineSheetEmployeeNotice
+                : '${widget.employeeName} ${l10n.declineSheetEmployeeNotice}',
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.mutedForeground,
+            ),
+          ),
+          const SizedBox(height: 16),
           Text(
             l10n.declineSheetCommentLabel,
             style: const TextStyle(
@@ -99,6 +114,7 @@ class _DeclineSheetDialogState extends State<DeclineSheetDialog> {
             autofocus: true,
             minLines: 3,
             maxLines: 6,
+            maxLength: 200,
             decoration: InputDecoration(
               hintText: l10n.declineSheetCommentHint,
               border: OutlineInputBorder(

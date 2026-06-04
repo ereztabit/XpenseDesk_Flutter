@@ -342,6 +342,7 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
           const SizedBox(height: 6),
           DropdownMenu<String>(
             initialSelection: _selectedCountryCode,
+            enabled: false,
             expandedInsets: EdgeInsets.zero,
             inputDecorationTheme: _dropdownInputTheme(),
             hintText: '— Select —',
@@ -396,21 +397,23 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
           // ── Cycle Day ─────────────────────────────────────────────────────
           FieldLabel(label: l10n.onboardingCycleDay, isRequired: true),
           const SizedBox(height: 6),
-          DropdownMenu<int>(
-            initialSelection: _selectedCutoverDay,
-            expandedInsets: EdgeInsets.zero,
-            inputDecorationTheme: _dropdownInputTheme(),
-            hintText: '— Select —',
-            dropdownMenuEntries: const [1, 2, 10, 15]
-                .map(
-                  (day) => DropdownMenuEntry(
-                    value: day,
-                    label:
-                        '${l10n.onboardingCycleDayPrefix} $day ${l10n.onboardingCycleDaySuffix}',
-                  ),
-                )
-                .toList(),
-            onSelected: (v) => setState(() => _selectedCutoverDay = v),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [1, 2, 10, 15].map((day) {
+              return ChoiceChip(
+                label: Text(switch (day) {
+                  1 => l10n.onboardingCycleDayOption1,
+                  2 => l10n.onboardingCycleDayOption2,
+                  10 => l10n.onboardingCycleDayOption10,
+                  _ => l10n.onboardingCycleDayOption15,
+                }),
+                selected: _selectedCutoverDay == day,
+                showCheckmark: false,
+                onSelected: (_) =>
+                    setState(() => _selectedCutoverDay = day),
+              );
+            }).toList(),
           ),
           if (_attemptedSubmit && _selectedCutoverDay == null)
             Padding(
