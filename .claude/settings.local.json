@@ -44,11 +44,23 @@
       "Bash(grep -nB1 -A8 \"Text\\('AI'\" \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/screens/employee_expense_detail_screen.dart\" \"C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/lib/widgets/expenses/mobile_expense_modal.dart\")",
       "Bash(git add *)",
       "Bash(git push *)",
+      "Bash(git commit:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git mv:*)",
+      "Bash(git fetch:*)",
+      "Read(//c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/.claude/**)",
+      "Edit(//c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/.claude/**)",
+      "Write(//c/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/.claude/**)",
       "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" add docs/001_Backlog.md docs/currency-converter-story.md docs/invoice-after-payment-story.md docs/manager-submit-expense-story.md)",
       "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" status --short)",
       "Bash(git -C C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer commit -m '@ *)",
       "Bash(git -C C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer commit --amend -m 'docs: clean completed items from backlog; add server story docs *)",
-      "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" log -1 --pretty=format:\"%s\")"
+      "Bash(git -C \"C:/Projects/XpenseDesk/BackEnd/XpenseDeskServer\" log -1 --pretty=format:\"%s\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Projects\\\\XpenseDesk\\\\BackEnd\\\\XpenseDeskServer\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   }
 }
