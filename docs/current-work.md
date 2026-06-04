@@ -27,6 +27,8 @@ Open bugs (see `## report bugs (pending)` below)
 - [ ] Manager expense detail edit mode -- no cancel button, approve/decline active during edit, date shows wrong format -- see docs/bugs/manager-expense-detail-edit-mode-issues.md
 - [ ] Sheet review -- no prompt after all expenses reviewed: auto-approve when all approved, show resolution dialog when some declined -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
 - [ ] Employee dashboard expense list -- 2 remaining issues: swipe-to-delete missing for declined expenses, status pill missing from desktop table (DONE: status tabs on Submitted sheets, mobile read-only View action) -- see docs/bugs/employee-dashboard-expense-list-issues.md
+- [ ] Edit expense -- Update button is enabled without changes; enable only when the form is dirty. See docs/bugs/edit-expense-update-button-only-when-dirty.md
+- [ ] Employee dashboard -- a Declined sheet with declined expenses should open on the Declined tab, not Pending. See docs/bugs/employee-dashboard-declined-sheet-focus-declined-tab.md
 - [ ] canceled annual subscription with coupon still shows as "about to renew" on the billing screen
   - Reproduce:
     1. create a new company
