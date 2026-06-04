@@ -1372,12 +1372,18 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   Future<void> _pickDate(BuildContext context, String companyLocale) async {
     final today = DateTime.now();
-    final sixMonthsAgo = DateTime(today.year, today.month - 6, today.day);
+    final twelveMonthsAgo = DateTime(today.year - 1, today.month, today.day);
+
+    // Clamp initialDate into [twelveMonthsAgo, today]; an out-of-range
+    // initialDate makes showDatePicker assert and the calendar fails to load.
+    var initialDate = _selectedDate ?? today;
+    if (initialDate.isBefore(twelveMonthsAgo)) initialDate = twelveMonthsAgo;
+    if (initialDate.isAfter(today)) initialDate = today;
 
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? today,
-      firstDate: sixMonthsAgo,
+      initialDate: initialDate,
+      firstDate: twelveMonthsAgo,
       lastDate: today,
     );
 

@@ -11,6 +11,7 @@ class AppFooter extends StatelessWidget {
     final year = DateTime.now().year;
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: AppTheme.muted.withValues(alpha: 0.3),
         border: const Border(

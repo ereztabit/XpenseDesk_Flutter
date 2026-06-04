@@ -159,10 +159,16 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
+    final firstDate = DateTime(now.year - 1, now.month, now.day);
+    // Clamp initialDate into [firstDate, now]; an out-of-range initialDate makes
+    // showDatePicker assert and the calendar fails to load.
+    var initialDate = _selectedDate ?? now;
+    if (initialDate.isBefore(firstDate)) initialDate = firstDate;
+    if (initialDate.isAfter(now)) initialDate = now;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now,
-      firstDate: now.subtract(const Duration(days: 180)),
+      initialDate: initialDate,
+      firstDate: firstDate,
       lastDate: now,
     );
     if (picked != null && mounted) setState(() => _selectedDate = picked);

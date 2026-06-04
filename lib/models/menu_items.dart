@@ -27,6 +27,12 @@ class MenuItems {
   static List<MenuItem> getItems(AppLocalizations t, bool isManager) {
     final allItems = [
       MenuItem(
+        id: 'dashboard',
+        icon: Icons.dashboard_outlined,
+        label: t.dashboard,
+        requiresManagerRole: true,
+      ),
+      MenuItem(
         id: 'profile',
         icon: Icons.person_outline,
         label: t.myProfile,
@@ -120,6 +126,7 @@ class MenuItems {
 
   /// Returns the menu item id that corresponds to [route], or null if no match.
   static String? activeIdForRoute(String route) {
+    if (route == '/dashboard') return 'dashboard';
     if (route.endsWith('/profile')) return 'profile';
     if (route == '/manager/analysis') return 'expenses-analysis';
     if (route.endsWith('/history/report')) return 'expenses-detail-report';

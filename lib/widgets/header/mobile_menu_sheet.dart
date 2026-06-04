@@ -64,6 +64,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     if (userInfo == null) return;
 
     switch (value) {
+      case 'dashboard':
+        await _navigateToRoute('/dashboard');
+        break;
       case 'profile':
         await _navigateToProfile(userInfo);
         break;

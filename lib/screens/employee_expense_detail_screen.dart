@@ -145,13 +145,15 @@ class _EmployeeExpenseDetailScreenState
   Future<void> _pickDate() async {
     final now = DateTime.now();
     // Managers can review/correct old expenses — use a 5-year window.
+    // Employees can report up to 12 months back (matches the server policy).
     final firstDate = widget.isManagerMode
         ? now.subtract(const Duration(days: 1825))
-        : now.subtract(const Duration(days: 180));
-    // Guard: initialDate must not be before firstDate (release builds skip asserts).
-    final initialDate = _selectedDate != null && _selectedDate!.isAfter(firstDate)
-        ? _selectedDate!
-        : firstDate;
+        : DateTime(now.year - 1, now.month, now.day);
+    // Clamp initialDate into [firstDate, now]; an out-of-range initialDate makes
+    // showDatePicker assert and the calendar fails to load.
+    var initialDate = _selectedDate ?? now;
+    if (initialDate.isBefore(firstDate)) initialDate = firstDate;
+    if (initialDate.isAfter(now)) initialDate = now;
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,

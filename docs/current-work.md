@@ -30,11 +30,7 @@ Open bugs (see `## report bugs (pending)` below)
 - [ ] Employee dashboard expense list -- 2 remaining issues: swipe-to-delete missing for declined expenses, status pill missing from desktop table (DONE: status tabs on Submitted sheets, mobile read-only View action) -- see docs/bugs/employee-dashboard-expense-list-issues.md
 - [ ] Onboarding country selector -- disable it for now (Israel only); re-enable when multi-country is supported -- see docs/bugs/onboarding-country-selector-disable-for-now.md
 - [ ] Onboarding cycle day -- should be radio buttons, label should explain it is the monthly expense submission date -- see docs/bugs/onboarding-cycle-day-should-be-radio-buttons.md
-- [ ] Footer not full width on mobile -- see docs/bugs/footer-not-full-width-mobile.md
-- [ ] Manager navigation menu — no link to the main dashboard; add one. See docs/bugs/manager-nav-missing-main-dashboard-link.md
 - [ ] Edit expense — cancel button shows wrong Hebrew caption ("התעלם" should be "בטל"). See docs/bugs/edit-expense-cancel-button-wrong-hebrew-caption.md
-- [ ] Remove the receipt number from the card layout. See docs/bugs/remove-receipt-number-from-card-layout.md
-- [ ] Expense editor -- calendar (date picker) does not load when tapping the date field. See docs/bugs/expense-editor-calendar-not-loaded.md
 - [ ] canceled annual subscription with coupon still shows as "about to renew" on the billing screen
   - Reproduce:
     1. create a new company
@@ -57,6 +53,7 @@ Open bugs (see `## report bugs (pending)` below)
 - [ ] we need a admin view to see compaines usage
 - [ ] we need to connect google analytics / GTM
 - [ ] we need to translate better to hebrew
+- [ ] Date pickers: first day of week by country (Israel = Sunday, others = Monday) -- post-MVP. See docs/in-progress/calendar-week-start-localization-spec.md
 - [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/in-progress/post-login-deep-linking-spec.md
 
 ## submit an expense

@@ -49,7 +49,6 @@ class MobileExpenseCard extends ConsumerWidget {
         ? '${expense.reviewedBy} - ${expense.reviewedAt!.toCompanyDate(locale)}'
         : null;
     final merchantText = expense.merchantName?.trim();
-    final receiptText = expense.receiptRef?.trim();
     final noteText = expense.note?.trim();
 
     return Card(
@@ -126,14 +125,6 @@ class MobileExpenseCard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 children: [
-                  if (receiptText != null && receiptText.isNotEmpty) ...[
-                    _DetailRow(
-                      label: l10n.receiptNumber,
-                      value: receiptText,
-                      monospace: true,
-                    ),
-                    const SizedBox(height: 6),
-                  ],
                   _DetailRow(
                     label: l10n.category,
                     value: ExpenseCategory.fromId(expense.categoryId)
@@ -256,14 +247,12 @@ class _DetailRow extends StatelessWidget {
   const _DetailRow({
     required this.label,
     required this.value,
-    this.monospace = false,
     this.constrainValue = false,
     this.maxLines = 1,
   });
 
   final String label;
   final String value;
-  final bool monospace;
   final bool constrainValue;
   final int maxLines;
 
@@ -278,7 +267,6 @@ class _DetailRow extends StatelessWidget {
             fontSize: 16,
             fontWeight: FontWeight.w400,
             color: AppTheme.foreground,
-            fontFamily: monospace ? 'monospace' : null,
           ),
     );
 
