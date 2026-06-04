@@ -20,7 +20,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 ## report bugs (pending)
 
 - [ ] Sheet review -- no prompt after all expenses reviewed: auto-approve when all approved, show resolution dialog when some declined -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
-- [ ] Employee dashboard expense list -- 2 remaining issues: swipe-to-delete missing for declined expenses, status pill missing from desktop table (DONE: status tabs on Submitted sheets, mobile read-only View action) -- see docs/bugs/employee-dashboard-expense-list-issues.md
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 

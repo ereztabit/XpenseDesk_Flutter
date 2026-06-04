@@ -1,3 +1,7 @@
+# Bug: Employee dashboard expense list issues
+
+> **Status: done**
+
 ## Problem
 
 Four UI issues on the employee dashboard expense list affecting all sheet states (Draft, Submitted, Declined, Approved).
@@ -67,3 +71,27 @@ Issue 4 -- lib/widgets/employee_dashboard/desktop_sheet_table_row.dart:
       child: ExpenseStatusBadge(expenseStatusId: expense.expenseStatusId, isAiData: expense.isAiData)))
   Reduce Merchant flex from 22 to 16 (or Category from 25 to 19) to keep the row balanced.
   Add matching header label in desktop_sheet_expense_table.dart _SheetTableHeader.
+
+## Resolution
+
+Three of the four issues shipped; issue 4 was consciously dropped (see below).
+
+1. Status filter tabs on Submitted sheets -- StatusFilterTabs now render for
+   Submitted sheets in lib/widgets/employee_dashboard/employee_dashboard_body.dart,
+   not just the Declined branch.
+
+2. Mobile read-only view -- lib/widgets/employee_dashboard/mobile_sheet_expense_carousel.dart
+   now has a dedicated onView slot; the view callback no longer leaks into onEdit,
+   so read-only sheets open in view mode on mobile.
+
+3. Swipe-to-delete for declined expenses -- lib/utils/sheet_utils.dart
+   `SheetPermissions.canDeleteExpense` case 4 (Declined sheet) returns true for
+   expenseStatusId 1 (Pending) or 3 (Declined). employee_dashboard_body.dart wires
+   that permission into `canDelete`, which drives `enableSwipeToDelete` on
+   lib/widgets/employee_dashboard/sheet_expenses_area.dart's mobile carousel.
+
+4. Status pill on the desktop *employee* expense table -- NOT implemented, dropped
+   by decision (not important). The manager Sheet Review table already shows the
+   status badge (closed under manager-sheet-review-desktop-layout-issues); the
+   employee-side desktop table (desktop_sheet_table_row.dart) intentionally keeps
+   its current columns with no status column.
