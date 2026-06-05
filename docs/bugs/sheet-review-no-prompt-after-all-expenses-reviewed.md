@@ -1,72 +1,92 @@
+# Bug: No warning before the last action that finalizes/re-submits a sheet
+
+> **Status: in progress**
+
+## Implementation (built, awaiting manual verification)
+
+Pre-action confirmation gate added before any per-expense action that auto-transitions the sheet. Shared dialog `lib/widgets/last_action_confirm_dialog.dart` (non-dismissable); detection helpers `SheetExpenseBuckets.approveFinalizesSheet` / `isLastDeclinedExpense` in `lib/utils/sheet_utils.dart`. Gates:
+
+- Manager inline approve (sheet review) -- `sheet_review_screen.dart._handleLineApprove`; one chokepoint covers desktop table + mobile card + mobile compact.
+- Manager detail-screen approve -- `employee_expense_detail_screen.dart._approve` (reads parent sheet via `sheetDetailProvider`).
+- Employee edit-save of last declined line -- `employee_expense_detail_screen.dart._save`.
+- Employee delete of last declined line -- `sheet_expenses_area.dart._delete` (desktop icon + mobile compact) and `swipeable_expense_card.dart` (mobile swipe), flag threaded from `employee_dashboard_body.dart`.
+
+Scope note: the manager gate fires only on WaitingForApproval sheets (approve never finalizes a Declined sheet -- and the escape-hatch approve on a Declined sheet is separately broken server-side: `proc_ApproveExpense` requires WfA, so it no-ops). Decline never auto-finalizes, so it is not gated.
+
 ## Problem
 
-When a manager finishes reviewing every individual expense on a sheet (approving or
-declining each one), the UI takes no action and shows no prompt. The manager is left
-staring at the sheet with no guidance, and can simply close it without resolving the
-sheet outcome.
+A sheet's state transition happens automatically as a side effect of the user's
+LAST per-expense action, with no warning beforehand. The user does not realize the
+action they are about to take is final, and is left disoriented after it happens.
 
-Two cases are broken:
+Two cases:
 
-1. All expenses approved -- the backend already auto-flips the sheet to Approved
-   (proc_EvaluateExpenseSheet). The frontend just silently refreshes and shows the
-   updated status. No navigation back, no toast, no confirmation. The manager does not
-   know they are done.
+1. Manager, WaitingForApproval sheet, acting on expenses one by one (inline
+   approve/decline). The moment the manager handles the LAST pending expense, the
+   backend auto-evaluates and finalizes the sheet (-> Approved), and the manager is
+   thrown back to the dashboard with no explanation of what just happened.
 
-2. All expenses reviewed, at least one declined -- the sheet stays WaitingForApproval
-   (correct, backend does not auto-approve in this case). The frontend refreshes
-   silently. The manager is not prompted to resolve the sheet. They can close the screen
-   and leave the sheet in a dead state: WaitingForApproval with no pending expenses and
-   no sheet-level decision. The employee cannot act on it.
+2. Employee, Declined sheet, fixing the declined expenses (edit or delete). The
+   moment the employee handles the LAST remaining declined expense, the entire sheet
+   auto-resubmits for approval. No warning, no confirmation.
+
+In both cases the transition itself is correct behavior -- the issue is that it
+happens silently, with no chance for the user to understand or back out.
 
 ## Reproduce Steps
 
-1. Log in as a manager and open a sheet in WaitingForApproval with 2+ expenses.
-2. Approve every expense one by one using the inline approve icon.
-   -- Observe: UI refreshes, nothing else happens. Sheet is now Approved but manager
-      gets no feedback and is not navigated away.
-3. Repeat with a fresh sheet. Decline at least one expense and approve the rest.
-   -- Observe: after the last per-expense action, UI refreshes silently. No dialog
-      appears asking the manager what to do with the sheet. Manager can close the page.
+Manager:
+1. Log in as a manager, open a WaitingForApproval sheet with 2+ pending expenses.
+2. Approve/decline expenses one by one with the inline icons.
+3. On the LAST pending expense, take the action.
+   -- Actual: sheet finalizes and the manager is bounced to the dashboard with no
+      prompt or explanation.
+   -- Expected: before that last action, a confirmation explains the sheet will be
+      finalized, and asks to proceed.
+
+Employee:
+1. Log in as an employee, open a Declined sheet with 2+ declined expenses.
+2. Edit or delete the declined expenses one by one.
+3. On the LAST declined expense, take the action.
+   -- Actual: the whole sheet silently re-submits for approval.
+   -- Expected: before that last action, a confirmation explains the sheet will be
+      re-submitted, and asks to proceed.
 
 ## Suggested Solution Approach
 
-After every per-expense approve or decline action in sheet_review_screen.dart, once
-_refresh() completes, count how many expenses are still Pending.
+Gate the LAST action with a pre-action confirmation. Before performing the action,
+detect whether it is the one that will trigger the sheet transition; if so, show a
+non-dismissable confirm dialog. Run the action only on confirm.
 
-If pendingCount == 0:
-  - If all expenses are Approved: the sheet is already auto-approved by the backend.
-    Navigate back to the manager dashboard and show a success toast ("Sheet approved").
-  - If at least one expense is Declined: show a dialog:
-      "All expenses have been reviewed. Some were declined.
-       What would you like to do?"
-      [Approve sheet]   -- approves the sheet as-is
-      [Decline sheet]   -- declines the sheet so the employee can make corrections
+- Manager (inline approve/decline): the action is "last" when there is exactly one
+  expense still Pending before it -- i.e. acting on it brings pending count to 0.
+  Dialog copy: "This is the last expense on this sheet. After this, the sheet will
+  be finalized (approved). Do you want to proceed?"
 
-The dialog must not be dismissable without choosing an option (no tap-outside-to-close).
+- Employee (edit/delete on a Declined sheet): the action is "last" when there is
+  exactly one declined expense remaining before it. Dialog copy: "This is the last
+  declined expense. After this, the sheet will be re-submitted for approval. Do you
+  want to proceed?"
+
+The dialog must not be dismissable by tapping outside (force an explicit choice).
 
 ## Suggested Fix
 
-File: lib/screens/sheet_review_screen.dart
+Needs investigation before asserting exact call sites -- the two flows differ:
 
-After _handleLineApprove() and _handleLineDecline() call _refresh(), add a helper:
+- Manager: lib/screens/sheet_review_screen.dart, in _handleLineApprove /
+  _handleLineDecline. Count Pending expenses (expenseStatusId == 1) from the current
+  sheet detail BEFORE calling the service; if count == 1, show the confirm dialog
+  first and only call approveExpense/declineExpense on confirm.
 
-  Future<void> _checkSheetCompletion() async {
-    final detail = // read from current provider state after refresh
-    final pending = detail.expenses.where((e) => e.expenseStatusId == 1).length;
-    if (pending > 0) return;
+- Employee: the resubmit is triggered server-side when the last declined expense is
+  resolved, but the employee's edit happens on a SEPARATE detail screen
+  (/employee/expense/{id}) -- the save/delete there is what flips the sheet, not the
+  dashboard. So the gate likely belongs at the delete site
+  (lib/widgets/employee_dashboard/sheet_expenses_area.dart _delete) AND at the
+  edit-save site in the expense detail screen. Need to confirm exactly where the
+  resubmit fires and how "last declined expense" is determined before wiring the
+  prompt. Investigate before coding.
 
-    final allApproved = detail.expenses.every((e) => e.expenseStatusId == 2);
-    if (allApproved) {
-      // backend already approved the sheet -- just navigate away
-      if (mounted) Navigator.of(context).pop();
-      // optionally show a SnackBar
-      return;
-    }
-
-    // some declined -- show resolution dialog (not dismissable)
-    // on Approve: call _handleApprove()
-    // on Decline: show decline-comment dialog then call _handleDecline()
-  }
-
-Call _checkSheetCompletion() at the end of _handleLineApprove() and _handleLineDecline(),
-after the await _refresh() call.
+New ARB keys (EN + HE) required for both dialog variants (title, body, proceed,
+cancel). No placeholders -- concatenate any dynamic parts in the widget.

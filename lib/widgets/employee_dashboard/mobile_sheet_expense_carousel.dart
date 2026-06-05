@@ -18,16 +18,25 @@ class MobileSheetExpenseCarousel extends StatefulWidget {
     super.key,
     required this.expenses,
     required this.enableSwipeToDelete,
+    this.warnOnResolveLastDeclined = false,
     this.onEdit,
     this.onView,
     this.onRefresh,
+    this.onResubmitted,
   });
 
   final List<ExpenseSummary> expenses;
   final bool enableSwipeToDelete;
+
+  /// Forwarded to each [SwipeableExpenseCard]: when true, swipe-deleting the
+  /// last Declined line first warns that the sheet will be re-submitted.
+  final bool warnOnResolveLastDeclined;
   final void Function(ExpenseSummary)? onEdit;
   final void Function(ExpenseSummary)? onView;
   final VoidCallback? onRefresh;
+
+  /// Invoked after swipe-deleting the last declined line re-submits the sheet.
+  final VoidCallback? onResubmitted;
 
   @override
   State<MobileSheetExpenseCarousel> createState() =>
@@ -60,9 +69,12 @@ class _MobileSheetExpenseCarouselState
             expense: expense,
             openCardNotifier: _openCardNotifier,
             autoPeek: false,
+            warnBeforeDelete: widget.warnOnResolveLastDeclined &&
+                expense.expenseStatusId == 3,
             onEdit:
                 widget.onEdit != null ? () => widget.onEdit!(expense) : null,
             onRefresh: widget.onRefresh,
+            onResubmitted: widget.onResubmitted,
           );
         }
         return MobileExpenseCard(

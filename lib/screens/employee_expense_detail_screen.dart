@@ -3,12 +3,15 @@ import 'package:intl/intl.dart';
 import 'screen_imports.dart';
 import '../models/expense_detail.dart';
 import '../models/expense_sheet_status.dart';
+import '../models/expense_summary.dart';
 import '../widgets/ai_badge.dart';
 import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
 import '../models/expense_currency.dart';
 import '../models/update_expense_request.dart';
+import '../providers/employee_dashboard_provider.dart';
 import '../providers/expense_provider.dart';
+import '../providers/expense_sheet_provider.dart';
 import '../services/excel_export_service.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
@@ -17,6 +20,7 @@ import '../utils/responsive_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
+import '../widgets/last_action_confirm_dialog.dart';
 
 class EmployeeExpenseDetailScreen extends ConsumerStatefulWidget {
   final String expenseId;
@@ -214,12 +218,49 @@ class _EmployeeExpenseDetailScreenState
     if (picked != null && mounted) setState(() => _selectedDate = picked);
   }
 
+  /// Loads the parent sheet's expenses (cached if Sheet Review / dashboard
+  /// already fetched it, else forces the fetch). Returns null when it can't be
+  /// resolved so callers can skip the warning rather than block a valid action.
+  Future<List<ExpenseSummary>?> _loadSheetExpenses(String sheetId) async {
+    try {
+      final cached = ref.read(sheetDetailProvider(sheetId)).asData?.value;
+      final sheet = cached ?? await ref.read(sheetDetailProvider(sheetId).future);
+      return sheet?.expenses;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _save() async {
     if (!_canSave || _isSaving) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final expense = _expense;
+    // Pre-resubmit warning (employee): saving the last Declined expense on a
+    // Declined sheet resets it to Pending and re-submits the sheet to the manager.
+    var willResubmit = false;
+    if (!widget.isManagerMode &&
+        expense?.expenseSheetId != null &&
+        expense!.expenseSheetStatusId == ExpenseSheetStatus.declined.id &&
+        expense.expenseStatusId == 3) {
+      final siblings = await _loadSheetExpenses(expense.expenseSheetId!);
+      if (siblings != null &&
+          SheetExpenseBuckets.isLastDeclinedExpense(siblings)) {
+        if (!mounted) return;
+        final proceed = await LastActionConfirmDialog.show(
+          context,
+          title: l10n.lastActionTitle,
+          body: l10n.lastActionResubmitBody,
+        );
+        if (!proceed || !mounted) return;
+        willResubmit = true;
+      }
+    }
+
+    if (!mounted) return;
     setState(() { _isSaving = true; _saveError = null; });
 
     // Capture context-dependent values before any await.
-    final l10n = AppLocalizations.of(context)!;
     final navigator = Navigator.of(context);
 
     try {
@@ -242,6 +283,12 @@ class _EmployeeExpenseDetailScreenState
       );
       if (!mounted) return;
       ref.invalidate(expenseSearchProvider);
+      // The last declined line just re-submitted the sheet — it is no longer the
+      // employee's to act on. Drop the dashboard selection so it re-defaults to
+      // the current draft instead of lingering on the now-submitted sheet.
+      if (willResubmit) {
+        ref.read(selectedSheetIdProvider.notifier).set(null);
+      }
       navigator.pop();
     } on ExpenseClosedException {
       if (mounted) {
@@ -262,6 +309,29 @@ class _EmployeeExpenseDetailScreenState
 
   Future<void> _approve() async {
     if (_isSaving) return;
+
+    final l10n = AppLocalizations.of(context)!;
+    final expense = _expense;
+    // Pre-finalize warning (manager): approving the last not-yet-approved line
+    // on a WaitingForApproval sheet auto-approves the whole sheet.
+    if (expense?.expenseSheetId != null &&
+        expense!.expenseSheetStatusId ==
+            ExpenseSheetStatus.waitingForApproval.id) {
+      final siblings = await _loadSheetExpenses(expense.expenseSheetId!);
+      if (siblings != null &&
+          SheetExpenseBuckets.approveFinalizesSheet(
+              siblings, widget.expenseId)) {
+        if (!mounted) return;
+        final proceed = await LastActionConfirmDialog.show(
+          context,
+          title: l10n.lastActionTitle,
+          body: l10n.lastActionApproveBody,
+        );
+        if (!proceed || !mounted) return;
+      }
+    }
+
+    if (!mounted) return;
     setState(() { _isSaving = true; _saveError = null; });
 
     final navigator = Navigator.of(context);

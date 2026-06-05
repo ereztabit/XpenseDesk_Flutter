@@ -7,7 +7,9 @@ import '../providers/expense_sheet_provider.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/sheet_utils.dart';
 import '../widgets/app_button.dart';
+import '../widgets/last_action_confirm_dialog.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/sheet_review/approve_sheet_confirm_dialog.dart';
 import '../widgets/sheet_review/decline_sheet_dialog.dart';
@@ -157,6 +159,22 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
 
   Future<void> _handleLineApprove(ExpenseSummary expense) async {
     final l10n = AppLocalizations.of(context)!;
+    // Pre-finalize warning: approving the last not-yet-approved line on a
+    // WaitingForApproval sheet auto-approves the whole sheet (proc_EvaluateExpenseSheet).
+    final sheet =
+        ref.read(sheetDetailProvider(widget.expenseSheetId)).asData?.value;
+    if (sheet != null &&
+        sheet.expenseSheetStatusId ==
+            ExpenseSheetStatus.waitingForApproval.id &&
+        SheetExpenseBuckets.approveFinalizesSheet(
+            sheet.expenses, expense.expenseId)) {
+      final proceed = await LastActionConfirmDialog.show(
+        context,
+        title: l10n.lastActionTitle,
+        body: l10n.lastActionApproveBody,
+      );
+      if (!proceed || !mounted) return;
+    }
     try {
       await ref.read(expenseServiceProvider).approveExpense(expense.expenseId);
       _refresh(); // sheet may auto-flip to Approved (auto-eval)

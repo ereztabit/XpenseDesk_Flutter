@@ -28,14 +28,15 @@ class DesktopSheetReviewTable extends StatelessWidget {
   final void Function(ExpenseSummary)? onDeleteLine;
 
   // Date 20 · Merchant 24 · Category 20 · Amount 15 · Status 12 (flex) +
-  // fixed 132px Actions (fits up to 4 × 32px icon buttons).
+  // fixed 148px Actions: up to 4 × 32px icon buttons (128px) + the cell's
+  // 16px horizontal padding = 144px, plus 4px breathing room.
   static const Map<int, TableColumnWidth> _columnWidths = {
     0: FlexColumnWidth(20),
     1: FlexColumnWidth(24),
     2: FlexColumnWidth(20),
     3: FlexColumnWidth(15),
     4: FlexColumnWidth(12),
-    5: FixedColumnWidth(132),
+    5: FixedColumnWidth(148),
   };
 
   @override

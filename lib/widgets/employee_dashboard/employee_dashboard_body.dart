@@ -162,6 +162,10 @@ class EmployeeDashboardBody extends ConsumerWidget {
     final activeTab = ref.watch(selectedFilterTabProvider);
     final tabStatusId = SheetExpenseBuckets.statusIdForTab(activeTab);
     final filtered = SheetExpenseBuckets.filterByTab(detail.expenses, activeTab);
+    // Warn before resolving the LAST declined line — that action re-submits the
+    // sheet to the manager. Only relevant on a Declined sheet.
+    final warnOnResolveLastDeclined =
+        isDeclined && SheetExpenseBuckets.isLastDeclinedExpense(detail.expenses);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -191,10 +195,20 @@ class EmployeeDashboardBody extends ConsumerWidget {
                 )
               : false,
           isReadOnly: !isDeclined,
+          warnOnResolveLastDeclined: warnOnResolveLastDeclined,
           onRefresh: () => _refreshAll(ref),
+          onResubmitted: () => _resetToCurrentDraft(ref),
         ),
       ],
     );
+  }
+
+  /// After the last declined line is resolved the sheet re-submits and is no
+  /// longer the employee's to act on. Drop the selection so the screen
+  /// re-defaults to the current-cycle draft, then refresh.
+  void _resetToCurrentDraft(WidgetRef ref) {
+    ref.read(selectedSheetIdProvider.notifier).set(null);
+    _refreshAll(ref);
   }
 
   /// Right-aligned card/list toggle placed above the expense list, mobile only

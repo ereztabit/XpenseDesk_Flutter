@@ -10,6 +10,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 
 ## TODO (Backlog)
+- [ ] Manager View Switcher — segmented pill toggle to switch between Team Expenses (`/dashboard`) and the manager's own My Expenses (`/user/dashboard`). Spec only, not yet built. See docs/in-progress/manager-view-switcher-spec.md
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
 - [ ] we have removed CycleId from the /me api - just making sure you are not using it.
@@ -19,9 +20,10 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## report bugs (pending)
 
-- [ ] Sheet review -- no prompt after all expenses reviewed: auto-approve when all approved, show resolution dialog when some declined -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
+- [ ] (in progress -- built, awaiting manual QA) Sheet transitions silently on the last action: warn BEFORE the last per-expense action that finalizes (manager) or re-submits (employee) the sheet -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
+- [ ] Manager Dashboard -- top analysis/spend-overview widget disappeared (only a placeholder now) -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
 
 ## general environment
 
@@ -41,14 +43,11 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 ## submit an expense
 
 
-## user expenses report
-
-- [ ] the ai strike through when ai didnt recognize the image is not clear - add explicit warning
 
 ## manager expenses report
 
 - [ ] build the spend overview widget for manager and employee docs/in-progress/spend-overview-spec.md
-* Missing rejection reason field for manager - new feature
+
 * Missing invite users option after signup - quick onboarding flow to allow manager invite users
 
 ## management screens

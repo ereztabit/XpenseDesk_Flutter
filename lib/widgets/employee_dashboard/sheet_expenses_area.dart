@@ -8,6 +8,7 @@ import '../../providers/employee_dashboard_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/responsive_utils.dart';
 import '../expenses/delete_expense_dialog.dart';
+import '../last_action_confirm_dialog.dart';
 import 'desktop_sheet_expense_table.dart';
 import 'mobile_sheet_expense_carousel.dart';
 import 'mobile_sheet_expense_list.dart';
@@ -28,6 +29,8 @@ class SheetExpensesArea extends ConsumerWidget {
     required this.onRefresh,
     this.isDraft = false,
     this.isReadOnly = false,
+    this.warnOnResolveLastDeclined = false,
+    this.onResubmitted,
   });
 
   final List<ExpenseSummary> expenses;
@@ -38,6 +41,15 @@ class SheetExpensesArea extends ConsumerWidget {
   final bool isDraft;
   final bool isReadOnly;
 
+  /// When true, deleting a Declined expense first prompts the employee that the
+  /// sheet will be re-submitted (it is the last declined line). Set by the
+  /// dashboard body which owns the full-sheet context.
+  final bool warnOnResolveLastDeclined;
+
+  /// Called after the last declined line is resolved (deleted) and the sheet
+  /// re-submits — lets the dashboard reset the selection to the current draft.
+  final VoidCallback? onResubmitted;
+
   void _editOrView(BuildContext context, ExpenseSummary expense) {
     Navigator.of(context)
         .pushNamed('/employee/expense/${expense.expenseId}')
@@ -45,12 +57,29 @@ class SheetExpensesArea extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, ExpenseSummary expense) async {
-    await DeleteExpenseDialog.show(
+    final isLastDeclined =
+        warnOnResolveLastDeclined && expense.expenseStatusId == 3;
+    if (isLastDeclined) {
+      final l10n = AppLocalizations.of(context)!;
+      final proceed = await LastActionConfirmDialog.show(
+        context,
+        title: l10n.lastActionTitle,
+        body: l10n.lastActionResubmitBody,
+      );
+      if (!proceed || !context.mounted) return;
+    }
+    final deleted = await DeleteExpenseDialog.show(
       context,
       expense.expenseId,
       onRefresh: onRefresh,
     );
-    onRefresh();
+    // Resolving the last declined line re-submits the sheet — hand off to the
+    // dashboard to reset selection; otherwise just refresh in place.
+    if (isLastDeclined && deleted && onResubmitted != null) {
+      onResubmitted!();
+    } else {
+      onRefresh();
+    }
   }
 
   @override
@@ -115,9 +144,11 @@ class SheetExpensesArea extends ConsumerWidget {
     return MobileSheetExpenseCarousel(
       expenses: expenses,
       enableSwipeToDelete: canDelete,
+      warnOnResolveLastDeclined: warnOnResolveLastDeclined,
       onEdit: onEditCb,
       onView: onViewCb,
       onRefresh: onRefresh,
+      onResubmitted: onResubmitted,
     );
   }
 }

@@ -137,6 +137,26 @@ class SheetExpenseBuckets {
       FilterTab.approved: approved,
     };
   }
+
+  /// True when approving the expense identified by [targetExpenseId] would leave
+  /// every expense on the sheet Approved — i.e. the backend will auto-finalize
+  /// the sheet to Approved (`proc_EvaluateExpenseSheet`). Used to warn the
+  /// manager before the line approve that ends the review.
+  static bool approveFinalizesSheet(
+    List<ExpenseSummary> all,
+    String targetExpenseId,
+  ) {
+    return all.every(
+      (e) => e.expenseId == targetExpenseId || e.expenseStatusId == 2,
+    );
+  }
+
+  /// True when the sheet has exactly one Declined expense left. Resolving that
+  /// last declined line (edit or delete) re-submits the sheet to the manager,
+  /// so we warn the employee first.
+  static bool isLastDeclinedExpense(List<ExpenseSummary> all) {
+    return all.where((e) => e.expenseStatusId == 3).length == 1;
+  }
 }
 
 // ─── Permissions ────────────────────────────────────────────────────────────

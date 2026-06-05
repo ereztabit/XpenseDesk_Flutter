@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
+import '../last_action_confirm_dialog.dart';
 import 'delete_expense_dialog.dart';
 import 'mobile_expense_card.dart';
 
@@ -29,6 +30,14 @@ class SwipeableExpenseCard extends StatefulWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onRefresh;
 
+  /// When true, tapping delete first warns that resolving this (last declined)
+  /// line will re-submit the sheet to the manager.
+  final bool warnBeforeDelete;
+
+  /// Invoked after deleting the last declined line re-submits the sheet, so the
+  /// dashboard can reset its selection to the current draft.
+  final VoidCallback? onResubmitted;
+
   const SwipeableExpenseCard({
     super.key,
     required this.expense,
@@ -37,6 +46,8 @@ class SwipeableExpenseCard extends StatefulWidget {
     this.onPeekPlayed,
     this.onEdit,
     this.onRefresh,
+    this.warnBeforeDelete = false,
+    this.onResubmitted,
   });
 
   @override
@@ -199,12 +210,25 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
       setState(() => _isOpen = false);
     }
     _animateTo(0);
-    if (mounted) {
-      await DeleteExpenseDialog.show(
+    if (!mounted) return;
+    if (widget.warnBeforeDelete) {
+      final l10n = AppLocalizations.of(context)!;
+      final proceed = await LastActionConfirmDialog.show(
         context,
-        widget.expense.expenseId,
-        onRefresh: widget.onRefresh,
+        title: l10n.lastActionTitle,
+        body: l10n.lastActionResubmitBody,
       );
+      if (!proceed || !mounted) return;
+    }
+    final deleted = await DeleteExpenseDialog.show(
+      context,
+      widget.expense.expenseId,
+      onRefresh: widget.onRefresh,
+    );
+    // Resolving the last declined line re-submits the sheet — let the dashboard
+    // reset its selection to the current draft.
+    if (widget.warnBeforeDelete && deleted) {
+      widget.onResubmitted?.call();
     }
   }
 
