@@ -1,8 +1,12 @@
 # Bug: No warning before the last action that finalizes/re-submits a sheet
 
-> **Status: in progress**
+> **Status: done**
 
-## Implementation (built, awaiting manual verification)
+## Resolution
+
+Shipped in commit fbb1503 and verified by the user (manager finalize prompt + employee resubmit prompt, desktop + mobile, including the dashboard reset-to-draft after resubmit). Implementation detail below.
+
+## Implementation
 
 Pre-action confirmation gate added before any per-expense action that auto-transitions the sheet. Shared dialog `lib/widgets/last_action_confirm_dialog.dart` (non-dismissable); detection helpers `SheetExpenseBuckets.approveFinalizesSheet` / `isLastDeclinedExpense` in `lib/utils/sheet_utils.dart`. Gates:
 

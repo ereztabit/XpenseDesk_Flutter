@@ -20,7 +20,9 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## report bugs (pending)
 
-- [ ] (in progress -- built, awaiting manual QA) Sheet transitions silently on the last action: warn BEFORE the last per-expense action that finalizes (manager) or re-submits (employee) the sheet -- see docs/bugs/sheet-review-no-prompt-after-all-expenses-reviewed.md
+- [ ] Sheet detail is cached and never refetched on entry -- manager sees stale sheet state until several refreshes; want fresh data every entry -- see docs/bugs/sheet-detail-stale-on-entry.md
+- [ ] Mobile swipe-delete leaves the card on screen until manual refresh -- see docs/bugs/mobile-swipe-delete-no-refresh.md
+- [ ] Duplicate API calls on normal dashboard load (queue/all, expense-sheet x2) -- see docs/bugs/duplicate-api-calls-on-load.md
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] Manager Dashboard -- top analysis/spend-overview widget disappeared (only a placeholder now) -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
