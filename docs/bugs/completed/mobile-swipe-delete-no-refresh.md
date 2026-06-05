@@ -1,6 +1,14 @@
 # Bug: Mobile swipe-delete leaves the card on screen until manual refresh
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Shipped in commit d4ac5ed, verified by the user. `SwipeableExpenseCard._handleTapDelete`
+now calls `onRefresh` on a successful delete (the last-declined case routes through
+`onResubmitted` instead). `DeleteExpenseDialog` only invalidated `expenseSearchProvider`
+on success; the dashboard list reads `sheetDetailProvider`, so the card lingered until a
+manual refresh.
 
 ## Problem
 

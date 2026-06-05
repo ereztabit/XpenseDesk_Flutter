@@ -46,8 +46,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 ## manager expenses report
 
 - [ ] build the spend overview widget for manager and employee docs/in-progress/spend-overview-spec.md
-
-* Missing invite users option after signup - quick onboarding flow to allow manager invite users
+- [ ] Missing invite users option after signup - quick onboarding flow to allow manager invite users
 
 ## management screens
 - [ ] we need to configure which categories are available

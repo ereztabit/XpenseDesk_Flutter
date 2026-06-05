@@ -1,6 +1,16 @@
 # Bug: Sheet detail is cached and never refetched on entry
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Shipped in commit d4ac5ed, verified by the user. The Sheet Review screen (and
+both dashboards) now invalidate their cached sheet providers in
+`didChangeDependencies` (once per mount) instead of a post-frame callback, so
+each entry re-fetches exactly once. `initState` is too early for a `ref`
+inherited-widget lookup (it threw `dependOnInheritedWidget ... before initState
+completed`); `didChangeDependencies` runs after initState but before the first
+build, giving a single fresh fetch with no stale flash.
 
 ## Problem
 

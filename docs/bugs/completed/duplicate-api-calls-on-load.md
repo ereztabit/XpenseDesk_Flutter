@@ -1,6 +1,16 @@
 # Bug: Duplicate API calls on normal dashboard load
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Shipped in commit d4ac5ed, verified by the user. Both dashboards invalidated their sheet
+providers in a post-frame callback, which fired AFTER the first build's `watch` had already
+fetched -> a second load. Moved the invalidation to `didChangeDependencies` (guarded once
+per mount): runs after `initState` but before the first build, so it is a no-op on first
+mount (single fetch) and a single fresh fetch on re-entry. `initState` itself is too early
+for a `ref` inherited-widget lookup -- doing it there threw and was reverted to
+`didChangeDependencies`.
 
 ## Problem
 
