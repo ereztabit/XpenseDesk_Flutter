@@ -87,6 +87,21 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     );
   }
 
+  /// Navigate back to the dashboard, then confirm with a toast. The snackbar is
+  /// shown on the app-level messenger AFTER navigating and on the next frame, so
+  /// `ScaffoldMessenger.showSnackBar` never iterates a Scaffold registry that is
+  /// mid-teardown — which throws "deactivated widget" and previously aborted the
+  /// handler before navigation ran (the sheet stayed open after approve/decline).
+  void _dismissWithMessage(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    _toDashboard();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+      );
+    });
+  }
+
   /// Blocking error dialog for a failed sheet action — unmissable, unlike a
   /// transient SnackBar, and surfaces the server's actual reason.
   void _showActionError(String message) {
@@ -168,8 +183,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     }
     // Approval succeeded. UI work (toast + navigation) lives outside the try so
     // a navigation/toast hiccup can never masquerade as a failed approval.
-    _showMessage(l10n.sheetApprovedToast);
-    _toDashboard();
+    _dismissWithMessage(l10n.sheetApprovedToast);
   }
 
   Future<void> _handleLineApprove(ExpenseSummary expense) async {
@@ -247,8 +261,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     }
     // Decline succeeded. UI work (toast + navigation) lives outside the try so a
     // navigation/toast hiccup can never masquerade as a failed decline.
-    _showMessage(l10n.sheetDeclinedToast);
-    _toDashboard();
+    _dismissWithMessage(l10n.sheetDeclinedToast);
   }
 
   @override
