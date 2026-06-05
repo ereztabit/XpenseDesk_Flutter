@@ -29,12 +29,18 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
   @override
   bool get hasUnsavedChanges => false;
 
+  bool _didInvalidateOnEntry = false;
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.invalidate(mySheetsProvider);
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInvalidateOnEntry) return;
+    _didInvalidateOnEntry = true;
+    // Invalidate once, here rather than initState (where `ref` can't yet do an
+    // inherited lookup) or a post-frame callback (which double-loads after the
+    // first build already fetched). No-op on first mount; single fresh fetch on
+    // re-entry.
+    ref.invalidate(mySheetsProvider);
   }
 
   /// Schedules a default selection when the current `selectedId` is null or

@@ -1,6 +1,5 @@
 import 'screen_imports.dart';
 import '../models/expense_sheet_list_item.dart';
-import '../providers/employee_dashboard_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../widgets/manager_dashboard/approved_card.dart';
 import '../widgets/manager_dashboard/page_header_row.dart';
@@ -28,12 +27,19 @@ class _ManagerDashboardScreenState
   @override
   bool get hasUnsavedChanges => false;
 
+  bool _didInvalidateOnEntry = false;
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshSheetProviders();
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInvalidateOnEntry) return;
+    _didInvalidateOnEntry = true;
+    // Invalidate once, here rather than initState (where `ref` can't yet do an
+    // inherited lookup) or a post-frame callback (which fires after the first
+    // build already fetched, double-loading). didChangeDependencies runs after
+    // initState but before the first build: no-op on first mount, single fresh
+    // fetch on re-entry.
+    _refreshSheetProviders();
   }
 
   /// Invalidates the three bucket providers (each family) + the employees
@@ -57,9 +63,9 @@ class _ManagerDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
-    // Resolve `selectedFilterTabProvider` once so it's mounted — the employee
-    // filter dropdown writes to it on selection; some providers downstream
-    // would otherwise rebuild from a stale default on first paint.
+    // Resolve `selectedEmployeeFilterProvider` once so it's mounted — the
+    // employee filter dropdown writes to it on selection; some providers
+    // downstream would otherwise rebuild from a stale default on first paint.
     ref.watch(selectedEmployeeFilterProvider);
 
     return buildWithNavigationGuard(

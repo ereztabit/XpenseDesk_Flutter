@@ -225,10 +225,15 @@ class _SwipeableExpenseCardState extends State<SwipeableExpenseCard>
       widget.expense.expenseId,
       onRefresh: widget.onRefresh,
     );
-    // Resolving the last declined line re-submits the sheet — let the dashboard
-    // reset its selection to the current draft.
-    if (widget.warnBeforeDelete && deleted) {
+    if (!deleted) return;
+    // On success DeleteExpenseDialog only invalidates expenseSearchProvider, not
+    // the sheetDetailProvider this list is built from — so refresh explicitly,
+    // otherwise the deleted card lingers until a manual reload. The last-declined
+    // case re-submits the sheet, so hand off to the dashboard instead.
+    if (widget.warnBeforeDelete) {
       widget.onResubmitted?.call();
+    } else {
+      widget.onRefresh?.call();
     }
   }
 

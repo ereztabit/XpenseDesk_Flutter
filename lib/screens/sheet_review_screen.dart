@@ -41,6 +41,21 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   @override
   bool get hasUnsavedChanges => false;
 
+  bool _didInvalidateOnEntry = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInvalidateOnEntry) return;
+    _didInvalidateOnEntry = true;
+    // The sheet-detail family entry is cached across visits (no autoDispose), so
+    // re-entering a sheet would otherwise show stale state with no network call.
+    // Invalidate here (after initState, before the first build) so each entry
+    // re-fetches exactly once. Not initState: `ref` can't do an inherited
+    // lookup there yet.
+    ref.invalidate(sheetDetailProvider(widget.expenseSheetId));
+  }
+
   bool _isActionable(ExpenseSheetDetail sheet) =>
       sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id;
 
