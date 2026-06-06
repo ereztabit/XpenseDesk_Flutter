@@ -12,6 +12,11 @@ enum AuthGateMode {
   employeeOnly,
   employeeOnboardedOnly,
   employeePendingOnboardingOnly,
+
+  /// Self-service expense screens (My Expenses, New Expense, expense detail).
+  /// Managers (roleId 1) are allowed unconditionally — a manager is also a
+  /// regular user; onboarded employees (roleId 2, terms accepted) are allowed.
+  selfExpenseAccess,
 }
 
 class AuthGate extends ConsumerWidget {
@@ -64,6 +69,14 @@ class AuthGate extends ConsumerWidget {
         if (userInfo == null) return '/';
         if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);
         return userInfo.termsConsentDate == null ? null : '/user/dashboard';
+      case AuthGateMode.selfExpenseAccess:
+        if (userInfo == null) return '/';
+        // Manager: always allowed (a manager is also a regular user).
+        if (userInfo.roleId == 1) return null;
+        // Employee: must have completed onboarding.
+        return userInfo.termsConsentDate == null
+            ? '/employee/onboarding'
+            : null;
     }
   }
 

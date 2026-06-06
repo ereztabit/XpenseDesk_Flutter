@@ -6,6 +6,7 @@ import '../utils/sheet_utils.dart';
 import '../widgets/employee_dashboard/employee_dashboard_body.dart';
 import '../widgets/employee_dashboard/page_header_row.dart';
 import '../widgets/employee_dashboard/sheet_expense_empty_state.dart';
+import '../widgets/manager/manager_view_switcher.dart';
 
 /// Sheet-centric employee dashboard.
 ///
@@ -78,23 +79,29 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
               child: RefreshableScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ConstrainedContent(
-                  child: sheetsAsync.when(
-                    loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 64),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    error: (_, _) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        l10n.failedToLoadExpenses,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: AppTheme.destructive),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ManagerViewSwitcher(),
+                      sheetsAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 64),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (_, _) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Text(
+                            l10n.failedToLoadExpenses,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: AppTheme.destructive),
+                          ),
+                        ),
+                        data: (sheets) =>
+                            _buildContent(context, l10n, sheets, selectedId),
                       ),
-                    ),
-                    data: (sheets) =>
-                        _buildContent(context, l10n, sheets, selectedId),
+                    ],
                   ),
                 ),
               ),

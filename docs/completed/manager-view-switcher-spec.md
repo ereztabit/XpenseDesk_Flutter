@@ -69,10 +69,12 @@ not through this switcher.
 Rendered **inside the page body**, directly below `AppHeader` and above the main
 dashboard content — **not** in the global nav menu or avatar dropdown.
 
-- **Manager Dashboard** (`/dashboard`) — switcher at the top of the content
-  `Column`, above `SpendOverviewPlaceholder`. "Team Expenses" pill active.
-- **Employee Dashboard** (`/user/dashboard`) — switcher at the top of the
-  content, above `PageHeaderRow`. "My Expenses" pill active. Shown **only** for a
+- **Manager Dashboard** (`/dashboard`) — switcher is the **first** child of the
+  content `Column`, above `DashboardGreeting` (the dashboard was rebuilt; the old
+  `SpendOverviewPlaceholder` anchor no longer exists). "Team Expenses" active.
+- **Employee Dashboard** (`/user/dashboard`) — switcher at the top of the content
+  (inside `ConstrainedContent`, above the `sheetsAsync.when(...)`), so it shows
+  across loading / empty / data states. "My Expenses" active. Shown **only** for a
   manager self-view; self-hides for real employees (see below).
 
 The widget self-gates: it reads `userInfoProvider` and returns
@@ -185,13 +187,21 @@ truncation expected.
 
 ---
 
-## Open questions / risks
+## Resolved (confirmed by product)
 
-- **Backend**: confirm a manager (`roleId == 1`) can create and own expense
-  sheets via the user-scoped expense APIs. The product framing ("a manager is
-  also a regular user") implies yes; verify before building so the My-Expenses
-  view isn't perpetually empty / 403-ing on New Expense.
-- **Onboarding**: managers don't go through employee onboarding
-  (`termsConsentDate`). `selfExpenseAccess` deliberately skips that check for
-  managers — confirm there's no other per-employee precondition the self-service
-  screens assume.
+- **Managers own expenses — yes.** A manager (`roleId == 1`) can create and own
+  expense sheets via the user-scoped APIs. **Guiding principle: a manager is an
+  employee minus approvals** — the My-Expenses flow is the exact employee flow;
+  the manager's own sheets simply don't require an approval step (backend
+  workflow, not a frontend concern).
+- **Onboarding** — `selfExpenseAccess` allows managers unconditionally; no other
+  per-employee precondition blocks the self-service screens.
+
+## Status
+
+Implemented (build green). Pending live verification:
+- `AuthGateMode.selfExpenseAccess` added; `/user/dashboard`,
+  `/employee/new-expense`, `/employee/expense/:id` switched to it.
+- `ManagerViewSwitcher` at `lib/widgets/manager/manager_view_switcher.dart`,
+  placed on both dashboards (self-hides for employees).
+- `teamExpenses` ARB key added (EN + HE); `myExpenses` already existed.

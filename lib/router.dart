@@ -146,7 +146,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const AuthGate(
-          mode: AuthGateMode.employeeOnboardedOnly,
+          mode: AuthGateMode.selfExpenseAccess,
           child: UserDashboardScreen(),
         ),
       );
@@ -173,7 +173,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const AuthGate(
-          mode: AuthGateMode.employeeOnboardedOnly,
+          mode: AuthGateMode.selfExpenseAccess,
           child: NewExpenseScreen(),
         ),
       );
@@ -195,7 +195,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => AuthGate(
-            mode: AuthGateMode.employeeOnboardedOnly,
+            mode: AuthGateMode.selfExpenseAccess,
             child: EmployeeExpenseDetailScreen(expenseId: id),
           ),
         );
