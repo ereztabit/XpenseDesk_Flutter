@@ -13,7 +13,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Manager View Switcher — segmented pill toggle to switch between Team Expenses (`/dashboard`) and the manager's own My Expenses (`/user/dashboard`). Spec only, not yet built. See docs/in-progress/manager-view-switcher-spec.md
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
-- [ ] we have removed CycleId from the /me api - just making sure you are not using it.
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
 - [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear
