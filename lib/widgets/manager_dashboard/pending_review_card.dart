@@ -23,6 +23,7 @@ class PendingReviewCard extends ConsumerWidget {
     super.key,
     required this.onRowTap,
     this.initiallyExpanded = true,
+    this.highlighted = false,
   });
 
   final void Function(ExpenseSheetListItem) onRowTap;
@@ -30,6 +31,9 @@ class PendingReviewCard extends ConsumerWidget {
   /// Initial expand state — overridable so the dashboard's Pending counter can
   /// open this bucket on arrival (§8).
   final bool initiallyExpanded;
+
+  /// Draw the focus ring — set when reached via the Pending counter (§8).
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,6 +53,7 @@ class PendingReviewCard extends ConsumerWidget {
       emptyIcon: Icons.schedule,
       initiallyExpanded: initiallyExpanded,
       collapseWhenEmpty: true,
+      highlightColor: highlighted ? AppTheme.amber : null,
       onRowTap: onRowTap,
       headerTrailingBuilder: (grandTotal, _) {
         if (grandTotal <= 0 || userInfo?.currencyCode == null) return null;

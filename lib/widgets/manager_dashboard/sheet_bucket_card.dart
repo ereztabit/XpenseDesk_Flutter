@@ -33,6 +33,7 @@ class SheetBucketCard extends ConsumerStatefulWidget {
     this.headerTrailingBuilder,
     this.initiallyExpanded = true,
     this.collapseWhenEmpty = false,
+    this.highlightColor,
   });
 
   /// Card title (e.g. "Pending review").
@@ -81,6 +82,11 @@ class SheetBucketCard extends ConsumerStatefulWidget {
   /// (always collapsed by default; manual-toggle only).
   final bool collapseWhenEmpty;
 
+  /// When set, the card draws a 2px focus ring in this color — used when the
+  /// section was reached from a Manager Dashboard counter (§7, §8). Null = the
+  /// default neutral border.
+  final Color? highlightColor;
+
   @override
   ConsumerState<SheetBucketCard> createState() => _SheetBucketCardState();
 }
@@ -113,8 +119,12 @@ class _SheetBucketCardState extends ConsumerState<SheetBucketCard>
     );
 
     // Data-driven auto-state — collapses when bucket is empty, expands when
-    // non-empty. Disabled the moment the user touches the chevron.
+    // non-empty. Disabled the moment the user touches the chevron. Also
+    // disabled when this card is the focus target (highlightColor set): the
+    // manager explicitly navigated here from a counter, so the box stays open
+    // even when empty — consistent with the Approved card (§8).
     if (widget.collapseWhenEmpty &&
+        widget.highlightColor == null &&
         !_userHasToggled &&
         dataAsync.hasValue) {
       final shouldBeExpanded = effectiveData.items.isNotEmpty;
@@ -136,11 +146,14 @@ class _SheetBucketCardState extends ConsumerState<SheetBucketCard>
           )
         : null;
 
+    final ringColor = widget.highlightColor;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppTheme.border),
+        side: ringColor != null
+            ? BorderSide(color: ringColor, width: 2)
+            : const BorderSide(color: AppTheme.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -16,6 +16,7 @@ class CounterCard extends StatefulWidget {
     required this.alert,
     this.eyebrow,
     this.onTap,
+    this.minHeight,
   });
 
   final int count;
@@ -24,6 +25,11 @@ class CounterCard extends StatefulWidget {
   final bool alert;
   final String? eyebrow;
   final VoidCallback? onTap;
+
+  /// Optional shared minimum height — set by the parent so a row of cards reads
+  /// as equal-height without `IntrinsicHeight` (CR Rule 6). Null = size to
+  /// content.
+  final double? minHeight;
 
   @override
   State<CounterCard> createState() => _CounterCardState();
@@ -51,6 +57,8 @@ class _CounterCardState extends State<CounterCard> {
     final card = AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       padding: EdgeInsets.all(isMobile ? 12 : 16),
+      constraints:
+          widget.minHeight != null ? BoxConstraints(minHeight: widget.minHeight!) : null,
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
@@ -89,11 +97,13 @@ class _CounterCardState extends State<CounterCard> {
             const SizedBox(height: 6),
             Text(
               widget.eyebrow!.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
-                color: AppTheme.amber,
+                // Warning tone only on the alerting (Pending) card; neutral
+                // eyebrows (e.g. Returned "Awaiting resubmit") stay muted (§3).
+                color: alert ? AppTheme.amber : AppTheme.mutedForeground,
               ),
             ),
           ],

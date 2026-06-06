@@ -10,6 +10,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 
 ## TODO (Backlog)
+- [ ] refactor lib/widgets/manager_dashboard/sheet_bucket_card.dart (211 lines, over the 200 cap) — extract its `_buildBody` loading/error/data switch into a `SheetBucketBody` widget file
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
 - [ ] add logos to the authorize page

@@ -21,9 +21,10 @@ class AppRoutes {
   static const String completePayment = '/complete-payment';
 }
 
-/// Which bucket the Sheet Approvals screen should auto-expand when it is opened
-/// from a Manager Dashboard counter card. Passed as the route `arguments`.
-enum ManagerApprovalsSection { pending, processed }
+/// Which bucket the Sheet Approvals screen should auto-expand (and highlight)
+/// when it is opened from a Manager Dashboard counter card. Passed as the route
+/// `arguments`.
+enum ManagerApprovalsSection { pending, processed, returned }
 
 /// Navigate to the correct dashboard based on roleId (1 = manager, else employee).
 /// Uses pushReplacementNamed so the target screen owns the full back-stack.

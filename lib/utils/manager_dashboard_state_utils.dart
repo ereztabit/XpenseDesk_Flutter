@@ -50,6 +50,10 @@ class ManagerDashboardData {
   final int managerCount;
   final int pendingCount;
   final int approvedCount;
+
+  /// Count of sheets the manager returned to the employee (reopened drafts
+  /// awaiting resubmit). Always rendered neutral on the dashboard (§6).
+  final int returnedCount;
   final double approvedSpend;
   final String? currencyCode;
 
@@ -59,6 +63,7 @@ class ManagerDashboardData {
     required this.managerCount,
     required this.pendingCount,
     required this.approvedCount,
+    required this.returnedCount,
     required this.approvedSpend,
     required this.currencyCode,
   });

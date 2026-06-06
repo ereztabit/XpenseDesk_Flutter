@@ -178,6 +178,7 @@ final managerDashboardStateProvider =
     managerCount: managerCount,
     pendingCount: pending.totalCount,
     approvedCount: approved.totalCount,
+    returnedCount: returned.totalCount,
     approvedSpend: approved.grandTotalAmount,
     currencyCode: currencyCode,
   ));

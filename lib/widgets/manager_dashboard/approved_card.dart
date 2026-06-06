@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_list_item.dart';
 import '../../providers/manager_dashboard_provider.dart';
+import '../../theme/app_theme.dart';
 import 'sheet_bucket_enums.dart';
 import 'sheet_bucket_card.dart';
 
@@ -18,6 +19,7 @@ class ApprovedCard extends ConsumerWidget {
     super.key,
     required this.onRowTap,
     this.initiallyExpanded = false,
+    this.highlighted = false,
   });
 
   final void Function(ExpenseSheetListItem) onRowTap;
@@ -25,6 +27,9 @@ class ApprovedCard extends ConsumerWidget {
   /// Initial expand state — overridable so the dashboard's Approved counter can
   /// open this bucket (the "Processed" section) on arrival (§8).
   final bool initiallyExpanded;
+
+  /// Draw the focus ring — set when reached via the Approved counter (§8).
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,6 +46,7 @@ class ApprovedCard extends ConsumerWidget {
       emptyTitle: l10n.noApprovedSheets,
       // No icon — audit empty state is text-only per story 02 §2.7.
       initiallyExpanded: initiallyExpanded,
+      highlightColor: highlighted ? AppTheme.primary : null,
       onRowTap: onRowTap,
       // No header trailing — historical totals not surfaced here.
     );

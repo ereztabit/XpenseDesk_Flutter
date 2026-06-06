@@ -18,9 +18,22 @@ import 'sheet_bucket_card.dart';
 /// to WaitingForApproval server-side and disappears from this bucket on the
 /// next refresh — visible workflow per story 02 §2.6.
 class ReturnedToEmployeeCard extends ConsumerWidget {
-  const ReturnedToEmployeeCard({super.key, required this.onRowTap});
+  const ReturnedToEmployeeCard({
+    super.key,
+    required this.onRowTap,
+    this.initiallyExpanded = false,
+    this.highlighted = false,
+  });
 
   final void Function(ExpenseSheetListItem) onRowTap;
+
+  /// Initial expand state — overridable so the dashboard's Returned counter can
+  /// open this bucket on arrival (§8). Defaults collapsed; the screen expands
+  /// exactly one section per arrival.
+  final bool initiallyExpanded;
+
+  /// Draw the focus ring — set when reached via the Returned counter (§8).
+  final bool highlighted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,8 +51,9 @@ class ReturnedToEmployeeCard extends ConsumerWidget {
       actionStyle: SheetBucketActionStyle.viewButton,
       emptyTitle: l10n.noReturnedSheets,
       emptyIcon: Icons.check_circle_outline,
-      initiallyExpanded: true,
+      initiallyExpanded: initiallyExpanded,
       collapseWhenEmpty: true,
+      highlightColor: highlighted ? AppTheme.destructive : null,
       onRowTap: onRowTap,
       headerTrailingBuilder: (grandTotal, _) {
         if (grandTotal <= 0 || userInfo?.currencyCode == null) return null;

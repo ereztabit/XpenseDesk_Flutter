@@ -77,9 +77,12 @@ class _SheetApprovalsScreenState
     // downstream would otherwise rebuild from a stale default on first paint.
     ref.watch(selectedEmployeeFilterProvider);
 
+    // Exactly one section expands on arrival (§8). No arg defaults to Pending.
     final section = widget.initialSection;
+    final returnedExpanded = section == ManagerApprovalsSection.returned;
     final approvedExpanded = section == ManagerApprovalsSection.processed;
-    final pendingExpanded = section != ManagerApprovalsSection.processed;
+    final pendingExpanded = section == null ||
+        section == ManagerApprovalsSection.pending;
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -112,13 +115,20 @@ class _SheetApprovalsScreenState
                       PendingReviewCard(
                         onRowTap: _onRowTap,
                         initiallyExpanded: pendingExpanded,
+                        highlighted:
+                            section == ManagerApprovalsSection.pending,
                       ),
                       const SizedBox(height: 12),
-                      ReturnedToEmployeeCard(onRowTap: _onRowTap),
+                      ReturnedToEmployeeCard(
+                        onRowTap: _onRowTap,
+                        initiallyExpanded: returnedExpanded,
+                        highlighted: returnedExpanded,
+                      ),
                       const SizedBox(height: 12),
                       ApprovedCard(
                         onRowTap: _onRowTap,
                         initiallyExpanded: approvedExpanded,
+                        highlighted: approvedExpanded,
                       ),
                     ],
                   ),

@@ -117,6 +117,7 @@ class _DashboardBody extends StatelessWidget {
                   SheetCounterCards(
                     pendingCount: 0,
                     approvedCount: 0,
+                    returnedCount: 0,
                     interactive: false,
                   ),
                   SizedBox(height: 16),
@@ -145,6 +146,7 @@ class _DashboardBody extends StatelessWidget {
         SheetCounterCards(
           pendingCount: data.pendingCount,
           approvedCount: data.approvedCount,
+          returnedCount: data.returnedCount,
         ),
         const SizedBox(height: 16),
         const SpendOverviewCard(),
