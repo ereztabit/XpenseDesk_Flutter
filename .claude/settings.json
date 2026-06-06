@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(flutter analyze)",
+      "PowerShell(flutter analyze *)",
+      "PowerShell(flutter build *)",
+      "PowerShell(flutter pub *)",
+      "PowerShell(dotnet build)",
+      "PowerShell(dotnet build *)",
+      "PowerShell(Set-Location *)",
+      "PowerShell(Get-ChildItem *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter build *)",
+      "Bash(flutter pub *)",
+      "Bash(dotnet build *)",
+      "mcp__tabit-loyalty-sql-connector__execute_select",
+      "mcp__tabit-loyalty-sql-connector__get_object_definition",
+      "mcp__tabit-loyalty-sql-connector__get_table_structure",
+      "mcp__c61c1b5c-d333-437f-91ff-7a62fff1e97a__getConfluencePage",
+      "mcp__c61c1b5c-d333-437f-91ff-7a62fff1e97a__getJiraIssue"
+    ]
+  }
+}
