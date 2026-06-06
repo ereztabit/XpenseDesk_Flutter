@@ -158,6 +158,10 @@ final managerDashboardStateProvider =
   final teammateCount =
       users.where((u) => u.roleId == 2 && (u.isActive || u.isPending)).length;
 
+  // Managers (roleId 1), including the logged-in manager — shown as context.
+  final managerCount =
+      users.where((u) => u.roleId == 1 && (u.isActive || u.isPending)).length;
+
   final state = resolveManagerDashboardState(
     hasTeam: teammateCount > 0,
     pendingCount: pending.totalCount,
@@ -171,6 +175,7 @@ final managerDashboardStateProvider =
   return AsyncValue.data(ManagerDashboardData(
     state: state,
     teammateCount: teammateCount,
+    managerCount: managerCount,
     pendingCount: pending.totalCount,
     approvedCount: approved.totalCount,
     approvedSpend: approved.grandTotalAmount,
@@ -201,6 +206,7 @@ final lastClosedCycleSpendProvider =
 
   return CycleSpend(
     cycleId: lastClosed.expenseCycleId,
+    cycleLabel: lastClosed.displayLabel,
     total: total,
     rows: rows,
   );

@@ -131,7 +131,10 @@ class _DashboardBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TeammatesCounter(count: data.teammateCount),
+        TeammatesCounter(
+          count: data.teammateCount,
+          managerCount: data.managerCount,
+        ),
         const SizedBox(height: 16),
         if (data.showFirstSheetsInfoRow) ...[
           const FirstSheetsInfoRow(),

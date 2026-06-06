@@ -27,11 +27,15 @@ class SpendBreakdownItem {
 /// Approved spend for a single cycle, ready for the Spend Overview card.
 class CycleSpend {
   final String cycleId;
+
+  /// Human-readable cycle label (e.g. "March 2026"), shown next to the title.
+  final String cycleLabel;
   final double total;
   final List<ExpensesAnalysisBreakdownRow> rows;
 
   const CycleSpend({
     required this.cycleId,
+    required this.cycleLabel,
     required this.total,
     required this.rows,
   });

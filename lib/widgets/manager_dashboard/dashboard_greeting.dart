@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
+import '../../theme/app_theme.dart';
 import '../../utils/responsive_utils.dart';
 
-/// Time-of-day greeting + the manager's first name, e.g. "Good morning, Dana".
+/// Time-of-day greeting + the manager's first name, e.g. "Good morning, Dana",
+/// with the company name beneath it in small text for context.
 ///
 /// The greeting word and the name are concatenated in the widget layer (no ARB
 /// placeholders, per project convention). RTL is handled by the framework — in
@@ -19,12 +21,28 @@ class DashboardGreeting extends ConsumerWidget {
     final userInfo = ref.watch(userInfoProvider);
     final firstName = _firstName(userInfo?.fullName ?? '');
     final greeting = _greetingFor(DateTime.now().hour, l10n);
+    final companyName = userInfo?.companyName ?? '';
 
-    return Text(
-      firstName.isEmpty ? greeting : '$greeting, $firstName',
-      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontSize: context.isMobile ? 22 : 28,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          firstName.isEmpty ? greeting : '$greeting, $firstName',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontSize: context.isMobile ? 22 : 28,
+              ),
+        ),
+        if (companyName.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            companyName,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.mutedForeground,
+            ),
           ),
+        ],
+      ],
     );
   }
 

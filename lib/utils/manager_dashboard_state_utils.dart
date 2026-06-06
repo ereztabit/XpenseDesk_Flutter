@@ -44,6 +44,10 @@ ManagerDashboardState resolveManagerDashboardState({
 class ManagerDashboardData {
   final ManagerDashboardState state;
   final int teammateCount;
+
+  /// Count of managers in the company (roleId 1), including the logged-in
+  /// manager themselves. Shown as context under the teammates count.
+  final int managerCount;
   final int pendingCount;
   final int approvedCount;
   final double approvedSpend;
@@ -52,6 +56,7 @@ class ManagerDashboardData {
   const ManagerDashboardData({
     required this.state,
     required this.teammateCount,
+    required this.managerCount,
     required this.pendingCount,
     required this.approvedCount,
     required this.approvedSpend,

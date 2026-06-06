@@ -5,13 +5,21 @@ import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
 import '../app_button.dart';
 
-/// Teammates counter (§6.2) — the count of teammates (excluding the manager)
-/// with a trailing "Manage" affordance that routes to user management. Shown in
-/// States B, C, D; in State A the invite block takes its place.
+/// Teammates counter (§6.2) — circular icon, a large count with a "Teammates"
+/// label beneath it, and a trailing outlined "Manage" button routing to user
+/// management. Shown in States B, C, D.
 class TeammatesCounter extends StatelessWidget {
-  const TeammatesCounter({super.key, required this.count});
+  const TeammatesCounter({
+    super.key,
+    required this.count,
+    required this.managerCount,
+  });
 
   final int count;
+
+  /// Managers in the company (including the logged-in manager) — shown as
+  /// small context beneath the teammates count.
+  final int managerCount;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +27,9 @@ class TeammatesCounter extends StatelessWidget {
     final label = count == 1
         ? l10n.managerDashboardTeammateSingular
         : l10n.managerDashboardTeammatePlural;
+    final managerLabel = managerCount == 1
+        ? l10n.managerDashboardManagerSingular
+        : l10n.managerDashboardManagerPlural;
 
     return Card(
       child: Padding(
@@ -26,47 +37,54 @@ class TeammatesCounter extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
               decoration: const BoxDecoration(
                 color: AppTheme.primaryTint,
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.people_outline,
-                  size: 20, color: AppTheme.primary),
+                  size: 22, color: AppTheme.primary),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '$count',
                     style: const TextStyle(
-                      fontSize: 22,
+                      fontSize: 26,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.foreground,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      label,
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.mutedForeground,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (managerCount > 0)
+                    Text(
+                      '$managerCount $managerLabel',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 11,
                         color: AppTheme.mutedForeground,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
             AppButton(
               label: l10n.managerDashboardManage,
-              variant: AppButtonVariant.ghost,
+              variant: AppButtonVariant.normal,
+              icon: Icons.settings_outlined,
               onPressed: () =>
                   Navigator.pushNamed(context, AppRoutes.managerUsers),
             ),

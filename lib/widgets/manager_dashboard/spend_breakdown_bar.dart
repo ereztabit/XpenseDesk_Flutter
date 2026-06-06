@@ -53,7 +53,7 @@ class SpendBreakdownBar extends StatelessWidget {
               minHeight: 8,
               backgroundColor: AppTheme.border,
               valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                  const AlwaysStoppedAnimation<Color>(AppTheme.chartBar),
             ),
           ),
         ],

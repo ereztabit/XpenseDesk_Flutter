@@ -25,6 +25,7 @@ class AppTheme {
   static const Color teal = Color(0xFF20C997);         // Completion / progress indicator (completed step)
   static const Color borderMedium = Color(0xFFE2E0ED); // Medium border – input fields, progress connectors
   static const Color amber = Color(0xFFF97316);        // Cycle day helper text – warning/info accent
+  static const Color chartBar = Color(0xFF8B5CF6);     // Spend Overview breakdown bars – clear violet
 
   // Spacing Constants
   static const double borderRadius = 12.0;

@@ -22,6 +22,11 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] Manager Dashboard -- top analysis/spend-overview widget disappeared (only a placeholder now) -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
+- [ ] Users module -- cannot change an employee's name -- see docs/bugs/users-screen-cannot-edit-employee-name.md
+- [ ] Users module -- mobile layout looks too dense -- see docs/bugs/users-screen-mobile-layout-too-dense.md
+- [ ] Users module -- back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
+- [ ] Expense Analysis -- should focus on previous cycle, not the current/active one -- see docs/bugs/expenses-analysis-default-to-previous-cycle.md
+- [ ] Expense Analysis -- detail date range should use long "June 1 2026" format -- see docs/bugs/expenses-analysis-detail-date-long-format.md
 
 ## general environment
 

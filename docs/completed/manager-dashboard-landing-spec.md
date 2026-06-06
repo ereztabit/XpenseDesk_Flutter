@@ -499,7 +499,9 @@ Found during live verification after the initial build:
    inside the vertical scroll view. With no fixed-height child and unbounded
    height, `stretch` tried to size the cards to infinite height — "BoxConstraints
    forces an infinite height" — and the failed layout cascaded (missing greeting,
-   overlap, blank body). Fixed by wrapping the row in `IntrinsicHeight`.
+   overlap, blank body). Fixed by dropping `stretch` (and `IntrinsicHeight`) and
+   top-aligning the cards (`CrossAxisAlignment.start`) — no unbounded height, and
+   it avoids the CR-banned `IntrinsicHeight` pattern.
 
 2. **Sheet Approvals had no back button.** Now that it is navigated-to rather than
    the landing screen, added a "Back to Dashboard" affordance at the top.
@@ -514,3 +516,27 @@ Found during live verification after the initial build:
 4. **Manager counted as a seat.** Teammate count now counts employees
    (`roleId == 2`, active or pending) only — the manager is never a seat, so a
    brand-new company (just the manager) correctly lands in State A.
+
+---
+
+## 16. UI alignment pass (vs. Lovable reference)
+
+Restyled to match the Lovable design reference:
+
+- **Spend Overview** rebuilt as a hero — icon in a circle, large amount,
+  `Approved Spend · {cycle}` subtitle (cycle label from `ExpenseCycle.displayLabel`),
+  "View more" near the top (end-aligned, so left in RTL), and the breakdown
+  rendered inline with a rounded **pill** By Employee / By Category toggle.
+- **Breakdown bars** use a clear violet (`AppTheme.chartBar`) instead of the dark
+  navy primary.
+- **Teammates card** — stacked big count + label, **outlined Manage button** with
+  a gear icon, plus a small "{n} managers" context line (managers incl. the
+  logged-in user, `managerCount` on `ManagerDashboardData`).
+- **Counter cards** — circular icon containers and a "View →" affordance so they
+  read as clickable.
+- **Greeting** shows the company name beneath it for context.
+- Copy adopts the Lovable wording (EN): "Sheets to review", "Approved sheets",
+  "Teammates".
+- Components split per CR Rule 1: `CounterCard`, `BreakdownToggle`,
+  `SpendOverviewBreakdown`, `SpendBreakdownBar` each in their own file.
+- Removed the orphaned pre-rewrite `spend_overview_widget.dart`.

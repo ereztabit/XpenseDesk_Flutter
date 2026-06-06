@@ -7,138 +7,148 @@ import '../../providers/manager_dashboard_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
 import '../../utils/format_utils.dart';
-import '../../utils/spend_breakdown_utils.dart';
 import 'spend_overview_breakdown.dart';
 
-/// Spend Overview (§6.5) — collapsible Approved Spend headline for the active
-/// cycle, expanding to a By Employee / By Category breakdown sourced from the
-/// analysis API.
+/// Spend Overview (§6.5) — a hero card showing Approved Spend for the last
+/// closed cycle: icon, large amount, "Approved Spend · {cycle}" subtitle, and
+/// (when there is spend) a "View more" link plus the By Employee / By Category
+/// breakdown rendered inline.
 ///
-/// In [preview] mode (State A) it renders a static, non-interactive zero header
-/// and skips the network fetch entirely.
-class SpendOverviewCard extends ConsumerStatefulWidget {
+/// In [preview] mode (State A) it shows a static zero hero and skips the fetch.
+class SpendOverviewCard extends ConsumerWidget {
   const SpendOverviewCard({super.key, this.preview = false});
 
   final bool preview;
 
   @override
-  ConsumerState<SpendOverviewCard> createState() => _SpendOverviewCardState();
-}
-
-class _SpendOverviewCardState extends ConsumerState<SpendOverviewCard> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
     final currencyCode = ref.watch(userInfoProvider)?.currencyCode;
 
-    if (widget.preview) {
-      return Card(
-        child: _header(l10n, locale, currencyCode, total: 0, expandable: false),
-      );
-    }
-
-    final spendAsync = ref.watch(lastClosedCycleSpendProvider);
-    final total = spendAsync.asData?.value?.total ?? 0;
+    final spend = preview ? null : ref.watch(lastClosedCycleSpendProvider).asData?.value;
+    final total = spend?.total ?? 0;
+    final hasSpend = !preview && total > 0;
 
     return Card(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _header(l10n, locale, currencyCode, total: total, expandable: true),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            child: _expanded
-                ? _content(l10n, locale, currencyCode, spendAsync)
-                : const SizedBox.shrink(),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _hero(
+              context,
+              l10n,
+              locale,
+              currencyCode,
+              total: total,
+              cycleLabel: spend?.cycleLabel,
+              hasSpend: hasSpend,
+            ),
+            if (hasSpend) ...[
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: AppTheme.border),
+              const SizedBox(height: 12),
+              SpendOverviewBreakdown(
+                rows: spend!.rows,
+                locale: locale,
+                currencyCode: currencyCode,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _header(
+  Widget _hero(
+    BuildContext context,
     AppLocalizations l10n,
     String locale,
     String? currencyCode, {
     required double total,
-    required bool expandable,
+    required String? cycleLabel,
+    required bool hasSpend,
   }) {
     final amountText = currencyCode != null
         ? total.toCurrency(locale, currencyCode)
         : total.toFormattedNumber(locale);
+    const subtitleStyle =
+        TextStyle(fontSize: 13, color: AppTheme.mutedForeground);
 
-    final row = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          const Icon(Icons.trending_up,
-              size: 16, color: AppTheme.mutedForeground),
-          const SizedBox(width: 8),
-          Text(
-            l10n.managerDashboardApprovedSpend,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.mutedForeground,
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: const BoxDecoration(
+            color: AppTheme.primaryTint,
+            shape: BoxShape.circle,
           ),
-          const Spacer(),
-          Text(
-            amountText,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.foreground,
-            ),
-          ),
-          if (expandable) ...[
-            const SizedBox(width: 6),
-            Icon(_expanded ? Icons.expand_less : Icons.expand_more,
-                size: 20, color: AppTheme.mutedForeground),
-          ],
-        ],
-      ),
-    );
-
-    if (!expandable) return row;
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-      onTap: () => setState(() => _expanded = !_expanded),
-      child: row,
-    );
-  }
-
-  Widget _content(
-    AppLocalizations l10n,
-    String locale,
-    String? currencyCode,
-    AsyncValue<CycleSpend?> spendAsync,
-  ) {
-    return spendAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      error: (_, _) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Text(
-          l10n.genericErrorRetry,
-          style:
-              const TextStyle(fontSize: 14, color: AppTheme.mutedForeground),
+          child: const Icon(Icons.trending_up, size: 22, color: AppTheme.primary),
         ),
-      ),
-      data: (spend) => SpendOverviewBreakdown(
-        rows: spend?.rows ?? const [],
-        hasSpend: (spend?.total ?? 0) > 0,
-        locale: locale,
-        currencyCode: currencyCode,
-        onViewMore: () =>
-            Navigator.pushNamed(context, AppRoutes.managerAnalysis),
-      ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                amountText,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.foreground,
+                ),
+              ),
+              const SizedBox(height: 2),
+              // Separate runs so a mixed-direction label + cycle label (e.g.
+              // Hebrew title + "March 2026") doesn't scramble under RTL bidi.
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      l10n.managerDashboardApprovedSpend,
+                      style: subtitleStyle,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (cycleLabel != null && cycleLabel.isNotEmpty) ...[
+                    const Text(' · ', style: subtitleStyle),
+                    Text(cycleLabel, style: subtitleStyle),
+                  ],
+                ],
+              ),
+              if (hasSpend) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () => Navigator.pushNamed(
+                          context, AppRoutes.managerAnalysis),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.viewMore,
+                            style: const TextStyle(
+                                fontSize: 13, color: AppTheme.primary),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_forward,
+                              size: 14, color: AppTheme.primary),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
