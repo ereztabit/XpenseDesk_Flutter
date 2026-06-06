@@ -14,7 +14,7 @@ class SheetReviewBackRow extends StatelessWidget {
   const SheetReviewBackRow({
     super.key,
     required this.title,
-    this.fallbackRoute = '/dashboard',
+    this.fallbackRoute = '/manager-approvals',
   });
 
   final String title;
@@ -42,7 +42,7 @@ class SheetReviewBackRow extends StatelessWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
-            tooltip: l10n.backToDashboard,
+            tooltip: l10n.backToApprovals,
             onPressed: () => _back(context),
           ),
           const SizedBox(width: 4),
@@ -62,7 +62,7 @@ class SheetReviewBackRow extends StatelessWidget {
     return Row(
       children: [
         AppButton(
-          label: l10n.backToDashboard,
+          label: l10n.backToApprovals,
           variant: AppButtonVariant.ghost,
           icon: Icons.arrow_back,
           onPressed: () => _back(context),

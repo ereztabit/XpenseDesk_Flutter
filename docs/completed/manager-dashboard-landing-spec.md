@@ -294,17 +294,24 @@ decisions below are authoritative where they differ from the prose above.
    reflect this (Pending / Approved cards per §6.3; Returned remains visible on
    the Sheet Approvals screen).
 
-3. **Spend Overview — reuse the existing widget.** It is not deleted: it still
-   lives at `lib/widgets/dashboard/spend_overview_widget.dart` (`SpendOverviewWidget`),
-   just unmounted from the dashboard during the sheet-centric rewrite (commit
-   `5d75fa7`) in favor of `spend_overview_placeholder.dart`. Re-mount the existing
-   widget rather than rebuild it. It already provides: collapsible header with
-   the approved total, By Employee / By Category toggle, progress bars,
-   drill-through to `/manager/analysis`, and the "View more" link. Caveat: it is
-   currently expense-level (`List<ExpenseSummary>`, `expenseStatusId == 2`); the
-   spec defines Approved Spend as the sum of **approved sheets**, so the data
-   source is the one piece to rework. Coordinate with the existing
-   `docs/in-progress/spend-overview-spec.md` backlog item.
+3. **Spend Overview — implemented from the analysis API (deviation from
+   "re-mount the old widget").** The original `SpendOverviewWidget`
+   (`lib/widgets/dashboard/spend_overview_widget.dart`) is expense-level — it
+   takes `List<ExpenseSummary>` and filters `expenseStatusId == 2`. The dashboard
+   has no clean expense-level company-wide source (the sheet buckets give sheet
+   rows, not per-category amounts). Rather than re-mount it, the Spend Overview
+   was rebuilt around the **analysis API** (`fetchAnalysisSummary` +
+   `fetchAnalysisBreakdown` for the active cycle), which yields exactly the
+   per-employee / per-category breakdown and the cycle's approved total — the
+   same data the "View more" screen (`/manager/analysis`) shows, so the headline
+   and the drill-through are consistent. Files:
+   `providers/manager_dashboard_provider.dart` (`activeCycleSpendProvider`),
+   `utils/spend_breakdown_utils.dart` (pure grouping), and
+   `widgets/manager_dashboard/spend_overview_card.dart` +
+   `spend_overview_breakdown.dart` + `spend_breakdown_bar.dart` (presentation).
+   **Consequence:** the old `spend_overview_widget.dart` is now orphaned dead
+   code (was already unmounted) and is a candidate for deletion. This still
+   coordinates with `docs/in-progress/spend-overview-spec.md`.
 
 4. **"First sheets arrive in X days" uses the existing cycle countdown.**
    Reuse `cycleProvider.daysRemaining` (`lib/providers/cycle_provider.dart`) — the
@@ -330,22 +337,22 @@ Look here at any time to see where the build is.
 | #  | Step                                            | Status      | Notes |
 |----|-------------------------------------------------|-------------|-------|
 | 0  | Naming + route decision (confirm)               | Done        | Rename existing -> SheetApprovalsScreen; new landing = ManagerDashboardScreen |
-| 1  | Re-route existing screen to `/manager-approvals`| Not started |       |
-| 2  | ARB keys (EN + HE) for the whole screen         | Not started |       |
-| 3  | Dashboard state model + provider (A/B/C/D)      | Not started |       |
-| 4  | New landing screen scaffold + greeting          | Not started |       |
-| 5  | Teammates counter widget                        | Not started |       |
-| 6  | Invite block widget (State A)                   | Not started |       |
-| 7  | Pending / Approved counter cards widget         | Not started |       |
-| 8  | Pending alert treatment (§7.1)                  | Not started |       |
-| 9  | "First sheets arrive in X days" info row (B)    | Not started |       |
-| 10 | Spend Overview re-mount + sheet-level data      | Not started |       |
-| 11 | State orchestration + State A muted preview     | Not started |       |
-| 12 | Sheet Approvals "expand section" routing param  | Not started |       |
-| 13 | Flip post-login landing to new dashboard        | Not started |       |
-| 14 | Return-from-review routing + live count refresh | Not started |       |
-| 15 | Responsive (mobile) + RTL pass                  | Not started |       |
-| 16 | Localization completeness + final CR + checklist| Not started |       |
+| 1  | Re-route + rename + nav bar + back buttons      | Done        | /dashboard temp-aliases approvals until Step 13; nav menu item + back routes done; build green |
+| 2  | ARB keys (EN + HE) for the whole screen         | Done        | 17 namespaced managerDashboard* keys, EN+HE |
+| 3  | Dashboard state model + provider (A/B/C/D)      | Done        | manager_dashboard_state_utils.dart + managerDashboardStateProvider |
+| 4  | New landing screen scaffold + greeting          | Done        | New ManagerDashboardScreen at temp /manager-dashboard; build green |
+| 5  | Teammates counter widget                        | Done        | teammates_counter.dart |
+| 6  | Invite block widget (State A)                   | Done        | invite_block.dart; opens existing InviteUsersDialog |
+| 7  | Pending / Approved counter cards widget         | Done        | sheet_counter_cards.dart |
+| 8  | Pending alert treatment (§7.1)                  | Done        | amber treatment folded into counter card |
+| 9  | "First sheets arrive in X days" info row (B)    | Done        | first_sheets_info_row.dart; uses cycleContextProvider |
+| 10 | Spend Overview re-mount + sheet-level data      | Done        | spend_overview_card.dart sourced from analysis API; grouping in spend_breakdown_utils.dart |
+| 11 | State orchestration + State A muted preview     | Done        | _DashboardBody renders 4 states; build green |
+| 12 | Sheet Approvals "expand section" routing param  | Done        | ManagerApprovalsSection arg parsed in router; cards take initiallyExpanded |
+| 13 | Flip post-login landing to new dashboard        | Done        | /dashboard -> ManagerDashboardScreen; /manager-approvals -> SheetApprovalsScreen; temp route removed |
+| 14 | Return-from-review routing + live count refresh | Done        | approvals-if-pending-else-dashboard; backToApprovals label; counts refresh on entry |
+| 15 | Responsive (mobile) + RTL pass                  | Done        | counter cards scale on mobile; RTL checklist reviewed (logical insets, auto-mirror arrows) |
+| 16 | Localization completeness + final CR + checklist| Done        | spend_overview_card split to <200 lines; zero new analyzer issues; build green |
 
 ### 14.2 Steps
 
@@ -357,13 +364,32 @@ Decision: rename the existing `ManagerDashboardScreen` → `SheetApprovalsScreen
 in §1.2 refers to not rewriting the component's behavior; the class/file rename is
 a clarity improvement with identical behavior.
 
-**Step 1 — Re-route existing screen to `/manager-approvals`.**
-Register `/manager-approvals` (wrapped in `AuthGate`) pointing at the existing
-approvals screen. Keep `/dashboard` mapping to the same screen for now so
-`AuthGate` and existing links keep working — the landing flip happens in Step 13.
-Update internal links that conceptually mean "approvals" to the new route.
-Verify the screen still works identically at `/manager-approvals` (3 buckets,
-filter, approve/reject, mobile).
+**Step 1 — Re-route + rename + nav bar + back buttons.**
+- Rename `ManagerDashboardScreen` → `SheetApprovalsScreen`
+  (`lib/screens/sheet_approvals_screen.dart`) via `git mv`; behavior unchanged.
+- Add `AppRoutes.managerApprovals = '/manager-approvals'`
+  (`lib/utils/app_navigator.dart`). Register `/manager-approvals` (AuthGate
+  managerOnly) → `SheetApprovalsScreen`. Keep `/dashboard` mapping to the SAME
+  screen TEMPORARILY so `AuthGate` landing and every "go home" reference keep
+  working; the landing flip happens in Step 13.
+- **Route strategy:** `/dashboard` stays the canonical "manager home" string, so
+  the many existing home references (profile back, billing, complete-payment,
+  login callback, onboarding completion, header "Dashboard" item) all point at
+  the NEW dashboard automatically once Step 13 flips it. Only sheet-review
+  navigation repoints to `/manager-approvals`.
+- **Nav bar:** add a new `sheet-approvals` menu item (manager-only,
+  `Icons.fact_check_outlined`, label `sheetApprovals`) to `menu_items.dart`;
+  handle it in `app_header.dart` and `mobile_menu_sheet.dart` → `/manager-approvals`;
+  add `activeIdForRoute('/manager-approvals') → 'sheet-approvals'`. The existing
+  "Dashboard" item stays (→ `/dashboard`).
+- **Back buttons:** repoint sheet-review fallback/deep-link routes from
+  `/dashboard` → `/manager-approvals` (`sheet_review_screen.dart` `_toDashboard`,
+  `sheet_review_back_row.dart` default `fallbackRoute`, `sheet_review_error_view.dart`).
+  The pop() path is unchanged. (Conditional "approvals-if-pending-else-dashboard"
+  return logic + label wording is Step 14.)
+- Page header: use new `sheetApprovals` title key in `page_header_row.dart`.
+- Verify the screen works identically at `/manager-approvals` and `/dashboard`
+  (3 buckets, filter, approve/reject, mobile), and the new menu item navigates.
 
 **Step 2 — ARB keys (EN + HE).**
 Add every user-facing string in §6/§7/§10 to `app_en.arb` and `app_he.arb`:
@@ -461,3 +487,30 @@ overflow risk). Walk the §12 acceptance checklist end to end.
 - Step 12 must land before Step 14 (return routing reuses the expand param).
 - Step 13 (landing flip) is intentionally late so the app stays runnable; it can
   only happen once Step 11 produces a complete, correct screen.
+
+---
+
+## 15. Post-launch fixes
+
+Found during live verification after the initial build:
+
+1. **Dashboard rendered half-empty with overlapping elements.** `SheetCounterCards`
+   used a `Row(crossAxisAlignment: stretch)` whose children were all `Expanded`,
+   inside the vertical scroll view. With no fixed-height child and unbounded
+   height, `stretch` tried to size the cards to infinite height — "BoxConstraints
+   forces an infinite height" — and the failed layout cascaded (missing greeting,
+   overlap, blank body). Fixed by wrapping the row in `IntrinsicHeight`.
+
+2. **Sheet Approvals had no back button.** Now that it is navigated-to rather than
+   the landing screen, added a "Back to Dashboard" affordance at the top.
+
+3. **Approved Spend showed zero.** The Spend Overview pulled from the open
+   (current) cycle, which has nothing approved yet. Rewired it to the **last
+   closed cycle** via the cycles API (`cyclesProvider` + new `lastClosedCycle`
+   selector); the headline total is the sum of that cycle's breakdown rows.
+   Renamed `activeCycleSpendProvider → lastClosedCycleSpendProvider`,
+   `ActiveCycleSpend → CycleSpend`.
+
+4. **Manager counted as a seat.** Teammate count now counts employees
+   (`roleId == 2`, active or pending) only — the manager is never a seat, so a
+   brand-new company (just the manager) correctly lands in State A.

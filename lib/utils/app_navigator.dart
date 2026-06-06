@@ -7,6 +7,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// Canonical route strings — always use these, never hardcode route paths.
 class AppRoutes {
   static const String managerDashboard = '/dashboard';
+  static const String managerApprovals = '/manager-approvals';
   static const String employeeDashboard = '/user/dashboard';
   static const String login = '/';
   static const String onboarding = '/onboarding';
@@ -19,6 +20,10 @@ class AppRoutes {
   static const String employeeNewExpense = '/employee/new-expense';
   static const String completePayment = '/complete-payment';
 }
+
+/// Which bucket the Sheet Approvals screen should auto-expand when it is opened
+/// from a Manager Dashboard counter card. Passed as the route `arguments`.
+enum ManagerApprovalsSection { pending, processed }
 
 /// Navigate to the correct dashboard based on roleId (1 = manager, else employee).
 /// Uses pushReplacementNamed so the target screen owns the full back-stack.

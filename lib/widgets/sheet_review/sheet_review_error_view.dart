@@ -17,7 +17,7 @@ class SheetReviewErrorView extends StatelessWidget {
     if (nav.canPop()) {
       nav.pop();
     } else {
-      nav.pushReplacementNamed('/dashboard');
+      nav.pushReplacementNamed('/manager-approvals');
     }
   }
 
@@ -38,7 +38,7 @@ class SheetReviewErrorView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           AppButton(
-            label: l10n.backToDashboard,
+            label: l10n.backToApprovals,
             variant: AppButtonVariant.normal,
             icon: Icons.arrow_back,
             onPressed: () => _back(context),

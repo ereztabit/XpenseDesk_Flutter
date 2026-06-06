@@ -33,6 +33,12 @@ class MenuItems {
         requiresManagerRole: true,
       ),
       MenuItem(
+        id: 'sheet-approvals',
+        icon: Icons.fact_check_outlined,
+        label: t.sheetApprovals,
+        requiresManagerRole: true,
+      ),
+      MenuItem(
         id: 'profile',
         icon: Icons.person_outline,
         label: t.myProfile,
@@ -127,6 +133,7 @@ class MenuItems {
   /// Returns the menu item id that corresponds to [route], or null if no match.
   static String? activeIdForRoute(String route) {
     if (route == '/dashboard') return 'dashboard';
+    if (route == '/manager-approvals') return 'sheet-approvals';
     if (route.endsWith('/profile')) return 'profile';
     if (route == '/manager/analysis') return 'expenses-analysis';
     if (route.endsWith('/history/report')) return 'expenses-detail-report';

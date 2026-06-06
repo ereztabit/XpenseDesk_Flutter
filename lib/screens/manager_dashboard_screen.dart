@@ -1,19 +1,22 @@
 import 'screen_imports.dart';
-import '../models/expense_sheet_list_item.dart';
 import '../providers/manager_dashboard_provider.dart';
-import '../widgets/manager_dashboard/approved_card.dart';
-import '../widgets/manager_dashboard/page_header_row.dart';
-import '../widgets/manager_dashboard/pending_review_card.dart';
-import '../widgets/manager_dashboard/returned_to_employee_card.dart';
-import '../widgets/manager_dashboard/spend_overview_placeholder.dart';
+import '../utils/manager_dashboard_state_utils.dart';
+import '../widgets/manager_dashboard/dashboard_greeting.dart';
+import '../widgets/manager_dashboard/first_sheets_info_row.dart';
+import '../widgets/manager_dashboard/invite_block.dart';
+import '../widgets/manager_dashboard/sheet_counter_cards.dart';
+import '../widgets/manager_dashboard/spend_overview_card.dart';
+import '../widgets/manager_dashboard/teammates_counter.dart';
 
-/// Sheet-centric manager dashboard.
+/// Manager Dashboard — the manager's post-login landing screen.
 ///
-/// Layout: Spend Overview placeholder → page header (title + employee filter)
-/// → Pending review hero card → Returned to employee card → Approved card.
+/// A launchpad (not a workspace): it surfaces the state of the company and
+/// routes the manager to the right next action. No sheet rows are listed here —
+/// sheet review lives on the Sheet Approvals screen (`/manager-approvals`).
 ///
-/// Read-only screen. Row taps will eventually navigate to Sheet Review
-/// (story 03) — until then they show a placeholder snackbar.
+/// Renders one of four data-derived states (see
+/// docs/in-progress/manager-dashboard-landing-spec.md §3); the body composition
+/// is built out across spec Steps 5–11.
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});
 
@@ -22,8 +25,8 @@ class ManagerDashboardScreen extends ConsumerStatefulWidget {
       _ManagerDashboardScreenState();
 }
 
-class _ManagerDashboardScreenState
-    extends ConsumerState<ManagerDashboardScreen> with FormBehaviorMixin {
+class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
+    with FormBehaviorMixin {
   @override
   bool get hasUnsavedChanges => false;
 
@@ -34,39 +37,20 @@ class _ManagerDashboardScreenState
     super.didChangeDependencies();
     if (_didInvalidateOnEntry) return;
     _didInvalidateOnEntry = true;
-    // Invalidate once, here rather than initState (where `ref` can't yet do an
-    // inherited lookup) or a post-frame callback (which fires after the first
-    // build already fetched, double-loading). didChangeDependencies runs after
+    // Refresh the dashboard's data sources on (re)entry so counts are live when
+    // the manager returns from Sheet Approvals / Sheet Review (§8). Runs after
     // initState but before the first build: no-op on first mount, single fresh
     // fetch on re-entry.
-    _refreshSheetProviders();
-  }
-
-  /// Invalidates the three bucket providers (each family) + the employees
-  /// list. Use after any mutation that may move a sheet between buckets —
-  /// e.g. returning from Sheet Review.
-  void _refreshSheetProviders() {
-    ref.invalidate(companyEmployeesProvider);
     ref.invalidate(approvalsQueueProvider);
-    ref.invalidate(returnedSheetsProvider);
     ref.invalidate(approvedSheetsProvider);
-  }
-
-  /// Row tap → Sheet Review (story 03). On return, refresh the bucket
-  /// providers — the sheet may have moved buckets (e.g. approved → leaves
-  /// Pending, lands in Approved).
-  void _onRowTap(ExpenseSheetListItem sheet) {
-    Navigator.of(context)
-        .pushNamed('/manager/sheet/${sheet.expenseSheetId}')
-        .then((_) => _refreshSheetProviders());
+    ref.invalidate(returnedSheetsProvider);
+    ref.invalidate(companyEmployeesProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Resolve `selectedEmployeeFilterProvider` once so it's mounted — the
-    // employee filter dropdown writes to it on selection; some providers
-    // downstream would otherwise rebuild from a stale default on first paint.
-    ref.watch(selectedEmployeeFilterProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final dashboardAsync = ref.watch(managerDashboardStateProvider);
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -81,15 +65,17 @@ class _ManagerDashboardScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SpendOverviewPlaceholder(),
-                      const SizedBox(height: 8),
-                      const ManagerPageHeaderRow(),
+                      const DashboardGreeting(),
                       const SizedBox(height: 24),
-                      PendingReviewCard(onRowTap: _onRowTap),
-                      const SizedBox(height: 12),
-                      ReturnedToEmployeeCard(onRowTap: _onRowTap),
-                      const SizedBox(height: 12),
-                      ApprovedCard(onRowTap: _onRowTap),
+                      dashboardAsync.when(
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 64),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (_, _) =>
+                            ErrorAlert(message: l10n.genericErrorRetry),
+                        data: (data) => _DashboardBody(data: data),
+                      ),
                     ],
                   ),
                 ),
@@ -99,6 +85,65 @@ class _ManagerDashboardScreenState
           ],
         ),
       ),
+    );
+  }
+}
+
+/// State-specific body of the dashboard (§3, §4). Renders exactly the elements
+/// for the current state in the fixed vertical order; hidden items collapse out.
+class _DashboardBody extends StatelessWidget {
+  const _DashboardBody({required this.data});
+
+  final ManagerDashboardData data;
+
+  @override
+  Widget build(BuildContext context) {
+    // State A — invite block dominates; counters + spend overview render as a
+    // muted, non-interactive preview (§7.2).
+    if (data.state == ManagerDashboardState.empty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          InviteBlock(),
+          SizedBox(height: 24),
+          IgnorePointer(
+            child: Opacity(
+              opacity: 0.55,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SheetCounterCards(
+                    pendingCount: 0,
+                    approvedCount: 0,
+                    interactive: false,
+                  ),
+                  SizedBox(height: 16),
+                  SpendOverviewCard(preview: true),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // States B / C / D.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TeammatesCounter(count: data.teammateCount),
+        const SizedBox(height: 16),
+        if (data.showFirstSheetsInfoRow) ...[
+          const FirstSheetsInfoRow(),
+          const SizedBox(height: 16),
+        ],
+        SheetCounterCards(
+          pendingCount: data.pendingCount,
+          approvedCount: data.approvedCount,
+        ),
+        const SizedBox(height: 16),
+        const SpendOverviewCard(),
+      ],
     );
   }
 }

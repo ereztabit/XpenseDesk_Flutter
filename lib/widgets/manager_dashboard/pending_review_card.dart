@@ -19,9 +19,17 @@ import 'sheet_bucket_card.dart';
 ///
 /// Header amount badge: amber `"{grandTotal} awaiting"` (hidden when zero).
 class PendingReviewCard extends ConsumerWidget {
-  const PendingReviewCard({super.key, required this.onRowTap});
+  const PendingReviewCard({
+    super.key,
+    required this.onRowTap,
+    this.initiallyExpanded = true,
+  });
 
   final void Function(ExpenseSheetListItem) onRowTap;
+
+  /// Initial expand state — overridable so the dashboard's Pending counter can
+  /// open this bucket on arrival (§8).
+  final bool initiallyExpanded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +47,7 @@ class PendingReviewCard extends ConsumerWidget {
       actionStyle: SheetBucketActionStyle.reviewButton,
       emptyTitle: l10n.noPendingSheets,
       emptyIcon: Icons.schedule,
-      initiallyExpanded: true,
+      initiallyExpanded: initiallyExpanded,
       collapseWhenEmpty: true,
       onRowTap: onRowTap,
       headerTrailingBuilder: (grandTotal, _) {

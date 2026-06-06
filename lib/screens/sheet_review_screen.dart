@@ -4,6 +4,7 @@ import '../models/expense_sheet_status.dart';
 import '../models/expense_summary.dart';
 import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
+import '../providers/manager_dashboard_provider.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
 import '../utils/responsive_utils.dart';
@@ -62,15 +63,15 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   void _refresh() =>
       ref.invalidate(sheetDetailProvider(widget.expenseSheetId));
 
-  /// Return to the dashboard — pop if Sheet Review was pushed, otherwise (deep
+  /// Return to Sheet Approvals — pop if Sheet Review was pushed, otherwise (deep
   /// link / browser refresh, where it is the only route) navigate there so the
   /// action never leaves the manager stranded.
-  void _toDashboard() {
+  void _toApprovals() {
     final nav = Navigator.of(context);
     if (nav.canPop()) {
       nav.pop();
     } else {
-      nav.pushReplacementNamed('/dashboard');
+      nav.pushReplacementNamed('/manager-approvals');
     }
   }
 
@@ -87,14 +88,34 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     );
   }
 
-  /// Navigate back to the dashboard, then confirm with a toast. The snackbar is
-  /// shown on the app-level messenger AFTER navigating and on the next frame, so
-  /// `ScaffoldMessenger.showSnackBar` never iterates a Scaffold registry that is
-  /// mid-teardown — which throws "deactivated widget" and previously aborted the
-  /// handler before navigation ran (the sheet stayed open after approve/decline).
-  void _dismissWithMessage(String message) {
+  /// After a successful approve/decline, route per §8: back to Sheet Approvals
+  /// if pending sheets remain, otherwise to the Manager Dashboard. The remaining
+  /// count comes from a fresh read of the unfiltered queue.
+  ///
+  /// The confirmation toast is shown on the app-level messenger AFTER navigating
+  /// and on the next frame, so `ScaffoldMessenger.showSnackBar` never iterates a
+  /// Scaffold registry that is mid-teardown (which throws "deactivated widget"
+  /// and previously left the sheet open after approve/decline).
+  Future<void> _dismissWithMessage(String message) async {
     final messenger = ScaffoldMessenger.of(context);
-    _toDashboard();
+
+    ref.invalidate(approvalsQueueProvider(null));
+    int remainingPending;
+    try {
+      remainingPending =
+          (await ref.read(approvalsQueueProvider(null).future)).totalCount;
+    } catch (_) {
+      remainingPending = 0; // on failure, land on the dashboard
+    }
+    if (!mounted) return;
+
+    if (remainingPending > 0) {
+      _toApprovals();
+    } else {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/dashboard', (route) => false);
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       messenger.showSnackBar(
         SnackBar(content: Text(message), duration: const Duration(seconds: 2)),

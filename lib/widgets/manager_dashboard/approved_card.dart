@@ -14,9 +14,17 @@ import 'sheet_bucket_card.dart';
 /// success-tone variant (visible only in row internals if/when we add a
 /// row-level status badge; the card itself doesn't show one).
 class ApprovedCard extends ConsumerWidget {
-  const ApprovedCard({super.key, required this.onRowTap});
+  const ApprovedCard({
+    super.key,
+    required this.onRowTap,
+    this.initiallyExpanded = false,
+  });
 
   final void Function(ExpenseSheetListItem) onRowTap;
+
+  /// Initial expand state — overridable so the dashboard's Approved counter can
+  /// open this bucket (the "Processed" section) on arrival (§8).
+  final bool initiallyExpanded;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,7 +40,7 @@ class ApprovedCard extends ConsumerWidget {
       actionStyle: SheetBucketActionStyle.eyeIcon,
       emptyTitle: l10n.noApprovedSheets,
       // No icon — audit empty state is text-only per story 02 §2.7.
-      initiallyExpanded: false,
+      initiallyExpanded: initiallyExpanded,
       onRowTap: onRowTap,
       // No header trailing — historical totals not surfaced here.
     );
