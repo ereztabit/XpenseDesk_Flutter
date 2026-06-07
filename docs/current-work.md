@@ -45,7 +45,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## submit an expense
 
-
+- [ ] multi-currency expenses — send `dynamicAmount`, base-currency display, live `/api/conversion/preview` hint. See docs/in-progress/multi-currency-expenses.md
 
 ## manager expenses report
 
