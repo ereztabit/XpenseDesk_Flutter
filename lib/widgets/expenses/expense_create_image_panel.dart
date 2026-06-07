@@ -120,7 +120,7 @@ class ExpenseCreateImagePanel extends StatelessWidget {
               child: Container(
                 color: AppTheme.muted,
                 alignment: Alignment.center,
-                child: _HoverableReceiptImage(
+                child: _TappableReceiptImage(
                   fileBytes: fileBytes,
                   onExpand: onExpand,
                 ),
@@ -139,7 +139,7 @@ class ExpenseCreateImagePanel extends StatelessWidget {
                   const Spacer(),
                   if (onExpand != null) ...[
                     _buildBarButton(
-                      icon: Icons.open_in_full,
+                      icon: Icons.visibility_outlined,
                       tooltip: l10n.newExpenseExpandImage,
                       onTap: onExpand!,
                     ),
@@ -174,13 +174,14 @@ class ExpenseCreateImagePanel extends StatelessWidget {
               color: AppTheme.muted,
               child: Image.memory(fileBytes, fit: BoxFit.contain),
             ),
-            // Expand button — top-end
+            // Preview button — top-end. Eye glyph (not the diagonal
+            // open_in_full arrows, which read as a "resize" control on mobile).
             if (onExpand != null)
               PositionedDirectional(
                 top: 8,
                 end: 8,
                 child: _buildOverlayIconButton(
-                  icon: Icons.open_in_full,
+                  icon: Icons.visibility_outlined,
                   tooltip: l10n.newExpenseExpandImage,
                   onTap: onExpand!,
                 ),
@@ -292,76 +293,26 @@ class ExpenseCreateImagePanel extends StatelessWidget {
 
 }
 
-// ── Hoverable receipt image (desktop) ───────────────────────────────────────
-// Shows a semi-transparent expand hint overlay on hover; clicking expands.
+// ── Tappable receipt image (desktop) ────────────────────────────────────────
+// Clicking the image expands it. The visible expand affordance is the eye
+// button in the controls bar below — no hover-only overlay, which duplicated
+// that icon and never showed on touch devices.
 
-class _HoverableReceiptImage extends StatefulWidget {
+class _TappableReceiptImage extends StatelessWidget {
   final Uint8List fileBytes;
   final VoidCallback? onExpand;
 
-  const _HoverableReceiptImage({required this.fileBytes, this.onExpand});
-
-  @override
-  State<_HoverableReceiptImage> createState() => _HoverableReceiptImageState();
-}
-
-class _HoverableReceiptImageState extends State<_HoverableReceiptImage> {
-  bool _hovered = false;
+  const _TappableReceiptImage({required this.fileBytes, this.onExpand});
 
   @override
   Widget build(BuildContext context) {
-    final canExpand = widget.onExpand != null;
-    final l10n = AppLocalizations.of(context)!;
+    final canExpand = onExpand != null;
 
     return MouseRegion(
       cursor: canExpand ? SystemMouseCursors.click : MouseCursor.defer,
-      onEnter: canExpand ? (_) => setState(() => _hovered = true) : null,
-      onExit: canExpand ? (_) => setState(() => _hovered = false) : null,
       child: GestureDetector(
-        onTap: widget.onExpand,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.memory(widget.fileBytes, fit: BoxFit.contain),
-            if (canExpand && _hovered)
-              Positioned.fill(
-                child: Container(
-                  color: Colors.black.withAlpha(51),
-                  alignment: Alignment.center,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.background.withAlpha(204),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.open_in_full,
-                                size: 16, color: AppTheme.foreground),
-                            const SizedBox(width: 6),
-                            Text(
-                              l10n.newExpenseExpandImage,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppTheme.foreground,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
+        onTap: onExpand,
+        child: Image.memory(fileBytes, fit: BoxFit.contain),
       ),
     );
   }

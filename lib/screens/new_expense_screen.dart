@@ -857,7 +857,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildPreviewOverlayButton(
-                          icon: Icons.open_in_full,
+                          icon: Icons.visibility_outlined,
                           tooltip: l10n.newExpenseExpandImage,
                           onTap: () => _showFullScreenImage(context),
                         ),
@@ -1031,33 +1031,19 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: _isModifying
+              AppButton(
+                label: _isModifying
+                    ? l10n.newExpenseUndoAi
+                    : l10n.newExpenseModify,
+                icon: _isModifying ? Icons.undo : Icons.edit_outlined,
+                variant: AppButtonVariant.normal,
+                dense: true,
+                onPressed: _isModifying
                     ? _undoAiModify
                     : () => setState(() {
                         _isModifying = true;
                         _isAiData = false;
                       }),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isModifying ? Icons.undo : Icons.edit_outlined,
-                      size: 12,
-                      color: AppTheme.mutedForeground,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _isModifying
-                          ? l10n.newExpenseUndoAi
-                          : l10n.newExpenseModify,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.mutedForeground,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
@@ -1594,7 +1580,9 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         : const SizedBox.shrink();
 
     return Align(
-      alignment: Alignment.centerLeft,
+      // Directional start (not hardcoded left) so the Finish button follows the
+      // reading direction and lines up with the rest of the form in RTL.
+      alignment: AlignmentDirectional.centerStart,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1676,7 +1664,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.open_in_full, size: 18),
+            icon: const Icon(Icons.visibility_outlined, size: 18),
             tooltip: l10n.newExpenseExpandImage,
             onPressed: _isPdf
                 ? (_pdfBlobUrl != null

@@ -1,4 +1,3 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
@@ -59,7 +58,7 @@ class ExpenseModifyImagePanel extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          _HoverableNetworkImage(
+          _TappableNetworkImage(
             imageUrl: imageUrl!,
             onExpand: () => _showExpandDialog(context, imageUrl!),
           ),
@@ -70,7 +69,7 @@ class ExpenseModifyImagePanel extends StatelessWidget {
             child: Row(
               children: [
                 _buildOverlayButton(
-                  icon: Icons.open_in_full,
+                  icon: Icons.visibility_outlined,
                   tooltip: AppLocalizations.of(context)!.newExpenseExpandImage,
                   onTap: () => _showExpandDialog(context, imageUrl!),
                 ),
@@ -151,78 +150,29 @@ class ExpenseModifyImagePanel extends StatelessWidget {
   }
 }
 
-class _HoverableNetworkImage extends StatefulWidget {
+// Tappable receipt image. The expand/preview affordance is the always-visible
+// eye button in the corner (works on touch); the image itself is also tappable
+// to expand. No hover-only overlay — that duplicated the corner icon and was
+// invisible on mobile (no hover).
+class _TappableNetworkImage extends StatelessWidget {
   final String imageUrl;
   final VoidCallback onExpand;
 
-  const _HoverableNetworkImage({required this.imageUrl, required this.onExpand});
-
-  @override
-  State<_HoverableNetworkImage> createState() => _HoverableNetworkImageState();
-}
-
-class _HoverableNetworkImageState extends State<_HoverableNetworkImage> {
-  bool _hovered = false;
+  const _TappableNetworkImage({required this.imageUrl, required this.onExpand});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return MouseRegion(
       cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
-        onTap: widget.onExpand,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.network(
-              widget.imageUrl,
-              fit: BoxFit.contain,
-              errorBuilder: (ctx, err, stack) => const Center(
-                child: Icon(Icons.broken_image,
-                    size: 48, color: AppTheme.mutedForeground),
-              ),
-            ),
-            if (_hovered)
-              Positioned.fill(
-                child: Container(
-                  color: Colors.black.withAlpha(51),
-                  alignment: Alignment.center,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: AppTheme.background.withAlpha(204),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.open_in_full,
-                                size: 16, color: AppTheme.foreground),
-                            const SizedBox(width: 6),
-                            Text(
-                              l10n.newExpenseExpandImage,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: AppTheme.foreground,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+        onTap: onExpand,
+        child: Image.network(
+          imageUrl,
+          fit: BoxFit.contain,
+          errorBuilder: (ctx, err, stack) => const Center(
+            child: Icon(Icons.broken_image,
+                size: 48, color: AppTheme.mutedForeground),
+          ),
         ),
       ),
     );

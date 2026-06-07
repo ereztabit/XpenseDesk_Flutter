@@ -6,14 +6,14 @@ import '../../models/expense_sheet_status.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 
-/// One row in the activity timeline. Renders the `from → to` status transition
-/// (localized + direction-aware arrow), the actor (a name, or "System" for
-/// system-driven transitions), the timestamp, and the decline comment.
+/// One row in the activity timeline. Renders the resulting (new) status, the
+/// actor (a name, or "System" for system-driven transitions), the timestamp,
+/// and the decline comment.
 ///
 /// Status labels come from the status **ids** (not the raw English server
-/// alias) so they localize. The transition + actor lines are built as Rows of
-/// separate Text runs so a mixed-direction phrase (e.g. an English name on a
-/// Hebrew screen) lays out correctly instead of scrambling under bidi.
+/// alias) so they localize. The actor line is built as a Row of separate Text
+/// runs so a mixed-direction phrase (e.g. an English name on a Hebrew screen)
+/// lays out correctly instead of scrambling under bidi.
 class SheetActivityTimelineEntry extends StatelessWidget {
   const SheetActivityTimelineEntry({
     super.key,
@@ -44,14 +44,10 @@ class SheetActivityTimelineEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
     final actor = entry.isSystemDriven
         ? l10n.timelineSystemActor
         : (entry.changedByName ?? l10n.timelineSystemActor);
     final toLabel = _statusLabel(entry.toStatusId, l10n);
-    final fromLabel = entry.fromStatusId != null
-        ? _statusLabel(entry.fromStatusId!, l10n)
-        : null;
     final dateText = entry.changedAt.toLongDate(companyLocale);
     final comment = entry.comment?.trim();
     final hasComment = comment != null && comment.isNotEmpty;
@@ -100,38 +96,11 @@ class SheetActivityTimelineEntry extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Transition: from [arrow] to, arrow points in the
-                    // reading direction (← in RTL, → in LTR).
-                    if (fromLabel != null)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(fromLabel, style: transitionStyle),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 6),
-                            // Plain arrow glyph (not a Material Icon — those
-                            // auto-mirror in RTL and would flip the wrong way).
-                            // Forced LTR so the chosen glyph renders verbatim;
-                            // the Row's ambient direction handles label order.
-                            child: Text(
-                              isRtl ? '←' : '→',
-                              textDirection: TextDirection.ltr,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.mutedForeground,
-                              ),
-                            ),
-                          ),
-                          Flexible(
-                            child: Text(toLabel, style: transitionStyle),
-                          ),
-                        ],
-                      )
-                    else
-                      Text(toLabel, style: transitionStyle),
+                    // Show only the resulting (new) status. Entries are ordered
+                    // by timestamp, so the sequence of new statuses already
+                    // tells the full story — rendering "from → to" duplicated
+                    // every status on screen.
+                    Text(toLabel, style: transitionStyle),
                     const SizedBox(height: 2),
                     // Actor · date as separate runs so a mixed-direction
                     // phrase (English name + Hebrew date) doesn't scramble.

@@ -11,6 +11,7 @@ class AppButton extends StatelessWidget {
     this.variant = AppButtonVariant.primary,
     this.icon,
     this.isLoading = false,
+    this.dense = false,
   });
 
   final String label;
@@ -19,8 +20,24 @@ class AppButton extends StatelessWidget {
   final IconData? icon;
   final bool isLoading;
 
+  /// Compact form for inline/secondary controls (smaller padding, font, and
+  /// tap target). Default buttons stay full-size.
+  final bool dense;
+
   static const _radius = BorderRadius.all(Radius.circular(12));
   static const _padding = EdgeInsets.symmetric(horizontal: 24, vertical: 14);
+  static const _densePadding =
+      EdgeInsets.symmetric(horizontal: 14, vertical: 9);
+
+  EdgeInsets get _effectivePadding => dense ? _densePadding : _padding;
+  WidgetStateProperty<TextStyle?>? get _denseTextStyle => dense
+      ? WidgetStateProperty.all(
+          const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))
+      : null;
+  WidgetStateProperty<Size?>? get _denseMinSize =>
+      dense ? WidgetStateProperty.all(Size.zero) : null;
+  MaterialTapTargetSize? get _denseTapTarget =>
+      dense ? MaterialTapTargetSize.shrinkWrap : null;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +59,7 @@ class AppButton extends StatelessWidget {
       return ElevatedButton.icon(
         onPressed: effectiveOnPressed,
         style: style,
-        icon: Icon(icon, size: 18),
+        icon: Icon(icon, size: dense ? 16 : 18),
         label: Text(label),
       );
     }
@@ -94,7 +111,10 @@ class AppButton extends StatelessWidget {
           shape: WidgetStateProperty.all(
             const RoundedRectangleBorder(borderRadius: _radius),
           ),
-          padding: WidgetStateProperty.all(_padding),
+          padding: WidgetStateProperty.all(_effectivePadding),
+          textStyle: _denseTextStyle,
+          minimumSize: _denseMinSize,
+          tapTargetSize: _denseTapTarget,
           elevation: WidgetStateProperty.all(0),
           mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         );
@@ -113,7 +133,10 @@ class AppButton extends StatelessWidget {
           shape: WidgetStateProperty.all(
             const RoundedRectangleBorder(borderRadius: _radius),
           ),
-          padding: WidgetStateProperty.all(_padding),
+          padding: WidgetStateProperty.all(_effectivePadding),
+          textStyle: _denseTextStyle,
+          minimumSize: _denseMinSize,
+          tapTargetSize: _denseTapTarget,
           elevation: WidgetStateProperty.all(0),
           mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
         );
@@ -143,7 +166,10 @@ class AppButton extends StatelessWidget {
       shape: WidgetStateProperty.all(
         const RoundedRectangleBorder(borderRadius: _radius),
       ),
-      padding: WidgetStateProperty.all(_padding),
+      padding: WidgetStateProperty.all(_effectivePadding),
+      textStyle: _denseTextStyle,
+      minimumSize: _denseMinSize,
+      tapTargetSize: _denseTapTarget,
       elevation: WidgetStateProperty.all(0),
       mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
     );
