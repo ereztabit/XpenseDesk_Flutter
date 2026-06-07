@@ -1150,6 +1150,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1158,6 +1159,13 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             const SizedBox(width: 12),
             Expanded(child: cell(l10n.expenseDate, dateText)),
           ],
+        ),
+        // Foreign-currency receipts: show the converted base value (or the
+        // "no rate" error) for the detected currency + date.
+        ConversionPreviewLabel(
+          controller: _conversion,
+          companyLocale: companyLocale,
+          baseCurrency: ref.read(companyBaseCurrencyProvider),
         ),
         const SizedBox(height: 12),
         Row(

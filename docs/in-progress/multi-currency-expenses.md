@@ -137,8 +137,84 @@ base-currency totals — **no conversion UI needed** there.
 
 ## Checklist (from backend guide)
 
-- [ ] Send `dynamicAmount` instead of `amount`; stop sending any base/converted amount.
-- [ ] Detail model: add `dynamicAmount`, `baseCurrencyCode`, `isForeign`, `rateUsed`, `rateDate`; treat `amount` as base.
-- [ ] List/search/sheet models: remove `currencyCode`; render `amount` as base.
-- [ ] Live preview via `GET /api/conversion/preview` (session token) with rules 1–6 above.
-- [ ] Handle `400 ExchangeRateUnavailable`.
+- [x] Send `dynamicAmount` instead of `amount`; stop sending any base/converted amount.
+- [x] Detail model: add `dynamicAmount`, `baseCurrencyCode`, `isForeign`, `rateUsed`, `rateDate`; treat `amount` as base.
+- [x] List/search/sheet models: remove `currencyCode`; render `amount` as base.
+- [x] Live preview via `GET /api/conversion/preview` (session token) with rules 1–6 above.
+- [x] Handle `400 ExchangeRateUnavailable`.
+- [ ] Build the currency picker from `trackedCurrencies` on `GET /api/company` — see Follow-up 1.
+
+Shipped in commit `fdfb445`. Items below are still open.
+
+---
+
+## Follow-ups (pending — not yet implemented)
+
+### Follow-up 1 — Load currencies from the backend (stop hardcoding)
+
+**Problem.** The currency picker is currently hardcoded in
+`lib/models/expense_currency.dart` (`ExpenseCurrency.values` — AUD/CAD/EUR/GBP/ILS/USD).
+Per the backend guide ("Where the currency picker comes from"), the list must come
+from the server so it always matches what the server can actually convert, and can
+grow without an app release.
+
+**Source.** `GET /api/company` now returns a **`trackedCurrencies`** array (derived
+from the company country → currency provider, e.g. Israel → Bank of Israel):
+
+```json
+"trackedCurrencies": [
+  { "currencyCode": "ILS", "currencyName": "Israeli Shekel", "currencySymbol": "₪", "isBaseCurrency": true },
+  { "currencyCode": "USD", "currencyName": "US Dollar",      "currencySymbol": "$", "isBaseCurrency": false }
+]
+```
+
+| Field | Use |
+|---|---|
+| `currencyCode` | value sent as the expense `currencyCode` |
+| `currencyName` | dropdown display name |
+| `currencySymbol` | dropdown / amount-field prefix |
+| `isBaseCurrency` | exactly one true; the company base. Server already returns it first |
+
+**Work.**
+- Add `trackedCurrencies` (`List<TrackedCurrency>`) to the company model + `fromJson`
+  (the `GET /api/company` model — `CompanyInfo` / wherever the company fetch lands).
+- Expose a provider (e.g. `trackedCurrenciesProvider`) sourced from the loaded company.
+- Replace `ExpenseCurrency.values` usage in the three pickers
+  (`new_expense_screen`, `employee_expense_detail_screen`, `mobile_expense_modal`)
+  with the tracked list; lead with / default to the `isBaseCurrency` entry.
+- Derive the base currency for `companyBaseCurrencyProvider` from the
+  `isBaseCurrency` entry (it currently reads `userInfo.currencyCode`, default `'ILS'`).
+- Once migrated, retire `ExpenseCurrency` (or keep only as an offline fallback).
+- Re-check: the live-preview base comparison and the `'ILS'` literal fallbacks should
+  defer to the tracked base entry.
+
+**Acceptance.** Picker is server-driven; adding a provider currency on the backend
+shows up without an app release; no hardcoded currency list remains in widget code.
+
+### Follow-up 2 — Verify AI receipt scan handles foreign currency
+
+**Question.** When the AI scanner reads an invoice denominated in a non-base
+currency (e.g. USD), does the app correctly treat it as foreign end to end?
+
+**Current code (to verify, not yet confirmed end to end):**
+- `ReceiptAnalysisResult` parses `currencyCode` from JSON key **`currency`**
+  (`lib/models/receipt_analysis_result.dart`).
+- `new_expense_screen` AI-reveal sets
+  `_selectedCurrencyCode = result.currencyCode ?? 'ILS'` and the amount into
+  `_amountController`, then (post-fix) calls `_evaluateConversion()`.
+
+**Things to check during manual testing:**
+1. Does the analyze-receipt API actually return a `currency` for a USD invoice, and
+   in what shape (`"USD"` vs `"$"` vs null)?
+2. If it returns a code **not in the picker list** (e.g. `JPY` while hardcoded list
+   lacks it), the `DropdownMenu.initialSelection` won't match an entry → blank/odd
+   picker. (Follow-up 1 — server-driven list — largely resolves this.)
+3. Does the conversion preview fire after the AI reveal for a USD scan (≈ base shown)?
+4. On save, is `dynamicAmount` (scanned USD amount) + `currencyCode: USD` sent, and
+   does the detail screen then show it as foreign (original primary / base secondary)?
+5. Symbol vs code mismatch: confirm the API returns an ISO code, not a symbol — if it
+   returns `"$"` the picker/convert calls would break.
+
+**Acceptance.** A USD receipt scan results in a foreign expense: USD shown as
+entered, base-currency preview while editing, server books the converted base value,
+detail view shows original + booked.
