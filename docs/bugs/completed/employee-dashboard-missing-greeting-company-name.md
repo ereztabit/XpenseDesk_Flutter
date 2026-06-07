@@ -1,6 +1,18 @@
 # Bug: Employee dashboard missing greeting + company name header
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Relocated the existing `DashboardGreeting` widget from
+`lib/widgets/manager_dashboard/` to the shared `lib/widgets/` root (it already
+reads name + company from `userInfoProvider`, so it was never manager-specific)
+and rendered it on the employee dashboard, matching the manager dashboard.
+
+Files:
+- `lib/widgets/dashboard_greeting.dart` (moved from manager_dashboard/).
+- `lib/screens/manager_dashboard_screen.dart` — updated import.
+- `lib/screens/user_dashboard_screen.dart` — renders `DashboardGreeting`.
 
 ## Problem
 

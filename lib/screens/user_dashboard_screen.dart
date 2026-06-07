@@ -5,6 +5,7 @@ import '../providers/expense_sheet_provider.dart';
 import '../utils/sheet_utils.dart';
 import '../widgets/employee_dashboard/employee_dashboard_body.dart';
 import '../widgets/employee_dashboard/page_header_row.dart';
+import '../widgets/dashboard_greeting.dart';
 import '../widgets/employee_dashboard/sheet_expense_empty_state.dart';
 import '../widgets/manager/manager_view_switcher.dart';
 
@@ -83,6 +84,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const ManagerViewSwitcher(),
+                      const DashboardGreeting(),
+                      const SizedBox(height: 24),
                       sheetsAsync.when(
                         loading: () => const Padding(
                           padding: EdgeInsets.symmetric(vertical: 64),

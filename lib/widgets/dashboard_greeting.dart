@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../generated/l10n/app_localizations.dart';
-import '../../providers/auth_provider.dart';
-import '../../theme/app_theme.dart';
-import '../../utils/responsive_utils.dart';
+import '../generated/l10n/app_localizations.dart';
+import '../providers/auth_provider.dart';
+import '../theme/app_theme.dart';
+import '../utils/responsive_utils.dart';
 
-/// Time-of-day greeting + the manager's first name, e.g. "Good morning, Dana",
-/// with the company name beneath it in small text for context.
+/// Time-of-day greeting + the signed-in user's first name, e.g.
+/// "Good morning, Dana", with the company name beneath it in small text for
+/// context. Shared by the manager and employee dashboards.
 ///
 /// The greeting word and the name are concatenated in the widget layer (no ARB
 /// placeholders, per project convention). RTL is handled by the framework — in

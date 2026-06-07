@@ -31,8 +31,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] A1 Expense editor -- calendar widget unstable / not cross-browser -- see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] A2 Add employee -- multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] A4c Add expense -- out-of-range invoice date should validate client-side -- see docs/bugs/invoice-date-out-of-range-client-validation.md
-- [ ] B1 Employee dashboard -- missing greeting + company-name header -- see docs/bugs/employee-dashboard-missing-greeting-company-name.md
-- [ ] B2 Manager dashboard (mobile) -- huge gap between cards -- see docs/bugs/manager-mobile-cards-huge-gap.md
 - [ ] B3 Approve/Decline sheet -- button captions unclear -- see docs/bugs/approve-decline-sheet-button-captions-unclear.md
 - [ ] B4 Manager dashboard -- status sections don't collapse (no accordion) -- see docs/bugs/manager-dashboard-status-sections-no-accordion.md
 

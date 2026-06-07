@@ -1,7 +1,7 @@
 import 'screen_imports.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../utils/manager_dashboard_state_utils.dart';
-import '../widgets/manager_dashboard/dashboard_greeting.dart';
+import '../widgets/dashboard_greeting.dart';
 import '../widgets/manager_dashboard/first_sheets_info_row.dart';
 import '../widgets/manager_dashboard/invite_block.dart';
 import '../widgets/manager_dashboard/sheet_counter_cards.dart';

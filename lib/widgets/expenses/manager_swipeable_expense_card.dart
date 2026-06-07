@@ -83,9 +83,13 @@ class _ManagerSwipeableExpenseCardState
 
   // Dismiss animation values
   final ValueNotifier<double> _dismissOpacity = ValueNotifier(1.0);
-  final ValueNotifier<double> _dismissTranslate = ValueNotifier(0.0);
   final ValueNotifier<double> _dismissScale = ValueNotifier(1.0);
-  final ValueNotifier<double> _dismissMaxHeight = ValueNotifier(600.0);
+
+  // Collapses the card's vertical slot during the fly-away dismiss (1 -> 0).
+  // Uses heightFactor off the card's real content height — so the resting card
+  // is content-sized. (Previously a fixed maxHeight:600 box reserved a 600px
+  // slot per card, which read as a huge gap between cards on the mobile list.)
+  final ValueNotifier<double> _dismissHeightFactor = ValueNotifier(1.0);
 
   @override
   void didChangeDependencies() {
@@ -199,9 +203,8 @@ class _ManagerSwipeableExpenseCardState
       if (!mounted) return;
       final t = Curves.easeOut.transform(i / steps);
       _dismissOpacity.value = 1.0 - t;
-      _dismissTranslate.value = _openDir * -1 * 100 * t;
       _dismissScale.value = 1.0 - 0.05 * t;
-      _dismissMaxHeight.value = 600.0 * (1.0 - t);
+      _dismissHeightFactor.value = 1.0 - t;
     }
 
     action?.call();
@@ -227,9 +230,8 @@ class _ManagerSwipeableExpenseCardState
     _dismissController.dispose();
     _offsetNotifier.dispose();
     _dismissOpacity.dispose();
-    _dismissTranslate.dispose();
     _dismissScale.dispose();
-    _dismissMaxHeight.dispose();
+    _dismissHeightFactor.dispose();
     super.dispose();
   }
 
@@ -244,17 +246,19 @@ class _ManagerSwipeableExpenseCardState
     const cardRadius = BorderRadius.all(Radius.circular(AppTheme.borderRadius));
 
     return ListenableBuilder(
-      listenable: Listenable.merge([_dismissOpacity, _dismissMaxHeight]),
+      listenable: Listenable.merge(
+          [_dismissOpacity, _dismissScale, _dismissHeightFactor]),
       builder: (context, _) {
         return Opacity(
           opacity: _dismissOpacity.value,
           child: Transform.scale(
             scale: _dismissScale.value,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: _dismissMaxHeight.value),
-              child: OverflowBox(
-                maxHeight: double.infinity,
+            // Collapse the slot via heightFactor (content-relative); ClipRect
+            // trims the card as it shrinks so it doesn't paint over its neighbor.
+            child: ClipRect(
+              child: Align(
                 alignment: AlignmentDirectional.topStart,
+                heightFactor: _dismissHeightFactor.value,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: GestureDetector(
