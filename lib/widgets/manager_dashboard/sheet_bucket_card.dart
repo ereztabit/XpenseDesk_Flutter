@@ -16,9 +16,14 @@ import 'sheet_bucket_enums.dart';
 
 /// Shared collapsible card used by Pending review, Returned to employee, and
 /// Approved cards. The three caller cards configure it (title, timestamp
-/// source, action style, empty-state copy, etc.); the card owns chrome,
-/// expand/collapse, and body switching by viewport.
-class SheetBucketCard extends ConsumerStatefulWidget {
+/// source, action style, empty-state copy, etc.); the card owns chrome and
+/// body switching by viewport.
+///
+/// Expansion is **controlled by the parent** (single-open accordion on the
+/// Sheet Approvals screen): the screen tracks which one section is open and
+/// passes [expanded] + [onToggle]. Tapping a header opens that card and
+/// collapses the others.
+class SheetBucketCard extends ConsumerWidget {
   const SheetBucketCard({
     super.key,
     required this.title,
@@ -31,8 +36,8 @@ class SheetBucketCard extends ConsumerStatefulWidget {
     this.emptyIcon,
     required this.onRowTap,
     this.headerTrailingBuilder,
-    this.initiallyExpanded = true,
-    this.collapseWhenEmpty = false,
+    required this.expanded,
+    required this.onToggle,
     this.highlightColor,
   });
 
@@ -70,17 +75,12 @@ class SheetBucketCard extends ConsumerStatefulWidget {
   final Widget? Function(double grandTotal, int totalCount)?
       headerTrailingBuilder;
 
-  /// Default expand state when the card first mounts.
-  final bool initiallyExpanded;
+  /// Whether this is the currently-open section. Owned by the parent screen so
+  /// only one bucket is open at a time (accordion).
+  final bool expanded;
 
-  /// When true, the expand/collapse state tracks the bucket's data: auto-
-  /// collapses on empty, auto-expands on non-empty. Once the user manually
-  /// toggles the chevron, this auto-state is permanently disabled for the
-  /// remainder of the screen session — the user's choice wins.
-  ///
-  /// Used by Pending review + Returned to employee. Approved card opts out
-  /// (always collapsed by default; manual-toggle only).
-  final bool collapseWhenEmpty;
+  /// Header tap handler — the parent opens this section and collapses the rest.
+  final VoidCallback onToggle;
 
   /// When set, the card draws a 2px focus ring in this color — used when the
   /// section was reached from a Manager Dashboard counter (§7, §8). Null = the
@@ -88,65 +88,23 @@ class SheetBucketCard extends ConsumerStatefulWidget {
   final Color? highlightColor;
 
   @override
-  ConsumerState<SheetBucketCard> createState() => _SheetBucketCardState();
-}
-
-class _SheetBucketCardState extends ConsumerState<SheetBucketCard>
-    with SingleTickerProviderStateMixin {
-  late bool _expanded = widget.initiallyExpanded;
-
-  /// Once the user manually toggles, [_expanded] becomes user-owned and the
-  /// data-driven auto-state logic stops firing. Prevents "user opens empty
-  /// card → it immediately re-collapses on next build".
-  bool _userHasToggled = false;
-
-  void _toggle() {
-    setState(() {
-      _expanded = !_expanded;
-      _userHasToggled = true;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final companyLocale = ref.watch(companyLocaleProvider);
     final l10n = AppLocalizations.of(context)!;
-    final dataAsync = widget.dataAsync;
 
     final effectiveData = dataAsync.maybeWhen(
       data: (d) => d,
       orElse: () => PagedExpenseSheets.empty,
     );
 
-    // Data-driven auto-state — collapses when bucket is empty, expands when
-    // non-empty. Disabled the moment the user touches the chevron. Also
-    // disabled when this card is the focus target (highlightColor set): the
-    // manager explicitly navigated here from a counter, so the box stays open
-    // even when empty — consistent with the Approved card (§8).
-    if (widget.collapseWhenEmpty &&
-        widget.highlightColor == null &&
-        !_userHasToggled &&
-        dataAsync.hasValue) {
-      final shouldBeExpanded = effectiveData.items.isNotEmpty;
-      if (_expanded != shouldBeExpanded) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted &&
-              !_userHasToggled &&
-              _expanded != shouldBeExpanded) {
-            setState(() => _expanded = shouldBeExpanded);
-          }
-        });
-      }
-    }
-
     final headerTrailing = dataAsync.hasValue
-        ? widget.headerTrailingBuilder?.call(
+        ? headerTrailingBuilder?.call(
             effectiveData.grandTotalAmount,
             effectiveData.totalCount,
           )
         : null;
 
-    final ringColor = widget.highlightColor;
+    final ringColor = highlightColor;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -159,19 +117,19 @@ class _SheetBucketCardState extends ConsumerState<SheetBucketCard>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SheetBucketCardHeader(
-            title: widget.title,
+            title: title,
             count: effectiveData.totalCount,
             trailing: headerTrailing,
-            expanded: _expanded,
-            onToggle: _toggle,
+            expanded: expanded,
+            onToggle: onToggle,
           ),
           AnimatedCrossFade(
             duration: const Duration(milliseconds: 200),
-            crossFadeState: _expanded
+            crossFadeState: expanded
                 ? CrossFadeState.showFirst
                 : CrossFadeState.showSecond,
-            firstChild: _buildBody(context, dataAsync, effectiveData,
-                companyLocale, l10n),
+            firstChild:
+                _buildBody(context, dataAsync, effectiveData, companyLocale, l10n),
             secondChild: const SizedBox.shrink(),
           ),
         ],
@@ -201,27 +159,27 @@ class _SheetBucketCardState extends ConsumerState<SheetBucketCard>
       data: (_) {
         if (data.items.isEmpty) {
           return SheetBucketEmptyState(
-            title: widget.emptyTitle,
-            description: widget.emptyDescription,
-            icon: widget.emptyIcon,
+            title: emptyTitle,
+            description: emptyDescription,
+            icon: emptyIcon,
           );
         }
         final body = context.isDesktop
             ? DesktopSheetBucketTable(
                 items: data.items,
                 companyLocale: companyLocale,
-                timestampSource: widget.timestampSource,
-                timestampLabel: widget.timestampLabel,
-                actionStyle: widget.actionStyle,
-                onRowTap: widget.onRowTap,
+                timestampSource: timestampSource,
+                timestampLabel: timestampLabel,
+                actionStyle: actionStyle,
+                onRowTap: onRowTap,
               )
             : MobileSheetBucketList(
                 items: data.items,
                 companyLocale: companyLocale,
-                timestampSource: widget.timestampSource,
-                timestampLabel: widget.timestampLabel,
-                actionStyle: widget.actionStyle,
-                onRowTap: widget.onRowTap,
+                timestampSource: timestampSource,
+                timestampLabel: timestampLabel,
+                actionStyle: actionStyle,
+                onRowTap: onRowTap,
               );
 
         final hasOverflow = data.totalCount > data.items.length;
@@ -239,4 +197,3 @@ class _SheetBucketCardState extends ConsumerState<SheetBucketCard>
     );
   }
 }
-

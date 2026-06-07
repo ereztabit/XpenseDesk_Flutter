@@ -37,6 +37,22 @@ class _SheetApprovalsScreenState
 
   bool _didInvalidateOnEntry = false;
 
+  /// The single open section (accordion). Seeded from the arrival section
+  /// (defaults to Pending); tapping a header opens that one and collapses the
+  /// rest. Null = all collapsed.
+  ManagerApprovalsSection? _expandedSection;
+
+  @override
+  void initState() {
+    super.initState();
+    _expandedSection = widget.initialSection ?? ManagerApprovalsSection.pending;
+  }
+
+  void _toggleSection(ManagerApprovalsSection section) {
+    setState(() =>
+        _expandedSection = _expandedSection == section ? null : section);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -77,12 +93,9 @@ class _SheetApprovalsScreenState
     // downstream would otherwise rebuild from a stale default on first paint.
     ref.watch(selectedEmployeeFilterProvider);
 
-    // Exactly one section expands on arrival (§8). No arg defaults to Pending.
-    final section = widget.initialSection;
-    final returnedExpanded = section == ManagerApprovalsSection.returned;
-    final approvedExpanded = section == ManagerApprovalsSection.processed;
-    final pendingExpanded = section == null ||
-        section == ManagerApprovalsSection.pending;
+    // Focus ring marks the section navigated to from a dashboard counter (§8);
+    // it stays on that section regardless of which one the user later opens.
+    final arrival = widget.initialSection;
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -114,21 +127,32 @@ class _SheetApprovalsScreenState
                       const SizedBox(height: 24),
                       PendingReviewCard(
                         onRowTap: _onRowTap,
-                        initiallyExpanded: pendingExpanded,
+                        expanded: _expandedSection ==
+                            ManagerApprovalsSection.pending,
+                        onToggle: () =>
+                            _toggleSection(ManagerApprovalsSection.pending),
                         highlighted:
-                            section == ManagerApprovalsSection.pending,
+                            arrival == ManagerApprovalsSection.pending,
                       ),
                       const SizedBox(height: 12),
                       ReturnedToEmployeeCard(
                         onRowTap: _onRowTap,
-                        initiallyExpanded: returnedExpanded,
-                        highlighted: returnedExpanded,
+                        expanded: _expandedSection ==
+                            ManagerApprovalsSection.returned,
+                        onToggle: () =>
+                            _toggleSection(ManagerApprovalsSection.returned),
+                        highlighted:
+                            arrival == ManagerApprovalsSection.returned,
                       ),
                       const SizedBox(height: 12),
                       ApprovedCard(
                         onRowTap: _onRowTap,
-                        initiallyExpanded: approvedExpanded,
-                        highlighted: approvedExpanded,
+                        expanded: _expandedSection ==
+                            ManagerApprovalsSection.processed,
+                        onToggle: () =>
+                            _toggleSection(ManagerApprovalsSection.processed),
+                        highlighted:
+                            arrival == ManagerApprovalsSection.processed,
                       ),
                     ],
                   ),

@@ -167,13 +167,17 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     return l10n.genericErrorRetry;
   }
 
-  Future<void> _handleApprove(ExpenseSheetDetail sheet) async {
-    final l10n = AppLocalizations.of(context)!;
+  /// Sheet total formatted in the company locale + base currency. Used by the
+  /// approve CTA caption and the approve confirm dialog.
+  String _sheetAmountText(ExpenseSheetDetail sheet) {
     final companyLocale = ref.read(companyLocaleProvider);
     final baseCurrency = ref.read(companyBaseCurrencyProvider);
-    final total =
-        sheet.expenses.fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
-    final amountText = total.toCurrency(companyLocale, baseCurrency);
+    return sheet.totalAmount.toCurrency(companyLocale, baseCurrency);
+  }
+
+  Future<void> _handleApprove(ExpenseSheetDetail sheet) async {
+    final l10n = AppLocalizations.of(context)!;
+    final amountText = _sheetAmountText(sheet);
     final confirmed = await ApproveSheetConfirmDialog.show(
       context,
       amountText: amountText,
@@ -320,6 +324,8 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
                   onApprove: () => _handleApprove(sheet),
                   onDecline: _handleDecline,
                   isBusy: _isBusy,
+                  expenseCount: sheet.expenseCount,
+                  amountText: _sheetAmountText(sheet),
                 ),
               ),
             const AppFooter(),
@@ -355,6 +361,8 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
             onApprove: () => _handleApprove(sheet),
             onDecline: _handleDecline,
             isBusy: _isBusy,
+            expenseCount: sheet.expenseCount,
+            amountText: _sheetAmountText(sheet),
           ),
         ],
         const SizedBox(height: 16),

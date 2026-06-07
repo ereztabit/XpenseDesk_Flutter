@@ -11,7 +11,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 
 ## TODO (Backlog)
-- [ ] refactor lib/widgets/manager_dashboard/sheet_bucket_card.dart (211 lines, over the 200 cap) — extract its `_buildBody` loading/error/data switch into a `SheetBucketBody` widget file
+- [ ] (optional) extract `sheet_bucket_card.dart`'s `_buildBody` loading/error/data switch into a `SheetBucketBody` widget file — file is now 178 lines (under the 200 cap after the B4 accordion refactor), so this is a nicety, not a size fix
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
 - [ ] add logos to the authorize page
@@ -31,8 +31,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] A1 Expense editor -- calendar widget unstable / not cross-browser -- see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] A2 Add employee -- multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] A4c Add expense -- out-of-range invoice date should validate client-side -- see docs/bugs/invoice-date-out-of-range-client-validation.md
-- [ ] B3 Approve/Decline sheet -- button captions unclear -- see docs/bugs/approve-decline-sheet-button-captions-unclear.md
-- [ ] B4 Manager dashboard -- status sections don't collapse (no accordion) -- see docs/bugs/manager-dashboard-status-sections-no-accordion.md
 
 ## general environment
 
@@ -59,6 +57,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Missing invite users option after signup - quick onboarding flow to allow manager invite users
 
 ## management screens
+- [ ] employee govId (תעודת זהות) + admin employee editing (name/language/govId); also closes the "cannot edit employee name" bug. See docs/in-progress/employee-gov-id.md
 - [ ] we need to configure which categories are available
 - [ ] we need to be able to delete pending users
 

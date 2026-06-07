@@ -21,16 +21,18 @@ class ReturnedToEmployeeCard extends ConsumerWidget {
   const ReturnedToEmployeeCard({
     super.key,
     required this.onRowTap,
-    this.initiallyExpanded = false,
+    required this.expanded,
+    required this.onToggle,
     this.highlighted = false,
   });
 
   final void Function(ExpenseSheetListItem) onRowTap;
 
-  /// Initial expand state — overridable so the dashboard's Returned counter can
-  /// open this bucket on arrival (§8). Defaults collapsed; the screen expands
-  /// exactly one section per arrival.
-  final bool initiallyExpanded;
+  /// Whether this section is the open one (single-open accordion).
+  final bool expanded;
+
+  /// Header tap handler — opens this section and collapses the others.
+  final VoidCallback onToggle;
 
   /// Draw the focus ring — set when reached via the Returned counter (§8).
   final bool highlighted;
@@ -51,8 +53,8 @@ class ReturnedToEmployeeCard extends ConsumerWidget {
       actionStyle: SheetBucketActionStyle.viewButton,
       emptyTitle: l10n.noReturnedSheets,
       emptyIcon: Icons.check_circle_outline,
-      initiallyExpanded: initiallyExpanded,
-      collapseWhenEmpty: true,
+      expanded: expanded,
+      onToggle: onToggle,
       highlightColor: highlighted ? AppTheme.destructive : null,
       onRowTap: onRowTap,
       headerTrailingBuilder: (grandTotal, _) {

@@ -1,6 +1,27 @@
 # Bug: Approve / Decline sheet button captions are unclear
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Reworded the whole-sheet CTAs on the Sheet Review screen so they state what
+will happen:
+- Approve button: "Approve {count} expenses of {amount}" (pluralized; count +
+  base-currency total), on both mobile and desktop.
+- Decline button: "Return this sheet to user to edit" (icon changed to `undo`).
+- On mobile the sticky-bar buttons now stack full-width so the longer captions
+  never overflow; desktop keeps the inline Row.
+
+Added `expenseCount` / `totalAmount` computed getters to `ExpenseSheetDetail`
+(and removed the inline `.fold` from the approve handler). New ARB keys
+(`expenseWordSingular`, `approveOfAmountConnector`, `returnSheetToUserCta`) in
+EN + HE.
+
+Files:
+- `lib/widgets/sheet_review/sheet_review_actions.dart`
+- `lib/screens/sheet_review_screen.dart`
+- `lib/models/expense_sheet_detail.dart`
+- `lib/l10n/app_en.arb`, `lib/l10n/app_he.arb`
 
 ## Problem
 

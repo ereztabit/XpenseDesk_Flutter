@@ -18,15 +18,18 @@ class ApprovedCard extends ConsumerWidget {
   const ApprovedCard({
     super.key,
     required this.onRowTap,
-    this.initiallyExpanded = false,
+    required this.expanded,
+    required this.onToggle,
     this.highlighted = false,
   });
 
   final void Function(ExpenseSheetListItem) onRowTap;
 
-  /// Initial expand state — overridable so the dashboard's Approved counter can
-  /// open this bucket (the "Processed" section) on arrival (§8).
-  final bool initiallyExpanded;
+  /// Whether this section is the open one (single-open accordion).
+  final bool expanded;
+
+  /// Header tap handler — opens this section and collapses the others.
+  final VoidCallback onToggle;
 
   /// Draw the focus ring — set when reached via the Approved counter (§8).
   final bool highlighted;
@@ -45,7 +48,8 @@ class ApprovedCard extends ConsumerWidget {
       actionStyle: SheetBucketActionStyle.eyeIcon,
       emptyTitle: l10n.noApprovedSheets,
       // No icon — audit empty state is text-only per story 02 §2.7.
-      initiallyExpanded: initiallyExpanded,
+      expanded: expanded,
+      onToggle: onToggle,
       highlightColor: highlighted ? AppTheme.primary : null,
       onRowTap: onRowTap,
       // No header trailing — historical totals not surfaced here.
