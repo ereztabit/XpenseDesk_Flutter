@@ -2,6 +2,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../widgets/app_button.dart';
+import '../../../widgets/app_radio_group.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../models/onboarding/company_submit_request.dart';
 import '../../../models/onboarding/reference_data.dart';
@@ -397,23 +398,15 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
           // ── Cycle Day ─────────────────────────────────────────────────────
           FieldLabel(label: l10n.onboardingCycleDay, isRequired: true),
           const SizedBox(height: 6),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [1, 2, 10, 15].map((day) {
-              return ChoiceChip(
-                label: Text(switch (day) {
-                  1 => l10n.onboardingCycleDayOption1,
-                  2 => l10n.onboardingCycleDayOption2,
-                  10 => l10n.onboardingCycleDayOption10,
-                  _ => l10n.onboardingCycleDayOption15,
-                }),
-                selected: _selectedCutoverDay == day,
-                showCheckmark: false,
-                onSelected: (_) =>
-                    setState(() => _selectedCutoverDay = day),
-              );
-            }).toList(),
+          AppRadioGroup<int>(
+            selected: _selectedCutoverDay,
+            onSelected: (day) => setState(() => _selectedCutoverDay = day),
+            options: [
+              AppRadioOption(value: 1, label: l10n.onboardingCycleDayOption1),
+              AppRadioOption(value: 2, label: l10n.onboardingCycleDayOption2),
+              AppRadioOption(value: 10, label: l10n.onboardingCycleDayOption10),
+              AppRadioOption(value: 15, label: l10n.onboardingCycleDayOption15),
+            ],
           ),
           if (_attemptedSubmit && _selectedCutoverDay == null)
             Padding(
