@@ -23,12 +23,14 @@ class SheetReviewHeaderCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.watch(companyLocaleProvider);
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
 
     final cycleText = sheet.cycleLabel.toCycleLongMonth(companyLocale);
     final itemsText =
         '${sheet.expenses.length} ${sheet.expenses.length == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural}';
     final total = _sheetTotal();
-    final totalText = total != null ? _formatTotal(total, companyLocale) : null;
+    final totalText =
+        total != null ? _formatTotal(total, companyLocale, baseCurrency) : null;
     final comment = sheet.latestDeclineComment?.trim();
     final hasComment = comment != null && comment.isNotEmpty;
 
@@ -116,13 +118,8 @@ class SheetReviewHeaderCard extends ConsumerWidget {
         .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
   }
 
-  String _formatTotal(double total, String companyLocale) {
-    final currency = sheet.expenses
-        .map((e) => e.currencyCode)
-        .firstWhere((c) => c != null, orElse: () => null);
-    return currency != null
-        ? total.toCurrency(companyLocale, currency)
-        : total.toFormattedNumber(companyLocale);
+  String _formatTotal(double total, String companyLocale, String baseCurrency) {
+    return total.toCurrency(companyLocale, baseCurrency);
   }
 }
 

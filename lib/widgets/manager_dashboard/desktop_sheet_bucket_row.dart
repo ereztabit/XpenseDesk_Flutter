@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_list_item.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../action_icon_button.dart';
@@ -11,7 +13,7 @@ import 'sheet_bucket_enums.dart';
 ///
 /// Columns + widths match [DesktopSheetBucketHeader]. Actions column is a
 /// fixed `SizedBox(width: 80)` (CR Rule 6).
-class DesktopSheetBucketRow extends StatelessWidget {
+class DesktopSheetBucketRow extends ConsumerWidget {
   const DesktopSheetBucketRow({
     super.key,
     required this.sheet,
@@ -33,16 +35,15 @@ class DesktopSheetBucketRow extends StatelessWidget {
       };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final stamp = _timestamp();
     final stampText =
         stamp != null ? stamp.toCompanyDate(companyLocale) : '—';
-    final amountText =
-        sheet.totalAmount != null && sheet.currencyCode != null
-            ? sheet.totalAmount!
-                .toCurrency(companyLocale, sheet.currencyCode!)
-            : sheet.totalAmount?.toFormattedNumber(companyLocale) ?? '—';
+    final amountText = sheet.totalAmount != null
+        ? sheet.totalAmount!.toCurrency(companyLocale, baseCurrency)
+        : '—';
     final cycleText = sheet.cycleLabel.toCycleLongMonth(companyLocale);
     final itemsText =
         '${sheet.expenseCount} ${sheet.expenseCount == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural}';

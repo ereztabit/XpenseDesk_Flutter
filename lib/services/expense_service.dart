@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/expense_cycle.dart';
+import '../models/conversion_preview.dart';
 import '../models/cycle_expense_row.dart';
 import '../models/expense_detail.dart';
 import '../models/expense_sheet_detail.dart';
@@ -46,6 +47,14 @@ class ExpenseSheetNotFoundException implements Exception {
 /// (server errorCode `ExpenseDateTooOld`).
 class ExpenseDateTooOldException implements Exception {
   const ExpenseDateTooOldException();
+}
+
+/// Thrown on create/update when no exchange rate is available for the chosen
+/// currency on/before the expense date (server errorCode
+/// `ExchangeRateUnavailable`, HTTP 400). Edge case — expenses can't be filed
+/// more than 12 months back.
+class ExchangeRateUnavailableException implements Exception {
+  const ExchangeRateUnavailableException();
 }
 
 /// Thrown when the employee tries to edit an Approved expense that lives on a
@@ -99,6 +108,9 @@ class ExpenseService {
       final errorCode = response['errorCode'] as String?;
       if (errorCode == 'ExpenseDateTooOld') {
         throw const ExpenseDateTooOldException();
+      }
+      if (errorCode == 'ExchangeRateUnavailable') {
+        throw const ExchangeRateUnavailableException();
       }
       throw ExpenseException(message, errorCode: errorCode);
     }
@@ -349,7 +361,7 @@ class ExpenseService {
   Future<void> createExpense({
     required DateTime expenseDate,
     required int categoryId,
-    double? amount,
+    double? dynamicAmount,
     String? currencyCode,
     String? merchantName,
     String? note,
@@ -365,8 +377,8 @@ class ExpenseService {
       'categoryId': categoryId,
     };
 
-    if (amount != null) {
-      body['amount'] = amount;
+    if (dynamicAmount != null) {
+      body['dynamicAmount'] = dynamicAmount;
     }
 
     final trimmedCurrencyCode = currencyCode?.trim();
@@ -405,6 +417,52 @@ class ExpenseService {
     );
 
     _validateResponse(response, 'Failed to create expense');
+  }
+
+  /// Live preview of [amount] in [currency] converted to the company base
+  /// currency, for [date]. Display-only — the server recomputes authoritatively
+  /// on save. Uses the same rates/carry-forward logic as save, so the preview
+  /// matches the stored value.
+  ///
+  /// Throws [ExchangeRateUnavailableException] when no rate exists for the
+  /// date, or [ExpenseException] on other failures.
+  Future<ConversionPreview> convertToBase({
+    required String currency,
+    required num amount,
+    required DateTime date,
+  }) async {
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/conversion/preview',
+      authToken: sessionToken,
+      queryParams: {
+        'currency': currency,
+        'amount': '$amount',
+        'date': date.toIso8601String().split('T').first,
+      },
+    );
+
+    // Standard envelope: { success, message, errorCode, data: { ils, ... } }.
+    final data = response['data'] as Map<String, dynamic>?;
+    if (response['success'] != true || data == null) {
+      final errorCode = response['errorCode'] as String?;
+      if (errorCode == 'ExchangeRateUnavailable') {
+        throw const ExchangeRateUnavailableException();
+      }
+      final message =
+          response['message'] as String? ?? 'Currency conversion failed';
+      throw ExpenseException(message, errorCode: errorCode);
+    }
+
+    // Success envelope but no rate published for the date (data.ils is null,
+    // data.note explains it) — treat as "rate unavailable" so save is blocked.
+    if (data['ils'] == null) {
+      throw const ExchangeRateUnavailableException();
+    }
+
+    return ConversionPreview.fromJson(data);
   }
 
   /// Fetch full details for a single expense.
@@ -450,8 +508,15 @@ class ExpenseService {
     if (result.statusCode == 404) throw const ExpenseNotFoundException();
     if (result.statusCode == 409) throw const ExpenseClosedException();
     if (result.body['success'] != true) {
+      final errorCode = result.body['errorCode'] as String?;
+      if (errorCode == 'ExpenseDateTooOld') {
+        throw const ExpenseDateTooOldException();
+      }
+      if (errorCode == 'ExchangeRateUnavailable') {
+        throw const ExchangeRateUnavailableException();
+      }
       final message = result.body['message'] as String? ?? 'Failed to update expense';
-      throw ExpenseException(message);
+      throw ExpenseException(message, errorCode: errorCode);
     }
   }
 

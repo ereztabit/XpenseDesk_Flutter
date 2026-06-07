@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_list_item.dart';
 import '../../models/expense_sheet_status.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import 'sheet_status_badge.dart';
@@ -13,7 +15,7 @@ import 'sheet_status_badge.dart';
 /// otherwise) · cycle label · status badge.
 /// Row 2 — meta line ("Sent for approval on {date}" for Submitted, "N items"
 /// otherwise) · trailing total amount.
-class SheetPickerTile extends StatelessWidget {
+class SheetPickerTile extends ConsumerWidget {
   const SheetPickerTile({
     super.key,
     required this.sheet,
@@ -60,20 +62,18 @@ class SheetPickerTile extends StatelessWidget {
     return '$count $unit';
   }
 
-  String? _totalText() {
+  String? _totalText(String baseCurrency) {
     final amount = sheet.totalAmount;
     if (amount == null) return null;
-    if (sheet.currencyCode != null) {
-      return amount.toCurrency(companyLocale, sheet.currencyCode!);
-    }
-    return amount.toFormattedNumber(companyLocale);
+    return amount.toCurrency(companyLocale, baseCurrency);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final cycleLabel = sheet.cycleLabel.toCycleLongMonth(companyLocale);
-    final total = _totalText();
+    final total = _totalText(baseCurrency);
 
     final content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

@@ -5,7 +5,11 @@ class UpdateExpenseRequest {
   final String? receiptRef;
   final String? merchantName;
   final String? note;
-  final double? amount;
+
+  /// Amount the user entered, in [currencyCode]. The server converts this to
+  /// the company base currency on save and ignores any converted figure — so
+  /// we never send a base/ILS amount.
+  final double? dynamicAmount;
   final String? currencyCode;
   final bool? isAiData;
 
@@ -15,7 +19,7 @@ class UpdateExpenseRequest {
     this.receiptRef,
     this.merchantName,
     this.note,
-    this.amount,
+    this.dynamicAmount,
     this.currencyCode,
     this.isAiData,
   });
@@ -26,7 +30,7 @@ class UpdateExpenseRequest {
         if (receiptRef != null) 'receiptRef': receiptRef,
         if (merchantName != null) 'merchantName': merchantName,
         if (note != null) 'note': note,
-        if (amount != null) 'amount': amount,
+        if (dynamicAmount != null) 'dynamicAmount': dynamicAmount,
         if (currencyCode != null) 'currencyCode': currencyCode,
         if (isAiData != null) 'isAiData': isAiData,
       };

@@ -11,9 +11,12 @@ import '../utils/responsive_utils.dart';
 import '../widgets/app_button.dart';
 import '../utils/format_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
+import '../utils/conversion_preview_controller.dart';
+import '../widgets/expenses/conversion_preview_label.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
 import '../widgets/expenses/expense_create_image_panel.dart';
 import '../providers/expense_provider.dart';
+import '../providers/expense_sheet_provider.dart';
 import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/expense_category.dart';
@@ -66,6 +69,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   late final TextEditingController _dateController;
   late final TextEditingController _receiptRefController;
   late final FocusNode _dateFocusNode;
+  late final ConversionPreviewController _conversion;
   late final TextEditingController _categoryController;
   String? _dateInputError;
   final _categoryKey = GlobalKey();
@@ -109,6 +113,25 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     _merchantController.addListener(_onFormChanged);
     _dateController.addListener(_onFormChanged);
     _receiptRefController.addListener(_onFormChanged);
+    _conversion = ConversionPreviewController(ref.read(expenseServiceProvider));
+    _conversion.addListener(_onConversionChanged);
+    _amountController.addListener(_evaluateConversion);
+  }
+
+  void _onConversionChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Push the current amount/currency/date into the live conversion preview.
+  void _evaluateConversion() {
+    final amount =
+        double.tryParse(_amountController.text.trim().replaceAll(',', ''));
+    _conversion.evaluate(
+      currency: _selectedCurrencyCode,
+      amount: amount,
+      date: _selectedDate,
+      baseCurrency: ref.read(companyBaseCurrencyProvider),
+    );
   }
 
   @override
@@ -123,6 +146,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     _dateController.dispose();
     _dateFocusNode.dispose();
     _receiptRefController.dispose();
+    _conversion.removeListener(_onConversionChanged);
+    _conversion.dispose();
     _revokePdfBlob();
     super.dispose();
   }
@@ -384,6 +409,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _isAiData = true;
       });
       _syncCategoryController(result.categoryId);
+      _evaluateConversion();
     } catch (_) {
       if (!mounted) return;
       _scanController.stop();
@@ -441,7 +467,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       await expenseService.createExpense(
         expenseDate: date,
         categoryId: categoryId,
-        amount: amount,
+        dynamicAmount: amount,
         currencyCode: currency,
         merchantName: merchant,
         note: note,
@@ -450,7 +476,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         isAiData: _isAiData,
       );
       if (!mounted) return;
+      // Refresh the cycle view AND the dashboard's sheet list + per-sheet
+      // expense cards (the new expense lands in the current draft sheet).
       ref.invalidate(expenseSearchProvider);
+      ref.invalidate(mySheetsProvider);
+      ref.invalidate(sheetDetailProvider);
       Navigator.of(context).pushReplacementNamed('/user/dashboard');
     } on ExpenseDateTooOldException {
       if (!mounted) return;
@@ -458,6 +488,13 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       setState(() {
         _isSubmitting = false;
         _submitError = l10n.expenseDateTooOld;
+      });
+    } on ExchangeRateUnavailableException {
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      setState(() {
+        _isSubmitting = false;
+        _submitError = l10n.expenseExchangeRateUnavailable;
       });
     } on ExpenseException catch (e) {
       if (!mounted) return;
@@ -1295,6 +1332,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           _buildAmountField(l10n),
           const SizedBox(height: 16),
           _buildCurrencyDropdown(l10n),
+          ConversionPreviewLabel(
+            controller: _conversion,
+            companyLocale: companyLocale,
+            baseCurrency: ref.read(companyBaseCurrencyProvider),
+          ),
           const SizedBox(height: 16),
           _buildDateField(context, l10n, companyLocale),
         ],
@@ -1310,6 +1352,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
             const SizedBox(width: 12),
             Expanded(child: _buildCurrencyDropdown(l10n)),
           ],
+        ),
+        ConversionPreviewLabel(
+          controller: _conversion,
+          companyLocale: companyLocale,
+          baseCurrency: ref.read(companyBaseCurrencyProvider),
         ),
         const SizedBox(height: 16),
         _buildDateField(context, l10n, companyLocale),
@@ -1364,7 +1411,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                     label: c.code,
                   ))
               .toList(),
-          onSelected: (v) => setState(() => _selectedCurrencyCode = v),
+          onSelected: (v) {
+            setState(() => _selectedCurrencyCode = v);
+            _evaluateConversion();
+          },
         ),
       ],
     );
@@ -1397,6 +1447,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _selectedDate = picked;
       _dateInputError = null;
     });
+    _evaluateConversion();
   }
 
   Widget _buildDateField(
@@ -1423,7 +1474,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           ),
           onChanged: (value) {
             final parsed = _parseDateInput(value, companyLocale);
-            if (parsed != null) setState(() => _selectedDate = parsed);
+            if (parsed != null) {
+              setState(() => _selectedDate = parsed);
+              _evaluateConversion();
+            }
           },
         ),
       ],
@@ -1502,7 +1556,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       label: l10n.finish,
       variant: _canSubmit ? AppButtonVariant.success : AppButtonVariant.primary,
       isLoading: _isSubmitting,
-      onPressed: (_canAttemptSubmit && !_isSubmitting) ? _submit : null,
+      // Block submit while a conversion is in flight or has failed (rules 3/5).
+      onPressed: (_canAttemptSubmit && !_isSubmitting && _conversion.canSave)
+          ? _submit
+          : null,
     );
 
     final errorRow = _submitError != null

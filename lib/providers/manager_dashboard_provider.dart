@@ -168,9 +168,9 @@ final managerDashboardStateProvider =
     processedCount: approved.totalCount + returned.totalCount,
   );
 
-  final currencyCode = approved.items.isNotEmpty
-      ? approved.items.first.currencyCode
-      : me?.currencyCode;
+  // Sheet-list rows are base-currency only (no per-row currencyCode); the
+  // company base currency comes from the user's company profile.
+  final currencyCode = me?.currencyCode;
 
   return AsyncValue.data(ManagerDashboardData(
     state: state,

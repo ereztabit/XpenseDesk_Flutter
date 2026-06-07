@@ -38,12 +38,11 @@ class MobileExpenseCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final uiLocale = Localizations.localeOf(context);
-    final amountText = expense.amount != null && expense.currencyCode != null
-        ? expense.amount!.toCurrency(locale, expense.currencyCode!)
-        : expense.amount != null
-            ? expense.amount!.toFormattedNumber(locale)
-            : '-';
+    final amountText = expense.amount != null
+        ? expense.amount!.toCurrency(locale, baseCurrency)
+        : '-';
     final dateText = expense.expenseDate.toCompanyDate(locale);
     final reviewedText = _hasReviewedInfo
         ? '${expense.reviewedBy} - ${expense.reviewedAt!.toCompanyDate(locale)}'

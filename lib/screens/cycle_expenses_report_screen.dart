@@ -111,13 +111,9 @@ class _CycleExpensesReportScreenState
   // Server always returns the correct total row for the active filter set.
   CycleExpenseRow? get _displayTotalRow => _serverTotalRow;
 
-  String _getCurrencyCode() =>
-      _detailRows
-          .firstWhere((r) => r.currencyCode != null,
-              orElse: () => const CycleExpenseRow(
-                  rowId: 0, isTotal: false, currencyCode: 'ILS'))
-          .currencyCode ??
-      'ILS';
+  // Search rawdata rows are base-currency only (no per-row currencyCode);
+  // render every amount with the company base currency.
+  String _getCurrencyCode() => ref.read(companyBaseCurrencyProvider);
 
   // ── lifecycle ─────────────────────────────────────────────────────────────
   @override
@@ -939,7 +935,7 @@ class _CycleExpensesReportScreenState
     int index,
     CycleExpenseRow row,
   ) {
-    final currency = row.currencyCode ?? _getCurrencyCode();
+    final currency = _getCurrencyCode();
     final isEven = index % 2 == 0;
     final hasExpenseId = row.expenseId != null && row.expenseId!.isNotEmpty;
 
@@ -1068,7 +1064,7 @@ class _CycleExpensesReportScreenState
 
   Widget _buildTotalRow(AppLocalizations l10n, String locale,
       CycleExpenseRow row, int index) {
-    final currency = row.currencyCode ?? _getCurrencyCode();
+    final currency = _getCurrencyCode();
     final isEven = index % 2 == 0;
 
     return Container(

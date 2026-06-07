@@ -170,13 +170,10 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   Future<void> _handleApprove(ExpenseSheetDetail sheet) async {
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.read(companyLocaleProvider);
+    final baseCurrency = ref.read(companyBaseCurrencyProvider);
     final total =
         sheet.expenses.fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
-    final currencyCode =
-        sheet.expenses.isNotEmpty ? sheet.expenses.first.currencyCode : null;
-    final amountText = currencyCode != null
-        ? total.toCurrency(companyLocale, currencyCode)
-        : total.toFormattedNumber(companyLocale);
+    final amountText = total.toCurrency(companyLocale, baseCurrency);
     final confirmed = await ApproveSheetConfirmDialog.show(
       context,
       amountText: amountText,

@@ -2,6 +2,7 @@
 
 ## Currently Working On
 
+- Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — code complete, awaiting user verification in browser + backend serving the new fields. Steps 1–9 done: dynamicAmount on create/update, detail model fields, list models base-currency, base-currency display, edit binds dynamicAmount, 400 ExchangeRateUnavailable handling, /api/conversion/preview service, live ≈base-currency preview (spinner / save-gating / error) on all three editable surfaces, build + analyze clean.
 
 Open bugs (see `## report bugs (pending)` below)
 

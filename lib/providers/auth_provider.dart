@@ -106,3 +106,11 @@ final authBootstrapProvider = FutureProvider<void>((ref) async {
 final companyLocaleProvider = Provider<String>((ref) {
   return ref.watch(localeProvider).languageCode;
 });
+
+/// The company's base currency code (e.g. "ILS"), used to render every
+/// list/sheet/report amount — those endpoints return base-currency values only
+/// and no longer carry a per-row `currencyCode`. Defaults to "ILS" until the
+/// user's company info has loaded.
+final companyBaseCurrencyProvider = Provider<String>((ref) {
+  return ref.watch(userInfoProvider)?.currencyCode ?? 'ILS';
+});

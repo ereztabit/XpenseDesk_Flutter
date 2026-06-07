@@ -11,8 +11,10 @@ class ExpenseSummary {
   final String? merchantName;
   final int categoryId;
   final String categoryName;
+  /// Value in the company **base currency** — the search/list endpoint no
+  /// longer returns a per-row `currencyCode`. Render with the company base
+  /// currency (see `companyBaseCurrencyProvider`).
   final double? amount;
-  final String? currencyCode;
   final String? receiptRef;
   final String? note;
   final int expenseStatusId;
@@ -40,7 +42,6 @@ class ExpenseSummary {
     required this.categoryId,
     required this.categoryName,
     this.amount,
-    this.currencyCode,
     this.receiptRef,
     this.note,
     required this.expenseStatusId,
@@ -66,7 +67,6 @@ class ExpenseSummary {
       categoryId: json['categoryId'] as int,
       categoryName: json['categoryName'] as String,
       amount: (json['amount'] as num?)?.toDouble(),
-      currencyCode: json['currencyCode'] as String?,
       receiptRef: json['receiptRef'] as String?,
       note: json['note'] as String?,
       expenseStatusId: json['expenseStatusId'] as int,

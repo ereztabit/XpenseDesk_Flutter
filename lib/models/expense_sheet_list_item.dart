@@ -24,8 +24,11 @@ class ExpenseSheetListItem {
   final DateTime? submittedAt;
   final DateTime? reviewedAt;
   final int expenseCount;
+
+  /// Sheet total in the company **base currency** — sheet-list endpoints no
+  /// longer return a per-row `currencyCode`. Render with the company base
+  /// currency (see `companyBaseCurrencyProvider`).
   final double? totalAmount;
-  final String? currencyCode;
 
   const ExpenseSheetListItem({
     required this.expenseSheetId,
@@ -41,7 +44,6 @@ class ExpenseSheetListItem {
     this.reviewedAt,
     required this.expenseCount,
     this.totalAmount,
-    this.currencyCode,
   });
 
   ExpenseSheetStatus? get status =>
@@ -65,7 +67,6 @@ class ExpenseSheetListItem {
       reviewedAt: parseDate(json['reviewedAt'] as String?),
       expenseCount: (json['expenseCount'] as num?)?.toInt() ?? 0,
       totalAmount: (json['totalAmount'] as num?)?.toDouble(),
-      currencyCode: json['currencyCode'] as String?,
     );
   }
 }

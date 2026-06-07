@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_category.dart';
 import '../../models/expense_summary.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../action_icon_button.dart';
@@ -13,7 +15,7 @@ import '../expenses/expense_status_badge.dart';
 /// scan-oriented alternative to the card layout. Shows merchant/date·category,
 /// amount, per-line status badge, and (when actionable + the line is pending)
 /// inline ✓/✗ buttons. Whole row taps through to expense detail.
-class MobileSheetReviewCompactRow extends StatelessWidget {
+class MobileSheetReviewCompactRow extends ConsumerWidget {
   const MobileSheetReviewCompactRow({
     super.key,
     required this.expense,
@@ -34,12 +36,13 @@ class MobileSheetReviewCompactRow extends StatelessWidget {
   final VoidCallback? onDelete;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final uiLocale = Localizations.localeOf(context);
-    final amountText = expense.amount != null && expense.currencyCode != null
-        ? expense.amount!.toCurrency(companyLocale, expense.currencyCode!)
-        : expense.amount?.toFormattedNumber(companyLocale) ?? '—';
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
+    final amountText = expense.amount != null
+        ? expense.amount!.toCurrency(companyLocale, baseCurrency)
+        : '—';
     final categoryText =
         ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
             expense.categoryName;

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import 'desktop_sheet_review_row.dart';
 
@@ -9,7 +11,7 @@ import 'desktop_sheet_review_row.dart';
 /// (vertical) and row separators (horizontal) come from a single [TableBorder]
 /// — no per-cell divider widgets, no `IntrinsicHeight`. Per-line action
 /// callbacks pass through; when null, rows render read-only (no ✓/✗).
-class DesktopSheetReviewTable extends StatelessWidget {
+class DesktopSheetReviewTable extends ConsumerWidget {
   const DesktopSheetReviewTable({
     super.key,
     required this.expenses,
@@ -40,7 +42,8 @@ class DesktopSheetReviewTable extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
@@ -62,6 +65,7 @@ class DesktopSheetReviewTable extends StatelessWidget {
               context,
               expense: e,
               companyLocale: companyLocale,
+              baseCurrency: baseCurrency,
               onTap: () => onTapLine(e),
               onApprove: onApproveLine == null ? null : () => onApproveLine!(e),
               onDecline: onDeclineLine == null ? null : () => onDeclineLine!(e),

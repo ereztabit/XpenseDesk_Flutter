@@ -41,6 +41,7 @@ class ExpenseCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final statusColor = _statusColor();
     final locale = ref.watch(companyLocaleProvider);
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final dateFormatted = expense.expenseDate.toCompanyDate(locale);
 
     final title =
@@ -48,11 +49,9 @@ class ExpenseCard extends ConsumerWidget {
             ? expense.merchantName!
             : expense.categoryName;
 
-    final amountText = expense.amount != null && expense.currencyCode != null
-        ? expense.amount!.toCurrency(locale, expense.currencyCode!)
-        : expense.amount != null
-            ? expense.amount!.toFormattedNumber(locale)
-            : '—';
+    final amountText = expense.amount != null
+        ? expense.amount!.toCurrency(locale, baseCurrency)
+        : '—';
 
     return Card(
       margin: margin,

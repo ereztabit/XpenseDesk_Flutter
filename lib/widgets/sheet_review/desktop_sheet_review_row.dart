@@ -31,6 +31,7 @@ TableRow buildSheetReviewRow(
   BuildContext context, {
   required ExpenseSummary expense,
   required String companyLocale,
+  required String baseCurrency,
   required VoidCallback onTap,
   VoidCallback? onApprove,
   VoidCallback? onDecline,
@@ -38,9 +39,9 @@ TableRow buildSheetReviewRow(
 }) {
   final l10n = AppLocalizations.of(context)!;
   final uiLocale = Localizations.localeOf(context);
-  final amountText = expense.amount != null && expense.currencyCode != null
-      ? expense.amount!.toCurrency(companyLocale, expense.currencyCode!)
-      : expense.amount?.toFormattedNumber(companyLocale) ?? '—';
+  final amountText = expense.amount != null
+      ? expense.amount!.toCurrency(companyLocale, baseCurrency)
+      : '—';
   final categoryText =
       ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
       expense.categoryName;

@@ -18,6 +18,8 @@ import '../utils/format_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
+import '../utils/conversion_preview_controller.dart';
+import '../widgets/expenses/conversion_preview_label.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
 import '../widgets/last_action_confirm_dialog.dart';
@@ -60,6 +62,7 @@ class _EmployeeExpenseDetailScreenState
   final _merchantController = TextEditingController();
   final _noteController = TextEditingController();
   final _receiptRefController = TextEditingController();
+  late final ConversionPreviewController _conversion;
 
   DateTime? _selectedDate;
   int? _selectedCategoryId;
@@ -110,7 +113,9 @@ class _EmployeeExpenseDetailScreenState
       _amountController.text.trim().isNotEmpty &&
       _selectedCategoryId != null &&
       _merchantController.text.trim().isNotEmpty &&
-      _selectedDate != null;
+      _selectedDate != null &&
+      // Block save while a conversion is in flight or has failed (rules 3/5).
+      _conversion.canSave;
 
   /// True when any field differs from the loaded baseline (#8). Gates the
   /// save/update button so an unchanged form cannot be submitted.
@@ -133,11 +138,30 @@ class _EmployeeExpenseDetailScreenState
   @override
   void initState() {
     super.initState();
+    _conversion = ConversionPreviewController(ref.read(expenseServiceProvider));
+    _conversion.addListener(_onConversionChanged);
     _amountController.addListener(() => setState(() {}));
+    _amountController.addListener(_evaluateConversion);
     _merchantController.addListener(() => setState(() {}));
     _noteController.addListener(() => setState(() {}));
     _receiptRefController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadExpense());
+  }
+
+  void _onConversionChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Push the current amount/currency/date into the live conversion preview.
+  void _evaluateConversion() {
+    final amount =
+        double.tryParse(_amountController.text.replaceAll(',', ''));
+    _conversion.evaluate(
+      currency: _selectedCurrencyCode,
+      amount: amount,
+      date: _selectedDate,
+      baseCurrency: ref.read(companyBaseCurrencyProvider),
+    );
   }
 
   @override
@@ -146,6 +170,8 @@ class _EmployeeExpenseDetailScreenState
     _merchantController.dispose();
     _noteController.dispose();
     _receiptRefController.dispose();
+    _conversion.removeListener(_onConversionChanged);
+    _conversion.dispose();
     super.dispose();
   }
 
@@ -167,20 +193,24 @@ class _EmployeeExpenseDetailScreenState
   }
 
   void _initForm(ExpenseDetail expense) {
-    _amountController.text = expense.amount != null
-        ? NumberFormat('#,##0.##', 'en').format(expense.amount!)
+    // The editable amount is what the user actually entered, in their currency
+    // (dynamicAmount) — NOT the server-booked base-currency value (amount).
+    final editableAmount = expense.dynamicAmount ?? expense.amount;
+    _amountController.text = editableAmount != null
+        ? NumberFormat('#,##0.##', 'en').format(editableAmount)
         : '';
     _merchantController.text = expense.merchantName ?? '';
     _noteController.text = expense.note ?? '';
     _receiptRefController.text = expense.receiptRef ?? '';
     _selectedDate = expense.expenseDate;
     _selectedCategoryId = expense.categoryId;
-    _selectedCurrencyCode = expense.currencyCode ?? 'ILS';
+    _selectedCurrencyCode =
+        expense.currencyCode ?? expense.baseCurrencyCode ?? 'ILS';
     _isAiData = expense.isAiData;
     _isModifying = false;
 
     // Baseline snapshot for dirty detection (#8).
-    _initialAmount = expense.amount;
+    _initialAmount = editableAmount;
     _initialMerchant = _merchantController.text;
     _initialNote = _noteController.text;
     _initialReceiptRef = _receiptRefController.text;
@@ -188,6 +218,10 @@ class _EmployeeExpenseDetailScreenState
     _initialCategoryId = expense.categoryId;
     _initialCurrencyCode = _selectedCurrencyCode;
     _initialIsAiData = expense.isAiData;
+
+    // Fields are set above in amount-then-currency/date order, so the amount
+    // listener fired with stale currency/date — re-evaluate with final values.
+    _evaluateConversion();
   }
 
   /// Manager-mode cancel: restore the loaded values and exit edit mode.
@@ -215,7 +249,10 @@ class _EmployeeExpenseDetailScreenState
       firstDate: firstDate,
       lastDate: now,
     );
-    if (picked != null && mounted) setState(() => _selectedDate = picked);
+    if (picked != null && mounted) {
+      setState(() => _selectedDate = picked);
+      _evaluateConversion();
+    }
   }
 
   /// Loads the parent sheet's expenses (cached if Sheet Review / dashboard
@@ -274,7 +311,8 @@ class _EmployeeExpenseDetailScreenState
               ? null : _merchantController.text.trim(),
           note: _noteController.text.trim().isEmpty
               ? null : _noteController.text.trim(),
-          amount: double.tryParse(_amountController.text.replaceAll(',', '')),
+          dynamicAmount:
+              double.tryParse(_amountController.text.replaceAll(',', '')),
           currencyCode: _selectedCurrencyCode,
           receiptRef: _receiptRefController.text.trim().isEmpty
               ? null : _receiptRefController.text.trim(),
@@ -300,6 +338,12 @@ class _EmployeeExpenseDetailScreenState
       }
     } on ExpenseNotFoundException {
       if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
+    } on ExchangeRateUnavailableException {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
+      });
     } on ExpenseException catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
     } catch (e) {
@@ -349,7 +393,8 @@ class _EmployeeExpenseDetailScreenState
                 ? null : _merchantController.text.trim(),
             note: _noteController.text.trim().isEmpty
                 ? null : _noteController.text.trim(),
-            amount: double.tryParse(_amountController.text.replaceAll(',', '')),
+            dynamicAmount:
+                double.tryParse(_amountController.text.replaceAll(',', '')),
             currencyCode: _selectedCurrencyCode,
             receiptRef: _receiptRefController.text.trim().isEmpty
                 ? null : _receiptRefController.text.trim(),
@@ -363,6 +408,12 @@ class _EmployeeExpenseDetailScreenState
       navigator.pop();
     } on ExpenseNotFoundException {
       if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
+    } on ExchangeRateUnavailableException {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
+      });
     } on ExpenseException catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
     } catch (e) {
@@ -384,6 +435,12 @@ class _EmployeeExpenseDetailScreenState
       navigator.pop();
     } on ExpenseNotFoundException {
       if (mounted) setState(() { _isSaving = false; _isNotFound = true; });
+    } on ExchangeRateUnavailableException {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
+      });
     } on ExpenseException catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
     } catch (e) {
@@ -543,7 +600,10 @@ class _EmployeeExpenseDetailScreenState
                   DropdownMenuEntry<String>(value: c.code, label: c.displayLabel))
               .toList(),
           onSelected: enabled
-              ? (value) => setState(() => _selectedCurrencyCode = value)
+              ? (value) {
+                  setState(() => _selectedCurrencyCode = value);
+                  _evaluateConversion();
+                }
               : null,
         ),
       ],
@@ -568,6 +628,11 @@ class _EmployeeExpenseDetailScreenState
       required: true,
       enabled: enabled,
     );
+    final conversionField = ConversionPreviewLabel(
+      controller: _conversion,
+      companyLocale: companyLocale,
+      baseCurrency: ref.read(companyBaseCurrencyProvider),
+    );
 
     if (isNarrow) {
       return Column(
@@ -576,19 +641,26 @@ class _EmployeeExpenseDetailScreenState
           amountField,
           const SizedBox(height: 12),
           currencyField,
+          conversionField,
           const SizedBox(height: 12),
           dateField,
         ],
       );
     }
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: amountField),
-        const SizedBox(width: 12),
-        Expanded(child: currencyField),
-        const SizedBox(width: 12),
-        Expanded(child: dateField),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: amountField),
+            const SizedBox(width: 12),
+            Expanded(child: currencyField),
+            const SizedBox(width: 12),
+            Expanded(child: dateField),
+          ],
+        ),
+        conversionField,
       ],
     );
   }
@@ -641,12 +713,30 @@ class _EmployeeExpenseDetailScreenState
               spacing: 24,
               runSpacing: 8,
               children: [
-                if (_expense!.amount != null)
+                if (_expense!.amount != null) ...[
+                  // Foreign expense: show what the user spent (original
+                  // currency) as primary, booked base value as secondary.
                   _SummaryTile(
                     label: l10n.amountLabel,
-                    value: _expense!.amount!.toCurrency(
-                        companyLocale, _expense!.currencyCode ?? 'ILS'),
+                    value: _expense!.isForeign && _expense!.dynamicAmount != null
+                        ? _expense!.dynamicAmount!.toCurrency(companyLocale,
+                            _expense!.currencyCode ??
+                                _expense!.baseCurrencyCode ??
+                                ref.read(companyBaseCurrencyProvider))
+                        : _expense!.amount!.toCurrency(
+                            companyLocale,
+                            _expense!.baseCurrencyCode ??
+                                ref.read(companyBaseCurrencyProvider)),
                   ),
+                  if (_expense!.isForeign)
+                    _SummaryTile(
+                      label: l10n.expenseConvertedLabel,
+                      value: _expense!.amount!.toCurrency(
+                          companyLocale,
+                          _expense!.baseCurrencyCode ??
+                              ref.read(companyBaseCurrencyProvider)),
+                    ),
+                ],
                 _SummaryTile(
                     label: l10n.expenseDate,
                     value: _expense!.expenseDate.toCompanyDate(companyLocale)),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_category.dart';
 import '../../models/expense_summary.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../action_icon_button.dart';
@@ -11,7 +13,7 @@ import '../ai_badge.dart';
 /// One compact mobile list row.
 ///
 /// Layout: `[#]  [merchant\ndate · category]  [amount]  [edit]  [delete]`.
-class MobileSheetExpenseRow extends StatelessWidget {
+class MobileSheetExpenseRow extends ConsumerWidget {
   const MobileSheetExpenseRow({
     super.key,
     required this.rowNumber,
@@ -32,11 +34,12 @@ class MobileSheetExpenseRow extends StatelessWidget {
   final void Function(ExpenseSummary)? onDelete;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final amountText = expense.amount != null && expense.currencyCode != null
-        ? expense.amount!.toCurrency(companyLocale, expense.currencyCode!)
-        : expense.amount?.toFormattedNumber(companyLocale) ?? '—';
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
+    final amountText = expense.amount != null
+        ? expense.amount!.toCurrency(companyLocale, baseCurrency)
+        : '—';
     final uiLocale = Localizations.localeOf(context);
     final categoryText =
         ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??

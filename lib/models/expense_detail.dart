@@ -11,8 +11,30 @@ class ExpenseDetail {
   final String? merchantName;
   final int categoryId;
   final String categoryName;
+
+  /// Value in the company **base currency** — always (server-computed).
   final double? amount;
+
+  /// Currency the user entered the expense in (e.g. "USD").
   final String? currencyCode;
+
+  /// What the user entered, in [currencyCode]. Equals [amount] for local
+  /// (non-foreign) expenses.
+  final double? dynamicAmount;
+
+  /// The company base currency code, e.g. "ILS".
+  final String? baseCurrencyCode;
+
+  /// True when the expense was entered in a non-base currency.
+  final bool isForeign;
+
+  /// Conversion rate applied (null for local expenses).
+  final double? rateUsed;
+
+  /// Date of the rate used — may be earlier than [expenseDate] on
+  /// weekends/holidays (server carries the last published rate forward).
+  final DateTime? rateDate;
+
   final String? receiptRef;
   final String? imageUrl;
   final String? note;
@@ -42,6 +64,11 @@ class ExpenseDetail {
     required this.categoryName,
     this.amount,
     this.currencyCode,
+    this.dynamicAmount,
+    this.baseCurrencyCode,
+    this.isForeign = false,
+    this.rateUsed,
+    this.rateDate,
     this.receiptRef,
     this.imageUrl,
     this.note,
@@ -72,6 +99,13 @@ class ExpenseDetail {
       categoryName: json['categoryName'] as String,
       amount: (json['amount'] as num?)?.toDouble(),
       currencyCode: json['currencyCode'] as String?,
+      dynamicAmount: (json['dynamicAmount'] as num?)?.toDouble(),
+      baseCurrencyCode: json['baseCurrencyCode'] as String?,
+      isForeign: json['isForeign'] as bool? ?? false,
+      rateUsed: (json['rateUsed'] as num?)?.toDouble(),
+      rateDate: json['rateDate'] != null
+          ? DateTime.tryParse(json['rateDate'] as String)
+          : null,
       receiptRef: json['receiptRef'] as String?,
       imageUrl: json['imageUrl'] as String?,
       note: json['note'] as String?,

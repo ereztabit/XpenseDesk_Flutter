@@ -15,6 +15,8 @@ import '../../services/expense_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/expense_amount_input_formatter.dart';
+import '../../utils/conversion_preview_controller.dart';
+import 'conversion_preview_label.dart';
 
 /// Shows a bottom-sheet drawer for viewing/editing a pending expense on mobile.
 ///
@@ -51,6 +53,7 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
   final _merchantController = TextEditingController();
   final _noteController = TextEditingController();
   final _receiptRefController = TextEditingController();
+  late final ConversionPreviewController _conversion;
 
   DateTime? _selectedDate;
   int? _selectedCategoryId;
@@ -66,14 +69,34 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
       _amountController.text.trim().isNotEmpty &&
       _selectedCategoryId != null &&
       _merchantController.text.trim().isNotEmpty &&
-      _selectedDate != null;
+      _selectedDate != null &&
+      // Block save while a conversion is in flight or has failed (rules 3/5).
+      _conversion.canSave;
 
   @override
   void initState() {
     super.initState();
+    _conversion = ConversionPreviewController(ref.read(expenseServiceProvider));
+    _conversion.addListener(_onConversionChanged);
     _amountController.addListener(() => setState(() {}));
+    _amountController.addListener(_evaluateConversion);
     _merchantController.addListener(() => setState(() {}));
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadDetail());
+  }
+
+  void _onConversionChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _evaluateConversion() {
+    final amount =
+        double.tryParse(_amountController.text.replaceAll(',', ''));
+    _conversion.evaluate(
+      currency: _selectedCurrencyCode,
+      amount: amount,
+      date: _selectedDate,
+      baseCurrency: ref.read(companyBaseCurrencyProvider),
+    );
   }
 
   @override
@@ -82,6 +105,8 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
     _merchantController.dispose();
     _noteController.dispose();
     _receiptRefController.dispose();
+    _conversion.removeListener(_onConversionChanged);
+    _conversion.dispose();
     super.dispose();
   }
 
@@ -90,20 +115,25 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
       final service = ref.read(expenseServiceProvider);
       final detail = await service.getExpenseById(widget.expense.expenseId);
       if (!mounted) return;
-      _amountController.text = detail.amount != null
-          ? detail.amount!.toStringAsFixed(detail.amount! % 1 == 0 ? 0 : 2)
+      // Edit the amount the user actually entered (dynamicAmount), not the
+      // server-booked base value (amount).
+      final editableAmount = detail.dynamicAmount ?? detail.amount;
+      _amountController.text = editableAmount != null
+          ? editableAmount.toStringAsFixed(editableAmount % 1 == 0 ? 0 : 2)
           : '';
       _merchantController.text = detail.merchantName ?? '';
       _noteController.text = detail.note ?? '';
       _receiptRefController.text = detail.receiptRef ?? '';
       _selectedDate = detail.expenseDate;
       _selectedCategoryId = detail.categoryId;
-      _selectedCurrencyCode = detail.currencyCode ?? 'ILS';
+      _selectedCurrencyCode =
+          detail.currencyCode ?? detail.baseCurrencyCode ?? 'ILS';
       _isAiData = detail.isAiData;
       setState(() {
         _detail = detail;
         _isLoading = false;
       });
+      _evaluateConversion();
     } catch (e) {
       if (mounted) setState(() { _loadError = e.toString(); _isLoading = false; });
     }
@@ -128,7 +158,8 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
               ? null : _merchantController.text.trim(),
           note: _noteController.text.trim().isEmpty
               ? null : _noteController.text.trim(),
-          amount: double.tryParse(_amountController.text.replaceAll(',', '')),
+          dynamicAmount:
+              double.tryParse(_amountController.text.replaceAll(',', '')),
           currencyCode: _selectedCurrencyCode,
           receiptRef: _receiptRefController.text.trim().isEmpty
               ? null : _receiptRefController.text.trim(),
@@ -150,6 +181,12 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
         setState(() { _isSaving = false; });
         navigator.pop();
       }
+    } on ExchangeRateUnavailableException {
+      if (!mounted) return;
+      setState(() {
+        _isSaving = false;
+        _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
+      });
     } on ExpenseException catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
     } catch (e) {
@@ -171,7 +208,10 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
       firstDate: firstDate,
       lastDate: now,
     );
-    if (picked != null && mounted) setState(() => _selectedDate = picked);
+    if (picked != null && mounted) {
+      setState(() => _selectedDate = picked);
+      _evaluateConversion();
+    }
   }
 
   // ── Build helpers ────────────────────────────────────────────────────────
@@ -303,7 +343,10 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
               .toList(),
           onSelected: _isSaving
               ? null
-              : (value) => setState(() => _selectedCurrencyCode = value),
+              : (value) {
+                  setState(() => _selectedCurrencyCode = value);
+                  _evaluateConversion();
+                },
         ),
       ],
     );
@@ -356,12 +399,28 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
               spacing: 24,
               runSpacing: 8,
               children: [
-                if (_detail!.amount != null)
+                if (_detail!.amount != null) ...[
                   _SummaryTile(
                     label: l10n.amountLabel,
-                    value: _detail!.amount!.toCurrency(
-                        companyLocale, _detail!.currencyCode ?? 'ILS'),
+                    value: _detail!.isForeign && _detail!.dynamicAmount != null
+                        ? _detail!.dynamicAmount!.toCurrency(companyLocale,
+                            _detail!.currencyCode ??
+                                _detail!.baseCurrencyCode ??
+                                ref.read(companyBaseCurrencyProvider))
+                        : _detail!.amount!.toCurrency(
+                            companyLocale,
+                            _detail!.baseCurrencyCode ??
+                                ref.read(companyBaseCurrencyProvider)),
                   ),
+                  if (_detail!.isForeign)
+                    _SummaryTile(
+                      label: l10n.expenseConvertedLabel,
+                      value: _detail!.amount!.toCurrency(
+                          companyLocale,
+                          _detail!.baseCurrencyCode ??
+                              ref.read(companyBaseCurrencyProvider)),
+                    ),
+                ],
                 _SummaryTile(
                     label: l10n.expenseDate,
                     value: _detail!.expenseDate.toCompanyDate(companyLocale)),
@@ -387,6 +446,11 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
                 ),
                 const SizedBox(height: 12),
                 _buildCurrencyDropdown(l10n),
+                ConversionPreviewLabel(
+                  controller: _conversion,
+                  companyLocale: companyLocale,
+                  baseCurrency: ref.read(companyBaseCurrencyProvider),
+                ),
                 const SizedBox(height: 12),
                 _buildDateField(l10n.expenseDate, companyLocale),
                 const SizedBox(height: 12),
@@ -581,6 +645,12 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
                               ),
                               const SizedBox(height: 12),
                               _buildCurrencyDropdown(l10n),
+                              ConversionPreviewLabel(
+                                controller: _conversion,
+                                companyLocale: companyLocale,
+                                baseCurrency:
+                                    ref.read(companyBaseCurrencyProvider),
+                              ),
                               const SizedBox(height: 12),
                               _buildDateField(
                                   l10n.expenseDate, companyLocale),

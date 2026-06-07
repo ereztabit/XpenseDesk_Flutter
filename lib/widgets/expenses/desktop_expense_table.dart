@@ -56,10 +56,9 @@ class DesktopExpenseTable extends ConsumerWidget {
     this.onDecline,
   });
 
-  String _formatAmount(double? amount, String? currencyCode, String locale) {
+  String _formatAmount(double? amount, String locale, String baseCurrency) {
     if (amount == null) return '—';
-    if (currencyCode == null) return amount.toFormattedNumber(locale);
-    return amount.toCurrency(locale, currencyCode);
+    return amount.toCurrency(locale, baseCurrency);
   }
 
   Widget _buildDateCell(
@@ -193,6 +192,7 @@ class DesktopExpenseTable extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final uiLocale = Localizations.localeOf(context);
 
     final List<SectionTableColumn> columns = isManagerMode
@@ -220,7 +220,7 @@ class DesktopExpenseTable extends ConsumerWidget {
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Text(
-            _formatAmount(expense.amount, expense.currencyCode, locale),
+            _formatAmount(expense.amount, locale, baseCurrency),
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,

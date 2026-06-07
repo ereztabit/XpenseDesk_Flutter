@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_list_item.dart';
+import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../app_button.dart';
@@ -12,7 +14,7 @@ import 'sheet_bucket_enums.dart';
 /// Layout: leading column with employee name (bold) + meta line
 /// `cycle · N items` + timestamp; trailing column with total amount above
 /// the action affordance. Whole row tappable.
-class MobileSheetBucketRow extends StatelessWidget {
+class MobileSheetBucketRow extends ConsumerWidget {
   const MobileSheetBucketRow({
     super.key,
     required this.sheet,
@@ -38,15 +40,14 @@ class MobileSheetBucketRow extends StatelessWidget {
       };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final stamp = _timestamp();
     final stampText = stamp?.toCompanyDate(companyLocale);
-    final amountText =
-        sheet.totalAmount != null && sheet.currencyCode != null
-            ? sheet.totalAmount!
-                .toCurrency(companyLocale, sheet.currencyCode!)
-            : sheet.totalAmount?.toFormattedNumber(companyLocale) ?? '—';
+    final amountText = sheet.totalAmount != null
+        ? sheet.totalAmount!.toCurrency(companyLocale, baseCurrency)
+        : '—';
     final cycleText = sheet.cycleLabel.toCycleLongMonth(companyLocale);
     final itemsText =
         '${sheet.expenseCount} ${sheet.expenseCount == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural}';

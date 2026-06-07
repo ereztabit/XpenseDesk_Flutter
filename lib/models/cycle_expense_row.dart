@@ -12,8 +12,9 @@ class CycleExpenseRow {
   final String? employeeName;
   final String? merchantName;
   final String? categoryName;
+  /// Value in the company **base currency** — search rawdata no longer returns
+  /// a per-row `currencyCode`. Render with the company base currency.
   final double? amount;
-  final String? currencyCode;
   final String? status;
   final String? reviewedAt;
   final String? reviewedBy;
@@ -31,7 +32,6 @@ class CycleExpenseRow {
     this.merchantName,
     this.categoryName,
     this.amount,
-    this.currencyCode,
     this.status,
     this.reviewedAt,
     this.reviewedBy,
@@ -54,7 +54,6 @@ class CycleExpenseRow {
       merchantName: json['merchantName'] as String?,
       categoryName: json['categoryName'] as String?,
       amount: (json['amount'] as num?)?.toDouble(),
-      currencyCode: json['currencyCode'] as String?,
       status: json['status'] as String?,
       reviewedAt: json['reviewedAt'] as String?,
       reviewedBy: json['reviewedBy'] as String?,
