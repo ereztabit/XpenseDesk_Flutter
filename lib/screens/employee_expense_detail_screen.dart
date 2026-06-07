@@ -7,7 +7,7 @@ import '../models/expense_summary.dart';
 import '../widgets/ai_badge.dart';
 import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
-import '../models/expense_currency.dart';
+import '../providers/company_provider.dart';
 import '../models/update_expense_request.dart';
 import '../providers/employee_dashboard_provider.dart';
 import '../providers/expense_provider.dart';
@@ -595,9 +595,10 @@ class _EmployeeExpenseDetailScreenState
             filled: !enabled,
             fillColor: !enabled ? AppTheme.muted.withAlpha(77) : null,
           ),
-          dropdownMenuEntries: ExpenseCurrency.values
-              .map((c) =>
-                  DropdownMenuEntry<String>(value: c.code, label: c.displayLabel))
+          dropdownMenuEntries: ref
+              .watch(trackedCurrenciesProvider)
+              .map((c) => DropdownMenuEntry<String>(
+                  value: c.currencyCode, label: c.displayLabel))
               .toList(),
           onSelected: enabled
               ? (value) {

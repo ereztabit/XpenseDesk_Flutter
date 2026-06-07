@@ -20,7 +20,7 @@ import '../providers/expense_sheet_provider.dart';
 import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/expense_category.dart';
-import '../models/expense_currency.dart';
+import '../providers/company_provider.dart';
 
 class NewExpenseScreen extends ConsumerStatefulWidget {
   const NewExpenseScreen({super.key});
@@ -330,7 +330,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     setState(() {
       _isModifying = false;
       // Category and note keep whatever the user selected — not overridden on cancel.
-      _selectedCurrencyCode = result.currencyCode ?? 'ILS';
+      _selectedCurrencyCode =
+          result.currencyCode ?? ref.read(companyBaseCurrencyProvider);
       _selectedDate = result.expenseDate != null
           ? DateTime.tryParse(result.expenseDate!)
           : null;
@@ -377,7 +378,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           _aiFailed = true;
           _isAnalyzing = false;
           _currentStep = 1;
-          _selectedCurrencyCode = 'ILS';
+          _selectedCurrencyCode = ref.read(companyBaseCurrencyProvider);
           _aiImageUrl = result.imageUrl;
         });
         return;
@@ -388,7 +389,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _isAnalyzing = false;
         _currentStep = 1;
         _selectedCategoryId = result.categoryId;
-        _selectedCurrencyCode = result.currencyCode ?? 'ILS';
+        _selectedCurrencyCode =
+            result.currencyCode ?? ref.read(companyBaseCurrencyProvider);
         _selectedDate = result.expenseDate != null
             ? DateTime.tryParse(result.expenseDate!)
             : null;
@@ -418,7 +420,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _aiFailed = true;
         _isAnalyzing = false;
         _currentStep = 1;
-        _selectedCurrencyCode = 'ILS';
+        _selectedCurrencyCode = ref.read(companyBaseCurrencyProvider);
       });
     }
   }
@@ -1413,10 +1415,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           expandedInsets: EdgeInsets.zero,
           hintText: l10n.currencyPlaceholder,
           inputDecorationTheme: _dropdownTheme(),
-          dropdownMenuEntries: ExpenseCurrency.values
+          dropdownMenuEntries: ref
+              .watch(trackedCurrenciesProvider)
               .map((c) => DropdownMenuEntry<String>(
-                    value: c.code,
-                    label: c.code,
+                    value: c.currencyCode,
+                    label: c.currencyCode,
                   ))
               .toList(),
           onSelected: (v) {

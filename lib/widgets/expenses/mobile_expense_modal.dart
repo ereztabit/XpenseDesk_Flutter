@@ -7,7 +7,7 @@ import '../app_button.dart';
 import '../../models/expense_detail.dart';
 import '../../models/expense_summary.dart';
 import '../../models/expense_category.dart';
-import '../../models/expense_currency.dart';
+import '../../providers/company_provider.dart';
 import '../../models/update_expense_request.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
@@ -337,9 +337,10 @@ class _MobileExpenseModalState extends ConsumerState<_MobileExpenseModal> {
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           ),
-          dropdownMenuEntries: ExpenseCurrency.values
-              .map((c) =>
-                  DropdownMenuEntry<String>(value: c.code, label: c.displayLabel))
+          dropdownMenuEntries: ref
+              .watch(trackedCurrenciesProvider)
+              .map((c) => DropdownMenuEntry<String>(
+                  value: c.currencyCode, label: c.displayLabel))
               .toList(),
           onSelected: _isSaving
               ? null

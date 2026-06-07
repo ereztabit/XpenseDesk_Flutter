@@ -142,15 +142,22 @@ base-currency totals — **no conversion UI needed** there.
 - [x] List/search/sheet models: remove `currencyCode`; render `amount` as base.
 - [x] Live preview via `GET /api/conversion/preview` (session token) with rules 1–6 above.
 - [x] Handle `400 ExchangeRateUnavailable`.
-- [ ] Build the currency picker from `trackedCurrencies` on `GET /api/company` — see Follow-up 1.
+- [x] Build the currency picker from `trackedCurrencies` on `GET /api/company` — Follow-up 1, shipped.
 
-Shipped in commit `fdfb445`. Items below are still open.
+Core shipped in `fdfb445` / `6df2e25`; Follow-up 1 shipped after. Follow-up 2 still open.
 
 ---
 
 ## Follow-ups (pending — not yet implemented)
 
-### Follow-up 1 — Load currencies from the backend (stop hardcoding)
+### Follow-up 1 — Load currencies from the backend (stop hardcoding) — DONE
+
+Shipped: `TrackedCurrency` model, `CompanyInfo.trackedCurrencies`,
+`trackedCurrenciesProvider` (company-sourced, base-only fallback while loading),
+all three pickers migrated, new-expense default = base currency.
+`ExpenseCurrency` no longer used by any live picker (only the unused
+`expense_form.dart` still references it).
+
 
 **Problem.** The currency picker is currently hardcoded in
 `lib/models/expense_currency.dart` (`ExpenseCurrency.values` — AUD/CAD/EUR/GBP/ILS/USD).

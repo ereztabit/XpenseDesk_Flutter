@@ -1,3 +1,5 @@
+import 'tracked_currency.dart';
+
 /// Company configuration data returned by GET /api/company.
 class CompanyInfo {
   final String companyId;
@@ -32,6 +34,10 @@ class CompanyInfo {
   final bool isInTrial;
   final bool hasCardOnFile;
 
+  /// Currencies the company can file expenses in (base first). Drives the
+  /// expense currency picker — empty for older payloads.
+  final List<TrackedCurrency> trackedCurrencies;
+
   /// Days remaining in trial (0 if expired or not in trial).
   int get trialDaysRemaining {
     if (!isInTrial || trialEndDate == null) return 0;
@@ -65,6 +71,7 @@ class CompanyInfo {
     this.trialEndDate,
     this.isInTrial = false,
     this.hasCardOnFile = false,
+    this.trackedCurrencies = const [],
   });
 
   factory CompanyInfo.fromJson(Map<String, dynamic> json) {
@@ -92,6 +99,10 @@ class CompanyInfo {
           : null,
       isInTrial: json['isInTrial'] as bool? ?? false,
       hasCardOnFile: json['hasCardOnFile'] as bool? ?? false,
+      trackedCurrencies: (json['trackedCurrencies'] as List<dynamic>?)
+              ?.map((e) => TrackedCurrency.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 }
