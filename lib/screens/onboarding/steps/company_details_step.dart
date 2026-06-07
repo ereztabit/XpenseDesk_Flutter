@@ -645,6 +645,11 @@ class _DefaultsPanel extends StatelessWidget {
                     FieldLabel(label: l10n.onboardingCurrency),
                     const SizedBox(height: 6),
                     DropdownMenu<String>(
+                      // MVP: only ILS is supported end to end, so the base
+                      // currency is fixed to the country default and cannot be
+                      // changed. Re-enable when multi-currency ships
+                      // (docs/in-progress/multi-currency-expenses.md).
+                      enabled: false,
                       key: ValueKey(selectedCurrencyCode),
                       initialSelection: selectedCurrencyCode,
                       expandedInsets: EdgeInsets.zero,
