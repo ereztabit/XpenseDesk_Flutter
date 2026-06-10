@@ -1,5 +1,7 @@
+import 'package:flutter/services.dart';
 import 'screen_imports.dart';
 import '../services/auth_service.dart';
+import '../utils/gov_id_utils.dart';
 import '../widgets/app_button.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -12,24 +14,31 @@ class ProfileScreen extends ConsumerStatefulWidget {
 class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehaviorMixin {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
+  final _govIdController = TextEditingController();
   final _fullNameFocusNode = FocusNode();
   int _selectedLanguageId = 1;
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
 
+  /// Inline, field-level gov-ID error from the server (400 invalid / 409 taken).
+  String? _govIdError;
+
   // Used to initialize form fields exactly once after first data load
   bool _initialized = false;
   String _initialFullName = '';
   int _initialLanguageId = 1;
+  String _initialGovId = '';
 
   void _initializeFromUser(UserInfo userInfo) {
     if (_initialized) return;
     _initialized = true;
     _fullNameController.text = userInfo.fullName;
+    _govIdController.text = userInfo.govId ?? '';
     _selectedLanguageId = userInfo.languageId;
     _initialFullName = userInfo.fullName;
     _initialLanguageId = userInfo.languageId;
+    _initialGovId = userInfo.govId ?? '';
   }
 
   @override
@@ -46,6 +55,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
   @override
   void dispose() {
     _fullNameController.dispose();
+    _govIdController.dispose();
     _fullNameFocusNode.dispose();
     super.dispose();
   }
@@ -54,7 +64,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
   bool get hasUnsavedChanges {
     if (!_initialized) return false;
     return _fullNameController.text.trim() != _initialFullName ||
-        _selectedLanguageId != _initialLanguageId;
+        _selectedLanguageId != _initialLanguageId ||
+        _govIdController.text.trim() != _initialGovId;
   }
 
   String? _validateFullName(String? value) {
@@ -83,6 +94,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
     setState(() {
       _errorMessage = null;
       _successMessage = null;
+      _govIdError = null;
     });
 
     if (!_formKey.currentState!.validate()) {
@@ -98,6 +110,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
       final updatedUser = await authService.updateUserProfile(
         _fullNameController.text.trim(),
         _selectedLanguageId,
+        // Always sent: "" clears the gov ID, digits set it.
+        govId: _govIdController.text.trim(),
       );
 
       // Update local state (locale is set automatically by updateProfile)
@@ -106,12 +120,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
       // Update initial values after successful save
       _initialFullName = _fullNameController.text.trim();
       _initialLanguageId = _selectedLanguageId;
+      _initialGovId = _govIdController.text.trim();
 
       setState(() {
         _successMessage = l10n.profileUpdatedSuccessfully;
       });
     } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
+      setState(() {
+        // Gov-ID problems surface inline on the field; everything else in the
+        // generic error alert.
+        switch (e.errorCode) {
+          case 'UsersGovIdInvalidFormat':
+            _govIdError = l10n.govIdInvalidFormat;
+          case 'UsersGovIdAlreadyExists':
+            _govIdError = l10n.govIdAlreadyExists;
+          default:
+            _errorMessage = e.message;
+        }
+      });
     } catch (e) {
       setState(() => _errorMessage = l10n.failedToUpdateProfile);
     } finally {
@@ -256,6 +282,68 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
                             color: AppTheme.mutedForeground,
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Government ID Field (optional, digits only)
+                      Text(
+                        l10n.governmentId,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _govIdController,
+                        keyboardType: TextInputType.number,
+                        maxLength: GovIdValidator.maxLength,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: l10n.governmentIdHint,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.border),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.border),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.destructive),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppTheme.destructive, width: 2),
+                          ),
+                          counterText: '',
+                          errorText: _govIdError,
+                        ),
+                        onChanged: (_) {
+                          if (_govIdError != null) {
+                            setState(() => _govIdError = null);
+                          }
+                        },
+                        validator: (value) {
+                          if (!GovIdValidator.isValid(value)) {
+                            return l10n.govIdInvalidFormat;
+                          }
+                          return null;
+                        },
+                        enabled: !_isLoading,
                       ),
                     ],
                   ),

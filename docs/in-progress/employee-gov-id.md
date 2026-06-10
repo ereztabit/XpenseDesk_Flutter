@@ -1,7 +1,23 @@
 # Employee Government ID + Admin Employee Editing — Feature Plan
 
-Status: **planned, not started**
 Backend guide (source of truth): `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\done\employee-gov-id-flutter-guide.md`
+
+## Progress / split
+
+Split into two separate features:
+
+- **Feature A — Employee govId (onboarding + self profile): SHIPPED.** Optional
+  `govId` (תעודת זהות) on the employee first-login onboarding screen
+  (`POST /api/users/onboarding`) and the self profile screen
+  (`PUT /api/users/update-details`). Model (`UserInfo.govId`, String),
+  `GovIdValidator`, ARB keys, `AuthException.errorCode`, inline 400/409 handling.
+- **Feature B — Admin edits an employee: NOT STARTED.** Decision (supersedes the
+  `EditUserDialog` approach sketched below): **reuse the profile screen** as the
+  admin edit surface. Extract a shared `ProfileEditor` from
+  `profile_screen.dart` (which is also why that file stays >200 lines for now),
+  then a new admin `EditUserScreen` drives it via `GET /api/users/details` +
+  `PUT /api/users/admin-update`, opened by a pencil icon on each Users row.
+  Closes `docs/bugs/users-screen-cannot-edit-employee-name.md`.
 
 ## Goal
 

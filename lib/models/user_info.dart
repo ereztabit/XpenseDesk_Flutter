@@ -10,6 +10,11 @@ class UserInfo {
   final String? dailingCode;
   final DateTime? termsConsentDate;
 
+  /// Government ID (תעודת זהות). ALWAYS a String — leading zeros are
+  /// significant ("039981691"). Never parse to int / format with separators.
+  /// Nullable: a user without a gov ID is valid.
+  final String? govId;
+
   const UserInfo({
     required this.email,
     required this.fullName,
@@ -21,6 +26,7 @@ class UserInfo {
     this.currencyCode,
     this.dailingCode,
     this.termsConsentDate,
+    this.govId,
   });
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
@@ -37,6 +43,7 @@ class UserInfo {
       termsConsentDate: json['termsConsentDate'] != null
           ? DateTime.tryParse(json['termsConsentDate'] as String)
           : null,
+      govId: json['govId'] as String?,
     );
   }
 
@@ -48,6 +55,7 @@ class UserInfo {
       'status': status,
       'companyName': companyName,
       'languageId': languageId,
+      'govId': govId,
     };
   }
 

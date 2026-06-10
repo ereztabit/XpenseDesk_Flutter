@@ -1,9 +1,11 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'screen_imports.dart';
 import '../widgets/app_button.dart';
 import '../providers/locale_provider.dart';
 import '../services/auth_service.dart';
+import '../utils/gov_id_utils.dart';
 import '../widgets/header/login_header.dart';
 
 class EmployeeOnboardingScreen extends ConsumerStatefulWidget {
@@ -18,12 +20,16 @@ class _EmployeeOnboardingScreenState
     extends ConsumerState<EmployeeOnboardingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
+  final _govIdController = TextEditingController();
 
   int _selectedLanguageId = 1;
   bool _consentChecked = false;
   bool _isSubmitting = false;
   bool _attemptedSubmit = false;
   String? _errorMessage;
+
+  /// Inline, field-level gov-ID error from the server (400 invalid / 409 taken).
+  String? _govIdError;
 
   @override
   void initState() {
@@ -38,6 +44,7 @@ class _EmployeeOnboardingScreenState
   @override
   void dispose() {
     _fullNameController.dispose();
+    _govIdController.dispose();
     super.dispose();
   }
 
@@ -82,6 +89,7 @@ class _EmployeeOnboardingScreenState
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
+      _govIdError = null;
     });
 
     try {
@@ -89,6 +97,7 @@ class _EmployeeOnboardingScreenState
       final updatedUser = await authService.submitEmployeeOnboarding(
         fullName: _fullNameController.text.trim(),
         languageId: _selectedLanguageId,
+        govId: _govIdController.text.trim(),
       );
 
       // Store updated user info (with termsConsentDate now set)
@@ -104,9 +113,19 @@ class _EmployeeOnboardingScreenState
       }
     } on AuthException catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() {
-          _errorMessage = e.message;
           _isSubmitting = false;
+          // Surface gov-ID problems inline on the field; everything else in
+          // the generic error banner.
+          switch (e.errorCode) {
+            case 'UsersGovIdInvalidFormat':
+              _govIdError = l10n.govIdInvalidFormat;
+            case 'UsersGovIdAlreadyExists':
+              _govIdError = l10n.govIdAlreadyExists;
+            default:
+              _errorMessage = e.message;
+          }
         });
       }
     } catch (_) {
@@ -263,6 +282,46 @@ class _EmployeeOnboardingScreenState
                                 if (value != null) {
                                   setState(() => _selectedLanguageId = value);
                                 }
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Government ID label (optional)
+                            Text(
+                              l10n.governmentId,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.foreground,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+
+                            // Government ID input — digits only, optional. Kept
+                            // as a String (leading zeros are significant).
+                            TextFormField(
+                              controller: _govIdController,
+                              textInputAction: TextInputAction.next,
+                              keyboardType: TextInputType.number,
+                              maxLength: GovIdValidator.maxLength,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              decoration: InputDecoration(
+                                hintText: l10n.governmentIdHint,
+                                counterText: '',
+                                errorText: _govIdError,
+                              ),
+                              onChanged: (_) {
+                                if (_govIdError != null) {
+                                  setState(() => _govIdError = null);
+                                }
+                              },
+                              validator: (value) {
+                                if (!GovIdValidator.isValid(value)) {
+                                  return l10n.govIdInvalidFormat;
+                                }
+                                return null;
                               },
                             ),
                             const SizedBox(height: 20),

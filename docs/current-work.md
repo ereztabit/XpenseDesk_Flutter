@@ -2,6 +2,7 @@
 
 ## Currently Working On
 
+- Employee GovId — **Feature A (onboarding + self profile): shipped.** Optional `govId` (תעודת זהות) on the employee first-login onboarding screen and the self profile screen. Next: **Feature B** — admin edits an employee via the reused profile screen (extract `ProfileEditor`; new admin `EditUserScreen` using `/api/users/details` + `/api/users/admin-update`; pencil icon on Users rows; closes the "cannot edit employee name" bug). Spec: docs/in-progress/employee-gov-id.md.
 - Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end (ISO code vs symbol, codes outside the list).
 
 Open bugs (see `## report bugs (pending)` below)
@@ -28,7 +29,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Users module -- back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
 - [ ] Expense Analysis -- should focus on previous cycle, not the current/active one -- see docs/bugs/expenses-analysis-default-to-previous-cycle.md
 - [ ] Expense Analysis -- detail date range should use long "June 1 2026" format -- see docs/bugs/expenses-analysis-detail-date-long-format.md
-- [ ] A1 Expense editor -- calendar widget unstable / not cross-browser -- see docs/bugs/calendar-widget-unstable-cross-browser.md
+- [ ] A1 (postponed) Expense editor -- calendar widget unstable / not cross-browser; likely already resolved (Material showDatePicker, firstDate correct, Flutter 3.41 CanvasKit-only) -- verify-first when resumed -- see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] A2 Add employee -- multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] A4c Add expense -- out-of-range invoice date should validate client-side -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 

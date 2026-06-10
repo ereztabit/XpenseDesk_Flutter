@@ -8,7 +8,13 @@ import '../models/company_info.dart';
 /// Exception thrown when authentication fails
 class AuthException implements Exception {
   final String message;
-  const AuthException(this.message);
+
+  /// Server `errorCode` from the failure envelope (e.g.
+  /// `UsersGovIdInvalidFormat`, `UsersGovIdAlreadyExists`). Null when absent.
+  /// Switch on this for field-level UI, not on [message].
+  final String? errorCode;
+
+  const AuthException(this.message, {this.errorCode});
 
   @override
   String toString() => message;
@@ -27,7 +33,8 @@ class AuthService {
     final success = response['success'] as bool? ?? false;
     if (!success) {
       final message = response['message'] as String? ?? defaultErrorMessage;
-      throw AuthException(message);
+      throw AuthException(message,
+          errorCode: response['errorCode'] as String?);
     }
   }
 
@@ -536,9 +543,17 @@ class AuthService {
     _validateResponse(response, 'Subscription creation failed');
   }
 
-  /// Update user profile (full name and language)
-  /// Returns updated UserInfo from /api/users/update-details
-  Future<UserInfo> updateUserProfile(String fullName, int languageId) async {
+  /// Update user profile (full name, language, and optionally gov ID).
+  /// Returns updated UserInfo from /api/users/update-details.
+  ///
+  /// [govId] follows the server's three-state rule: `null` = leave unchanged,
+  /// `""` = clear, a digit string = set. It is always sent as a String —
+  /// leading zeros are significant.
+  Future<UserInfo> updateUserProfile(
+    String fullName,
+    int languageId, {
+    String? govId,
+  }) async {
     final sessionToken = await getSessionToken();
     _validateSessionToken(sessionToken);
 
@@ -547,6 +562,8 @@ class AuthService {
       {
         'fullName': fullName,
         'languageId': languageId,
+        // null = leave unchanged (omit); "" = clear; digits = set.
+        'govId': ?govId,
       },
       authToken: sessionToken,
     );
@@ -561,6 +578,7 @@ class AuthService {
   Future<UserInfo> submitEmployeeOnboarding({
     required String fullName,
     required int languageId,
+    String? govId,
   }) async {
     final sessionToken = await getSessionToken();
     _validateSessionToken(sessionToken);
@@ -570,6 +588,8 @@ class AuthService {
       {
         'FullName': fullName,
         'LanguageId': languageId,
+        // Only sent when the employee typed one — optional at onboarding.
+        if (govId != null && govId.isNotEmpty) 'govId': govId,
       },
       authToken: sessionToken,
     );
