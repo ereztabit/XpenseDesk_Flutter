@@ -470,6 +470,7 @@ Delete every Flutter call to this endpoint. Server returns `404` if you call it.
 
 - For employees, the equivalent is **edit the Declined expense** — server resets it to Pending automatically.
 - For managers, there is no "reopen" anymore; if a manager wants to undo a decision, they need to wait for the employee to re-submit or contact the employee directly.
+  - **Update (2026-06-11):** superseded for the whole-sheet case — `POST /api/expense-sheets/{id}/approve` now also accepts `Declined` sheets (declined lines stay declined; all-declined sheets close as Approved with nothing reimbursed). Re-decline is still rejected. See docs/in-progress/manager-reapprove-declined-sheet.md.
 
 ### 3.7 `DELETE /api/expenses/{id}` — Delete
 

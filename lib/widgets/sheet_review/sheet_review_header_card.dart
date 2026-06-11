@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_detail.dart';
+import '../../models/expense_sheet_status.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../employee_dashboard/sheet_status_badge.dart';
 
 /// Sheet Review header card — status badge, employee, cycle, timestamps,
-/// totals, and a read-only decline-comment callout when the sheet carries a
-/// `latestDeclineComment` (i.e. it was declined at some point).
+/// totals, and a read-only decline-comment callout while the sheet is
+/// Declined. Gated on status, not on `latestDeclineComment` being non-null:
+/// the server retains the comment after a declined sheet is re-approved, so a
+/// field-only check would show a stale "declined" callout on an Approved sheet.
 ///
 /// Manager-facing + read-only: unlike the employee `DeclinedSheetBanner`, this
 /// has no auto-resubmit explainer — it's just the recorded reason.
@@ -32,7 +35,9 @@ class SheetReviewHeaderCard extends ConsumerWidget {
     final totalText =
         total != null ? _formatTotal(total, companyLocale, baseCurrency) : null;
     final comment = sheet.latestDeclineComment?.trim();
-    final hasComment = comment != null && comment.isNotEmpty;
+    final hasComment = comment != null &&
+        comment.isNotEmpty &&
+        sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
 
     return Card(
       elevation: 0,

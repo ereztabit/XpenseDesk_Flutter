@@ -25,7 +25,9 @@ import '../widgets/sheet_review/sheet_review_line_section.dart';
 /// via `/manager/sheet/{id}`.
 ///
 /// Action availability is driven by sheet status — `WaitingForApproval` shows
-/// approve/decline (+ per-line in slice 6); Approved/Declined render read-only.
+/// approve/decline; `Declined` shows approve only (the server accepts approve on
+/// declined sheets — the manager's escape hatch; re-declining is rejected);
+/// Approved renders read-only.
 class SheetReviewScreen extends ConsumerStatefulWidget {
   const SheetReviewScreen({super.key, required this.expenseSheetId});
 
@@ -57,7 +59,16 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     ref.invalidate(sheetDetailProvider(widget.expenseSheetId));
   }
 
-  bool _isActionable(ExpenseSheetDetail sheet) =>
+  /// Whole-sheet approve: WaitingForApproval or Declined. Approving a Declined
+  /// sheet is the manager's escape hatch — declined lines stay declined; with
+  /// zero approvable lines it simply closes the sheet (server-confirmed no-op).
+  bool _canApproveSheet(ExpenseSheetDetail sheet) =>
+      sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
+      sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
+
+  /// Whole-sheet decline: WaitingForApproval only — re-declining a Declined
+  /// sheet is rejected by the server (409).
+  bool _canDeclineSheet(ExpenseSheetDetail sheet) =>
       sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id;
 
   void _refresh() =>
@@ -99,7 +110,11 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   Future<void> _dismissWithMessage(String message) async {
     final messenger = ScaffoldMessenger.of(context);
 
+    // A decision moves the sheet between dashboard buckets (2→3/4, or 4→3 on
+    // re-approve) — invalidate all three so every card reflects the new state.
     ref.invalidate(approvalsQueueProvider(null));
+    ref.invalidate(returnedSheetsProvider(null));
+    ref.invalidate(approvedSheetsProvider(null));
     int remainingPending;
     try {
       remainingPending =
@@ -167,21 +182,26 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     return l10n.genericErrorRetry;
   }
 
-  /// Sheet total formatted in the company locale + base currency. Used by the
-  /// approve CTA caption and the approve confirm dialog.
-  String _sheetAmountText(ExpenseSheetDetail sheet) {
+  /// Total the approve will actually approve (declined lines stay declined),
+  /// formatted in the company locale + base currency. Used by the approve CTA
+  /// caption and the approve confirm dialog. Equals the sheet total when no
+  /// line is declined.
+  String _approvableAmountText(ExpenseSheetDetail sheet) {
     final companyLocale = ref.read(companyLocaleProvider);
     final baseCurrency = ref.read(companyBaseCurrencyProvider);
-    return sheet.totalAmount.toCurrency(companyLocale, baseCurrency);
+    return SheetExpenseBuckets.approvableAmount(sheet.expenses)
+        .toCurrency(companyLocale, baseCurrency);
   }
 
   Future<void> _handleApprove(ExpenseSheetDetail sheet) async {
     final l10n = AppLocalizations.of(context)!;
-    final amountText = _sheetAmountText(sheet);
+    final amountText = _approvableAmountText(sheet);
     final confirmed = await ApproveSheetConfirmDialog.show(
       context,
       amountText: amountText,
       employeeName: sheet.createdByName,
+      nothingToApprove:
+          SheetExpenseBuckets.approvableCount(sheet.expenses) == 0,
     );
     if (!confirmed || !mounted) return;
 
@@ -292,7 +312,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     final detailAsync = ref.watch(sheetDetailProvider(widget.expenseSheetId));
     final sheet = detailAsync.asData?.value;
     final showStickyBar =
-        context.isMobile && sheet != null && _isActionable(sheet);
+        context.isMobile && sheet != null && _canApproveSheet(sheet);
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -322,10 +342,11 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
               SheetReviewStickyActionBar(
                 child: SheetReviewActions(
                   onApprove: () => _handleApprove(sheet),
-                  onDecline: _handleDecline,
+                  onDecline: _canDeclineSheet(sheet) ? _handleDecline : null,
                   isBusy: _isBusy,
-                  expenseCount: sheet.expenseCount,
-                  amountText: _sheetAmountText(sheet),
+                  expenseCount:
+                      SheetExpenseBuckets.approvableCount(sheet.expenses),
+                  amountText: _approvableAmountText(sheet),
                 ),
               ),
             const AppFooter(),
@@ -340,12 +361,11 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     AppLocalizations l10n,
     ExpenseSheetDetail sheet,
   ) {
-    final actionable = _isActionable(sheet);
-    final isDeclinedSheet =
-        sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
-    // Manager per-line escape hatch: approve on WaitingForApproval or Declined;
-    // decline only on WaitingForApproval; delete on any sheet except Approved.
-    final canApproveLines = actionable || isDeclinedSheet;
+    final canApproveSheet = _canApproveSheet(sheet);
+    final canDeclineSheet = _canDeclineSheet(sheet);
+    // Manager per-line escape hatch: approve on WaitingForApproval or Declined
+    // (same gate as the whole-sheet approve); decline only on
+    // WaitingForApproval; delete on any sheet except Approved.
     final canDeleteLines =
         sheet.expenseSheetStatusId != ExpenseSheetStatus.approved.id;
     return Column(
@@ -355,22 +375,23 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
         const SizedBox(height: 16),
         SheetReviewHeaderCard(sheet: sheet),
         // Desktop: actions inline below the header. Mobile: sticky bottom bar.
-        if (actionable && context.isDesktop) ...[
+        if (canApproveSheet && context.isDesktop) ...[
           const SizedBox(height: 16),
           SheetReviewActions(
             onApprove: () => _handleApprove(sheet),
-            onDecline: _handleDecline,
+            onDecline: canDeclineSheet ? _handleDecline : null,
             isBusy: _isBusy,
-            expenseCount: sheet.expenseCount,
-            amountText: _sheetAmountText(sheet),
+            expenseCount:
+                SheetExpenseBuckets.approvableCount(sheet.expenses),
+            amountText: _approvableAmountText(sheet),
           ),
         ],
         const SizedBox(height: 16),
         SheetReviewLineSection(
           expenses: sheet.expenses,
           onTapLine: _openLineDetail,
-          onApproveLine: canApproveLines ? _handleLineApprove : null,
-          onDeclineLine: actionable ? _handleLineDecline : null,
+          onApproveLine: canApproveSheet ? _handleLineApprove : null,
+          onDeclineLine: canDeclineSheet ? _handleLineDecline : null,
           onDeleteLine: canDeleteLines ? _handleLineDelete : null,
         ),
         const SizedBox(height: 16),

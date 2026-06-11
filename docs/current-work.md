@@ -11,7 +11,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 
 ## TODO (Backlog)
-- [ ] (blocked on server — API WIP) manager can re-approve a declined sheet — reverses the "no reopen" decision in ExpenseSheetsTransformation. See docs/in-progress/manager-reapprove-declined-sheet.md
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] disable the dev auto-login shortcut on the login screen (dev-only toggle; must never reach PROD). See docs/in-progress/disable-dev-auto-login.md
 - [ ] add logos to the authorize page
@@ -27,7 +26,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
-- [ ] need to replace the icon of the webpage
+- [ ] make the app installable as a PWA (branded manifest/icons, home-screen icon) — subsumes "replace the icon of the webpage". See docs/in-progress/pwa-installable-app.md
 - [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
 - [ ] login with google
 - [ ] get zehut for customers in IL

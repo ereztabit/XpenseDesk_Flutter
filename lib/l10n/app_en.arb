@@ -652,6 +652,8 @@
   "approveSheetConfirmBodyAmount": "Approve expense of",
   "approveSheetConfirmBodyFor": "for",
   "approveSheetConfirmEditWarning": "After approval you will no longer be able to edit.",
+  "closeSheetNothingToApprove": "Close this sheet - no expenses to approve",
+  "approveAllDeclinedConfirmBody": "All expenses on this sheet are declined. Approving will close the sheet with nothing reimbursed.",
   "sheetApprovedToast": "Sheet approved",
   "sheetDeclinedToast": "Sheet declined",
   "lastActionTitle": "Last action on this sheet",

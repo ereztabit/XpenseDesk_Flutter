@@ -652,6 +652,8 @@
   "approveSheetConfirmBodyAmount": "אישור הוצאה בסך",
   "approveSheetConfirmBodyFor": "עבור",
   "approveSheetConfirmEditWarning": "לאחר האישור לא ניתן יהיה לערוך.",
+  "closeSheetNothingToApprove": "סגור גליון זה - אין הוצאות לאישור",
+  "approveAllDeclinedConfirmBody": "כל ההוצאות בגליון זה נדחו. אישור יסגור את הגליון ללא החזר כספי.",
   "sheetApprovedToast": "הגליון אושר",
   "sheetDeclinedToast": "הגליון נדחה",
   "lastActionTitle": "הפעולה האחרונה בגליון זה",

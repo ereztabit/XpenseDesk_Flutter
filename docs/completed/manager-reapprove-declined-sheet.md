@@ -1,6 +1,8 @@
 # Manager can re-approve a declined sheet
 
-> **Status:** Planned — **blocked on server (API is WIP)**.
+> **Status:** SHIPPED & confirmed.
+> The existing `POST /api/expense-sheets/{id}/approve` now also accepts sheets in
+> `Declined` status (no new endpoint).
 
 ## Problem
 
@@ -46,12 +48,36 @@ they see fit — re-approve it as-is rather than being blocked on employee actio
 3. Confirmation dialog; on success refresh the sheet + manager queue buckets.
 4. All captions localized (EN + HE) per CLAUDE.md.
 
-## Server dependency / open questions
+## Server answers (resolved)
 
-- API contract is **WIP** — endpoint, request shape, resulting status.
-- Does re-approving a declined sheet also clear/retain `latestDeclineComment`?
-- Are there block-mode / cycle-closed pre-conditions (cf. the existing
-  approve/decline 403 handling)?
+- **Approve precondition:** sheet must be `WaitingForApproval(2)` or `Declined(4)`.
+- **Line flip:** "every still-Pending line → Approved." Declined lines stay declined.
+- **All-declined sheet:** approve **succeeds** — the line flip is simply a no-op,
+  no "nothing to approve" error, no minimum-approvable-line requirement. The sheet
+  becomes `Approved(3)`, every line stays Declined, ₪0 reimbursed, terminal (no
+  further edits/deletes). **Approve IS the close path** — no dedicated finalize
+  action needed.
+- **`latestDeclineComment` is RETAINED after approve** (it's the last Declined-target
+  log entry; the Declined→Approved row has a null comment so the field keeps
+  returning the old reason). ⚠️ **Client must gate any decline UI on
+  `expenseSheetStatusId == 4`, not on the field being non-null.**
+- **Preconditions (unchanged):** manager-only → 403; block-mode (locked/overdue)
+  → 403 `SubscriptionRequired` (applies here too); wrong status (Draft/Approved)
+  → 409 `ExpenseSheetWrongStatusForAction`; not found / other company → 404. No
+  cycle precondition (works after cycle close).
+- **Audit:** status history records `… → Declined → Approved` with the decline
+  comment preserved in the log.
+
+### Client implications
+
+1. **Approve stays enabled even when 0 approvable** (it's the close path). For that
+   case, use the server's suggested confirm copy: *"All expenses on this sheet are
+   declined. Approving will close the sheet with nothing reimbursed."*
+2. **Stale decline callout (must fix):** `sheet_review_header_card.dart` renders
+   `_DeclineCommentCallout` whenever `latestDeclineComment` is non-empty, ignoring
+   status. After re-approve the sheet is Approved but keeps the comment, so the
+   callout would wrongly show on an approved sheet. Gate it on
+   `expenseSheetStatusId == ExpenseSheetStatus.declined.id`.
 
 ## Done when
 

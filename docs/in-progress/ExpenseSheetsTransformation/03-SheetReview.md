@@ -122,6 +122,13 @@ The backlog item "Missing rejection reason field for manager" is a **separate fu
 ### 3.7 `/api/expenses/{id}/reopen` — gone
 Confirmed removed server-side. No "reopen" affordance anywhere in this screen. A manager who wants to undo waits for the employee to resubmit (auto-eval) or contacts them.
 
+> **Update (2026-06-11) — partially superseded.** The whole-sheet
+> `POST /api/expense-sheets/{id}/approve` now also accepts `Declined` sheets:
+> a manager can approve a sheet they previously returned (declined lines stay
+> declined; an all-declined sheet just closes as Approved with ₪0). Re-declining
+> a Declined sheet is still rejected, and the per-expense `reopen` endpoint
+> stays dead. See docs/in-progress/manager-reapprove-declined-sheet.md.
+
 ---
 
 ## 4. Decisions — resolved 2026-05-24
