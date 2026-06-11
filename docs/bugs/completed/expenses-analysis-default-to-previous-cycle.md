@@ -1,6 +1,9 @@
 # Bug: Expense analysis should focus on the previous cycle, not the current one
 
-> **Status: new**
+> **Status: done** — `_runReport` now defaults to the most recent closed cycle
+> via `AnalysisUtils.defaultAnalysisCycle` (`lib/utils/analysis_utils.dart`). The
+> active cycle stays visible/selectable in the master breakdown; it's just no
+> longer auto-selected. Scope chosen: "keep visible, don't default."
 
 ## Problem
 

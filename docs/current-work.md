@@ -2,7 +2,6 @@
 
 ## Currently Working On
 
-- Employee GovId — **Features A + B shipped.** A: optional `govId` (תעודת זהות) at employee onboarding + self profile. B: admin edits an employee via the reused profile UI (shared `ProfileEditor` + `EditUserScreen`, pencil icon on Users rows, `/api/users/details` + `/api/users/admin-update`); onboarding pre-fills from `/me`. Closed the "cannot edit employee name" bug. Spec: docs/in-progress/employee-gov-id.md.
 - Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end (ISO code vs symbol, codes outside the list).
 
 Open bugs (see `## report bugs (pending)` below)
@@ -23,11 +22,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
-- [ ] Manager Dashboard -- top analysis/spend-overview widget disappeared (only a placeholder now) -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
-- [ ] Users module -- mobile layout looks too dense -- see docs/bugs/users-screen-mobile-layout-too-dense.md
-- [ ] Users module -- back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
-- [ ] Expense Analysis -- should focus on previous cycle, not the current/active one -- see docs/bugs/expenses-analysis-default-to-previous-cycle.md
-- [ ] Expense Analysis -- detail date range should use long "June 1 2026" format -- see docs/bugs/expenses-analysis-detail-date-long-format.md
 - [ ] A1 (postponed) Expense editor -- calendar widget unstable / not cross-browser; likely already resolved (Material showDatePicker, firstDate correct, Flutter 3.41 CanvasKit-only) -- verify-first when resumed -- see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] A2 Add employee -- multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] A4c Add expense -- out-of-range invoice date should validate client-side -- see docs/bugs/invoice-date-out-of-range-client-validation.md
@@ -57,7 +51,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Missing invite users option after signup - quick onboarding flow to allow manager invite users
 
 ## management screens
-- [ ] employee govId (תעודת זהות) + admin employee editing (name/language/govId); also closes the "cannot edit employee name" bug. See docs/in-progress/employee-gov-id.md
 - [ ] we need to configure which categories are available
 - [ ] we need to be able to delete pending users
 

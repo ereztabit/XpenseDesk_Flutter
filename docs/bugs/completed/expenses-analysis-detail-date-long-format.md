@@ -1,6 +1,10 @@
 # Bug: Expense analysis detail dates should use long "June 1 2026" format
 
-> **Status: new**
+> **Status: done** — detail-card date range now uses the existing
+> `toLongDate(locale)` extension (`lib/utils/format_utils.dart`), rendering
+> "June 1st 2026 – June 30th 2026" (EN) and the natural Hebrew long form. Scope
+> chosen: reuse `toLongDate` (full month + ordinal) rather than a new no-ordinal
+> extension.
 
 ## Problem
 

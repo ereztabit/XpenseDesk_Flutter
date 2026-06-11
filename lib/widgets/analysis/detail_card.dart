@@ -79,7 +79,7 @@ class _DetailCardState extends State<DetailCard> {
                       ),
                       if (row != null)
                         Text(
-                          '${row.fromDate.toCompanyDate(widget.locale)} – ${row.toDate.toCompanyDate(widget.locale)}',
+                          '${row.fromDate.toLongDate(widget.locale)} – ${row.toDate.toLongDate(widget.locale)}',
                           style: const TextStyle(
                               fontSize: 12, color: AppTheme.mutedForeground),
                         ),

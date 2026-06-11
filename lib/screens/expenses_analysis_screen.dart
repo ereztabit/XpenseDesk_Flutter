@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../services/excel_export_service.dart';
 import '../widgets/app_button.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/analysis_utils.dart';
 import '../utils/app_navigator.dart';
 import '../widgets/analysis/analysis_filter_card.dart';
 import '../widgets/analysis/detail_card.dart';
@@ -99,18 +100,16 @@ class _ExpensesAnalysisScreenState
 
       if (!mounted) return;
 
-      final activeCycle =
-          summaryRows.where((r) => r.isActive).firstOrNull ??
-          (summaryRows.isNotEmpty ? summaryRows.last : null);
+      final defaultCycle = AnalysisUtils.defaultAnalysisCycle(summaryRows);
 
       setState(() {
         _summaryRows = summaryRows;
-        _selectedCycleId = activeCycle?.cycleId;
+        _selectedCycleId = defaultCycle?.cycleId;
         _loading = false;
       });
 
-      if (activeCycle != null) {
-        await _loadBreakdown(activeCycle.cycleId, populateEmployees: true);
+      if (defaultCycle != null) {
+        await _loadBreakdown(defaultCycle.cycleId, populateEmployees: true);
       } else {
         setState(() => _detailLoading = false);
       }
