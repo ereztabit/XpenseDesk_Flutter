@@ -24,6 +24,24 @@ The original plan (`card-on-file-flow.md`) used Tranzila's DirectNG iframe redir
 
 Flutter's DWDS (Dart Web Debug Service) sends continuous `postMessage` events to child iframes, which crashes Tranzila's SDK (`JSON.parse` on non-string payloads). A popup window is a top-level browsing context — no DWDS injection, clean callback.
 
+### Billing terminal strategy (multi-currency) — DECISION
+
+**Each country gets a dedicated Tranzila terminal keyed by its lead currency** —
+IL (NIS), US (USD), EU (EUR), etc. We do not multiplex currencies through a
+single terminal. The client/billing layer selects the terminal by the company's
+country/lead currency.
+
+This resolves the earlier open question (was: "can we charge IL in NIS and
+foreign in USD under one terminal?"). Answer: separate terminals per currency.
+
+**Sandbox:** sandbox is a property of the *terminal*, configured on Tranzila's
+end — there is no per-request sandbox flag (`sandbox: false` is always correct in
+the SDK). A dev/sandbox terminal is provisioned by Tranzila.
+
+**3DS testing:** there is no sandbox 3DS path. 3-D Secure is validated against a
+**live terminal with real cards** — accepted constraint, that's how Tranzila
+works. Don't expect 3DS test cards to complete on a sandbox/dev terminal.
+
 ---
 
 ## Flow

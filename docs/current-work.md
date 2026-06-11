@@ -16,7 +16,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] (blocked on server — API WIP) manager can modify the decline reason on an already-declined sheet. See docs/in-progress/manager-edit-decline-reason.md
 - [ ] (optional) extract `sheet_bucket_card.dart`'s `_buildBody` loading/error/data switch into a `SheetBucketBody` widget file — file is now 178 lines (under the 200 cap after the B4 accordion refactor), so this is a nicety, not a size fix
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
-- [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
+- [ ] disable the dev auto-login shortcut on the login screen (dev-only toggle; must never reach PROD). See docs/in-progress/disable-dev-auto-login.md
 - [ ] add logos to the authorize page
 - [ ] we can remove the phone number and the country code from the authorization page
 - [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear
@@ -25,9 +25,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
-- [ ] A1 (postponed) Expense editor -- calendar widget unstable / not cross-browser; likely already resolved (Material showDatePicker, firstDate correct, Flutter 3.41 CanvasKit-only) -- verify-first when resumed -- see docs/bugs/calendar-widget-unstable-cross-browser.md
-- [ ] A2 Add employee -- multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
-- [ ] A4c Add expense -- out-of-range invoice date should validate client-side -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 
 ## general environment
 
@@ -44,10 +41,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Date pickers: first day of week by country (Israel = Sunday, others = Monday) -- post-MVP. See docs/in-progress/calendar-week-start-localization-spec.md
 - [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/in-progress/post-login-deep-linking-spec.md
 
-## submit an expense
-
-- [ ] multi-currency expenses — send `dynamicAmount`, base-currency display, live `/api/conversion/preview` hint. See docs/in-progress/multi-currency-expenses.md
-
 ## manager expenses report
 
 - [ ] build the spend overview widget for manager and employee docs/in-progress/spend-overview-spec.md
@@ -55,7 +48,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## management screens
 - [ ] we need to configure which categories are available
-- [ ] we need to be able to delete pending users
 
 
 ## processes & other stuff
@@ -66,23 +58,17 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## Tranzila Support — Open Questions
 
-### SDK / Integration
-- [ ] **Q1** — Inline field validation language: iframe validation messages (e.g. "invalid card number") always appear in Hebrew. Is there a param in `TzlaHostedFields.create()` or `fields.charge()` to control the language? `response_language` does not affect iframe UI strings.
+### SDK / Integration (still open)
 - [ ] **Q2** — `force_txn_on_3ds_fail` security: can this be locked at the terminal level or in the `thtk` issuance so the client-side value cannot be overridden?
-- [ ] **Q3** — 3DS test cards: dev terminal cannot complete any 3DS flow with `4907639999909022`, `4907639999990022`, `4918914107195005`. Does the terminal need explicit 3DS enrollment? What CVV/expiry to use?
-- [ ] **Q4** — Phone number validation in `fields.charge()`: format of `phone_country_code` (`+972` vs `972`), min/max length of `phone_number`, does invalid phone fail the transaction or get ignored?
 
-### Sandbox
-- [ ] **Q5** — Need a sandbox terminal for development — we are hitting live transactions. `sandbox: false` is always correct per docs, so sandbox must be terminal-level. Please provision a sandbox terminal and provide test card numbers.
-
-### Recurring Payments
-- [ ] **Q6** — How to test the full charge flow (tokenization → recurring charge) without real transactions? Is there a sandbox/test endpoint for the charge API? Share API docs for charging a saved token.
-
-### Billing Documents
-- [ ] **Q7** — Can the system issue a Hebrew קבלה for Israeli customers and an English invoice for international customers? Per-transaction or terminal-level setting?
-- [ ] **Q8** — Accountant requires separate document number sequences for Israeli vs. international transactions. Does Tranzila support separate numbering series, and if not, what is the recommended approach?
-
-### Multi-Currency
-- [ ] **Q9** — Can we charge Israeli companies in NIS and foreign companies in USD? Does this require separate terminals per currency, and can they operate under the same merchant account?
+### Resolved
+- **Q1** (Hebrew-only iframe validation language) — deferred to v2; fine for the Israel launch. Filed as a bug: docs/bugs/tranzila-iframe-validation-language-hebrew-only.md
+- **Q3** (3DS testing) — there is no sandbox 3DS path; 3DS is tested on a **live terminal** with real cards. Accepted constraint — that's how Tranzila works.
+- **Q4** (phone validation in `fields.charge()`) — not needed; dropped.
+- **Q5** (sandbox terminal) — answered: sandbox is terminal-level, configured on Tranzila's end (no per-request flag).
+- **Q6** (testing the recurring charge flow) — done.
+- **Q7** (Hebrew receipt vs English invoice) — resolved, all good.
+- **Q8** (separate document number sequences) — resolved, all good.
+- **Q9** (charge IL in NIS / foreign in USD) — answered: a **dedicated terminal per country by lead currency** (IL, US, EU, …); not multiplexed through one terminal. Recorded in docs/completed/tranzila-card-tokenization.md.
 
 ---

@@ -6,6 +6,9 @@ AI-powered expense approval tool for small businesses.
 - [AI Expense Approval MVP North Star](product/ai_expense_approval_mvp_north_star.md) — Complete product vision and feature set
 - [MVP Screen Map](product/mvp_screen_map.md) — Screen definitions and user flows
 
+## v2 (Post-MVP Backlog)
+- [v2 Checklist](v2/README.md) — features/bugs deferred out of the MVP
+
 ## In Progress
 - [Card on File Flow](in-progress/card-on-file-flow.md)
 - [Tranzila Hosted Fields Spec](in-progress/tranzila_hosted_fields_spec.md)
