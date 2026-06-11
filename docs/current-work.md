@@ -11,6 +11,9 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 
 ## TODO (Backlog)
+- [ ] (blocked on server — API WIP) pricing plans should come from the server, not hardcoded client config. See docs/in-progress/server-driven-pricing-plans.md
+- [ ] (blocked on server — API WIP) manager can re-approve a declined sheet — reverses the "no reopen" decision in ExpenseSheetsTransformation. See docs/in-progress/manager-reapprove-declined-sheet.md
+- [ ] (blocked on server — API WIP) manager can modify the decline reason on an already-declined sheet. See docs/in-progress/manager-edit-decline-reason.md
 - [ ] (optional) extract `sheet_bucket_card.dart`'s `_buildBody` loading/error/data switch into a `SheetBucketBody` widget file — file is now 178 lines (under the 200 cap after the B4 accordion refactor), so this is a nicety, not a size fix
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] paginated "View all" screens for the manager dashboard bucket cards — cards show a "Showing 12 of N…" overflow notice until the paginated list screen ships. See docs/in-progress/ExpenseSheetsTransformation/README.md
