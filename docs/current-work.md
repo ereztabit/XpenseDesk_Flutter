@@ -13,12 +13,11 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 ## TODO (Backlog)
 - [ ] (blocked on server — API WIP) pricing plans should come from the server, not hardcoded client config. See docs/in-progress/server-driven-pricing-plans.md
 - [ ] (blocked on server — API WIP) manager can re-approve a declined sheet — reverses the "no reopen" decision in ExpenseSheetsTransformation. See docs/in-progress/manager-reapprove-declined-sheet.md
-- [ ] (blocked on server — API WIP) manager can modify the decline reason on an already-declined sheet. See docs/in-progress/manager-edit-decline-reason.md
 - [ ] (optional) extract `sheet_bucket_card.dart`'s `_buildBody` loading/error/data switch into a `SheetBucketBody` widget file — file is now 178 lines (under the 200 cap after the B4 accordion refactor), so this is a nicety, not a size fix
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] disable the dev auto-login shortcut on the login screen (dev-only toggle; must never reach PROD). See docs/in-progress/disable-dev-auto-login.md
 - [ ] add logos to the authorize page
-- [ ] we can remove the phone number and the country code from the authorization page
+- [ ] remove phone number + country code from the authorize flow — DONE on the standard page (web/CreditCard/Authorize.html); still present on the 3DS page (web/CreditCard/AuthorizeCard3DS.html lines 66-73) and as dead refs in web/CreditCard/authorize.js (labels, prefill, charge payload). Deferred: strip the 3DS page + JS later.
 - [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear
 
 ## report bugs (pending)

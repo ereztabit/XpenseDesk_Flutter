@@ -1,6 +1,6 @@
 # Manager can modify the decline reason
 
-> **Status:** Planned — **blocked on server (API is WIP)**.
+> **Status:** Deferred to **v2** (out of MVP scope) — also blocked on server (API is WIP).
 
 ## Problem
 

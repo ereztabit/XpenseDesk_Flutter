@@ -26,3 +26,6 @@ When a v2 item is picked up, move it back into `current-work.md` (or its own
   always render in Hebrew with no SDK control. Fine for the Israel launch; matters
   only for international/English billing. (Formerly Tranzila open-question Q1.)
   See [../bugs/tranzila-iframe-validation-language-hebrew-only.md](../bugs/tranzila-iframe-validation-language-hebrew-only.md)
+- [ ] **Manager can modify the decline reason** on an already-declined sheet.
+  Blocked on server (API WIP). Deferred out of the MVP.
+  See [../in-progress/manager-edit-decline-reason.md](../in-progress/manager-edit-decline-reason.md)
