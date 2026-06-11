@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../config/app_config.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
+import '../../../models/company_info.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/company_provider.dart';
 import '../../../services/tranzila_popup_service.dart';
+import '../../../utils/format_utils.dart';
 import '../../../widgets/app_button.dart';
 import '../../../widgets/plan_selection/plan_card.dart';
 import '../../../widgets/plan_selection/coupon_section.dart';
@@ -23,7 +24,7 @@ class PlanSelectionStep extends ConsumerStatefulWidget {
 }
 
 class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
-  late int _selectedPlanId;
+  int? _selectedPlanId;
   String? _couponCode;
   bool _busy = false;
   String? _errorMessage;
@@ -40,7 +41,11 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
   @override
   void initState() {
     super.initState();
-    _selectedPlanId = AppConfig.instance.annualPlanId;
+    // Req: (re)fetch the company — with server-driven plans/prices — before the
+    // prices screen renders, so the cards show the right amounts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(companyProvider.notifier).refresh();
+    });
   }
 
   @override
@@ -114,10 +119,20 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
     if (mounted) setState(() => _busy = true);
 
     try {
+      final company = ref.read(companyProvider).asData?.value;
+      final planId = _selectedPlanId ?? company?.defaultPlan?.billingPlanId;
+      if (planId == null) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = _failMsg;
+          _busy = false;
+        });
+        return;
+      }
       final authService = ref.read(authServiceProvider);
       await authService.createSubscription(
         paymentProviderResponse: result.tranzilaResponse,
-        billingPlanId: _selectedPlanId,
+        billingPlanId: planId,
         couponCode: _couponCode,
       );
     } catch (e) {
@@ -157,7 +172,23 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final config = AppConfig.instance;
+    final companyAsync = ref.watch(companyProvider);
+
+    return companyAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => _errorBox(l10n.subscriptionCreationFailed),
+      data: (company) => _buildForm(context, l10n, company),
+    );
+  }
+
+  Widget _buildForm(
+      BuildContext context, AppLocalizations l10n, CompanyInfo company) {
+    final locale = ref.watch(companyLocaleProvider);
+    final plans = company.displayPlans;
+    final selectedId = _selectedPlanId ?? company.defaultPlan?.billingPlanId;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -174,33 +205,31 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
         ),
         const SizedBox(height: 24),
 
-        // Plan cards — always side by side
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: PlanCard(
-                  price: '\$${config.monthlyPrice}',
-                  period: l10n.perMonth,
-                  isSelected: _selectedPlanId == config.monthlyPlanId,
-                  onTap: () =>
-                      setState(() => _selectedPlanId = config.monthlyPlanId),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: PlanCard(
-                  price: '\$${config.annualPrice}',
-                  period: l10n.perYear,
-                  isSelected: _selectedPlanId == config.annualPlanId,
-                  onTap: () =>
-                      setState(() => _selectedPlanId = config.annualPlanId),
-                ),
-              ),
-            ],
+        // Plan cards — server-driven, side by side
+        if (plans.isEmpty)
+          _errorBox(l10n.subscriptionCreationFailed)
+        else
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (int i = 0; i < plans.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 16),
+                  Expanded(
+                    child: PlanCard(
+                      price: plans[i]
+                          .price
+                          .toCurrencyWithSymbol(locale, company.currencySymbol),
+                      period: plans[i].isMonthly ? l10n.perMonth : l10n.perYear,
+                      isSelected: selectedId == plans[i].billingPlanId,
+                      onTap: () => setState(
+                          () => _selectedPlanId = plans[i].billingPlanId),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: 24),
 
         // Coupon section
@@ -213,22 +242,7 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
 
         // Inline error
         if (_errorMessage != null) ...[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppTheme.destructive.withAlpha(25),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppTheme.destructive.withAlpha(77)),
-            ),
-            child: Text(
-              _errorMessage!,
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppTheme.destructive,
-              ),
-            ),
-          ),
+          _errorBox(_errorMessage!),
           const SizedBox(height: 16),
         ],
 
@@ -254,6 +268,22 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _errorBox(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.destructive.withAlpha(25),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.destructive.withAlpha(77)),
+      ),
+      child: Text(
+        message,
+        style: const TextStyle(fontSize: 13, color: AppTheme.destructive),
+      ),
     );
   }
 }

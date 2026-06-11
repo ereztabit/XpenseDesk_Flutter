@@ -10,9 +10,3 @@ app:
 payment:
   tranzilaTerminal: xpensedesk
   use3ds: false
-
-billing:
-  monthlyPlanId: 2
-  monthlyPrice: 30
-  annualPlanId: 1
-  annualPrice: 300

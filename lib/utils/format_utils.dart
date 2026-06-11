@@ -73,6 +73,14 @@ extension CompanyCurrencyFormat on num {
     return '$symbol$formatted';
   }
 
+  /// Currency using an explicit, server-provided symbol (e.g. `currencySymbol`
+  /// from GET /api/company) rather than deriving it from a currency code.
+  /// Drops trailing `.00` for whole amounts (e.g. "₪30" not "₪30.00").
+  String toCurrencyWithSymbol(String companyLocale, String currencySymbol) {
+    final formatted = NumberFormat('#,##0.##', companyLocale).format(this);
+    return '$currencySymbol$formatted';
+  }
+
   /// Currency with symbol always on the left, number in company locale format.
   String toCurrency(String companyLocale, String currencyCode) {
     final symbol = NumberFormat.simpleCurrency(locale: 'en', name: currencyCode)

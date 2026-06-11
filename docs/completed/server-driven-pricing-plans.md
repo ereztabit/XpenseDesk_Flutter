@@ -1,6 +1,33 @@
 # Server-driven pricing plans
 
-> **Status:** Planned — **blocked on server (API is WIP)**.
+> **Status:** SHIPPED & confirmed. Onboarding Step 4 and the billing tab read
+> prices from the `plans` array on GET /api/company, render with the company
+> `currencySymbol`, subscribe by `billingPlanId`, and refetch the company before
+> the onboarding prices screen. Hardcoded AppConfig/YAML prices removed. Plan
+> selection/derivation centralized on `CompanyInfo.defaultPlan` / `displayPlans`.
+
+## API contract (delivered — B7)
+
+`GET /api/company` (the profile already loaded after sign-in) now includes a
+top-level `plans` array — the purchasable subscription plans with current prices:
+
+```
+"plans": [
+  { "billingPlanId": 1, "name": "Annual",  "price": 10.00, "billingCycleMonths": 12 },
+  { "billingPlanId": 2, "name": "Monthly", "price": 1.00,  "billingCycleMonths": 1 }
+]
+```
+
+Rules:
+- `billingPlanId` is the id used when subscribing/switching (1 = Annual, 2 = Monthly).
+- The **Free plan is intentionally absent** — it's an internal trial state, never
+  purchasable. Don't render it.
+- **No currency field** — IL-only for now; prices are flat shekel amounts. Render
+  with the company's existing `currencySymbol` from the same response.
+- Comes in the response we already fetch — **no extra API call**.
+- Onboarding: ensure the company API is (re)fetched **before** the prices screen
+  (Step 4) so plans/prices are present.
+- Price changes are backend-only from now on — no app release required.
 
 ## Problem
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../config/app_config.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../services/tranzila_popup_service.dart';
 import '../../theme/app_theme.dart';
@@ -169,6 +168,7 @@ class _PlanCard extends StatelessWidget {
                 chargeAmount: subscription.nextChargeAmount,
                 l10n: l10n,
                 locale: locale,
+                currencyCode: company!.currencyCode,
               ),
             ],
 
@@ -288,7 +288,8 @@ class _PlanInfoBlock extends StatelessWidget {
             const SizedBox(height: 12),
             _InfoRow(
               label: l10n.billingNextCharge,
-              value: subscription.nextChargeAmount.toSmartCurrency(locale, 'USD'),
+              value: subscription.nextChargeAmount
+                  .toSmartCurrency(locale, company?.currencyCode ?? 'ILS'),
             ),
             const SizedBox(height: 8),
             _InfoRow(
@@ -405,7 +406,7 @@ class _PlanInfoBlock extends StatelessWidget {
               ),
             ),
             TextSpan(
-              text: ' - ${l10n.billingLastCharged} ${subscription.nextChargeAmount.toSmartCurrency(locale, 'USD')} ${l10n.billingLastChargedOn} ${lastChargeDate.toMediumDate(locale)}',
+              text: ' - ${l10n.billingLastCharged} ${subscription.nextChargeAmount.toSmartCurrency(locale, company?.currencyCode ?? 'ILS')} ${l10n.billingLastChargedOn} ${lastChargeDate.toMediumDate(locale)}',
               style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.mutedForeground,
@@ -471,6 +472,7 @@ class _NextChargeBox extends StatelessWidget {
     required this.chargeAmount,
     required this.l10n,
     required this.locale,
+    required this.currencyCode,
   });
 
   final String planDisplayName;
@@ -478,6 +480,7 @@ class _NextChargeBox extends StatelessWidget {
   final double chargeAmount;
   final AppLocalizations l10n;
   final String locale;
+  final String currencyCode;
 
   @override
   Widget build(BuildContext context) {
@@ -515,7 +518,7 @@ class _NextChargeBox extends StatelessWidget {
           const SizedBox(height: 8),
           _InfoRow(
             label: l10n.billingNextChargeAmount,
-            value: chargeAmount.toSmartCurrency(locale, 'USD'),
+            value: chargeAmount.toSmartCurrency(locale, currencyCode),
           ),
         ],
       ),
@@ -868,8 +871,8 @@ class _NoPlanCard extends ConsumerStatefulWidget {
 }
 
 class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
-  /// Matches config planId values. Defaults to annual.
-  late int _selectedPlanId;
+  /// Selected billingPlanId; null until the user taps (defaults to annual).
+  int? _selectedPlanId;
   String? _couponCode;
   bool _busy = false;
   String? _errorMessage;
@@ -887,7 +890,6 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
   @override
   void initState() {
     super.initState();
-    _selectedPlanId = AppConfig.instance.annualPlanId;
   }
 
   @override
@@ -960,10 +962,20 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
     if (mounted) setState(() => _busy = true);
 
     try {
+      final planId =
+          _selectedPlanId ?? widget.company?.defaultPlan?.billingPlanId;
+      if (planId == null) {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = _failMsg;
+          _busy = false;
+        });
+        return;
+      }
       final authService = ref.read(authServiceProvider);
       await authService.createSubscription(
         paymentProviderResponse: result.tranzilaResponse,
-        billingPlanId: _selectedPlanId,
+        billingPlanId: planId,
         couponCode: _couponCode,
       );
     } catch (e) {
@@ -996,7 +1008,6 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
   @override
   Widget build(BuildContext context) {
     final l10n = widget.l10n;
-    final config = AppConfig.instance;
 
     return Card(
       elevation: 0,
@@ -1059,7 +1070,7 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
             const SizedBox(height: 24),
 
             // Plan cards
-            _buildPlanCards(l10n, config),
+            _buildPlanCards(l10n),
             const SizedBox(height: 24),
 
             // Coupon section
@@ -1108,32 +1119,37 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
     );
   }
 
-  Widget _buildPlanCards(AppLocalizations l10n, AppConfig config) {
+  Widget _buildPlanCards(AppLocalizations l10n) {
+    final company = widget.company;
+    final locale = ref.watch(companyLocaleProvider);
+    final plans = company?.displayPlans ?? const [];
+    if (plans.isEmpty) {
+      return Text(
+        l10n.subscriptionCreationFailed,
+        style: const TextStyle(fontSize: 13, color: AppTheme.destructive),
+      );
+    }
+    final selectedId = _selectedPlanId ?? company?.defaultPlan?.billingPlanId;
+    final symbol = company?.currencySymbol ?? '';
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: PlanCard(
-              price: '\$${config.monthlyPrice}',
-              period: l10n.perMonth,
-              isSelected: _selectedPlanId == config.monthlyPlanId,
-              onTap: () =>
-                  setState(() => _selectedPlanId = config.monthlyPlanId),
+          for (int i = 0; i < plans.length; i++) ...[
+            if (i > 0) const SizedBox(width: 16),
+            Expanded(
+              child: PlanCard(
+                price: plans[i].price.toCurrencyWithSymbol(locale, symbol),
+                period: plans[i].isMonthly ? l10n.perMonth : l10n.perYear,
+                isSelected: selectedId == plans[i].billingPlanId,
+                onTap: () =>
+                    setState(() => _selectedPlanId = plans[i].billingPlanId),
+                badgeLabel: plans[i].isAnnual ? l10n.bestValue : null,
+                savingsLabel: plans[i].isAnnual ? l10n.savePercent : null,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: PlanCard(
-              price: '\$${config.annualPrice}',
-              period: l10n.perYear,
-              isSelected: _selectedPlanId == config.annualPlanId,
-              onTap: () =>
-                  setState(() => _selectedPlanId = config.annualPlanId),
-              badgeLabel: l10n.bestValue,
-              savingsLabel: l10n.savePercent,
-            ),
-          ),
+          ],
         ],
       ),
     );

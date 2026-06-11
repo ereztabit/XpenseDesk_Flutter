@@ -1,3 +1,4 @@
+import 'billing_plan.dart';
 import 'tracked_currency.dart';
 
 /// Company configuration data returned by GET /api/company.
@@ -38,6 +39,25 @@ class CompanyInfo {
   /// expense currency picker — empty for older payloads.
   final List<TrackedCurrency> trackedCurrencies;
 
+  /// Purchasable subscription plans with current prices (server-driven).
+  /// The Free plan is intentionally absent. Empty for older payloads.
+  final List<BillingPlan> plans;
+
+  /// The single-month plan, if present.
+  BillingPlan? get monthlyPlan =>
+      plans.where((p) => p.isMonthly).firstOrNull;
+
+  /// The annual (12+ month) plan, if present.
+  BillingPlan? get annualPlan => plans.where((p) => p.isAnnual).firstOrNull;
+
+  /// Plans in display order (monthly first, annual second). Free plan is never
+  /// in the list. Drives the plan cards in onboarding and the billing tab.
+  List<BillingPlan> get displayPlans =>
+      [monthlyPlan, annualPlan].whereType<BillingPlan>().toList();
+
+  /// The plan to pre-select by default (annual, falling back to monthly).
+  BillingPlan? get defaultPlan => annualPlan ?? monthlyPlan;
+
   /// Days remaining in trial (0 if expired or not in trial).
   int get trialDaysRemaining {
     if (!isInTrial || trialEndDate == null) return 0;
@@ -72,6 +92,7 @@ class CompanyInfo {
     this.isInTrial = false,
     this.hasCardOnFile = false,
     this.trackedCurrencies = const [],
+    this.plans = const [],
   });
 
   factory CompanyInfo.fromJson(Map<String, dynamic> json) {
@@ -101,6 +122,10 @@ class CompanyInfo {
       hasCardOnFile: json['hasCardOnFile'] as bool? ?? false,
       trackedCurrencies: (json['trackedCurrencies'] as List<dynamic>?)
               ?.map((e) => TrackedCurrency.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      plans: (json['plans'] as List<dynamic>?)
+              ?.map((e) => BillingPlan.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );

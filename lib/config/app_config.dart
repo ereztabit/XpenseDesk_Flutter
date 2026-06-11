@@ -62,25 +62,4 @@ class AppConfig {
     return payment['use3ds'] as bool? ?? false;
   }
 
-  // ── Billing plans ──────────────────────────────────────────────────────────
-
-  int get monthlyPlanId {
-    final billing = _config['billing'] as Map;
-    return billing['monthlyPlanId'] as int;
-  }
-
-  int get monthlyPrice {
-    final billing = _config['billing'] as Map;
-    return billing['monthlyPrice'] as int;
-  }
-
-  int get annualPlanId {
-    final billing = _config['billing'] as Map;
-    return billing['annualPlanId'] as int;
-  }
-
-  int get annualPrice {
-    final billing = _config['billing'] as Map;
-    return billing['annualPrice'] as int;
-  }
 }
