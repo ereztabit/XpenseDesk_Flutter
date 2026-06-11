@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-- Employee GovId — **Feature A (onboarding + self profile): shipped.** Optional `govId` (תעודת זהות) on the employee first-login onboarding screen and the self profile screen. Next: **Feature B** — admin edits an employee via the reused profile screen (extract `ProfileEditor`; new admin `EditUserScreen` using `/api/users/details` + `/api/users/admin-update`; pencil icon on Users rows; closes the "cannot edit employee name" bug). Spec: docs/in-progress/employee-gov-id.md.
+- Employee GovId — **Features A + B shipped.** A: optional `govId` (תעודת זהות) at employee onboarding + self profile. B: admin edits an employee via the reused profile UI (shared `ProfileEditor` + `EditUserScreen`, pencil icon on Users rows, `/api/users/details` + `/api/users/admin-update`); onboarding pre-fills from `/me`. Closed the "cannot edit employee name" bug. Spec: docs/in-progress/employee-gov-id.md.
 - Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end (ISO code vs symbol, codes outside the list).
 
 Open bugs (see `## report bugs (pending)` below)
@@ -24,7 +24,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] Manager Dashboard -- top analysis/spend-overview widget disappeared (only a placeholder now) -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
-- [ ] Users module -- cannot change an employee's name -- see docs/bugs/users-screen-cannot-edit-employee-name.md
 - [ ] Users module -- mobile layout looks too dense -- see docs/bugs/users-screen-mobile-layout-too-dense.md
 - [ ] Users module -- back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
 - [ ] Expense Analysis -- should focus on previous cycle, not the current/active one -- see docs/bugs/expenses-analysis-default-to-previous-cycle.md

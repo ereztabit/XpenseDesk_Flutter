@@ -87,6 +87,7 @@ class UserListCard extends ConsumerWidget {
         return UserListItemWidget(
           user: user,
           isCurrentUser: isCurrentUser,
+          onEditDetails: () => _handleEditDetails(context, ref, user),
           onPromote: () => _handlePromote(context, ref, user),
           onDemote: () => _handleDemote(context, ref, user),
           onDisable: () => _handleDisable(context, ref, user),
@@ -173,6 +174,18 @@ class UserListCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Open the employee's profile in admin-edit mode; refresh the list on return
+  /// so any name/language change is reflected.
+  void _handleEditDetails(
+    BuildContext context,
+    WidgetRef ref,
+    UserListItem user,
+  ) {
+    Navigator.of(context)
+        .pushNamed('/manager/edit-user/${user.userId}')
+        .then((_) => ref.read(usersListProvider.notifier).refresh());
   }
 
   Future<void> _handlePromote(

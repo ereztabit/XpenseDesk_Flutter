@@ -8,6 +8,7 @@ import '../../utils/responsive_utils.dart';
 class UserListItemWidget extends StatelessWidget {
   final UserListItem user;
   final bool isCurrentUser;
+  final VoidCallback? onEditDetails;
   final VoidCallback? onPromote;
   final VoidCallback? onDemote;
   final VoidCallback? onDisable;
@@ -18,6 +19,7 @@ class UserListItemWidget extends StatelessWidget {
     super.key,
     required this.user,
     required this.isCurrentUser,
+    this.onEditDetails,
     this.onPromote,
     this.onDemote,
     this.onDisable,
@@ -70,9 +72,10 @@ class UserListItemWidget extends StatelessWidget {
           // Role badge
           _buildRoleBadge(l10n),
           
-          // Actions menu (hidden for current user)
+          // Edit + actions (hidden for current user)
           if (!isCurrentUser) ...[
             const SizedBox(width: 8),
+            _buildEditButton(context, l10n),
             _buildActionsMenu(context, l10n),
           ],
         ],
@@ -115,9 +118,11 @@ class UserListItemWidget extends StatelessWidget {
                 ),
               ),
               
-              // Actions menu
-              if (!isCurrentUser)
+              // Edit + actions
+              if (!isCurrentUser) ...[
+                _buildEditButton(context, l10n),
                 _buildActionsMenu(context, l10n),
+              ],
             ],
           ),
           
@@ -273,10 +278,19 @@ class UserListItemWidget extends StatelessWidget {
     );
   }
 
+  Widget _buildEditButton(BuildContext context, AppLocalizations l10n) {
+    return IconButton(
+      icon: const Icon(Icons.edit_outlined),
+      tooltip: l10n.editUser,
+      color: AppTheme.mutedForeground,
+      onPressed: onEditDetails,
+    );
+  }
+
   Widget _buildActionsMenu(BuildContext context, AppLocalizations l10n) {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
-      tooltip: 'Actions',
+      tooltip: l10n.actionsMenuTooltip,
       itemBuilder: (context) => [
         // Promote/Demote option
         PopupMenuItem(

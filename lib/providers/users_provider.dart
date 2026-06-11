@@ -1,10 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_list_item.dart';
+import '../models/user_details.dart';
 import '../services/users_service.dart';
 
 /// Provider for UsersService singleton
 final usersServiceProvider = Provider<UsersService>((ref) {
   return UsersService();
+});
+
+/// One target user's editable details (admin edit form), keyed by userId.
+/// Autoreloads when invalidated; the EditUserScreen invalidates it on entry.
+final userDetailsProvider =
+    FutureProvider.family<UserDetails, String>((ref, targetUserId) async {
+  return ref.read(usersServiceProvider).getUserDetails(targetUserId);
 });
 
 /// Notifier for the users list.

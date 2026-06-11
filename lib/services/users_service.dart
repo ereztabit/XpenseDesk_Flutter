@@ -1,6 +1,7 @@
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/user_list_item.dart';
+import '../models/user_details.dart';
 
 /// Exception thrown when user management operations fail
 class UsersException implements Exception {
@@ -193,6 +194,65 @@ class UsersService {
     );
 
     _validateResponse(response, 'Failed to delete user');
+  }
+
+  /// Get one user's editable details (admin only).
+  /// GET /api/users/details?targetUserId={guid}
+  /// Throws UsersException(errorCode: UsersUpdateTargetUserNotFoundInCompany)
+  /// with a 404 when the target is not in the admin's company.
+  Future<UserDetails> getUserDetails(String targetUserId) async {
+    if (targetUserId.isEmpty) {
+      throw const UsersException('User ID cannot be empty');
+    }
+
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/users/details?targetUserId=$targetUserId',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load user details');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const UsersException('Invalid response from server');
+    }
+    return UserDetails.fromJson(data);
+  }
+
+  /// Edit another user's name, language, and gov ID in one call (admin only).
+  /// PUT /api/users/admin-update
+  ///
+  /// [govId] follows the three-state rule: `null` = leave unchanged (omitted),
+  /// `""` = clear, a digit string = set. Always a String — leading zeros are
+  /// significant.
+  Future<void> adminUpdateUser({
+    required String targetUserId,
+    required String fullName,
+    int? languageId,
+    String? govId,
+  }) async {
+    if (targetUserId.isEmpty) {
+      throw const UsersException('User ID cannot be empty');
+    }
+
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.put(
+      '/api/users/admin-update',
+      {
+        'targetUserId': targetUserId,
+        'fullName': fullName,
+        'languageId': ?languageId,
+        'govId': ?govId,
+      },
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to update user');
   }
 
   /// Enable a disabled user account

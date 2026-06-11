@@ -11,13 +11,112 @@ Split into two separate features:
   (`POST /api/users/onboarding`) and the self profile screen
   (`PUT /api/users/update-details`). Model (`UserInfo.govId`, String),
   `GovIdValidator`, ARB keys, `AuthException.errorCode`, inline 400/409 handling.
-- **Feature B — Admin edits an employee: NOT STARTED.** Decision (supersedes the
-  `EditUserDialog` approach sketched below): **reuse the profile screen** as the
-  admin edit surface. Extract a shared `ProfileEditor` from
-  `profile_screen.dart` (which is also why that file stays >200 lines for now),
-  then a new admin `EditUserScreen` drives it via `GET /api/users/details` +
-  `PUT /api/users/admin-update`, opened by a pencil icon on each Users row.
-  Closes `docs/bugs/users-screen-cannot-edit-employee-name.md`.
+- **Feature B — Admin edits an employee: SHIPPED.** Reused the profile UI as the
+  admin edit surface: extracted a shared `ProfileEditor` (+ identity/language/
+  section cards, success banner, save-outcome) from `profile_screen.dart`, and a
+  new `EditUserScreen` drives it via `GET /api/users/details` +
+  `PUT /api/users/admin-update`, opened by a pencil icon on each Users row
+  (route `/manager/edit-user/{id}`). Locale isolation for the admin; list
+  refresh on save. Also pre-fills the employee onboarding form from `/me` so
+  manager-set details show for confirmation. Closed
+  `docs/bugs/users-screen-cannot-edit-employee-name.md`.
+
+## Feature B — UI plan (admin edits an employee via the reused profile UI)
+
+### Entry point — pencil icon on each Users row
+- Add an `Icons.edit_outlined` `IconButton` (tooltip `l10n.editUser`) to
+  `user_list_item_widget.dart`, shown for non-current users — **before** the
+  existing `⋮` actions menu, on both the desktop Row and the mobile layout.
+- Both the pencil and `⋮` are intrinsic-width `IconButton`s sitting beside an
+  `Expanded` name column → no overflow at narrow widths (CR Rule 6).
+- New `onEditDetails` callback flows `UserListItemWidget` → `UserListCard`,
+  which pushes `/manager/edit-user/{userId}` and, on return, refreshes
+  `usersListProvider` (name/lang may have changed).
+- While here, localize the pre-existing hardcoded `tooltip: 'Actions'` →
+  `l10n.actionsMenuTooltip` (Rule 4).
+
+### Screen — `EditUserScreen` (`lib/screens/edit_user_screen.dart`)
+- `ConsumerStatefulWidget` + `FormBehaviorMixin`; ctor `targetUserId`.
+- Mandatory scaffold: `AppHeader` → `Expanded` → scroll → `ConstrainedContent`
+  → content → `AppFooter`, wrapped in `buildWithNavigationGuard`.
+- Watches `userDetailsProvider(targetUserId)` (new `FutureProvider.family`):
+  - loading → centered spinner
+  - error → if `errorCode == UsersUpdateTargetUserNotFoundInCompany` show
+    `l10n.userNotFound`, else generic; with a back-to-users button
+  - data → header + `ProfileEditor` (admin mode)
+- Header: ghost back button (`Icons.arrow_back`, `l10n.backToUsers` →
+  `/manager/users`) + a title showing `l10n.editUser` and the employee's name
+  (the name/email come from the loaded details, so no need to pass them through
+  the route). Title text wraps on mobile.
+- Route `/manager/edit-user/{guid}` (path param, like `/manager/sheet/:id`),
+  wrapped in `AuthGate(managerOnly)` — admin gating as defense-in-depth beyond
+  the icon. Add to `router.dart`.
+
+### Shared widget — `ProfileEditor` (`lib/widgets/profile/profile_editor.dart`)
+Extract the form currently inlined in `profile_screen.dart` so the self profile
+and the admin screen render **identically** ("as if the user logged in himself"):
+- Inputs: `initialFullName`, `initialEmail`, `initialLanguageId`,
+  `initialGovId`, `isBusy`, `onDirtyChanged(bool)`, and
+  `onSave({fullName, languageId, govId}) → Future<ProfileSaveOutcome>`.
+- Owns: form key, controllers, validation, dirty tracking (reports up via
+  `onDirtyChanged` so each screen's `FormBehaviorMixin.hasUnsavedChanges`
+  works), the two cards (Profile: name + email read-only + govId; Settings:
+  language), success/error rendering, and the Save button.
+- `ProfileSaveOutcome` (success | govIdErrorCode | generalErrorMessage): the
+  editor maps the two shared gov-ID error codes to `l10n.govIdInvalidFormat` /
+  `l10n.govIdAlreadyExists` (inline on the field); a general message renders in
+  the error alert. Each parent builds the outcome from its own exception type
+  (`AuthException` for self, `UsersException` for admin) — no duplicated UI.
+- Side effects stay in each parent's `onSave`: self updates the session +
+  applies locale (unchanged behaviour); admin calls `adminUpdateUser` and
+  refreshes `usersListProvider`. The admin path must **not** touch the admin's
+  own session/locale.
+- RTL fix during extraction: the Save button moves from `Alignment.centerRight`
+  to `AlignmentDirectional.centerEnd`; full-width on `context.isNarrow` for a
+  better mobile tap target, end-aligned otherwise.
+
+### Models / services / providers
+- `lib/models/user_details.dart` — `UserDetails` (userId, email, fullName,
+  roleId, status, languageId, languageCode/Name, govId — govId a **String**).
+- `users_service.dart`:
+  - `getUserDetails(targetUserId)` → `GET /api/users/details?targetUserId=...`
+  - `adminUpdateUser({targetUserId, fullName, languageId?, govId?})` →
+    `PUT /api/users/admin-update` (govId three-state; `?govId` null-aware).
+  - Reuse `UsersException.errorCode` (already carries it) for 400/409/404.
+- `users_provider.dart` — `userDetailsProvider = FutureProvider.family<UserDetails,String>`.
+
+### ARB keys to add (EN + HE, before widget code)
+`editUser` ("Edit user" / "עריכת משתמש"), `backToUsers`
+("Back to users" / "חזרה למשתמשים"), `userNotFound`
+("User not found." / "המשתמש לא נמצא"), `actionsMenuTooltip`
+("Actions" / "פעולות"). Reuse existing `name`/`email`/`language`/`governmentId`/
+`saveChanges`/`govId*` keys.
+
+### Build order
+B1 model → B2 service → B3 provider + ARB → B4 extract `ProfileEditor` + refactor
+`ProfileScreen` onto it → B5 `EditUserScreen` + route → B6 pencil icon wiring.
+Build + analyze each; `/code-review` at the end.
+
+### Self-audit of this plan
+- **Responsive (mobile + desktop):** form is single-column cards inside
+  `ConstrainedContent` (already responsive padding); pencil + ⋮ are fixed-width
+  beside an `Expanded` name (no narrow overflow); header title wraps; Save
+  button full-width on narrow, end-aligned on wide. ✔
+- **RTL:** Save button switched to directional end; back uses `Icons.arrow_back`
+  (auto-mirrors); no `left/right`/`Alignment.centerRight` introduced. ✔
+- **Localization:** all new captions via `l10n`; also fixes the pre-existing
+  hardcoded `'Actions'` tooltip. ✔
+- **String discipline:** `govId` stays a String end-to-end (model + service +
+  editor); no `int.parse`. ✔
+- **File size:** extracting `ProfileEditor` pulls the form out of
+  `profile_screen.dart`, bringing it back under 200; `EditUserScreen` and
+  `ProfileEditor` are each new, focused files. ✔
+- **Reuse / altitude:** one editor widget, two thin parents; save side-effects
+  and exception mapping live in the parents, not duplicated in the editor. ✔
+- **Admin gating:** icon shown to admins on the Users screen + route behind
+  `AuthGate(managerOnly)` + backend 403 — three layers. ✔
+- **Risk:** dirty-state must round-trip through `onDirtyChanged` so the
+  navigation guard still fires; verify unsaved-changes prompt on both screens.
 
 ## Goal
 

@@ -1,9 +1,12 @@
-import 'package:flutter/services.dart';
 import 'screen_imports.dart';
 import '../services/auth_service.dart';
-import '../utils/gov_id_utils.dart';
 import '../widgets/app_button.dart';
+import '../widgets/profile/profile_editor.dart';
 
+/// Self-service profile screen. Orchestrator only: owns the scaffold + back
+/// navigation and delegates the form to the shared [ProfileEditor]. Saving goes
+/// through the self endpoint (`update-details`) and updates the session +
+/// locale.
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -11,137 +14,41 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehaviorMixin {
-  final _formKey = GlobalKey<FormState>();
-  final _fullNameController = TextEditingController();
-  final _govIdController = TextEditingController();
-  final _fullNameFocusNode = FocusNode();
-  int _selectedLanguageId = 1;
-  bool _isLoading = false;
-  String? _errorMessage;
-  String? _successMessage;
-
-  /// Inline, field-level gov-ID error from the server (400 invalid / 409 taken).
-  String? _govIdError;
-
-  // Used to initialize form fields exactly once after first data load
-  bool _initialized = false;
-  String _initialFullName = '';
-  int _initialLanguageId = 1;
-  String _initialGovId = '';
-
-  void _initializeFromUser(UserInfo userInfo) {
-    if (_initialized) return;
-    _initialized = true;
-    _fullNameController.text = userInfo.fullName;
-    _govIdController.text = userInfo.govId ?? '';
-    _selectedLanguageId = userInfo.languageId;
-    _initialFullName = userInfo.fullName;
-    _initialLanguageId = userInfo.languageId;
-    _initialGovId = userInfo.govId ?? '';
-  }
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with FormBehaviorMixin {
+  bool _dirty = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Validate field when focus is lost
-    _fullNameFocusNode.addListener(() {
-      if (!_fullNameFocusNode.hasFocus) {
-        _formKey.currentState?.validate();
-      }
-    });
+  bool get hasUnsavedChanges => _dirty;
+
+  void _onDirtyChanged(bool dirty) {
+    // Rebuild so PopScope.canPop (built from hasUnsavedChanges) stays current.
+    if (_dirty != dirty) setState(() => _dirty = dirty);
   }
 
-  @override
-  void dispose() {
-    _fullNameController.dispose();
-    _govIdController.dispose();
-    _fullNameFocusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  bool get hasUnsavedChanges {
-    if (!_initialized) return false;
-    return _fullNameController.text.trim() != _initialFullName ||
-        _selectedLanguageId != _initialLanguageId ||
-        _govIdController.text.trim() != _initialGovId;
-  }
-
-  String? _validateFullName(String? value) {
+  Future<ProfileSaveOutcome> _save({
+    required String fullName,
+    required int languageId,
+    required String govId,
+  }) async {
     final l10n = AppLocalizations.of(context)!;
-    
-    if (value == null || value.trim().isEmpty) {
-      return l10n.nameRequired;
-    }
-    
-    if (value.length > 50) {
-      return l10n.nameMaxLength;
-    }
-    
-    final validNameRegex = RegExp(r'^[a-zA-Z\u0590-\u05FF\s-]+$');
-    if (!validNameRegex.hasMatch(value)) {
-      if (RegExp(r'\d').hasMatch(value)) {
-        return l10n.nameNoNumbers;
-      }
-      return l10n.nameOnlyLetters;
-    }
-    
-    return null;
-  }
-
-  Future<void> _handleSave() async {
-    setState(() {
-      _errorMessage = null;
-      _successMessage = null;
-      _govIdError = null;
-    });
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    final authService = ref.read(authServiceProvider);
-    final l10n = AppLocalizations.of(context)!;
-
     try {
-      final updatedUser = await authService.updateUserProfile(
-        _fullNameController.text.trim(),
-        _selectedLanguageId,
-        // Always sent: "" clears the gov ID, digits set it.
-        govId: _govIdController.text.trim(),
-      );
-
-      // Update local state (locale is set automatically by updateProfile)
-      ref.read(userInfoProvider.notifier).updateProfile(updatedUser);
-
-      // Update initial values after successful save
-      _initialFullName = _fullNameController.text.trim();
-      _initialLanguageId = _selectedLanguageId;
-      _initialGovId = _govIdController.text.trim();
-
-      setState(() {
-        _successMessage = l10n.profileUpdatedSuccessfully;
-      });
+      final updated = await ref.read(authServiceProvider).updateUserProfile(
+            fullName,
+            languageId,
+            govId: govId,
+          );
+      // Updates the session; locale is applied automatically by updateProfile.
+      ref.read(userInfoProvider.notifier).updateProfile(updated);
+      return const ProfileSaveOutcome.success();
     } on AuthException catch (e) {
-      setState(() {
-        // Gov-ID problems surface inline on the field; everything else in the
-        // generic error alert.
-        switch (e.errorCode) {
-          case 'UsersGovIdInvalidFormat':
-            _govIdError = l10n.govIdInvalidFormat;
-          case 'UsersGovIdAlreadyExists':
-            _govIdError = l10n.govIdAlreadyExists;
-          default:
-            _errorMessage = e.message;
-        }
-      });
-    } catch (e) {
-      setState(() => _errorMessage = l10n.failedToUpdateProfile);
-    } finally {
-      setState(() => _isLoading = false);
+      if (e.errorCode == 'UsersGovIdInvalidFormat' ||
+          e.errorCode == 'UsersGovIdAlreadyExists') {
+        return ProfileSaveOutcome.govIdError(e.errorCode!);
+      }
+      return ProfileSaveOutcome.error(e.message);
+    } catch (_) {
+      return ProfileSaveOutcome.error(l10n.failedToUpdateProfile);
     }
   }
 
@@ -149,9 +56,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final userInfo = ref.watch(userInfoProvider);
-
-    // Initialize form fields once the session is restored
-    if (userInfo != null) _initializeFromUser(userInfo);
 
     if (userInfo == null) {
       return const Scaffold(
@@ -169,313 +73,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with FormBehavior
               child: RefreshableScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: ConstrainedContent(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Back button
-                        AppButton(
-                          label: l10n.backToDashboard,
-                          variant: AppButtonVariant.ghost,
-                          icon: Icons.arrow_back,
-                          onPressed: () => handleBackNavigation('/dashboard'),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Profile Card
-                        Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: AppTheme.border),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Card Header
+                      AppButton(
+                        label: l10n.backToDashboard,
+                        variant: AppButtonVariant.ghost,
+                        icon: Icons.arrow_back,
+                        onPressed: () => handleBackNavigation('/dashboard'),
+                      ),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
-                          Icon(Icons.person_outline, color: Colors.grey[700]),
+                          const Icon(Icons.person_outline,
+                              color: AppTheme.mutedForeground),
                           const SizedBox(width: 8),
                           Text(
                             l10n.profile,
                             style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
+                                fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-
-                      // Name Field
-                      FieldLabel(
-                        label: l10n.name,
-                        isRequired: true,
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _fullNameController,
-                        focusNode: _fullNameFocusNode,
-                        maxLength: 50,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.border),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.destructive),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.destructive, width: 2),
-                          ),
-                          counterText: '',
-                        ),
-                        validator: _validateFullName,
-                        enabled: !_isLoading,
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Email Field (Read-only)
-                      Text(
-                        l10n.email,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.muted,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppTheme.border),
-                        ),
-                        child: Text(
-                          userInfo.email,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: AppTheme.mutedForeground,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Government ID Field (optional, digits only)
-                      Text(
-                        l10n.governmentId,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _govIdController,
-                        keyboardType: TextInputType.number,
-                        maxLength: GovIdValidator.maxLength,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: l10n.governmentIdHint,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.border),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-                          ),
-                          errorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.destructive),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.destructive, width: 2),
-                          ),
-                          counterText: '',
-                          errorText: _govIdError,
-                        ),
-                        onChanged: (_) {
-                          if (_govIdError != null) {
-                            setState(() => _govIdError = null);
-                          }
-                        },
-                        validator: (value) {
-                          if (!GovIdValidator.isValid(value)) {
-                            return l10n.govIdInvalidFormat;
-                          }
-                          return null;
-                        },
-                        enabled: !_isLoading,
+                      const SizedBox(height: 16),
+                      ProfileEditor(
+                        initialFullName: userInfo.fullName,
+                        initialEmail: userInfo.email,
+                        initialLanguageId: userInfo.languageId,
+                        initialGovId: userInfo.govId ?? '',
+                        onDirtyChanged: _onDirtyChanged,
+                        onSave: _save,
                       ),
                     ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Settings Card
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: AppTheme.border),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Card Header
-                      Row(
-                        children: [
-                          Icon(Icons.settings_outlined, color: Colors.grey[700]),
-                          const SizedBox(width: 8),
-                          Text(
-                            l10n.settings,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Language Field
-                      Text(
-                        l10n.language,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      DropdownMenu<int>(
-                        initialSelection: _selectedLanguageId,
-                        enabled: !_isLoading,
-                        expandedInsets: EdgeInsets.zero,
-                        inputDecorationTheme: InputDecorationTheme(
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.border),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primary, width: 2),
-                          ),
-                        ),
-                        dropdownMenuEntries: [
-                          DropdownMenuEntry(
-                            value: 1,
-                            label: l10n.english,
-                          ),
-                          DropdownMenuEntry(
-                            value: 2,
-                            label: l10n.hebrew,
-                          ),
-                        ],
-                        onSelected: _isLoading ? null : (value) {
-                          if (value != null) {
-                            setState(() => _selectedLanguageId = value);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Success Message
-              if (_successMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withAlpha(26),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle_outline, color: Colors.green[700]),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _successMessage!,
-                          style: TextStyle(color: Colors.green[700]),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Error Alert
-              if (_errorMessage != null) ...[
-                ErrorAlert(message: _errorMessage!),
-                const SizedBox(height: 16),
-              ],
-
-              // Save Button
-              Align(
-                alignment: Alignment.centerRight,
-                child: AppButton(
-                  label: l10n.saveChanges,
-                  variant: AppButtonVariant.primary,
-                  isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _handleSave,
-                ),
-              ),
-                      ],
-                    ),
                   ),
                 ),
               ),

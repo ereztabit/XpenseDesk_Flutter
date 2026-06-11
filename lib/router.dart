@@ -5,6 +5,7 @@ import 'screens/login_callback_screen.dart';
 import 'screens/user_dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
+import 'screens/edit_user_screen.dart';
 import 'screens/company_config_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/employee_onboarding_screen.dart';
@@ -219,6 +220,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           builder: (_) => AuthGate(
             mode: AuthGateMode.managerOnly,
             child: SheetReviewScreen(expenseSheetId: id),
+          ),
+        );
+      }
+      // /manager/edit-user/:id — admin edits an employee's profile
+      if (uri.path.startsWith('/manager/edit-user/')) {
+        final id = uri.pathSegments.last;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => AuthGate(
+            mode: AuthGateMode.managerOnly,
+            child: EditUserScreen(targetUserId: id),
           ),
         );
       }

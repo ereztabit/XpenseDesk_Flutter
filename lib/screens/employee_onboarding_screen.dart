@@ -34,9 +34,12 @@ class _EmployeeOnboardingScreenState
   @override
   void initState() {
     super.initState();
-    // Pre-select language from the user's current preference
+    // Pre-fill from anything the manager already set (admin edit / invite) so
+    // the employee confirms their details rather than re-entering them.
     final userInfo = ref.read(userInfoProvider);
     if (userInfo != null) {
+      _fullNameController.text = userInfo.fullName;
+      _govIdController.text = userInfo.govId ?? '';
       _selectedLanguageId = userInfo.languageId;
     }
   }

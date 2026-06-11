@@ -1,6 +1,20 @@
 # Bug: Cannot change an employee's name in the Users module
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Shipped as part of the Employee GovId — Feature B (admin employee editing). Each
+Users row now has a pencil icon that opens the employee's profile in admin-edit
+mode (the shared `ProfileEditor` reused via a new `EditUserScreen`), where the
+manager can change the name, language, and gov ID. Saves via
+`PUT /api/users/admin-update` and refreshes the list.
+
+Files: `lib/screens/edit_user_screen.dart`, `lib/widgets/profile/` (ProfileEditor
++ cards), `lib/services/users_service.dart` (`getUserDetails` / `adminUpdateUser`),
+`lib/widgets/users/user_list_item_widget.dart` + `user_list_card.dart` (pencil
+icon + navigation), route `/manager/edit-user/{id}` in `lib/router.dart`.
+Spec: docs/in-progress/employee-gov-id.md.
 
 ## Problem
 
