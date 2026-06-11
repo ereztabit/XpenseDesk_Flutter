@@ -357,10 +357,13 @@ class _EmployeeExpenseDetailScreenState
     final l10n = AppLocalizations.of(context)!;
     final expense = _expense;
     // Pre-finalize warning (manager): approving the last not-yet-approved line
-    // on a WaitingForApproval sheet auto-approves the whole sheet.
+    // on a non-terminal sheet auto-finalizes the whole sheet to Approved —
+    // the one irreversible moment, so it gets an explicit confirm.
     if (expense?.expenseSheetId != null &&
-        expense!.expenseSheetStatusId ==
-            ExpenseSheetStatus.waitingForApproval.id) {
+        (expense!.expenseSheetStatusId ==
+                ExpenseSheetStatus.waitingForApproval.id ||
+            expense.expenseSheetStatusId ==
+                ExpenseSheetStatus.declined.id)) {
       final siblings = await _loadSheetExpenses(expense.expenseSheetId!);
       if (siblings != null &&
           SheetExpenseBuckets.approveFinalizesSheet(
@@ -850,18 +853,17 @@ class _EmployeeExpenseDetailScreenState
     if (widget.readOnly) return const SizedBox.shrink();
     final expense = _expense;
     if (expense == null) return const SizedBox.shrink();
-    // Manager line actions:
-    //   Approve -> WaitingForApproval or Declined sheets (any not-yet-approved
-    //              expense). On a Declined sheet this is the escape hatch to
-    //              resolve a returned line on the employee's behalf.
-    //   Decline -> WaitingForApproval only (per-line decline requires WfA).
-    //   Delete  -> Draft or Declined sheets (manager escape hatch).
+    // Manager line actions — the sheet is the lock, not the line: until the
+    // sheet is Approved (terminal), approve/decline/delete stay available on
+    // every line. A line's status is a working state, not a commitment, so an
+    // accidental approve is undone with one tap (decline). Only the no-op is
+    // hidden: approve on an Approved line, decline on a Declined line.
     final sheetStatusId = expense.expenseSheetStatusId;
     final isWfa = sheetStatusId == ExpenseSheetStatus.waitingForApproval.id;
     final isDeclinedSheet = sheetStatusId == ExpenseSheetStatus.declined.id;
     final statusId = expense.expenseStatusId;
     final showApprove = (isWfa || isDeclinedSheet) && statusId != 2;
-    final showDecline = isWfa && statusId != 3;
+    final showDecline = (isWfa || isDeclinedSheet) && statusId != 3;
     final showDelete = sheetStatusId != null &&
         SheetPermissions.canDeleteExpense(
           sheetStatusId: sheetStatusId,

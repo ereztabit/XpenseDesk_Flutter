@@ -23,16 +23,19 @@ const TextStyle _cellTextStyle = TextStyle(
 /// Builds one data [TableRow] for the desktop Sheet Review table. Columns mirror
 /// the header: Date · Merchant · Category · Amount · Status · Actions.
 ///
-/// A view icon is always present (the whole row is also tappable via
-/// [TableRowInkWell]); per-line ✓/✗ render only when [onApprove]/[onDecline]
-/// are non-null (sheet is WaitingForApproval). Gridlines come from the parent
-/// [Table]'s [TableBorder] — this builder owns no separators.
+/// The open-detail icon is always present (the whole row is also tappable via
+/// [TableRowInkWell]) — it reads as edit while the sheet is non-terminal
+/// ([canEdit], the manager can still change the line) and as view on an
+/// Approved sheet. Per-line ✓/✗ render only when [onApprove]/[onDecline] are
+/// non-null. Gridlines come from the parent [Table]'s [TableBorder] — this
+/// builder owns no separators.
 TableRow buildSheetReviewRow(
   BuildContext context, {
   required ExpenseSummary expense,
   required String companyLocale,
   required String baseCurrency,
   required VoidCallback onTap,
+  bool canEdit = false,
   VoidCallback? onApprove,
   VoidCallback? onDecline,
   VoidCallback? onDelete,
@@ -115,8 +118,8 @@ TableRow buildSheetReviewRow(
             mainAxisSize: MainAxisSize.min,
             children: [
               ActionIconButton(
-                icon: Icons.visibility_outlined,
-                tooltip: l10n.view,
+                icon: canEdit ? Icons.edit_outlined : Icons.visibility_outlined,
+                tooltip: canEdit ? l10n.edit : l10n.view,
                 color: AppTheme.primary,
                 onPressed: onTap,
               ),

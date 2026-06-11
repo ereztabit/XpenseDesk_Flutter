@@ -17,6 +17,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
     required this.expenses,
     required this.companyLocale,
     required this.onTapLine,
+    this.canEditLines = false,
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
@@ -25,6 +26,10 @@ class DesktopSheetReviewTable extends ConsumerWidget {
   final List<ExpenseSummary> expenses;
   final String companyLocale;
   final void Function(ExpenseSummary) onTapLine;
+
+  /// True while the sheet is non-terminal — the open-detail icon reads as
+  /// edit instead of view.
+  final bool canEditLines;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
   final void Function(ExpenseSummary)? onDeleteLine;
@@ -67,6 +72,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
               companyLocale: companyLocale,
               baseCurrency: baseCurrency,
               onTap: () => onTapLine(e),
+              canEdit: canEditLines,
               onApprove: onApproveLine == null ? null : () => onApproveLine!(e),
               onDecline: onDeclineLine == null ? null : () => onDeclineLine!(e),
               onDelete: onDeleteLine == null ? null : () => onDeleteLine!(e),

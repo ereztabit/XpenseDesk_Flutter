@@ -231,12 +231,12 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   Future<void> _handleLineApprove(ExpenseSummary expense) async {
     final l10n = AppLocalizations.of(context)!;
     // Pre-finalize warning: approving the last not-yet-approved line on a
-    // WaitingForApproval sheet auto-approves the whole sheet (proc_EvaluateExpenseSheet).
+    // non-terminal sheet auto-finalizes the whole sheet to Approved
+    // (proc_EvaluateExpenseSheet) — the one irreversible moment.
     final sheet =
         ref.read(sheetDetailProvider(widget.expenseSheetId)).asData?.value;
     if (sheet != null &&
-        sheet.expenseSheetStatusId ==
-            ExpenseSheetStatus.waitingForApproval.id &&
+        _canApproveSheet(sheet) &&
         SheetExpenseBuckets.approveFinalizesSheet(
             sheet.expenses, expense.expenseId)) {
       final proceed = await LastActionConfirmDialog.show(
@@ -363,11 +363,12 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   ) {
     final canApproveSheet = _canApproveSheet(sheet);
     final canDeclineSheet = _canDeclineSheet(sheet);
-    // Manager per-line escape hatch: approve on WaitingForApproval or Declined
-    // (same gate as the whole-sheet approve); decline only on
-    // WaitingForApproval; delete on any sheet except Approved.
-    final canDeleteLines =
-        sheet.expenseSheetStatusId != ExpenseSheetStatus.approved.id;
+    // Per-line actions: the sheet is the lock, not the line. Until the sheet
+    // is Approved (terminal), approve/decline/edit/delete all stay available
+    // on every line — rows hide only the no-op (approve on an Approved line,
+    // decline on a Declined line). Whole-sheet decline stays WfA-only.
+    final isSheetLocked =
+        sheet.expenseSheetStatusId == ExpenseSheetStatus.approved.id;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -390,9 +391,10 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
         SheetReviewLineSection(
           expenses: sheet.expenses,
           onTapLine: _openLineDetail,
+          canEditLines: !isSheetLocked,
           onApproveLine: canApproveSheet ? _handleLineApprove : null,
-          onDeclineLine: canDeclineSheet ? _handleLineDecline : null,
-          onDeleteLine: canDeleteLines ? _handleLineDelete : null,
+          onDeclineLine: canApproveSheet ? _handleLineDecline : null,
+          onDeleteLine: !isSheetLocked ? _handleLineDelete : null,
         ),
         const SizedBox(height: 16),
         SheetActivityTimeline(log: sheet.log),

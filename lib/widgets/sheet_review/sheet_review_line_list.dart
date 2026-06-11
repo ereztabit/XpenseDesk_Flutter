@@ -21,6 +21,7 @@ class SheetReviewLineList extends ConsumerWidget {
     super.key,
     required this.expenses,
     required this.onTapLine,
+    this.canEditLines = false,
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
@@ -28,6 +29,10 @@ class SheetReviewLineList extends ConsumerWidget {
 
   final List<ExpenseSummary> expenses;
   final void Function(ExpenseSummary) onTapLine;
+
+  /// True while the sheet is non-terminal — desktop rows show an edit icon
+  /// instead of a view icon (mobile rows have no open-detail icon).
+  final bool canEditLines;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
   final void Function(ExpenseSummary)? onDeleteLine;
@@ -41,6 +46,7 @@ class SheetReviewLineList extends ConsumerWidget {
         expenses: expenses,
         companyLocale: companyLocale,
         onTapLine: onTapLine,
+        canEditLines: canEditLines,
         onApproveLine: onApproveLine,
         onDeclineLine: onDeclineLine,
         onDeleteLine: onDeleteLine,

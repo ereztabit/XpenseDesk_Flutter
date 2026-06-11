@@ -22,6 +22,7 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
     super.key,
     required this.expenses,
     required this.onTapLine,
+    this.canEditLines = false,
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
@@ -29,6 +30,10 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
 
   final List<ExpenseSummary> expenses;
   final void Function(ExpenseSummary) onTapLine;
+
+  /// True while the sheet is non-terminal — line rows present the open-detail
+  /// action as edit rather than view.
+  final bool canEditLines;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
   final void Function(ExpenseSummary)? onDeleteLine;
@@ -71,6 +76,7 @@ class _SheetReviewLineSectionState
           SheetReviewLineList(
             expenses: filtered,
             onTapLine: widget.onTapLine,
+            canEditLines: widget.canEditLines,
             onApproveLine: widget.onApproveLine,
             onDeclineLine: widget.onDeclineLine,
             onDeleteLine: widget.onDeleteLine,
