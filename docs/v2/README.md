@@ -29,3 +29,8 @@ When a v2 item is picked up, move it back into `current-work.md` (or its own
 - [ ] **Manager can modify the decline reason** on an already-declined sheet.
   Blocked on server (API WIP). Deferred out of the MVP.
   See [../in-progress/manager-edit-decline-reason.md](../in-progress/manager-edit-decline-reason.md)
+- [ ] **Finish phone/country removal in the authorize flow** — DONE on the
+  standard page (web/CreditCard/Authorize.html); still present on the 3DS page
+  (web/CreditCard/AuthorizeCard3DS.html lines 66-73) and as dead refs in
+  web/CreditCard/authorize.js (labels, prefill, charge payload). Strip the 3DS
+  page + JS.

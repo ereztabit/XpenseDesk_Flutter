@@ -2,7 +2,7 @@
 
 ## Currently Working On
 
-- Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end (ISO code vs symbol, codes outside the list).
+- Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end. Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/ (user scans them in dev).
 
 Open bugs (see `## report bugs (pending)` below)
 
@@ -14,7 +14,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] disable the dev auto-login shortcut on the login screen (dev-only toggle; must never reach PROD). See docs/in-progress/disable-dev-auto-login.md
 - [ ] add logos to the authorize page
-- [ ] remove phone number + country code from the authorize flow — DONE on the standard page (web/CreditCard/Authorize.html); still present on the 3DS page (web/CreditCard/AuthorizeCard3DS.html lines 66-73) and as dead refs in web/CreditCard/authorize.js (labels, prefill, charge payload). Deferred: strip the 3DS page + JS later.
 - [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/in-progress/coupon-verbiage-review.md
 
 ## report bugs (pending)

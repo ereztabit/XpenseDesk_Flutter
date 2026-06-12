@@ -1,0 +1,92 @@
+[
+  {
+    "file": "01_ils_hebrew.png",
+    "rtl": true,
+    "header": "מינימרקט השכונה",
+    "sub": ["רחוב הרצל 12, תל אביב", "ח.פ 514477312", "קבלה מס' 10422", "09/06/2026  14:32"],
+    "items": [
+      ["חלב 3% 1 ליטר", "₪7.90"],
+      ["לחם אחיד", "₪6.50"],
+      ["גבינה צהובה 200 גרם", "₪24.90"],
+      ["שמן זית 750 מ\"ל", "₪39.90"],
+      ["מלפפונים 1 ק\"ג", "₪8.30"]
+    ],
+    "totalLabel": "סה\"כ לתשלום",
+    "totalValue": "₪87.50",
+    "footer": "תודה ולהתראות!"
+  },
+  {
+    "file": "02_usd_symbol_only.png",
+    "rtl": false,
+    "header": "JOE'S DINER",
+    "sub": ["428 7th Avenue, New York, NY", "Receipt #88311", "06/08/2026  12:47 PM"],
+    "items": [
+      ["Cheeseburger Deluxe", "$12.50"],
+      ["French Fries (L)", "$8.25"],
+      ["Milkshake x2", "$14.00"],
+      ["Coffee", "$4.50"],
+      ["Sales Tax 8.875%", "$3.50"]
+    ],
+    "totalLabel": "TOTAL",
+    "totalValue": "$42.75",
+    "footer": "Thank you - come again!"
+  },
+  {
+    "file": "03_eur_symbol.png",
+    "rtl": false,
+    "header": "CAFE DE PARIS",
+    "sub": ["14 Rue de Rivoli, 75004 Paris", "Ticket No 55102", "05.06.2026  09:21"],
+    "items": [
+      ["Croissant au beurre", "€3.80"],
+      ["Cafe au lait", "€4.60"],
+      ["Quiche Lorraine", "€11.40"],
+      ["Salade Nicoise", "€9.90"],
+      ["Service", "€1.50"]
+    ],
+    "totalLabel": "TOTAL (TVA incluse)",
+    "totalValue": "€31.20",
+    "footer": "Merci de votre visite"
+  },
+  {
+    "file": "04_gbp_untracked.png",
+    "rtl": false,
+    "header": "LONDON BOOKS LTD",
+    "sub": ["23 Charing Cross Road, London", "VAT No. GB 345 6789 12", "Receipt 20447", "07/06/2026  16:05"],
+    "items": [
+      ["Paperback novel", "£9.99"],
+      ["Notebook A5", "£4.50"],
+      ["Greeting card", "£3.25"],
+      ["Bookmark", "£1.25"]
+    ],
+    "totalLabel": "TOTAL",
+    "totalValue": "£18.99",
+    "footer": "Thank you for shopping with us"
+  },
+  {
+    "file": "05_jpy_untracked.png",
+    "rtl": false,
+    "header": "TOKYO RAMEN HOUSE",
+    "sub": ["2-14-3 Shibuya, Tokyo", "Receipt No. 7731", "2026/06/06  19:12"],
+    "items": [
+      ["Shoyu Ramen", "¥1,100"],
+      ["Gyoza (6 pc)", "¥550"],
+      ["Green Tea", "¥250"],
+      ["Edamame", "¥500"]
+    ],
+    "totalLabel": "TOTAL",
+    "totalValue": "¥2,400",
+    "footer": "Arigatou gozaimashita"
+  },
+  {
+    "file": "06_no_currency.png",
+    "rtl": false,
+    "header": "CITY PARKING LTD",
+    "sub": ["Central Garage, Level B2", "Ticket 99120", "08/06/2026", "Entry 08:15  -  Exit 17:45"],
+    "items": [
+      ["Parking - daily maximum", "45.00"]
+    ],
+    "totalLabel": "AMOUNT DUE",
+    "totalValue": "45.00",
+    "footer": "Drive safely"
+  }
+]
