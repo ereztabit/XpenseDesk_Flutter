@@ -1,6 +1,7 @@
 import 'expense_sheet_log_entry.dart';
 import 'expense_sheet_status.dart';
 import 'expense_summary.dart';
+import 'payment_status.dart';
 
 /// Full sheet detail returned by GET /api/expense-sheets/{id}.
 ///
@@ -29,6 +30,13 @@ class ExpenseSheetDetail {
   final List<ExpenseSummary> expenses;
   final List<ExpenseSheetLogEntry> log;
 
+  /// Payment dimension (manager-only payloads). Null when the sheet has no
+  /// payment status — unapproved, zero-amount, or an employee-side response.
+  final PaymentStatus? paymentStatus;
+  final DateTime? processedDate;
+  final String? paymentReference;
+  final String? paymentNote;
+
   const ExpenseSheetDetail({
     required this.expenseSheetId,
     required this.companyId,
@@ -50,6 +58,10 @@ class ExpenseSheetDetail {
     this.latestDeclineComment,
     required this.expenses,
     required this.log,
+    this.paymentStatus,
+    this.processedDate,
+    this.paymentReference,
+    this.paymentNote,
   });
 
   ExpenseSheetStatus? get status =>
@@ -94,6 +106,10 @@ class ExpenseSheetDetail {
       log: logJson
           .map((e) => ExpenseSheetLogEntry.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
+      paymentStatus: PaymentStatus.tryParse(json['paymentStatus'] as String?),
+      processedDate: parseDate(json['processedDate'] as String?),
+      paymentReference: json['reference'] as String?,
+      paymentNote: json['note'] as String?,
     );
   }
 }

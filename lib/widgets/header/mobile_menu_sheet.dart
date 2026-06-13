@@ -70,6 +70,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
       case 'sheet-approvals':
         await _navigateToRoute('/manager-approvals');
         break;
+      case 'payments':
+        await _navigateToRoute('/manager/payments');
+        break;
       case 'profile':
         await _navigateToProfile(userInfo);
         break;

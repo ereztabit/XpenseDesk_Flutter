@@ -130,6 +130,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       case 'sheet-approvals':
         if (mounted) Navigator.pushNamed(context, '/manager-approvals');
         break;
+      case 'payments':
+        if (mounted) Navigator.pushNamed(context, '/manager/payments');
+        break;
       case 'profile':
         final role = _isManager(userInfo.roleId) ? 'manager' : 'employee';
         if (mounted) Navigator.pushNamed(context, '/$role/profile');

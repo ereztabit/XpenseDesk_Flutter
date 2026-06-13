@@ -1,4 +1,5 @@
 import 'billing_plan.dart';
+import 'payments_summary.dart';
 import 'tracked_currency.dart';
 
 /// Company configuration data returned by GET /api/company.
@@ -42,6 +43,11 @@ class CompanyInfo {
   /// Purchasable subscription plans with current prices (server-driven).
   /// The Free plan is intentionally absent. Empty for older payloads.
   final List<BillingPlan> plans;
+
+  /// Manager-only payments rollup (Awaiting Payment count + total).
+  /// Null when the caller is not a manager — the dashboard card must not
+  /// render in that case.
+  final PaymentsSummary? paymentsSummary;
 
   /// The single-month plan, if present.
   BillingPlan? get monthlyPlan =>
@@ -93,7 +99,40 @@ class CompanyInfo {
     this.hasCardOnFile = false,
     this.trackedCurrencies = const [],
     this.plans = const [],
+    this.paymentsSummary,
   });
+
+  /// Returns a copy with a fresh [PaymentsSummary] — used to update the
+  /// dashboard card in place from payment write responses (the freshness
+  /// rule: never refetch /api/company after a payment action).
+  CompanyInfo withPaymentsSummary(PaymentsSummary summary) {
+    return CompanyInfo(
+      companyId: companyId,
+      companyName: companyName,
+      companyStatus: companyStatus,
+      createdAt: createdAt,
+      cutoverDay: cutoverDay,
+      accountantEmail: accountantEmail,
+      countryCode: countryCode,
+      countryName: countryName,
+      currencyCode: currencyCode,
+      currencyName: currencyName,
+      currencySymbol: currencySymbol,
+      languageId: languageId,
+      languageCode: languageCode,
+      languageName: languageName,
+      timeZoneId: timeZoneId,
+      timeZoneName: timeZoneName,
+      timeZoneDisplayName: timeZoneDisplayName,
+      subscriptionStatus: subscriptionStatus,
+      trialEndDate: trialEndDate,
+      isInTrial: isInTrial,
+      hasCardOnFile: hasCardOnFile,
+      trackedCurrencies: trackedCurrencies,
+      plans: plans,
+      paymentsSummary: summary,
+    );
+  }
 
   factory CompanyInfo.fromJson(Map<String, dynamic> json) {
     return CompanyInfo(
@@ -128,6 +167,10 @@ class CompanyInfo {
               ?.map((e) => BillingPlan.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      paymentsSummary: json['paymentsSummary'] != null
+          ? PaymentsSummary.fromJson(
+              json['paymentsSummary'] as Map<String, dynamic>)
+          : null,
     );
   }
 }

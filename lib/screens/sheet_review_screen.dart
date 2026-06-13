@@ -14,6 +14,7 @@ import '../widgets/last_action_confirm_dialog.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/sheet_review/approve_sheet_confirm_dialog.dart';
 import '../widgets/sheet_review/decline_sheet_dialog.dart';
+import '../widgets/sheet_review/payment_status_strip.dart';
 import '../widgets/sheet_review/sheet_review_actions.dart';
 import '../widgets/sheet_review/sheet_activity_timeline.dart';
 import '../widgets/sheet_review/sheet_review_back_row.dart';
@@ -386,6 +387,10 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
                 SheetExpenseBuckets.approvableCount(sheet.expenses),
             amountText: _approvableAmountText(sheet),
           ),
+        ],
+        if (sheet.paymentStatus != null) ...[
+          const SizedBox(height: 16),
+          PaymentStatusStrip(sheet: sheet),
         ],
         const SizedBox(height: 16),
         SheetReviewLineSection(

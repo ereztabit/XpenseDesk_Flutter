@@ -2,6 +2,7 @@
 
 ## Currently Working On
 
+- Payment Status feature (manager payroll workspace) — Phases 1–8 + 10 SHIPPED & manual-QA passed; committed. Remaining: Phase 9 (edit/revert processed payments) — scope decision pending. Then a follow-up "payment-status fixes" pass for the minor UX/UI issues found in QA (list TBD from user). Plan + status board: docs/in-progress/payment-status-implementation-plan.md
 - Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end. Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/ (user scans them in dev).
 
 Open bugs (see `## report bugs (pending)` below)

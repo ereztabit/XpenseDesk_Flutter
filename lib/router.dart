@@ -17,6 +17,8 @@ import 'screens/sheet_review_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
 import 'screens/expenses_analysis_screen.dart';
 import 'screens/complete_payment_screen.dart';
+import 'screens/payments_report_screen.dart';
+import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
 
@@ -130,6 +132,20 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => AuthGate(
           mode: AuthGateMode.managerOnly,
           child: CompanyConfigScreen(initialTab: initialTab),
+        ),
+      );
+
+    // Payments Report — payroll workspace. Optional `PaymentStatus` argument
+    // pre-applies the status filter (dashboard card CTAs).
+    case '/manager/payments':
+      final status = settings.arguments is PaymentStatus
+          ? settings.arguments as PaymentStatus
+          : null;
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: PaymentsReportScreen(initialStatus: status),
         ),
       );
 

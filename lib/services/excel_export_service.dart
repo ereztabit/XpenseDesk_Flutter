@@ -88,6 +88,11 @@ class ExcelExportService {
     web.URL.revokeObjectURL(objectUrl);
   }
 
+  /// Triggers a browser download of server-produced .xlsx bytes (e.g. the
+  /// payments report endpoints, which build the workbook server-side).
+  static void downloadXlsxBytes(List<int> bytes, String fileName) =>
+      _download(bytes, fileName);
+
   static void _download(List<int> bytes, String fileName) {
     final blob = web.Blob(
       [Uint8List.fromList(bytes).toJS].toJS,

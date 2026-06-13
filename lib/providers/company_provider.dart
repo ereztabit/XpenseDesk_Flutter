@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/company_info.dart';
+import '../models/payments_summary.dart';
 import '../models/tracked_currency.dart';
 import 'auth_provider.dart';
 
@@ -58,5 +59,14 @@ class CompanyNotifier extends AsyncNotifier<CompanyInfo> {
       accountantEmail: accountantEmail,
     );
     state = AsyncData(updated);
+  }
+
+  /// Replaces just the payments rollup in place from a payment write response
+  /// (process / update / bulk-update). Freshness rule: never refetch
+  /// /api/company after a payment action — the write response is the truth.
+  void updatePaymentsSummary(PaymentsSummary summary) {
+    final current = state.asData?.value;
+    if (current == null) return;
+    state = AsyncData(current.withPaymentsSummary(summary));
   }
 }

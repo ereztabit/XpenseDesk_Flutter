@@ -39,6 +39,12 @@ class MenuItems {
         requiresManagerRole: true,
       ),
       MenuItem(
+        id: 'payments',
+        icon: Icons.payments_outlined,
+        label: t.paymentsTitle,
+        requiresManagerRole: true,
+      ),
+      MenuItem(
         id: 'profile',
         icon: Icons.person_outline,
         label: t.myProfile,
@@ -134,6 +140,7 @@ class MenuItems {
   static String? activeIdForRoute(String route) {
     if (route == '/dashboard') return 'dashboard';
     if (route == '/manager-approvals') return 'sheet-approvals';
+    if (route == '/manager/payments') return 'payments';
     if (route.endsWith('/profile')) return 'profile';
     if (route == '/manager/analysis') return 'expenses-analysis';
     if (route.endsWith('/history/report')) return 'expenses-detail-report';

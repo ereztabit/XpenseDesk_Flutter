@@ -2,11 +2,12 @@ import 'screen_imports.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../utils/manager_dashboard_state_utils.dart';
 import '../widgets/dashboard_greeting.dart';
+import '../widgets/manager_dashboard/awaiting_payment_card.dart';
 import '../widgets/manager_dashboard/first_sheets_info_row.dart';
 import '../widgets/manager_dashboard/invite_block.dart';
 import '../widgets/manager_dashboard/sheet_counter_cards.dart';
 import '../widgets/manager_dashboard/spend_overview_card.dart';
-import '../widgets/manager_dashboard/teammates_counter.dart';
+import '../widgets/manager_dashboard/teammates_strip.dart';
 import '../widgets/manager/manager_view_switcher.dart';
 
 /// Manager Dashboard — the manager's post-login landing screen.
@@ -134,7 +135,7 @@ class _DashboardBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TeammatesCounter(
+        TeammatesStrip(
           count: data.teammateCount,
           managerCount: data.managerCount,
         ),
@@ -150,6 +151,8 @@ class _DashboardBody extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const SpendOverviewCard(),
+        const SizedBox(height: 16),
+        const AwaitingPaymentCard(),
       ],
     );
   }

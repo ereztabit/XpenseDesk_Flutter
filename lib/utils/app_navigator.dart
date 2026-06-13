@@ -19,6 +19,7 @@ class AppRoutes {
   static const String employeeProfile = '/employee/profile';
   static const String employeeNewExpense = '/employee/new-expense';
   static const String completePayment = '/complete-payment';
+  static const String managerPayments = '/manager/payments';
 }
 
 /// Which bucket the Sheet Approvals screen should auto-expand (and highlight)

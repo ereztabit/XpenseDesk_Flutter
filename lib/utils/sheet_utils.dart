@@ -173,6 +173,12 @@ class SheetExpenseBuckets {
   /// (nulls treated as 0).
   static double approvableAmount(List<ExpenseSummary> all) => approvable(all)
       .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
+
+  /// Base-currency total of the APPROVED lines only — the payable amount
+  /// shown on the payment-status strip (matches the payments report `amount`).
+  static double approvedAmount(List<ExpenseSummary> all) => all
+      .where((e) => e.expenseStatusId == 2)
+      .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
 }
 
 // ─── Permissions ────────────────────────────────────────────────────────────
