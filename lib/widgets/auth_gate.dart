@@ -41,7 +41,12 @@ class AuthGate extends ConsumerWidget {
         if (redirectRoute != null) {
           return _Redirector(route: redirectRoute);
         }
-        return child;
+        // App-wide text selection: every route renders its screen through
+        // AuthGate, so wrapping here makes ordinary Text selectable/copyable on
+        // every screen. Placed per-route (below the Navigator) so it has the
+        // Navigator's Overlay as an ancestor — no app-level Overlay hack, and no
+        // selection spanning across stacked routes. EditableText opts out.
+        return SelectionArea(child: child);
       },
     );
   }

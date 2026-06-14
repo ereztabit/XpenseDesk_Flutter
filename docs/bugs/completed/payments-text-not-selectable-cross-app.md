@@ -1,6 +1,25 @@
 # Bug: Screen text is not selectable / copyable (app-wide)
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Made screen text selectable/copyable app-wide by wrapping each route's content
+in a `SelectionArea` inside `AuthGate` (every route renders through it). Placed
+per-route (below the Navigator) so it has the Navigator's Overlay as ancestor —
+no app-level Overlay hack, and selection never spans stacked routes.
+
+Read-only inputs were a second case: a disabled `TextFormField` can't be
+selected at all, so the expense-detail read-only fields now use
+`readOnly: !enabled` instead of `enabled: false` — the value stays
+selectable/copyable while remaining non-editable (same greyed styling).
+
+Known minor gaps (acceptable): `DropdownMenu` values (category/currency) and
+dialog text are not covered — can be made selectable on request.
+
+Files: `lib/widgets/auth_gate.dart`,
+`lib/screens/employee_expense_detail_screen.dart`. Verified by user across the
+sheet-review and expense-detail screens. CR pass: clean.
 
 ## Problem
 

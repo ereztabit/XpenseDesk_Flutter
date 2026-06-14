@@ -66,7 +66,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       title: 'XpenseDesk',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      
+
       // Localization
       locale: locale,
       localizationsDelegates: const [

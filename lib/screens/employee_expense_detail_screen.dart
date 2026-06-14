@@ -493,9 +493,13 @@ class _EmployeeExpenseDetailScreenState
         _buildLabel(label, required: required),
         TextFormField(
           controller: controller,
-          enabled: enabled,
+          // Read-only (not disabled) when not editable: the value stays
+          // selectable/copyable while remaining non-editable. A disabled field
+          // can't be selected at all (and SelectionArea skips editable widgets).
+          readOnly: !enabled,
+          enableInteractiveSelection: true,
           maxLines: maxLines,
-          inputFormatters: inputFormatters,
+          inputFormatters: enabled ? inputFormatters : null,
           keyboardType: keyboardType,
           style: TextStyle(
             fontFamily: monospace ? 'monospace' : null,

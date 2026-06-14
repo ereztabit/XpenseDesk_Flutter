@@ -21,7 +21,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
-- [ ] App-wide -- screen text is not selectable/copyable (cross-cutting, discuss scope) -- see docs/bugs/payments-text-not-selectable-cross-app.md
 
 ## general environment
 
