@@ -1,6 +1,18 @@
 # Bug: Desktop payments table has an unwanted inner vertical scroll
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Desktop now flows with the page — the screen wraps the desktop view in a
+`SingleChildScrollView`, the view's root `Column` is `mainAxisSize.min` and the
+table is no longer in an `Expanded`. `DesktopPaymentsTable` was rewritten to
+size to its rows (header + rows in one column) with only horizontal scroll; it
+no longer uses the shared `StickyReportTable` / a vertical controller. Mobile
+keeps its internal scroll. Files:
+`lib/screens/payments_report_screen.dart`,
+`lib/widgets/payments/desktop_payments_view.dart`,
+`lib/widgets/payments/desktop_payments_table.dart`. Verified by user.
 
 ## Problem
 

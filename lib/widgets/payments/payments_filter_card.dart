@@ -25,6 +25,7 @@ class PaymentsFilterCard extends StatefulWidget {
     required this.onReset,
     required this.onExportAll,
     this.isExporting = false,
+    this.isSearching = false,
   });
 
   final PaymentsFilter pending;
@@ -33,6 +34,10 @@ class PaymentsFilterCard extends StatefulWidget {
   final VoidCallback onReset;
   final VoidCallback? onExportAll;
   final bool isExporting;
+
+  /// True while a search is in flight — the Search button spins and is locked
+  /// so a slow query can't be re-fired (#search-spinner-and-lock).
+  final bool isSearching;
 
   @override
   State<PaymentsFilterCard> createState() => _PaymentsFilterCardState();
@@ -153,6 +158,7 @@ class _PaymentsFilterCardState extends State<PaymentsFilterCard> {
                 label: l10n.search,
                 variant: AppButtonVariant.primary,
                 icon: Icons.search,
+                isLoading: widget.isSearching,
                 onPressed: widget.onSearch,
               ),
             ],

@@ -88,9 +88,12 @@ class DesktopPaymentsRow extends StatelessWidget {
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: onTap,
-                    child: Text(row.employeeName,
-                        style: _linkStyle,
-                        overflow: TextOverflow.ellipsis),
+                    child: Tooltip(
+                      message: row.employeeName,
+                      child: Text(row.employeeName,
+                          style: _linkStyle,
+                          overflow: TextOverflow.ellipsis),
+                    ),
                   ),
                 ),
               ),

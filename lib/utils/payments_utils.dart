@@ -5,6 +5,8 @@ import 'format_utils.dart';
 /// so sorting is client-side over the loaded page).
 enum PaymentsSortField {
   employee,
+  govId,
+  email,
   cycle,
   approvedDate,
   amount,
@@ -101,6 +103,12 @@ class PaymentsSortUtils {
         return a.employeeName
             .toLowerCase()
             .compareTo(b.employeeName.toLowerCase());
+      case PaymentsSortField.govId:
+        return (a.employeeGovId ?? '').compareTo(b.employeeGovId ?? '');
+      case PaymentsSortField.email:
+        return (a.employeeEmail ?? '')
+            .toLowerCase()
+            .compareTo((b.employeeEmail ?? '').toLowerCase());
       case PaymentsSortField.cycle:
         return a.cycleLabel
             .toLowerCase()

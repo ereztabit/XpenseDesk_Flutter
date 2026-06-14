@@ -21,11 +21,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
-- [ ] Payments -- bulk-action box needs a "פעולה מרוכזת" caption and larger buttons (match Search) -- see docs/bugs/payments-bulk-action-caption-and-button-size.md
-- [ ] Payments -- eliminate the desktop table's inner vertical scroll -- see docs/bugs/payments-desktop-eliminate-vertical-scroll.md
 - [ ] App-wide -- screen text is not selectable/copyable (cross-cutting, discuss scope) -- see docs/bugs/payments-text-not-selectable-cross-app.md
-- [ ] Payments -- sorting: default to employee name asc + arrow, hover hint, sort all fields -- see docs/bugs/payments-sorting-default-arrow-and-all-fields.md
-- [ ] Payments -- Search needs an in-button spinner and must block concurrent searches -- see docs/bugs/payments-search-button-spinner-and-lock.md
 
 ## general environment
 

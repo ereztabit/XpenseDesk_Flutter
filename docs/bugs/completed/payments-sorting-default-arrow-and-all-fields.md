@@ -1,6 +1,17 @@
 # Bug: Sorting — default to employee name asc, show arrow, hint on hover, sort all fields
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Default sort is now employee-name ascending with the arrow shown on load and
+re-applied on every Search. Added `govId` and `email` to `PaymentsSortField`
+(+ `_compare`) and made their header cells sortable, so every column sorts.
+Sortable headers show a "Sort by this column" tooltip (`sortColumnTooltip`) +
+pointer cursor. Files: `lib/utils/payments_utils.dart`,
+`lib/widgets/payments/payments_header_cell.dart`,
+`lib/widgets/payments/desktop_payments_header_row.dart`,
+`lib/screens/payments_report_screen.dart`, ARB en/he. Verified by user.
 
 ## Problem
 

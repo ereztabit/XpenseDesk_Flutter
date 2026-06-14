@@ -57,10 +57,18 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
           PaymentsHeaderCell(
             label: l10n.govIdColumn,
             width: PaymentsTableColumns.govId,
+            field: PaymentsSortField.govId,
+            activeField: sortField,
+            ascending: sortAscending,
+            onSort: onSort,
           ),
           PaymentsHeaderCell(
             label: l10n.email,
             width: PaymentsTableColumns.email,
+            field: PaymentsSortField.email,
+            activeField: sortField,
+            ascending: sortAscending,
+            onSort: onSort,
           ),
           PaymentsHeaderCell(
             label: l10n.cycle,

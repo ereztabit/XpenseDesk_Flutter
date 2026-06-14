@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
 import 'payments_table_columns.dart';
@@ -45,36 +46,40 @@ class PaymentsHeaderCell extends StatelessWidget {
       width: width,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-            horizontal: PaymentsTableColumns.cellGap / 2),
+          horizontal: PaymentsTableColumns.cellGap / 2,
+        ),
         child: field == null || onSort == null
             ? Align(
                 alignment: centered
                     ? Alignment.center
                     : AlignmentDirectional.centerStart,
-                child: text)
-            : InkWell(
-                onTap: () => onSort!(field!),
-                child: Row(
-                  // Fill the cell when centered so the label actually centers
-                  // (a shrink-wrapped row has no free space to align within).
-                  mainAxisSize:
-                      centered ? MainAxisSize.max : MainAxisSize.min,
-                  mainAxisAlignment: centered
-                      ? MainAxisAlignment.center
-                      : MainAxisAlignment.start,
-                  children: [
-                    Flexible(child: text),
-                    if (isActive) ...[
-                      const SizedBox(width: 2),
-                      Icon(
-                        ascending
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 12,
-                        color: AppTheme.primary,
-                      ),
+                child: text,
+              )
+            : Tooltip(
+                message: AppLocalizations.of(context)!.sortColumnTooltip,
+                child: InkWell(
+                  onTap: () => onSort!(field!),
+                  child: Row(
+                    // Fill the cell when centered so the label actually centers
+                    // (a shrink-wrapped row has no free space to align within).
+                    mainAxisSize: centered
+                        ? MainAxisSize.max
+                        : MainAxisSize.min,
+                    mainAxisAlignment: centered
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.start,
+                    children: [
+                      Flexible(child: text),
+                      if (isActive) ...[
+                        const SizedBox(width: 2),
+                        Icon(
+                          ascending ? Icons.arrow_upward : Icons.arrow_downward,
+                          size: 12,
+                          color: AppTheme.primary,
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
       ),

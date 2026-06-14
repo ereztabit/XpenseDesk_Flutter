@@ -75,15 +75,18 @@ class MobilePaymentRow extends StatelessWidget {
                       cursor: SystemMouseCursors.click,
                       child: GestureDetector(
                         onTap: onTap,
-                        child: Text(
-                          row.employeeName,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primary,
-                            decoration: TextDecoration.underline,
+                        child: Tooltip(
+                          message: row.employeeName,
+                          child: Text(
+                            row.employeeName,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primary,
+                              decoration: TextDecoration.underline,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),

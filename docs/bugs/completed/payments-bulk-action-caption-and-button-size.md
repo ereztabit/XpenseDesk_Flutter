@@ -1,6 +1,13 @@
 # Bug: Bulk-action box needs a caption and larger buttons
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+The bulk-action eyebrow now reads "פעולה מרוכזת" (he value of `bulkActionLabel`)
+and the Export / Mark-as-Processed buttons are full-size (dropped `dense`) to
+match the filter card's Search button. Files: `lib/l10n/app_he.arb`,
+`lib/widgets/payments/desktop_bulk_action_bar.dart`. Verified by user.
 
 ## Problem
 

@@ -1,6 +1,14 @@
 # Bug: Payments search needs an in-button spinner and must block concurrent searches
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+`PaymentsFilterCard` gained an `isSearching` flag (fed from
+`paymentsResultProvider.isLoading`); the Search `AppButton` shows its spinner and
+is disabled while a query is in flight, blocking concurrent searches. Files:
+`lib/widgets/payments/payments_filter_card.dart`,
+`lib/widgets/payments/desktop_payments_view.dart`. Verified by user.
 
 ## Problem
 

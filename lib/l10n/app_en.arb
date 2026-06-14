@@ -701,6 +701,7 @@
   "markAsProcessed": "Mark as Processed",
   "sheetsFoundLabel": "Sheets found",
   "noPaymentsFound": "No sheets match these filters.",
+  "sortColumnTooltip": "Sort by this column",
   "markSheetsProcessedTitle": "Mark sheets as processed",
   "noteField": "Note",
   "bulkActionLabel": "Bulk action",

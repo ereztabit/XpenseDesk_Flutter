@@ -15,11 +15,11 @@ import 'desktop_payments_table.dart';
 import 'payments_filter_card.dart';
 import 'payments_found_caption.dart';
 
-/// Desktop composition of the Payments Report body (D17 scroll model): title
-/// row, filter card, animated bulk bar, and caption are pinned; only the
-/// table body scrolls. Watches the shared payments providers itself; the
-/// screen passes only screen-local state (pending filter, sort, selection)
-/// and handlers.
+/// Desktop composition of the Payments Report body. The whole view flows with
+/// the page (no inner vertical scroll — #6); the table sizes to its rows and
+/// only scrolls horizontally for the wide column set. Watches the shared
+/// payments providers itself; the screen passes only screen-local state
+/// (pending filter, sort, selection) and handlers.
 class DesktopPaymentsView extends ConsumerWidget {
   const DesktopPaymentsView({
     super.key,
@@ -40,7 +40,6 @@ class DesktopPaymentsView extends ConsumerWidget {
     required this.onToggleAll,
     required this.onRowTap,
     required this.onEditRow,
-    required this.verticalScrollController,
     required this.horizontalScrollController,
   });
 
@@ -61,7 +60,6 @@ class DesktopPaymentsView extends ConsumerWidget {
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
   final ValueChanged<PaymentReportRow> onEditRow;
-  final ScrollController verticalScrollController;
   final ScrollController horizontalScrollController;
 
   void _back(BuildContext context) {
@@ -80,6 +78,7 @@ class DesktopPaymentsView extends ConsumerWidget {
     final paged = resultAsync.asData?.value;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
@@ -111,6 +110,7 @@ class DesktopPaymentsView extends ConsumerWidget {
           onReset: onReset,
           onExportAll: onExportAll,
           isExporting: exportState.exportingAll,
+          isSearching: resultAsync.isLoading,
         ),
         AnimatedSize(
           duration: const Duration(milliseconds: 200),
@@ -141,25 +141,22 @@ class DesktopPaymentsView extends ConsumerWidget {
           currencyCode: currencyCode,
         ),
         const SizedBox(height: 8),
-        Expanded(
-          child: DesktopPaymentsTable(
-            rows: rows,
-            locale: locale,
-            currencyCode: currencyCode,
-            loading: resultAsync.isLoading,
-            error: resultAsync.hasError ? l10n.genericErrorRetry : null,
-            sortField: sortField,
-            sortAscending: sortAscending,
-            onSort: onSort,
-            selectedIds: selectedIds,
-            highlightedIds: highlightedIds,
-            onToggleSelection: onToggleSelection,
-            onToggleAll: onToggleAll,
-            onRowTap: onRowTap,
-            onEdit: onEditRow,
-            verticalScrollController: verticalScrollController,
-            horizontalScrollController: horizontalScrollController,
-          ),
+        DesktopPaymentsTable(
+          rows: rows,
+          locale: locale,
+          currencyCode: currencyCode,
+          loading: resultAsync.isLoading,
+          error: resultAsync.hasError ? l10n.genericErrorRetry : null,
+          sortField: sortField,
+          sortAscending: sortAscending,
+          onSort: onSort,
+          selectedIds: selectedIds,
+          highlightedIds: highlightedIds,
+          onToggleSelection: onToggleSelection,
+          onToggleAll: onToggleAll,
+          onRowTap: onRowTap,
+          onEdit: onEditRow,
+          horizontalScrollController: horizontalScrollController,
         ),
         if (paged != null && paged.hasMore)
           PagingOverflowNotice(

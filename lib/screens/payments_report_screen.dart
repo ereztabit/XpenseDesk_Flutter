@@ -39,9 +39,8 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
   bool get hasUnsavedChanges => false;
 
   late PaymentsFilter _pending;
-  final _verticalScroll = ScrollController();
   final _horizontalScroll = ScrollController();
-  PaymentsSortField? _sortField;
+  PaymentsSortField? _sortField = PaymentsSortField.employee;
   bool _sortAscending = true;
   final Set<String> _selectedIds = {};
 
@@ -64,7 +63,6 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
 
   @override
   void dispose() {
-    _verticalScroll.dispose();
     _horizontalScroll.dispose();
     super.dispose();
   }
@@ -73,7 +71,9 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
   /// always re-queries. Sort and selection reset with every new search.
   void _search() {
     setState(() {
-      _sortField = null;
+      // Reset to the default sort (employee asc) on every new search.
+      _sortField = PaymentsSortField.employee;
+      _sortAscending = true;
       _selectedIds.clear();
       _highlightedIds.clear();
     });
@@ -322,7 +322,6 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             onToggleAll: (selectAll) => _toggleAll(rows, selectAll),
             onRowTap: _openSheet,
             onEditRow: _editRow,
-            verticalScrollController: _verticalScroll,
             horizontalScrollController: _horizontalScroll,
           );
 
@@ -333,7 +332,15 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
           children: [
             const AppHeader(),
             Expanded(
-              child: ConstrainedContent(maxWidth: 1280, child: view),
+              // Mobile keeps its internal table scroll (D16); desktop flows with
+              // the page — the table sizes to its rows, no inner vertical scroll
+              // (#6).
+              child: context.isMobile
+                  ? ConstrainedContent(maxWidth: 1280, child: view)
+                  : SingleChildScrollView(
+                      child:
+                          ConstrainedContent(maxWidth: 1280, child: view),
+                    ),
             ),
             const AppFooter(),
           ],
