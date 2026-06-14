@@ -7,17 +7,13 @@ import '../../providers/payments_provider.dart';
 import '../../services/expense_service.dart'
     show SubscriptionRequiredException;
 import '../../services/payment_service.dart';
-import '../../theme/app_theme.dart';
-import '../app_button.dart';
 import 'dialog_date_field.dart';
 import 'dialog_text_field.dart';
-import 'payments_dialog_header.dart';
-import 'payments_dialog_summary.dart';
+import 'payment_dialog_shell.dart';
 
-/// Mark-as-Processed confirmation modal (D6 — pixel-faithful to the approved
-/// mock): Processed Date (required, defaults today), Reference ID (optional),
-/// Note (optional). Cancel / X / Esc / scrim close WITHOUT clearing the
-/// caller's selection. Pops `true` only on success.
+/// Mark-as-Processed confirmation modal: Processed Date (required, defaults
+/// today) and an optional Note. Cancel / X / Esc / scrim close WITHOUT clearing
+/// the caller's selection. Pops `true` only on success.
 ///
 /// All-or-nothing semantics: on a concurrency conflict
 /// (PaymentSheetNotAwaiting) nothing was processed — the dialog stays open
@@ -63,14 +59,12 @@ class MarkProcessedDialog extends ConsumerStatefulWidget {
 
 class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
   DateTime _processedDate = DateTime.now();
-  final _referenceController = TextEditingController();
   final _noteController = TextEditingController();
   bool _processing = false;
   String? _errorMessage;
 
   @override
   void dispose() {
-    _referenceController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -87,7 +81,6 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
       final result = await service.processPayments(
         expenseSheetIds: widget.expenseSheetIds,
         processedDate: _processedDate,
-        reference: _referenceController.text.trim(),
         note: _noteController.text.trim(),
       );
       if (!mounted) return;
@@ -102,10 +95,8 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
       final sheetsLabel = result.processedCount == 1
           ? l10n.awaitingPaymentSheetSingular
           : l10n.awaitingPaymentSheetPlural;
-      final reference = _referenceController.text.trim();
       final toast =
-          '${l10n.processedToastPrefix} ${result.processedCount} $sheetsLabel'
-          '${reference.isNotEmpty ? ' · $reference' : ''}';
+          '${l10n.processedToastPrefix} ${result.processedCount} $sheetsLabel';
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pop(true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -145,80 +136,27 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PaymentsDialogHeader(
-                title: l10n.markSheetsProcessedTitle,
-                enabled: !_processing,
-              ),
-              const SizedBox(height: 8),
-              PaymentsDialogSummary(
-                sheetCount: widget.expenseSheetIds.length,
-                amountText: widget.amountText,
-              ),
-              const SizedBox(height: 12),
-              DialogDateField(
-                label: l10n.processedDateFilterLabel,
-                value: _processedDate,
-                enabled: !_processing,
-                onChanged: (date) => setState(() => _processedDate = date),
-              ),
-              const SizedBox(height: 16),
-              DialogTextField(
-                label: l10n.referenceIdField,
-                controller: _referenceController,
-                hint: l10n.referenceIdPlaceholder,
-                enabled: !_processing,
-              ),
-              const SizedBox(height: 16),
-              DialogTextField(
-                label: l10n.noteField,
-                controller: _noteController,
-                hint: l10n.notePlaceholder,
-                maxLines: 3,
-                enabled: !_processing,
-              ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(
-                      fontSize: 13, color: AppTheme.destructive),
-                ),
-              ],
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  AppButton(
-                    label: l10n.cancel,
-                    variant: AppButtonVariant.ghost,
-                    dense: true,
-                    onPressed: _processing
-                        ? null
-                        : () => Navigator.of(context).pop(false),
-                  ),
-                  const SizedBox(width: 8),
-                  AppButton(
-                    label: l10n.confirm,
-                    variant: AppButtonVariant.primary,
-                    isLoading: _processing,
-                    onPressed: _confirm,
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return PaymentDialogShell(
+      title: l10n.markSheetsProcessedTitle,
+      sheetCount: widget.expenseSheetIds.length,
+      amountText: widget.amountText,
+      busy: _processing,
+      errorMessage: _errorMessage,
+      onConfirm: _confirm,
+      fields: [
+        DialogDateField(
+          label: l10n.processedDateFilterLabel,
+          value: _processedDate,
+          enabled: !_processing,
+          onChanged: (date) => setState(() => _processedDate = date),
         ),
-      ),
+        DialogTextField(
+          label: l10n.noteField,
+          controller: _noteController,
+          maxLines: 3,
+          enabled: !_processing,
+        ),
+      ],
     );
   }
 }

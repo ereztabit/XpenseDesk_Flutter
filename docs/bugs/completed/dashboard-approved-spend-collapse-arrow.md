@@ -1,6 +1,15 @@
 # Bug: Approved-spend card should collapse via a top-corner arrow, not "הצג פירוט"
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Moved the toggle to a chevron `IconButton` in the card's top-trailing corner
+(top-left under RTL) and removed the bottom "show details" text. The expand
+state was lifted to `SpendOverviewCard` (now `ConsumerStatefulWidget`);
+`SpendOverviewBreakdown` is now body-only. Files:
+`lib/widgets/manager_dashboard/spend_overview_card.dart`,
+`lib/widgets/manager_dashboard/spend_overview_breakdown.dart`. Verified by user.
 
 ## Problem
 

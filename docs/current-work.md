@@ -22,8 +22,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] Payments -- table caption is misleading; show a "found sheets (count | total)" summary instead -- see docs/bugs/payments-found-sheets-caption-and-summary.md
-- [ ] Payments -- edit dialog can't revert a sheet back to awaiting; retitle "Edit Sheets Payment Status" -- see docs/bugs/payments-edit-allow-revert-status.md
-- [ ] Payments -- remove the accounting batch-ID field and fix the comment placeholder -- see docs/bugs/payments-dialog-remove-batch-id-and-comment-placeholder.md
 - [ ] Payments -- bulk-action box needs a "פעולה מרוכזת" caption and larger buttons (match Search) -- see docs/bugs/payments-bulk-action-caption-and-button-size.md
 - [ ] Payments -- eliminate the desktop table's inner vertical scroll -- see docs/bugs/payments-desktop-eliminate-vertical-scroll.md
 - [ ] Payments -- amount column too wide; center the value -- see docs/bugs/payments-amount-column-too-wide-center-value.md
@@ -31,9 +29,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Payments -- desktop email ellipsizes with no tooltip -- see docs/bugs/payments-desktop-email-ellipsis-no-tooltip.md
 - [ ] App-wide -- screen text is not selectable/copyable (cross-cutting, discuss scope) -- see docs/bugs/payments-text-not-selectable-cross-app.md
 - [ ] Payments -- sorting: default to employee name asc + arrow, hover hint, sort all fields -- see docs/bugs/payments-sorting-default-arrow-and-all-fields.md
-- [ ] Payments -- action cell doesn't read as a button; make it a small "עריכה"/Edit button -- see docs/bugs/payments-action-cell-should-be-edit-button.md
-- [ ] Dashboard -- approved-spend card should collapse via a top-corner arrow, not "הצג פירוט" -- see docs/bugs/dashboard-approved-spend-collapse-arrow.md
-- [ ] Dashboard -- the three sheet-monitoring status cards are unequal height -- see docs/bugs/dashboard-status-cards-unequal-height.md
 - [ ] Payments -- Search needs an in-button spinner and must block concurrent searches -- see docs/bugs/payments-search-button-spinner-and-lock.md
 
 ## general environment

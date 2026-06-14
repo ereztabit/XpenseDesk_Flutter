@@ -8,48 +8,39 @@ import '../../providers/payments_provider.dart';
 import '../../services/expense_service.dart'
     show SubscriptionRequiredException;
 import '../../services/payment_service.dart';
-import '../../theme/app_theme.dart';
-import '../app_button.dart';
-import 'dialog_date_field.dart';
-import 'dialog_text_field.dart';
-import 'payments_dialog_header.dart';
-import 'payments_dialog_summary.dart';
+import 'payment_dialog_shell.dart';
+import 'payment_status_edit_fields.dart';
 
-/// Edit-processed-details modal (Phase 9 / QA item 1). The manager corrects a
-/// processed sheet's date / reference / note. There is no revert action —
-/// editing covers every correction (user ruling: "I can change whatever I
-/// want"). Status stays Processed, so [DialogDateField] is required.
+/// Unified single-sheet payment-status editor (bugs #2 / #3 / #13), opened from
+/// the per-row "Edit" button for both awaiting and processed sheets: mark
+/// processed, edit the processed details, or revert to awaiting. The transition
+/// routing lives in [PaymentService.applyStatusChange]. On a concurrency
+/// conflict the dialog stays open with an inline error and calls [onConflict].
 class EditPaymentDialog extends ConsumerStatefulWidget {
   const EditPaymentDialog({
     super.key,
     required this.expenseSheetId,
+    required this.currentStatus,
     required this.amountText,
-    required this.initialDate,
-    this.initialReference,
+    this.initialDate,
     this.initialNote,
     this.onConflict,
   });
 
   final String expenseSheetId;
-
-  /// Sheet's payable amount, pre-formatted — shown as context under the title.
+  final PaymentStatus currentStatus;
   final String amountText;
-  final DateTime initialDate;
-  final String? initialReference;
+  final DateTime? initialDate;
   final String? initialNote;
-
-  /// Fired when the sheet is no longer Processed (concurrent revert). The
-  /// caller refreshes the list so the stale row updates while the dialog
-  /// shows the explanation.
   final VoidCallback? onConflict;
 
-  /// Returns true when the edit was saved.
+  /// Returns true when a change was saved.
   static Future<bool> show(
     BuildContext context, {
     required String expenseSheetId,
+    required PaymentStatus currentStatus,
     required String amountText,
-    required DateTime initialDate,
-    String? initialReference,
+    DateTime? initialDate,
     String? initialNote,
     VoidCallback? onConflict,
   }) async {
@@ -57,9 +48,9 @@ class EditPaymentDialog extends ConsumerStatefulWidget {
       context: context,
       builder: (_) => EditPaymentDialog(
         expenseSheetId: expenseSheetId,
+        currentStatus: currentStatus,
         amountText: amountText,
         initialDate: initialDate,
-        initialReference: initialReference,
         initialNote: initialNote,
         onConflict: onConflict,
       ),
@@ -72,20 +63,50 @@ class EditPaymentDialog extends ConsumerStatefulWidget {
 }
 
 class _EditPaymentDialogState extends ConsumerState<EditPaymentDialog> {
-  late DateTime _processedDate = widget.initialDate;
-  late final TextEditingController _referenceController =
-      TextEditingController(text: widget.initialReference ?? '');
+  // Awaiting sheets open pre-set to Processed (the common action is to mark
+  // them processed); processed sheets open on their current status.
+  late PaymentStatus _status =
+      widget.currentStatus == PaymentStatus.awaitingPayment
+          ? PaymentStatus.processed
+          : widget.currentStatus;
+  late DateTime _processedDate = widget.initialDate ?? DateTime.now();
   late final TextEditingController _noteController =
       TextEditingController(text: widget.initialNote ?? '');
   bool _saving = false;
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    // Note edits must re-evaluate the dirty check so Save can enable.
+    _noteController.addListener(_onFieldChanged);
+  }
+
+  @override
   void dispose() {
-    _referenceController.dispose();
+    _noteController.removeListener(_onFieldChanged);
     _noteController.dispose();
     super.dispose();
   }
+
+  void _onFieldChanged() => setState(() {});
+
+  /// Save is enabled only when the status changed, or (staying Processed) the
+  /// date/note changed — mirrors the "update only when dirty" pattern.
+  bool get _isDirty {
+    if (_status != widget.currentStatus) return true;
+    if (_status == PaymentStatus.processed) {
+      final noteChanged =
+          _noteController.text.trim() != (widget.initialNote ?? '').trim();
+      final dateChanged = widget.initialDate == null ||
+          !_sameDay(_processedDate, widget.initialDate!);
+      return noteChanged || dateChanged;
+    }
+    return false;
+  }
+
+  static bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
@@ -95,14 +116,14 @@ class _EditPaymentDialogState extends ConsumerState<EditPaymentDialog> {
     });
 
     try {
-      final service = ref.read(paymentServiceProvider);
-      final summary = await service.updatePayment(
-        widget.expenseSheetId,
-        status: PaymentStatus.processed,
-        processedDate: _processedDate,
-        reference: _referenceController.text.trim(),
-        note: _noteController.text.trim(),
-      );
+      final summary =
+          await ref.read(paymentServiceProvider).applyStatusChange(
+                expenseSheetId: widget.expenseSheetId,
+                from: widget.currentStatus,
+                to: _status,
+                processedDate: _processedDate,
+                note: _noteController.text.trim(),
+              );
       if (!mounted) return;
 
       // Freshness rule: the write response carries the new summary.
@@ -114,14 +135,16 @@ class _EditPaymentDialogState extends ConsumerState<EditPaymentDialog> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(l10n.editPaymentSaved),
+            content: Text(l10n.paymentStatusUpdatedToast),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
         );
       });
+    } on PaymentSheetNotAwaitingException {
+      widget.onConflict?.call();
+      _fail(l10n.sheetsNoLongerAwaiting);
     } on PaymentSheetNotProcessedException {
-      // Concurrent revert — let the caller refresh so the message is true.
       widget.onConflict?.call();
       _fail(l10n.sheetNoLongerProcessed);
     } on SubscriptionRequiredException {
@@ -147,76 +170,24 @@ class _EditPaymentDialogState extends ConsumerState<EditPaymentDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PaymentsDialogHeader(
-                title: l10n.editPaymentTitle,
-                enabled: !_saving,
-              ),
-              const SizedBox(height: 8),
-              PaymentsDialogSummary(sheetCount: 1, amountText: widget.amountText),
-              const SizedBox(height: 12),
-              DialogDateField(
-                label: l10n.processedDateFilterLabel,
-                value: _processedDate,
-                enabled: !_saving,
-                onChanged: (date) => setState(() => _processedDate = date),
-              ),
-              const SizedBox(height: 16),
-              DialogTextField(
-                label: l10n.referenceIdField,
-                controller: _referenceController,
-                hint: l10n.referenceIdPlaceholder,
-                enabled: !_saving,
-              ),
-              const SizedBox(height: 16),
-              DialogTextField(
-                label: l10n.noteField,
-                controller: _noteController,
-                hint: l10n.notePlaceholder,
-                maxLines: 3,
-                enabled: !_saving,
-              ),
-              if (_errorMessage != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  _errorMessage!,
-                  style: const TextStyle(
-                      fontSize: 13, color: AppTheme.destructive),
-                ),
-              ],
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  AppButton(
-                    label: l10n.cancel,
-                    variant: AppButtonVariant.ghost,
-                    dense: true,
-                    onPressed:
-                        _saving ? null : () => Navigator.of(context).pop(false),
-                  ),
-                  const SizedBox(width: 8),
-                  AppButton(
-                    label: l10n.confirm,
-                    variant: AppButtonVariant.primary,
-                    isLoading: _saving,
-                    onPressed: _save,
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return PaymentDialogShell(
+      title: l10n.editSheetsPaymentStatusTitle,
+      sheetCount: 1,
+      amountText: widget.amountText,
+      busy: _saving,
+      errorMessage: _errorMessage,
+      confirmEnabled: _isDirty,
+      onConfirm: _save,
+      fields: [
+        PaymentStatusEditFields(
+          status: _status,
+          processedDate: _processedDate,
+          noteController: _noteController,
+          enabled: !_saving,
+          onStatusChanged: (s) => setState(() => _status = s),
+          onDateChanged: (d) => setState(() => _processedDate = d),
         ),
-      ),
+      ],
     );
   }
 }

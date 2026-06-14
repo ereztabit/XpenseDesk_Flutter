@@ -12,23 +12,37 @@ import 'spend_overview_breakdown.dart';
 /// Spend Overview (§6.5) — a hero card showing Approved Spend for the last
 /// closed cycle: icon, large amount, "Approved Spend · {cycle}" subtitle, and
 /// (when there is spend) a "View more" link plus the By Employee / By Category
-/// breakdown rendered inline.
+/// breakdown.
+///
+/// The breakdown is collapsed by default — the by-employee view grows one bar
+/// per employee, which would otherwise push the Awaiting Payment card
+/// off-screen. A chevron in the card's top-trailing corner (top-left under RTL)
+/// expands/collapses it; the hero amount stays visible.
 ///
 /// In [preview] mode (State A) it shows a static zero hero and skips the fetch.
-class SpendOverviewCard extends ConsumerWidget {
+class SpendOverviewCard extends ConsumerStatefulWidget {
   const SpendOverviewCard({super.key, this.preview = false});
 
   final bool preview;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SpendOverviewCard> createState() => _SpendOverviewCardState();
+}
+
+class _SpendOverviewCardState extends ConsumerState<SpendOverviewCard> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
     final currencyCode = ref.watch(userInfoProvider)?.currencyCode;
 
-    final spend = preview ? null : ref.watch(lastClosedCycleSpendProvider).asData?.value;
+    final spend = widget.preview
+        ? null
+        : ref.watch(lastClosedCycleSpendProvider).asData?.value;
     final total = spend?.total ?? 0;
-    final hasSpend = !preview && total > 0;
+    final hasSpend = !widget.preview && total > 0;
 
     return Card(
       child: Padding(
@@ -45,16 +59,27 @@ class SpendOverviewCard extends ConsumerWidget {
               cycleLabel: spend?.cycleLabel,
               hasSpend: hasSpend,
             ),
-            if (hasSpend) ...[
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: AppTheme.border),
-              const SizedBox(height: 12),
-              SpendOverviewBreakdown(
-                rows: spend!.rows,
-                locale: locale,
-                currencyCode: currencyCode,
+            if (hasSpend)
+              AnimatedSize(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
+                alignment: AlignmentDirectional.topStart,
+                child: _expanded
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 12),
+                          const Divider(height: 1, color: AppTheme.border),
+                          const SizedBox(height: 12),
+                          SpendOverviewBreakdown(
+                            rows: spend!.rows,
+                            locale: locale,
+                            currencyCode: currencyCode,
+                          ),
+                        ],
+                      )
+                    : const SizedBox(width: double.infinity),
               ),
-            ],
           ],
         ),
       ),
@@ -148,6 +173,20 @@ class SpendOverviewCard extends ConsumerWidget {
             ],
           ),
         ),
+        // Top-trailing chevron (top-left under RTL) expands/collapses the
+        // breakdown — replaces the old in-breakdown "show details" text toggle.
+        if (hasSpend)
+          IconButton(
+            icon: Icon(
+              _expanded ? Icons.expand_less : Icons.expand_more,
+              color: AppTheme.primary,
+            ),
+            tooltip: _expanded
+                ? l10n.hideSpendBreakdown
+                : l10n.showSpendBreakdown,
+            visualDensity: VisualDensity.compact,
+            onPressed: () => setState(() => _expanded = !_expanded),
+          ),
       ],
     );
   }

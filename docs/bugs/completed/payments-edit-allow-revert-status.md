@@ -1,6 +1,20 @@
 # Bug: Edit dialog cannot revert a sheet back to awaiting payment
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+The per-row "עריכה" button opens a unified status-aware dialog titled
+"Edit Sheets Payment Status" (`editSheetsPaymentStatusTitle`). An awaiting sheet
+opens pre-set to Processed (one-tap mark-processed); a processed sheet can edit
+its details or flip back to Awaiting to revert. Transition routing lives in
+`PaymentService.applyStatusChange`. Files:
+`lib/widgets/payments/edit_payment_dialog.dart`,
+`lib/widgets/payments/payment_status_selector.dart`,
+`lib/widgets/payments/payment_status_edit_fields.dart`,
+`lib/widgets/payments/payment_dialog_shell.dart`,
+`lib/services/payment_service.dart`,
+`lib/screens/payments_report_screen.dart`. Verified by user.
 
 ## Problem
 

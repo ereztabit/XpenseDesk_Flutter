@@ -1,6 +1,18 @@
 # Bug: Action cell doesn't read as a button — make it a small "edit" button
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Replaced the per-row icon with a small "עריכה"/Edit `AppButton` on every row
+(desktop + mobile), opening the unified edit dialog. Action column widened to 96
+(desktop); mobile uses a fixed 76px slot matching the header spacer. The
+per-row `onMarkProcessed` plumbing was collapsed into the single edit path.
+Files: `lib/widgets/payments/desktop_payments_row.dart`,
+`lib/widgets/payments/mobile_payment_row.dart`,
+`lib/widgets/payments/payments_table_columns.dart`,
+`lib/widgets/payments/mobile_payments_table.dart`, plus the table/view/screen
+plumbing. Verified by user.
 
 ## Problem
 

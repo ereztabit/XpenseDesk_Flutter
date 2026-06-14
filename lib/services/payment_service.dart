@@ -137,7 +137,6 @@ class PaymentService {
   Future<({int processedCount, PaymentsSummary? summary})> processPayments({
     required List<String> expenseSheetIds,
     required DateTime processedDate,
-    String? reference,
     String? note,
   }) async {
     if (expenseSheetIds.length > maxBatchSize) {
@@ -151,7 +150,6 @@ class PaymentService {
       {
         'expenseSheetIds': expenseSheetIds,
         'processedDate': _apiDate(processedDate),
-        if (reference != null && reference.isNotEmpty) 'reference': reference,
         if (note != null && note.isNotEmpty) 'note': note,
       },
       authToken: sessionToken,
@@ -174,7 +172,6 @@ class PaymentService {
     String expenseSheetId, {
     required PaymentStatus status,
     DateTime? processedDate,
-    String? reference,
     String? note,
   }) async {
     final sessionToken = await _authService.getSessionToken();
@@ -182,8 +179,7 @@ class PaymentService {
 
     final response = await _apiService.put(
       '/api/payments/$expenseSheetId',
-      _updateBody(status,
-          processedDate: processedDate, reference: reference, note: note),
+      _updateBody(status, processedDate: processedDate, note: note),
       authToken: sessionToken,
     );
 
@@ -196,7 +192,6 @@ class PaymentService {
     required List<String> expenseSheetIds,
     required PaymentStatus status,
     DateTime? processedDate,
-    String? reference,
     String? note,
   }) async {
     if (expenseSheetIds.length > maxBatchSize) {
@@ -209,8 +204,7 @@ class PaymentService {
       '/api/payments/bulk-update',
       {
         'expenseSheetIds': expenseSheetIds,
-        ..._updateBody(status,
-            processedDate: processedDate, reference: reference, note: note),
+        ..._updateBody(status, processedDate: processedDate, note: note),
       },
       authToken: sessionToken,
     );
@@ -219,16 +213,48 @@ class PaymentService {
     return _summaryFromData(response['data'] as Map<String, dynamic>?);
   }
 
+  /// Routes a single sheet's status change to the right endpoint, used by the
+  /// per-row edit dialog:
+  ///  - awaiting  -> processed: /process (mark processed)
+  ///  - processed -> processed: PUT (edit details)
+  ///  - processed -> awaiting: PUT with AwaitingPayment (revert)
+  /// Returns the fresh [PaymentsSummary] from the write response.
+  Future<PaymentsSummary?> applyStatusChange({
+    required String expenseSheetId,
+    required PaymentStatus from,
+    required PaymentStatus to,
+    DateTime? processedDate,
+    String? note,
+  }) async {
+    if (from == PaymentStatus.awaitingPayment &&
+        to == PaymentStatus.processed) {
+      final result = await processPayments(
+        expenseSheetIds: [expenseSheetId],
+        processedDate: processedDate!,
+        note: note,
+      );
+      return result.summary;
+    }
+    if (to == PaymentStatus.processed) {
+      return updatePayment(
+        expenseSheetId,
+        status: PaymentStatus.processed,
+        processedDate: processedDate,
+        note: note,
+      );
+    }
+    return updatePayment(expenseSheetId,
+        status: PaymentStatus.awaitingPayment);
+  }
+
   static Map<String, dynamic> _updateBody(
     PaymentStatus status, {
     DateTime? processedDate,
-    String? reference,
     String? note,
   }) {
     return {
       'paymentStatus': status.wireName,
       if (processedDate != null) 'processedDate': _apiDate(processedDate),
-      'reference': ?reference,
       'note': ?note,
     };
   }

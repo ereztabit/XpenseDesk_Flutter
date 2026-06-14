@@ -35,7 +35,6 @@ class MobilePaymentsView extends ConsumerWidget {
     required this.onToggleSelection,
     required this.onToggleAll,
     required this.onRowTap,
-    required this.onMarkProcessedRow,
     required this.onEditRow,
   });
 
@@ -52,7 +51,6 @@ class MobilePaymentsView extends ConsumerWidget {
   final void Function(PaymentReportRow row, bool selected) onToggleSelection;
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
-  final ValueChanged<PaymentReportRow> onMarkProcessedRow;
   final ValueChanged<PaymentReportRow> onEditRow;
 
   void _back(BuildContext context) {
@@ -158,7 +156,6 @@ class MobilePaymentsView extends ConsumerWidget {
             onToggleSelection: onToggleSelection,
             onToggleAll: onToggleAll,
             onRowTap: onRowTap,
-            onMarkProcessed: onMarkProcessedRow,
             onEdit: onEditRow,
           ),
         ),

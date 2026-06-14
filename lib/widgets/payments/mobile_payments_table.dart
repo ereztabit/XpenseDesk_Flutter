@@ -26,7 +26,6 @@ class MobilePaymentsTable extends StatelessWidget {
     required this.onToggleSelection,
     required this.onToggleAll,
     required this.onRowTap,
-    required this.onMarkProcessed,
     required this.onEdit,
   });
 
@@ -43,7 +42,6 @@ class MobilePaymentsTable extends StatelessWidget {
   final void Function(PaymentReportRow row, bool selected) onToggleSelection;
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
-  final ValueChanged<PaymentReportRow> onMarkProcessed;
   final ValueChanged<PaymentReportRow> onEdit;
 
   @override
@@ -105,7 +103,8 @@ class MobilePaymentsTable extends StatelessWidget {
                   ascending: sortAscending,
                   onSort: onSort,
                 ),
-                const SizedBox(width: 40),
+                // Matches the per-row Edit button slot so columns line up.
+                const SizedBox(width: 76),
               ],
             ),
           ),
@@ -148,7 +147,6 @@ class MobilePaymentsTable extends StatelessWidget {
                                 onToggleSelection: (selected) =>
                                     onToggleSelection(row, selected),
                                 onTap: () => onRowTap(row),
-                                onMarkProcessed: () => onMarkProcessed(row),
                                 onEdit: () => onEdit(row),
                               );
                             },

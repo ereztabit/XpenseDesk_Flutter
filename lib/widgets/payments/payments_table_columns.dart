@@ -10,10 +10,9 @@ class PaymentsTableColumns {
   static const double amount = 100;
   static const double paymentStatus = 130;
   static const double processedDate = 105;
-  static const double reference = 110;
 
-  /// Icon-only action (Q4) — no longer the wide labelled button.
-  static const double action = 64;
+  /// Small "Edit" text button (#13) on every row.
+  static const double action = 96;
 
   /// Horizontal padding around each cell.
   static const double cellGap = 8;
@@ -27,7 +26,6 @@ class PaymentsTableColumns {
       amount +
       paymentStatus +
       processedDate +
-      reference +
       action +
-      cellGap * 11;
+      cellGap * 10;
 }

@@ -4,12 +4,13 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../app_button.dart';
 import 'payment_status_badge.dart';
 
 /// One mobile Payments row (per the approved mobile mock): leading checkbox
-/// (Awaiting rows only), employee name, amount, payment badge, trailing
-/// circular per-row action — with the sheet's cycle label as an inline
-/// secondary line underneath. Body tap opens the sheet.
+/// (Awaiting rows only), employee name, amount, payment badge, trailing "Edit"
+/// button — with the sheet's cycle label as an inline secondary line
+/// underneath. Body tap opens the sheet.
 class MobilePaymentRow extends StatelessWidget {
   const MobilePaymentRow({
     super.key,
@@ -20,7 +21,6 @@ class MobilePaymentRow extends StatelessWidget {
     required this.isHighlighted,
     required this.onToggleSelection,
     required this.onTap,
-    required this.onMarkProcessed,
     required this.onEdit,
   });
 
@@ -32,10 +32,7 @@ class MobilePaymentRow extends StatelessWidget {
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
 
-  /// Awaiting rows: Mark-as-Processed. Null hides the action.
-  final VoidCallback? onMarkProcessed;
-
-  /// Processed rows: edit details (Phase 9). Null hides the action.
+  /// Opens the unified edit dialog for this row. Null hides the action.
   final VoidCallback? onEdit;
 
   @override
@@ -107,27 +104,21 @@ class MobilePaymentRow extends StatelessWidget {
                         )
                       : const SizedBox.shrink(),
                 ),
+                // Single "Edit" button on every row (#13) — opens the unified
+                // payment-status dialog (mark processed / edit / revert). Fixed
+                // slot width matches the header spacer so columns stay aligned.
                 SizedBox(
-                  width: 40,
-                  child: row.isAwaiting
-                      ? (onMarkProcessed != null
-                          ? IconButton(
-                              icon: const Icon(Icons.check_circle_outline,
-                                  size: 20, color: AppTheme.foreground),
-                              tooltip: l10n.markAsProcessed,
-                              visualDensity: VisualDensity.compact,
-                              onPressed: onMarkProcessed,
-                            )
-                          : const SizedBox.shrink())
-                      : (onEdit != null
-                          ? IconButton(
-                              icon: const Icon(Icons.edit_outlined,
-                                  size: 20, color: AppTheme.mutedForeground),
-                              tooltip: l10n.editPaymentTooltip,
-                              visualDensity: VisualDensity.compact,
-                              onPressed: onEdit,
-                            )
-                          : const SizedBox.shrink()),
+                  width: 76,
+                  child: onEdit != null
+                      ? Center(
+                          child: AppButton(
+                            label: l10n.paymentEditButton,
+                            variant: AppButtonVariant.normal,
+                            dense: true,
+                            onPressed: onEdit,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),

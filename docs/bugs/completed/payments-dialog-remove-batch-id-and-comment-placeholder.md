@@ -1,6 +1,22 @@
 # Bug: Remove the accounting batch-ID field and fix the comment placeholder
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Removed the Reference ID field from both payment dialogs, dropped `reference`
+from `PaymentService`, and removed the now-dead Reference column from the table.
+The note placeholder was removed (`DialogTextField.hint` is now optional).
+Retired ARB keys `referenceIdField`, `referenceIdPlaceholder`,
+`referenceColumn`, `notePlaceholder`. Files:
+`lib/widgets/payments/mark_processed_dialog.dart`,
+`lib/widgets/payments/edit_payment_dialog.dart`,
+`lib/widgets/payments/dialog_text_field.dart`,
+`lib/widgets/payments/desktop_payments_row.dart`,
+`lib/widgets/payments/desktop_payments_header_row.dart`,
+`lib/widgets/payments/payments_table_columns.dart`,
+`lib/services/payment_service.dart`, `lib/l10n/app_en.arb`,
+`lib/l10n/app_he.arb`. Verified by user (incl. table column removal).
 
 ## Problem
 

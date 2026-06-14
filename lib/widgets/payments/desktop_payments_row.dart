@@ -4,14 +4,14 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
-import '../action_icon_button.dart';
+import '../app_button.dart';
 import 'payment_status_badge.dart';
 import 'payments_table_columns.dart';
 
 /// One desktop Payments-table row. Checkbox only on Awaiting rows (blank slot
 /// on Processed — deliberately not a disabled control). Body tap opens the
-/// manager's read-only sheet view; the trailing per-row action opens the same
-/// Mark-as-Processed flow as the bulk path with this single sheet.
+/// manager's read-only sheet view; the trailing "Edit" button opens the unified
+/// payment-status dialog (mark processed / edit / revert) for any row.
 class DesktopPaymentsRow extends StatelessWidget {
   const DesktopPaymentsRow({
     super.key,
@@ -22,7 +22,6 @@ class DesktopPaymentsRow extends StatelessWidget {
     required this.isHighlighted,
     required this.onToggleSelection,
     required this.onTap,
-    required this.onMarkProcessed,
     required this.onEdit,
   });
 
@@ -36,10 +35,7 @@ class DesktopPaymentsRow extends StatelessWidget {
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
 
-  /// Awaiting rows: open Mark-as-Processed. Null hides the action.
-  final VoidCallback? onMarkProcessed;
-
-  /// Processed rows: open the edit-details dialog. Null hides the action.
+  /// Opens the unified edit dialog for this row. Null hides the action.
   final VoidCallback? onEdit;
 
   static const _dash = '—';
@@ -137,41 +133,21 @@ class DesktopPaymentsRow extends StatelessWidget {
                 style: _cellStyle,
               ),
             ),
-            _cell(
-              PaymentsTableColumns.reference,
-              Text(
-                row.reference ?? _dash,
-                style: row.reference != null
-                    ? _cellStyle.copyWith(fontWeight: FontWeight.w700)
-                    : _mutedCellStyle,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            // Q4 — icon-only action so rows stay compact (the labelled button
-            // forced an unnecessary vertical scrollbar). Awaiting → process;
-            // Processed → edit details (Phase 9).
+            // Single "Edit" button on every row (#13) — opens the unified
+            // payment-status dialog (mark processed / edit / revert).
             _cell(
               PaymentsTableColumns.action,
-              Align(
-                alignment: Alignment.center,
-                child: row.isAwaiting
-                    ? (onMarkProcessed != null
-                        ? ActionIconButton(
-                            icon: Icons.check_circle_outline,
-                            tooltip: l10n.markAsProcessed,
-                            color: AppTheme.primary,
-                            onPressed: onMarkProcessed!,
-                          )
-                        : const SizedBox.shrink())
-                    : (onEdit != null
-                        ? ActionIconButton(
-                            icon: Icons.edit_outlined,
-                            tooltip: l10n.editPaymentTooltip,
-                            color: AppTheme.mutedForeground,
-                            onPressed: onEdit!,
-                          )
-                        : const SizedBox.shrink()),
-              ),
+              onEdit != null
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: AppButton(
+                        label: l10n.paymentEditButton,
+                        variant: AppButtonVariant.normal,
+                        dense: true,
+                        onPressed: onEdit!,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

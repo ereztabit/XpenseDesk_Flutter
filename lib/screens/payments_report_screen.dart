@@ -199,23 +199,28 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     }
   }
 
-  /// Edit a processed sheet's details (Phase 9 / QA item 1 — no revert, the
-  /// manager edits freely). On success refresh the row + its detail view.
+  /// Per-row "Edit" — the unified payment-status dialog (mark processed / edit
+  /// details / revert) for any row. On success refresh the list + the sheet's
+  /// detail view (status may have changed in either direction).
   Future<void> _editRow(PaymentReportRow row) async {
     final saved = await EditPaymentDialog.show(
       context,
       expenseSheetId: row.expenseSheetId,
+      currentStatus: row.paymentStatus ?? PaymentStatus.awaitingPayment,
       amountText: _amountTextFor({row.expenseSheetId}),
-      initialDate: row.processedDate ?? DateTime.now(),
-      initialReference: row.reference,
+      initialDate: row.processedDate,
       initialNote: row.note,
       onConflict: () {
-        // Sheet was reverted elsewhere — refresh so the stale row updates.
+        // Status changed elsewhere — refresh so the stale row updates.
         ref.invalidate(sheetDetailProvider(row.expenseSheetId));
         ref.read(paymentsResultProvider.notifier).refresh();
       },
     );
     if (!saved || !mounted) return;
+    setState(() {
+      _selectedIds.remove(row.expenseSheetId);
+      _highlightedIds.clear();
+    });
     ref.invalidate(sheetDetailProvider(row.expenseSheetId));
     await ref.read(paymentsResultProvider.notifier).refresh();
   }
@@ -296,7 +301,6 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             onToggleSelection: _toggleSelection,
             onToggleAll: (selectAll) => _toggleAll(rows, selectAll),
             onRowTap: _openSheet,
-            onMarkProcessedRow: (row) => _markProcessed([row.expenseSheetId]),
             onEditRow: _editRow,
           )
         : DesktopPaymentsView(
@@ -317,7 +321,6 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             onToggleSelection: _toggleSelection,
             onToggleAll: (selectAll) => _toggleAll(rows, selectAll),
             onRowTap: _openSheet,
-            onMarkProcessedRow: (row) => _markProcessed([row.expenseSheetId]),
             onEditRow: _editRow,
             verticalScrollController: _verticalScroll,
             horizontalScrollController: _horizontalScroll,

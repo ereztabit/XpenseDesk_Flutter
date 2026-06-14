@@ -103,10 +103,6 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             ascending: sortAscending,
             onSort: onSort,
           ),
-          PaymentsHeaderCell(
-            label: l10n.referenceColumn,
-            width: PaymentsTableColumns.reference,
-          ),
           const SizedBox(width: PaymentsTableColumns.action),
         ],
       ),

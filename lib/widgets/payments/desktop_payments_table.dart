@@ -28,7 +28,6 @@ class DesktopPaymentsTable extends StatelessWidget {
     required this.onToggleSelection,
     required this.onToggleAll,
     required this.onRowTap,
-    required this.onMarkProcessed,
     required this.onEdit,
     required this.verticalScrollController,
     required this.horizontalScrollController,
@@ -49,9 +48,8 @@ class DesktopPaymentsTable extends StatelessWidget {
   final void Function(PaymentReportRow row, bool selected)? onToggleSelection;
   final ValueChanged<bool>? onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
-  final ValueChanged<PaymentReportRow>? onMarkProcessed;
 
-  /// Processed rows: open the edit-details dialog (Phase 9).
+  /// Opens the unified edit dialog for a row (every row has the Edit button).
   final ValueChanged<PaymentReportRow>? onEdit;
   final ScrollController verticalScrollController;
   final ScrollController horizontalScrollController;
@@ -114,9 +112,6 @@ class DesktopPaymentsTable extends StatelessWidget {
                             ? (selected) => onToggleSelection!(row, selected)
                             : null,
                         onTap: () => onRowTap(row),
-                        onMarkProcessed: onMarkProcessed != null
-                            ? () => onMarkProcessed!(row)
-                            : null,
                         onEdit: onEdit != null ? () => onEdit!(row) : null,
                       ),
                       if (index < rows.length - 1)

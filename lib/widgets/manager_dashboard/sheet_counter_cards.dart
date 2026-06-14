@@ -63,49 +63,53 @@ class SheetCounterCards extends StatelessWidget {
       );
     }
 
-    // Desktop — three equal cards. Top-aligned with a shared minHeight (no
-    // `stretch`/`IntrinsicHeight`: an all-Expanded stretch Row in the vertical
-    // scroll view would assert "BoxConstraints forces an infinite height").
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: CounterCard(
-            count: pendingCount,
-            label: l10n.managerDashboardSheetsPendingReview,
-            eyebrow: pendingAlert ? l10n.managerDashboardNeedsReview : null,
-            icon: Icons.schedule,
-            alert: pendingAlert,
-            minHeight: _kDesktopCardMinHeight,
-            onTap: onPending,
+    // Desktop — three truly equal-height cards. `IntrinsicHeight` gives the Row
+    // a bounded height (the tallest card's content), so `stretch` is safe even
+    // inside the dashboard's vertical scroll view — without it, `stretch` would
+    // assert "BoxConstraints forces an infinite height". `minHeight` stays as a
+    // floor for the all-short-content case.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: CounterCard(
+              count: pendingCount,
+              label: l10n.managerDashboardSheetsPendingReview,
+              eyebrow: pendingAlert ? l10n.managerDashboardNeedsReview : null,
+              icon: Icons.schedule,
+              alert: pendingAlert,
+              minHeight: _kDesktopCardMinHeight,
+              onTap: onPending,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: CounterCard(
-            count: approvedCount,
-            label: l10n.managerDashboardApprovedSheets,
-            icon: Icons.check_circle_outline,
-            alert: false,
-            minHeight: _kDesktopCardMinHeight,
-            onTap: onApproved,
+          const SizedBox(width: 12),
+          Expanded(
+            child: CounterCard(
+              count: approvedCount,
+              label: l10n.managerDashboardApprovedSheets,
+              icon: Icons.check_circle_outline,
+              alert: false,
+              minHeight: _kDesktopCardMinHeight,
+              onTap: onApproved,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: CounterCard(
-            count: returnedCount,
-            label: l10n.managerDashboardReturnedSheets,
-            eyebrow: returnedCount > 0
-                ? l10n.managerDashboardAwaitingResubmit
-                : null,
-            icon: Icons.cancel_outlined,
-            alert: false,
-            minHeight: _kDesktopCardMinHeight,
-            onTap: onReturned,
+          const SizedBox(width: 12),
+          Expanded(
+            child: CounterCard(
+              count: returnedCount,
+              label: l10n.managerDashboardReturnedSheets,
+              eyebrow: returnedCount > 0
+                  ? l10n.managerDashboardAwaitingResubmit
+                  : null,
+              icon: Icons.cancel_outlined,
+              alert: false,
+              minHeight: _kDesktopCardMinHeight,
+              onTap: onReturned,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

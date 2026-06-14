@@ -38,7 +38,6 @@ class DesktopPaymentsView extends ConsumerWidget {
     required this.onToggleSelection,
     required this.onToggleAll,
     required this.onRowTap,
-    required this.onMarkProcessedRow,
     required this.onEditRow,
     required this.verticalScrollController,
     required this.horizontalScrollController,
@@ -60,7 +59,6 @@ class DesktopPaymentsView extends ConsumerWidget {
   final void Function(PaymentReportRow row, bool selected) onToggleSelection;
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
-  final ValueChanged<PaymentReportRow> onMarkProcessedRow;
   final ValueChanged<PaymentReportRow> onEditRow;
   final ScrollController verticalScrollController;
   final ScrollController horizontalScrollController;
@@ -160,7 +158,6 @@ class DesktopPaymentsView extends ConsumerWidget {
             onToggleSelection: onToggleSelection,
             onToggleAll: onToggleAll,
             onRowTap: onRowTap,
-            onMarkProcessed: onMarkProcessedRow,
             onEdit: onEditRow,
             verticalScrollController: verticalScrollController,
             horizontalScrollController: horizontalScrollController,

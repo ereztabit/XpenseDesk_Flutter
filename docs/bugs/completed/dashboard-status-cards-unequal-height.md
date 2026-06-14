@@ -1,6 +1,13 @@
 # Bug: Sheet-monitoring status cards are not equal height
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Wrapped the desktop card `Row` in `IntrinsicHeight` with
+`CrossAxisAlignment.stretch` so all three cards match the tallest one's height
+(the `minHeight` floor stays for the all-short case). File:
+`lib/widgets/manager_dashboard/sheet_counter_cards.dart`. Verified by user.
 
 ## Problem
 

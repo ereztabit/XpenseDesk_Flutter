@@ -8,13 +8,15 @@ class DialogTextField extends StatelessWidget {
     super.key,
     required this.label,
     required this.controller,
-    required this.hint,
+    this.hint = '',
     this.maxLines = 1,
     this.enabled = true,
   });
 
   final String label;
   final TextEditingController controller;
+
+  /// Placeholder text. Empty (default) renders no hint.
   final String hint;
   final int maxLines;
   final bool enabled;
