@@ -10,6 +10,8 @@ import '../widgets/analysis/master_card.dart';
 import '../widgets/employee/employee_selector.dart';
 import '../widgets/category/category_selector.dart';
 import '../providers/expense_provider.dart';
+import '../providers/users_provider.dart';
+import '../models/user_list_item.dart';
 import '../models/expenses_analysis_summary_row.dart';
 import '../models/expenses_analysis_detail_state.dart';
 
@@ -38,7 +40,6 @@ class _ExpensesAnalysisScreenState
   late Set<String> _pendingCategories;
   Set<String> _appliedEmployees = {};
   Set<String> _appliedCategories = {};
-  Map<String, String> _availableEmployees = {};
 
   // ── master state ──────────────────────────────────────────────────────────
   bool _loading = false;
@@ -60,6 +61,18 @@ class _ExpensesAnalysisScreenState
   }
 
   bool get _canRun => !_loading;
+
+  /// All company users (userId → fullName), sorted by name. Sourced straight
+  /// from the roster — every user is selectable regardless of whether they have
+  /// expenses in the selected cycle.
+  Map<String, String> get _availableEmployees {
+    final users =
+        ref.read(usersListProvider).value ?? const <UserListItem>[];
+    final sorted = [...users]
+      ..sort((a, b) =>
+          a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
+    return {for (final u in sorted) u.userId: u.fullName};
+  }
 
   ExpensesAnalysisSummaryRow? get _selectedRow =>
       _summaryRows.where((r) => r.cycleId == _selectedCycleId).firstOrNull;
@@ -109,7 +122,7 @@ class _ExpensesAnalysisScreenState
       });
 
       if (defaultCycle != null) {
-        await _loadBreakdown(defaultCycle.cycleId, populateEmployees: true);
+        await _loadBreakdown(defaultCycle.cycleId);
       } else {
         setState(() => _detailLoading = false);
       }
@@ -124,8 +137,7 @@ class _ExpensesAnalysisScreenState
   }
 
   // ── load breakdown for a specific cycle ───────────────────────────────────
-  Future<void> _loadBreakdown(String cycleId,
-      {bool populateEmployees = false}) async {
+  Future<void> _loadBreakdown(String cycleId) async {
     setState(() {
       _detailLoading = true;
       _detailError = null;
@@ -144,18 +156,6 @@ class _ExpensesAnalysisScreenState
       );
 
       if (!mounted) return;
-
-      if (populateEmployees &&
-          _appliedEmployees.isEmpty &&
-          _appliedCategories.isEmpty) {
-        final map = <String, String>{};
-        for (final r in rows) {
-          map[r.employeeId] = r.employeeName;
-        }
-        final sorted = map.entries.toList()
-          ..sort((a, b) => a.value.compareTo(b.value));
-        _availableEmployees = Map.fromEntries(sorted);
-      }
 
       setState(() {
         _detailState =
@@ -280,6 +280,9 @@ class _ExpensesAnalysisScreenState
     final locale = ref.watch(companyLocaleProvider);
     final currency = ref.watch(userInfoProvider)?.currencyCode ?? 'ILS';
     final isMobile = context.isMobile;
+
+    // Rebuild the employee filter once the company roster resolves.
+    ref.watch(usersListProvider);
 
     return buildWithNavigationGuard(
       child: Scaffold(

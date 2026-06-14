@@ -90,15 +90,26 @@ final returnedSheetsProvider =
 
 /// Approved card data (`statusId == 3` = terminal sheets, audit/history).
 /// Always uses the paged endpoint.
+///
+/// Scoped to the **last closed cycle** via `cycleId`. Approved sheets are
+/// terminal and accumulate across every cycle, so an unscoped query returns all
+/// history instead of what actually happened in the cycle just closed. When no
+/// cycle has closed yet there is no last-closed cycle to report, so the bucket
+/// is empty.
 final approvedSheetsProvider =
     FutureProvider.family<PagedExpenseSheets, String?>((ref, employeeId) async {
   final UserInfo? userInfo = ref.watch(userInfoProvider);
   if (userInfo == null) return PagedExpenseSheets.empty;
 
+  final cycles = await ref.watch(cyclesProvider.future);
+  final lastClosed = cycles.lastClosedCycle;
+  if (lastClosed == null) return PagedExpenseSheets.empty;
+
   final service = ref.watch(expenseServiceProvider);
   return service.getCompanyExpenseSheets(
     statusId: 3,
     userId: employeeId,
+    cycleId: lastClosed.expenseCycleId,
     pageSize: 12,
   );
 });
