@@ -4,7 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
-import '../app_button.dart';
+import '../action_icon_button.dart';
 import 'payment_status_badge.dart';
 import 'payments_table_columns.dart';
 
@@ -23,6 +23,7 @@ class DesktopPaymentsRow extends StatelessWidget {
     required this.onToggleSelection,
     required this.onTap,
     required this.onMarkProcessed,
+    required this.onEdit,
   });
 
   final PaymentReportRow row;
@@ -34,7 +35,12 @@ class DesktopPaymentsRow extends StatelessWidget {
   final bool isHighlighted;
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
+
+  /// Awaiting rows: open Mark-as-Processed. Null hides the action.
   final VoidCallback? onMarkProcessed;
+
+  /// Processed rows: open the edit-details dialog. Null hides the action.
+  final VoidCallback? onEdit;
 
   static const _dash = '—';
   static const _cellStyle =
@@ -116,12 +122,13 @@ class DesktopPaymentsRow extends StatelessWidget {
             ),
             _cell(
               PaymentsTableColumns.paymentStatus,
-              row.paymentStatus != null
-                  ? Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: PaymentStatusBadge(status: row.paymentStatus!),
-                    )
-                  : const Text(_dash, style: _mutedCellStyle),
+              // Q5 — pill centered in its column.
+              Align(
+                alignment: Alignment.center,
+                child: row.paymentStatus != null
+                    ? PaymentStatusBadge(status: row.paymentStatus!)
+                    : const Text(_dash, style: _mutedCellStyle),
+              ),
             ),
             _cell(
               PaymentsTableColumns.processedDate,
@@ -140,20 +147,31 @@ class DesktopPaymentsRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            // Q4 — icon-only action so rows stay compact (the labelled button
+            // forced an unnecessary vertical scrollbar). Awaiting → process;
+            // Processed → edit details (Phase 9).
             _cell(
               PaymentsTableColumns.action,
-              row.isAwaiting
-                  ? Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: AppButton(
-                        label: l10n.markAsProcessed,
-                        variant: AppButtonVariant.normal,
-                        icon: Icons.check_circle_outline,
-                        dense: true,
-                        onPressed: onMarkProcessed,
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+              Align(
+                alignment: Alignment.center,
+                child: row.isAwaiting
+                    ? (onMarkProcessed != null
+                        ? ActionIconButton(
+                            icon: Icons.check_circle_outline,
+                            tooltip: l10n.markAsProcessed,
+                            color: AppTheme.primary,
+                            onPressed: onMarkProcessed!,
+                          )
+                        : const SizedBox.shrink())
+                    : (onEdit != null
+                        ? ActionIconButton(
+                            icon: Icons.edit_outlined,
+                            tooltip: l10n.editPaymentTooltip,
+                            color: AppTheme.mutedForeground,
+                            onPressed: onEdit!,
+                          )
+                        : const SizedBox.shrink()),
+              ),
             ),
           ],
         ),

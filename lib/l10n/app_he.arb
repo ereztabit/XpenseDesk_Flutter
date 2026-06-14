@@ -714,5 +714,11 @@
   "sheetsNoLongerAwaiting": "חלק מהגליונות כבר אינם ממתינים לתשלום. הרשימה רועננה — בחרו מחדש ונסו שוב.",
   "processedDateRequired": "תאריך טיפול הוא שדה חובה.",
   "filtersTitle": "סינון",
-  "processedOnLabel": "טופל בתאריך"
+  "processedOnLabel": "טופל בתאריך",
+  "sheetNoLongerProcessed": "גליון זה כבר אינו מסומן כטופל. הרשימה רועננה.",
+  "editPaymentTitle": "עריכת פרטי תשלום",
+  "editPaymentTooltip": "עריכת פרטי תשלום",
+  "editPaymentSaved": "פרטי התשלום עודכנו",
+  "showSpendBreakdown": "הצג פירוט",
+  "hideSpendBreakdown": "הסתר פירוט"
 }

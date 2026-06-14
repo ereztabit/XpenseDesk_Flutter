@@ -5,8 +5,8 @@ import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
 import '../sticky_report_table.dart';
+import 'desktop_payments_header_row.dart';
 import 'desktop_payments_row.dart';
-import 'payments_header_cell.dart';
 import 'payments_table_columns.dart';
 
 /// Desktop results table of the Payments Report. Sticky sortable header, body
@@ -29,6 +29,7 @@ class DesktopPaymentsTable extends StatelessWidget {
     required this.onToggleAll,
     required this.onRowTap,
     required this.onMarkProcessed,
+    required this.onEdit,
     required this.verticalScrollController,
     required this.horizontalScrollController,
   });
@@ -49,6 +50,9 @@ class DesktopPaymentsTable extends StatelessWidget {
   final ValueChanged<bool>? onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
   final ValueChanged<PaymentReportRow>? onMarkProcessed;
+
+  /// Processed rows: open the edit-details dialog (Phase 9).
+  final ValueChanged<PaymentReportRow>? onEdit;
   final ScrollController verticalScrollController;
   final ScrollController horizontalScrollController;
 
@@ -75,7 +79,14 @@ class DesktopPaymentsTable extends StatelessWidget {
         error: error,
         verticalScrollController: verticalScrollController,
         horizontalScrollController: horizontalScrollController,
-        headerRow: _headerRow(l10n, allSelected, selectableIds.isNotEmpty),
+        headerRow: DesktopPaymentsHeaderRow(
+          sortField: sortField,
+          sortAscending: sortAscending,
+          onSort: onSort,
+          allSelected: allSelected,
+          hasSelectable: selectableIds.isNotEmpty,
+          onToggleAll: onToggleAll,
+        ),
         body: rows.isEmpty
             ? Center(
                 child: Text(
@@ -106,6 +117,7 @@ class DesktopPaymentsTable extends StatelessWidget {
                         onMarkProcessed: onMarkProcessed != null
                             ? () => onMarkProcessed!(row)
                             : null,
+                        onEdit: onEdit != null ? () => onEdit!(row) : null,
                       ),
                       if (index < rows.length - 1)
                         const Divider(height: 1, color: AppTheme.border),
@@ -113,90 +125,6 @@ class DesktopPaymentsTable extends StatelessWidget {
                   );
                 },
               ),
-      ),
-    );
-  }
-
-  Widget _headerRow(
-      AppLocalizations l10n, bool allSelected, bool hasSelectable) {
-    return Container(
-      color: AppTheme.muted.withAlpha(102),
-      padding: const EdgeInsets.symmetric(
-          horizontal: PaymentsTableColumns.cellGap / 2, vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: PaymentsTableColumns.checkbox,
-            child: hasSelectable && onToggleAll != null
-                ? Checkbox(
-                    value: allSelected,
-                    onChanged: (v) => onToggleAll!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : const SizedBox.shrink(),
-          ),
-          PaymentsHeaderCell(
-            label: l10n.employee,
-            width: PaymentsTableColumns.employee,
-            field: PaymentsSortField.employee,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.govIdColumn,
-            width: PaymentsTableColumns.govId,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.email,
-            width: PaymentsTableColumns.email,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.cycle,
-            width: PaymentsTableColumns.cycle,
-            field: PaymentsSortField.cycle,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.approvedDateColumn,
-            width: PaymentsTableColumns.approvedDate,
-            field: PaymentsSortField.approvedDate,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.amount,
-            width: PaymentsTableColumns.amount,
-            field: PaymentsSortField.amount,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.paymentStatusFilterLabel,
-            width: PaymentsTableColumns.paymentStatus,
-            field: PaymentsSortField.paymentStatus,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.processedDateFilterLabel,
-            width: PaymentsTableColumns.processedDate,
-            field: PaymentsSortField.processedDate,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.referenceColumn,
-            width: PaymentsTableColumns.reference,
-          ),
-          const SizedBox(width: PaymentsTableColumns.action),
-        ],
       ),
     );
   }

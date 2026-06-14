@@ -8,6 +8,7 @@ import '../services/payment_service.dart';
 import '../utils/payments_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/payments/desktop_payments_view.dart';
+import '../widgets/payments/edit_payment_dialog.dart';
 import '../widgets/payments/mark_processed_dialog.dart';
 import '../widgets/payments/mobile_payments_view.dart';
 import '../widgets/payments/payments_filter_dialog.dart';
@@ -149,10 +150,24 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     });
   }
 
+  /// Combined payable total of [ids], formatted in the company locale/currency
+  /// — context for the dialog summary line.
+  String _amountTextFor(Set<String> ids) {
+    final rows = ref.read(paymentsResultProvider).asData?.value.items ??
+        const <PaymentReportRow>[];
+    return PaymentsSelectionUtils.totalAmountTextFor(
+      rows,
+      ids,
+      locale: ref.read(companyLocaleProvider),
+      currencyCode: ref.read(userInfoProvider)?.currencyCode,
+    );
+  }
+
   Future<void> _markProcessed(List<String> ids) async {
     final processed = await MarkProcessedDialog.show(
       context,
       expenseSheetIds: ids,
+      amountText: _amountTextFor(ids.toSet()),
       onConflict: (offendingIds) {
         if (!mounted) return;
         setState(() {
@@ -184,10 +199,38 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     }
   }
 
-  Future<void> _runExport(Future<bool> Function() export) async {
+  /// Edit a processed sheet's details (Phase 9 / QA item 1 — no revert, the
+  /// manager edits freely). On success refresh the row + its detail view.
+  Future<void> _editRow(PaymentReportRow row) async {
+    final saved = await EditPaymentDialog.show(
+      context,
+      expenseSheetId: row.expenseSheetId,
+      amountText: _amountTextFor({row.expenseSheetId}),
+      initialDate: row.processedDate ?? DateTime.now(),
+      initialReference: row.reference,
+      initialNote: row.note,
+      onConflict: () {
+        // Sheet was reverted elsewhere — refresh so the stale row updates.
+        ref.invalidate(sheetDetailProvider(row.expenseSheetId));
+        ref.read(paymentsResultProvider.notifier).refresh();
+      },
+    );
+    if (!saved || !mounted) return;
+    ref.invalidate(sheetDetailProvider(row.expenseSheetId));
+    await ref.read(paymentsResultProvider.notifier).refresh();
+  }
+
+  /// Runs an export; on success, optionally offers to mark the exported
+  /// sheets as processed (QA items 2/3 — the Excel export may itself be the
+  /// payment act, so prompt with the same confirm modal pre-targeting them).
+  Future<void> _runExport(
+    Future<bool> Function() export, {
+    List<String> offerProcessIds = const [],
+  }) async {
     final l10n = AppLocalizations.of(context)!;
     final ok = await export();
-    if (!ok && mounted) {
+    if (!mounted) return;
+    if (!ok) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.genericErrorRetry),
@@ -195,15 +238,38 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
           behavior: SnackBarBehavior.floating,
         ),
       );
+      return;
+    }
+    if (offerProcessIds.isNotEmpty) {
+      await _markProcessed(offerProcessIds);
     }
   }
 
-  void _exportAll() =>
-      _runExport(ref.read(paymentsExportProvider.notifier).exportAll);
+  void _exportAll() {
+    // Offer to process only when the whole filtered set is on the page — if
+    // there's an overflow (hasMore), the loaded awaiting rows are a subset and
+    // silently processing just those would mislead. There the manager selects
+    // explicitly instead (the 100-cap is visible in that flow).
+    final paged = ref.read(paymentsResultProvider).asData?.value;
+    final awaitingIds = (paged != null && !paged.hasMore)
+        ? paged.items
+            .where((r) => r.isAwaiting)
+            .map((r) => r.expenseSheetId)
+            .toList()
+        : <String>[];
+    _runExport(
+      ref.read(paymentsExportProvider.notifier).exportAll,
+      offerProcessIds: awaitingIds,
+    );
+  }
 
-  void _exportSelected() => _runExport(() => ref
-      .read(paymentsExportProvider.notifier)
-      .exportSelected(_selectedIds.toList()));
+  void _exportSelected() {
+    final ids = _selectedIds.toList();
+    _runExport(
+      () => ref.read(paymentsExportProvider.notifier).exportSelected(ids),
+      offerProcessIds: ids,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +297,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             onToggleAll: (selectAll) => _toggleAll(rows, selectAll),
             onRowTap: _openSheet,
             onMarkProcessedRow: (row) => _markProcessed([row.expenseSheetId]),
+            onEditRow: _editRow,
           )
         : DesktopPaymentsView(
             pending: _pending,
@@ -251,6 +318,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             onToggleAll: (selectAll) => _toggleAll(rows, selectAll),
             onRowTap: _openSheet,
             onMarkProcessedRow: (row) => _markProcessed([row.expenseSheetId]),
+            onEditRow: _editRow,
             verticalScrollController: _verticalScroll,
             horizontalScrollController: _horizontalScroll,
           );

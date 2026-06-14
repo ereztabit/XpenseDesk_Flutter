@@ -15,6 +15,7 @@ class PaymentsHeaderCell extends StatelessWidget {
     this.activeField,
     this.ascending = true,
     this.onSort,
+    this.centered = false,
   });
 
   final String label;
@@ -23,6 +24,9 @@ class PaymentsHeaderCell extends StatelessWidget {
   final PaymentsSortField? activeField;
   final bool ascending;
   final ValueChanged<PaymentsSortField>? onSort;
+
+  /// Center the header content (Q5 — matches the centered status pill).
+  final bool centered;
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +47,21 @@ class PaymentsHeaderCell extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: PaymentsTableColumns.cellGap / 2),
         child: field == null || onSort == null
-            ? Align(alignment: AlignmentDirectional.centerStart, child: text)
+            ? Align(
+                alignment: centered
+                    ? Alignment.center
+                    : AlignmentDirectional.centerStart,
+                child: text)
             : InkWell(
                 onTap: () => onSort!(field!),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  // Fill the cell when centered so the label actually centers
+                  // (a shrink-wrapped row has no free space to align within).
+                  mainAxisSize:
+                      centered ? MainAxisSize.max : MainAxisSize.min,
+                  mainAxisAlignment: centered
+                      ? MainAxisAlignment.center
+                      : MainAxisAlignment.start,
                   children: [
                     Flexible(child: text),
                     if (isActive) ...[

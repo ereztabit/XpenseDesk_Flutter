@@ -714,5 +714,11 @@
   "sheetsNoLongerAwaiting": "Some sheets are no longer awaiting payment. The list was refreshed — please re-select and retry.",
   "processedDateRequired": "Processed date is required.",
   "filtersTitle": "Filters",
-  "processedOnLabel": "Processed on"
+  "processedOnLabel": "Processed on",
+  "sheetNoLongerProcessed": "This sheet is no longer marked as processed. The list was refreshed.",
+  "editPaymentTitle": "Edit payment details",
+  "editPaymentTooltip": "Edit payment details",
+  "editPaymentSaved": "Payment details updated",
+  "showSpendBreakdown": "Show breakdown",
+  "hideSpendBreakdown": "Hide breakdown"
 }

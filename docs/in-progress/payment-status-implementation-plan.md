@@ -25,8 +25,25 @@ No commits without explicit instruction. User verifies in browser at each ✅ ga
 | 6 | Excel exports | Export All (filters) + Export Selected (ids) | 🔍 | Build ✓, analyze ✓. Export flow lives in `PaymentsExportNotifier` (provider layer); download via new public `ExcelExportService.downloadXlsxBytes`. Export All sends the APPLIED filter; filenames dated `payments-report-/payments-selected-yyyy-MM-dd.xlsx` |
 | 7 | Mobile layout | Tune-icon filter dialog (D16), mobile table w/ sortable header + inline cycle line, animated bulk card | 🔍 | Build ✓, analyze ✓, greps ✓. Views refactored to ConsumerWidgets watching shared providers (less prop-drilling); screen branches `context.isMobile`. CR fix: extracted `MobilePaymentsHeaderCell`. Screen 245 lines — pure orchestration (state/handlers + two view delegations), all layout extracted |
 | 8 | Sheet review payment strip | Payment status strip on manager sheet detail | 🔍 | Build ✓, analyze ✓, greps ✓. 4 payment fields on `ExpenseSheetDetail`; payable total = `SheetExpenseBuckets.approvedAmount` (new util, approved lines only); strip hidden when no payment dimension; processed sheets' detail providers invalidated after a process action |
-| 9 | Edit / Revert processed — **scope gate** | Row action on Processed rows: edit details / revert to awaiting | ⏸️ | **Skipped — awaiting user scope decision** (gate respected during the autonomous run). API + reusable dialog widgets are ready; ~1 phase of work when approved |
-| 10 | Final pass | RTL/l10n audit, full CR, docs → completed, current-work cleanup | 🔍 | RTL greps clean; EN/HE ARB parity 687=687; full `flutter analyze` zero findings in feature files (16 pre-existing elsewhere). **Adversarial CR pass (whole diff)** fixed 2 real issues: B2 — descending sort lifted null `—` dates to the top (nulls now sink in both directions); SF6 — date-range `→` separator didn't mirror in RTL (now en-dash). False alarm: line counts within cap (197/196). Open notes (no fix): SF1 dropdown null-cast is latent (all current dropdowns nullable), SF3 conflict-ids parser depends on backend payload shape — verify when server lands. Docs→completed deferred to sign-off |
+| 9 | Edit processed (no revert) | Row action on Processed rows → edit dialog (date/reference/note). **No revert** — manager edits freely instead (user ruling, item 1) | 🔍 | Build ✓, analyze ✓, greps ✓. New `EditPaymentDialog` (reuses the dialog field widgets); edit action on Processed rows desktop+mobile; on save refresh row + invalidate detail. CR blocker fixed: concurrent-revert (`PaymentSheetNotProcessed`) now fires `onConflict` → list refreshes, so the message is true |
+| 10 | Final pass (round 1) | RTL/l10n audit, full CR, commit | ✅ | Committed `8f2be39` & pushed. Adversarial CR fixed B2 (descending null-date sort) + SF6 (RTL date separator) |
+
+### Post-QA fixes (round 2 — from manual QA 2026-06-12)
+
+| # | Item | Deliverable | Status | Notes |
+|---|------|-------------|--------|-------|
+| Q1 | Edit, no revert | = Phase 9 above (tracked there) | 🔍 | Done — see Phase 9 |
+| Q2 | Export All → confirm-processed | After "Export All" succeeds, open the Mark-as-Processed modal pre-targeting the loaded awaiting set | 🔍 | Build ✓. CR should-fix applied: only auto-offers when the full filtered set is loaded (`!hasMore`); on overflow the manager selects explicitly (cap visible) so we never silently process a subset |
+| Q3 | Export Selected → confirm-processed | Same for the bulk-bar Export, pre-targeting the selected ids | 🔍 | Build ✓. Reuses `_markProcessed` (in-place removal + summary refresh + selection clear). Cancel preserves selection |
+| Q4 | Row action too big | Per-row button → icon-only `ActionIconButton` (tooltip-labelled); `action` column 185→64 so rows fit without a vertical scrollbar | 🔍 | Build ✓, greps ✓ |
+| Q5 | Center status pill | Pill centered in its column + header label centered (new `centered` param on `PaymentsHeaderCell`) | 🔍 | Build ✓ |
+| Q6 | Audit-log English text | Server-authored comment; **backend fix** (structured/localized payment event) | ✅ filed | Backend bug filed: `docs/bugs/payment-log-comment-not-localized.md` + backlog line. No client code — a client parse of free-text would be brittle and lossy |
+| Q7 | Collapse Approved Spend breakdown | `SpendOverviewBreakdown` collapsed by default (hero stays) + show/hide toggle; `groupSpendBreakdown` only computed when expanded | 🔍 | Build ✓. Touches the spend card only — counter cards frozen |
+
+**Resolutions to the scoping questions:**
+- **Q2 subset risk** — resolved by only auto-offering the process step when `!hasMore` (full set loaded). Avoids marking a misleading subset.
+- **Q6** — confirmed backend-owned; bug filed rather than a brittle client parser.
+- **CR (round 2) adversarial pass** fixed 1 blocker (edit conflict didn't refresh despite saying so → now wired via `onConflict`) + applied the Q2 subset guard + an icon-size nit. Screen at ~325 lines = accepted orchestrator (all layout already in the two View widgets; handlers are screen-stateful). EN/HE ARB parity 697=697.
 
 ---
 

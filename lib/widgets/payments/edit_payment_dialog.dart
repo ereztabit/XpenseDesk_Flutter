@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/payment_status.dart';
 import '../../providers/company_provider.dart';
 import '../../providers/payments_provider.dart';
 import '../../services/expense_service.dart'
@@ -14,42 +15,52 @@ import 'dialog_text_field.dart';
 import 'payments_dialog_header.dart';
 import 'payments_dialog_summary.dart';
 
-/// Mark-as-Processed confirmation modal (D6 — pixel-faithful to the approved
-/// mock): Processed Date (required, defaults today), Reference ID (optional),
-/// Note (optional). Cancel / X / Esc / scrim close WITHOUT clearing the
-/// caller's selection. Pops `true` only on success.
-///
-/// All-or-nothing semantics: on a concurrency conflict
-/// (PaymentSheetNotAwaiting) nothing was processed — the dialog stays open
-/// with an inline error and [onConflict] lets the caller refetch + highlight
-/// the offending rows.
-class MarkProcessedDialog extends ConsumerStatefulWidget {
-  const MarkProcessedDialog({
+/// Edit-processed-details modal (Phase 9 / QA item 1). The manager corrects a
+/// processed sheet's date / reference / note. There is no revert action —
+/// editing covers every correction (user ruling: "I can change whatever I
+/// want"). Status stays Processed, so [DialogDateField] is required.
+class EditPaymentDialog extends ConsumerStatefulWidget {
+  const EditPaymentDialog({
     super.key,
-    required this.expenseSheetIds,
+    required this.expenseSheetId,
     required this.amountText,
+    required this.initialDate,
+    this.initialReference,
+    this.initialNote,
     this.onConflict,
   });
 
-  final List<String> expenseSheetIds;
+  final String expenseSheetId;
 
-  /// Combined payable total of the batch, pre-formatted in the company
-  /// locale/currency — shown as context under the title.
+  /// Sheet's payable amount, pre-formatted — shown as context under the title.
   final String amountText;
-  final ValueChanged<List<String>>? onConflict;
+  final DateTime initialDate;
+  final String? initialReference;
+  final String? initialNote;
 
-  /// Returns true when the batch was processed.
+  /// Fired when the sheet is no longer Processed (concurrent revert). The
+  /// caller refreshes the list so the stale row updates while the dialog
+  /// shows the explanation.
+  final VoidCallback? onConflict;
+
+  /// Returns true when the edit was saved.
   static Future<bool> show(
     BuildContext context, {
-    required List<String> expenseSheetIds,
+    required String expenseSheetId,
     required String amountText,
-    ValueChanged<List<String>>? onConflict,
+    required DateTime initialDate,
+    String? initialReference,
+    String? initialNote,
+    VoidCallback? onConflict,
   }) async {
     final result = await showDialog<bool>(
       context: context,
-      builder: (_) => MarkProcessedDialog(
-        expenseSheetIds: expenseSheetIds,
+      builder: (_) => EditPaymentDialog(
+        expenseSheetId: expenseSheetId,
         amountText: amountText,
+        initialDate: initialDate,
+        initialReference: initialReference,
+        initialNote: initialNote,
         onConflict: onConflict,
       ),
     );
@@ -57,15 +68,16 @@ class MarkProcessedDialog extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<MarkProcessedDialog> createState() =>
-      _MarkProcessedDialogState();
+  ConsumerState<EditPaymentDialog> createState() => _EditPaymentDialogState();
 }
 
-class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
-  DateTime _processedDate = DateTime.now();
-  final _referenceController = TextEditingController();
-  final _noteController = TextEditingController();
-  bool _processing = false;
+class _EditPaymentDialogState extends ConsumerState<EditPaymentDialog> {
+  late DateTime _processedDate = widget.initialDate;
+  late final TextEditingController _referenceController =
+      TextEditingController(text: widget.initialReference ?? '');
+  late final TextEditingController _noteController =
+      TextEditingController(text: widget.initialNote ?? '');
+  bool _saving = false;
   String? _errorMessage;
 
   @override
@@ -75,17 +87,18 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
     super.dispose();
   }
 
-  Future<void> _confirm() async {
+  Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     setState(() {
-      _processing = true;
+      _saving = true;
       _errorMessage = null;
     });
 
     try {
       final service = ref.read(paymentServiceProvider);
-      final result = await service.processPayments(
-        expenseSheetIds: widget.expenseSheetIds,
+      final summary = await service.updatePayment(
+        widget.expenseSheetId,
+        status: PaymentStatus.processed,
         processedDate: _processedDate,
         reference: _referenceController.text.trim(),
         note: _noteController.text.trim(),
@@ -93,35 +106,24 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
       if (!mounted) return;
 
       // Freshness rule: the write response carries the new summary.
-      if (result.summary != null) {
-        ref
-            .read(companyProvider.notifier)
-            .updatePaymentsSummary(result.summary!);
+      if (summary != null) {
+        ref.read(companyProvider.notifier).updatePaymentsSummary(summary);
       }
-
-      final sheetsLabel = result.processedCount == 1
-          ? l10n.awaitingPaymentSheetSingular
-          : l10n.awaitingPaymentSheetPlural;
-      final reference = _referenceController.text.trim();
-      final toast =
-          '${l10n.processedToastPrefix} ${result.processedCount} $sheetsLabel'
-          '${reference.isNotEmpty ? ' · $reference' : ''}';
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pop(true);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(toast),
+            content: Text(l10n.editPaymentSaved),
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
         );
       });
-    } on PaymentSheetNotAwaitingException catch (e) {
-      widget.onConflict?.call(e.offendingIds);
-      _fail(l10n.sheetsNoLongerAwaiting);
-    } on PaymentBulkLimitExceededException {
-      _fail(l10n.tooManySheetsSelected);
+    } on PaymentSheetNotProcessedException {
+      // Concurrent revert — let the caller refresh so the message is true.
+      widget.onConflict?.call();
+      _fail(l10n.sheetNoLongerProcessed);
     } on SubscriptionRequiredException {
       _fail(l10n.actionSubscriptionRequired);
     } on PaymentException catch (e) {
@@ -136,7 +138,7 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
   void _fail(String message) {
     if (!mounted) return;
     setState(() {
-      _processing = false;
+      _saving = false;
       _errorMessage = message;
     });
   }
@@ -156,19 +158,16 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PaymentsDialogHeader(
-                title: l10n.markSheetsProcessedTitle,
-                enabled: !_processing,
+                title: l10n.editPaymentTitle,
+                enabled: !_saving,
               ),
               const SizedBox(height: 8),
-              PaymentsDialogSummary(
-                sheetCount: widget.expenseSheetIds.length,
-                amountText: widget.amountText,
-              ),
+              PaymentsDialogSummary(sheetCount: 1, amountText: widget.amountText),
               const SizedBox(height: 12),
               DialogDateField(
                 label: l10n.processedDateFilterLabel,
                 value: _processedDate,
-                enabled: !_processing,
+                enabled: !_saving,
                 onChanged: (date) => setState(() => _processedDate = date),
               ),
               const SizedBox(height: 16),
@@ -176,7 +175,7 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
                 label: l10n.referenceIdField,
                 controller: _referenceController,
                 hint: l10n.referenceIdPlaceholder,
-                enabled: !_processing,
+                enabled: !_saving,
               ),
               const SizedBox(height: 16),
               DialogTextField(
@@ -184,7 +183,7 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
                 controller: _noteController,
                 hint: l10n.notePlaceholder,
                 maxLines: 3,
-                enabled: !_processing,
+                enabled: !_saving,
               ),
               if (_errorMessage != null) ...[
                 const SizedBox(height: 12),
@@ -202,16 +201,15 @@ class _MarkProcessedDialogState extends ConsumerState<MarkProcessedDialog> {
                     label: l10n.cancel,
                     variant: AppButtonVariant.ghost,
                     dense: true,
-                    onPressed: _processing
-                        ? null
-                        : () => Navigator.of(context).pop(false),
+                    onPressed:
+                        _saving ? null : () => Navigator.of(context).pop(false),
                   ),
                   const SizedBox(width: 8),
                   AppButton(
                     label: l10n.confirm,
                     variant: AppButtonVariant.primary,
-                    isLoading: _processing,
-                    onPressed: _confirm,
+                    isLoading: _saving,
+                    onPressed: _save,
                   ),
                 ],
               ),

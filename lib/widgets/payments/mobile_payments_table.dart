@@ -27,6 +27,7 @@ class MobilePaymentsTable extends StatelessWidget {
     required this.onToggleAll,
     required this.onRowTap,
     required this.onMarkProcessed,
+    required this.onEdit,
   });
 
   final List<PaymentReportRow> rows;
@@ -43,6 +44,7 @@ class MobilePaymentsTable extends StatelessWidget {
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
   final ValueChanged<PaymentReportRow> onMarkProcessed;
+  final ValueChanged<PaymentReportRow> onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -147,6 +149,7 @@ class MobilePaymentsTable extends StatelessWidget {
                                     onToggleSelection(row, selected),
                                 onTap: () => onRowTap(row),
                                 onMarkProcessed: () => onMarkProcessed(row),
+                                onEdit: () => onEdit(row),
                               );
                             },
                           ),

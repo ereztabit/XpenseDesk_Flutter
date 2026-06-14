@@ -6,6 +6,7 @@ import '../../models/payment_report_row.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_navigator.dart';
 import '../../utils/payments_utils.dart';
 import '../app_button.dart';
 import '../manager_dashboard/paging_overflow_notice.dart';
@@ -35,6 +36,7 @@ class MobilePaymentsView extends ConsumerWidget {
     required this.onToggleAll,
     required this.onRowTap,
     required this.onMarkProcessedRow,
+    required this.onEditRow,
   });
 
   final VoidCallback onOpenFilters;
@@ -51,6 +53,13 @@ class MobilePaymentsView extends ConsumerWidget {
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
   final ValueChanged<PaymentReportRow> onMarkProcessedRow;
+  final ValueChanged<PaymentReportRow> onEditRow;
+
+  void _back(BuildContext context) {
+    final nav = Navigator.of(context);
+    nav.canPop() ? nav.pop() : nav.pushReplacementNamed(
+        AppRoutes.managerDashboard);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,7 +81,9 @@ class MobilePaymentsView extends ConsumerWidget {
               icon:
                   const Icon(Icons.arrow_back, color: AppTheme.foreground),
               visualDensity: VisualDensity.compact,
-              onPressed: () => Navigator.maybePop(context),
+              // canPop falls back to the dashboard so back works after a
+              // browser refresh / deep link (nothing to pop otherwise).
+              onPressed: () => _back(context),
             ),
             Expanded(
               child: Text(
@@ -148,6 +159,7 @@ class MobilePaymentsView extends ConsumerWidget {
             onToggleAll: onToggleAll,
             onRowTap: onRowTap,
             onMarkProcessed: onMarkProcessedRow,
+            onEdit: onEditRow,
           ),
         ),
         if (paged != null && paged.hasMore)

@@ -7,6 +7,7 @@ import '../../models/payments_filter.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_navigator.dart';
 import '../../utils/payments_utils.dart';
 import '../manager_dashboard/paging_overflow_notice.dart';
 import 'desktop_bulk_action_bar.dart';
@@ -38,6 +39,7 @@ class DesktopPaymentsView extends ConsumerWidget {
     required this.onToggleAll,
     required this.onRowTap,
     required this.onMarkProcessedRow,
+    required this.onEditRow,
     required this.verticalScrollController,
     required this.horizontalScrollController,
   });
@@ -59,8 +61,15 @@ class DesktopPaymentsView extends ConsumerWidget {
   final ValueChanged<bool> onToggleAll;
   final ValueChanged<PaymentReportRow> onRowTap;
   final ValueChanged<PaymentReportRow> onMarkProcessedRow;
+  final ValueChanged<PaymentReportRow> onEditRow;
   final ScrollController verticalScrollController;
   final ScrollController horizontalScrollController;
+
+  void _back(BuildContext context) {
+    final nav = Navigator.of(context);
+    nav.canPop() ? nav.pop() : nav.pushReplacementNamed(
+        AppRoutes.managerDashboard);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,7 +89,9 @@ class DesktopPaymentsView extends ConsumerWidget {
             IconButton(
               icon:
                   const Icon(Icons.arrow_back, color: AppTheme.foreground),
-              onPressed: () => Navigator.maybePop(context),
+              // canPop falls back to the dashboard so back works after a
+              // browser refresh / deep link (nothing to pop otherwise).
+              onPressed: () => _back(context),
             ),
             const SizedBox(width: 4),
             Text(
@@ -150,6 +161,7 @@ class DesktopPaymentsView extends ConsumerWidget {
             onToggleAll: onToggleAll,
             onRowTap: onRowTap,
             onMarkProcessed: onMarkProcessedRow,
+            onEdit: onEditRow,
             verticalScrollController: verticalScrollController,
             horizontalScrollController: horizontalScrollController,
           ),

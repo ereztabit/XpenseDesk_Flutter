@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
@@ -20,6 +21,7 @@ class MobilePaymentRow extends StatelessWidget {
     required this.onToggleSelection,
     required this.onTap,
     required this.onMarkProcessed,
+    required this.onEdit,
   });
 
   final PaymentReportRow row;
@@ -29,10 +31,16 @@ class MobilePaymentRow extends StatelessWidget {
   final bool isHighlighted;
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
+
+  /// Awaiting rows: Mark-as-Processed. Null hides the action.
   final VoidCallback? onMarkProcessed;
+
+  /// Processed rows: edit details (Phase 9). Null hides the action.
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final amountText = currencyCode != null
         ? row.amount.toCurrency(locale, currencyCode!)
         : row.amount.toFormattedNumber(locale);
@@ -101,14 +109,25 @@ class MobilePaymentRow extends StatelessWidget {
                 ),
                 SizedBox(
                   width: 40,
-                  child: row.isAwaiting && onMarkProcessed != null
-                      ? IconButton(
-                          icon: const Icon(Icons.check_circle_outline,
-                              size: 20, color: AppTheme.foreground),
-                          visualDensity: VisualDensity.compact,
-                          onPressed: onMarkProcessed,
-                        )
-                      : const SizedBox.shrink(),
+                  child: row.isAwaiting
+                      ? (onMarkProcessed != null
+                          ? IconButton(
+                              icon: const Icon(Icons.check_circle_outline,
+                                  size: 20, color: AppTheme.foreground),
+                              tooltip: l10n.markAsProcessed,
+                              visualDensity: VisualDensity.compact,
+                              onPressed: onMarkProcessed,
+                            )
+                          : const SizedBox.shrink())
+                      : (onEdit != null
+                          ? IconButton(
+                              icon: const Icon(Icons.edit_outlined,
+                                  size: 20, color: AppTheme.mutedForeground),
+                              tooltip: l10n.editPaymentTooltip,
+                              visualDensity: VisualDensity.compact,
+                              onPressed: onEdit,
+                            )
+                          : const SizedBox.shrink()),
                 ),
               ],
             ),
