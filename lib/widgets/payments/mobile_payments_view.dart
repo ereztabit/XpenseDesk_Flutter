@@ -13,6 +13,7 @@ import '../manager_dashboard/paging_overflow_notice.dart';
 import 'mobile_bulk_action_card.dart';
 import 'mobile_payments_table.dart';
 import 'payments_active_filter_badge.dart';
+import 'payments_found_caption.dart';
 
 /// Mobile composition of the Payments Report body (D16/D17): pinned title row
 /// (back · title · filter badge · Export All), animated bulk card, caption,
@@ -132,13 +133,10 @@ class MobilePaymentsView extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 12),
-        Text(
-          l10n.selectSheetsCaption,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.foreground,
-          ),
+        PaymentsFoundCaption(
+          rows: rows,
+          locale: locale,
+          currencyCode: currencyCode,
         ),
         const SizedBox(height: 8),
         Expanded(

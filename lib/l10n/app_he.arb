@@ -699,7 +699,7 @@
   "govIdColumn": "ת.ז.",
   "approvedDateColumn": "תאריך אישור",
   "markAsProcessed": "סימון כטופל",
-  "selectSheetsCaption": "בחרו גליונות לעיבוד תשלום",
+  "sheetsFoundLabel": "גליונות שנמצאו",
   "noPaymentsFound": "אין גליונות התואמים לסינון.",
   "markSheetsProcessedTitle": "סימון גליונות כטופלו",
   "noteField": "הערה",

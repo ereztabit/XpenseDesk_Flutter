@@ -30,8 +30,23 @@ class PaymentsSelectionUtils {
     required String? currencyCode,
   }) {
     final total = totalAmountFor(rows, selectedIds);
-    return currencyCode != null
-        ? total.toCurrency(locale, currencyCode)
+    return _formatAmount(total, locale, currencyCode);
+  }
+
+  /// Combined payable amount of ALL [rows], formatted — for the results
+  /// "sheets found (count · total)" caption.
+  static String allAmountText(
+    List<PaymentReportRow> rows, {
+    required String locale,
+    required String? currencyCode,
+  }) {
+    final total = rows.fold<double>(0, (sum, r) => sum + r.amount);
+    return _formatAmount(total, locale, currencyCode);
+  }
+
+  static String _formatAmount(double total, String locale, String? currency) {
+    return currency != null
+        ? total.toCurrency(locale, currency)
         : total.toFormattedNumber(locale);
   }
 }

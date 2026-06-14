@@ -1,6 +1,18 @@
 # Bug: Payments table caption is misleading — should be a "found sheets" summary
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Replaced the "select sheets" instruction with a results summary
+"Sheets found (N · total)" via a shared `PaymentsFoundCaption` widget (label
+and numeric chunk are separate runs for RTL). Count is the loaded row count;
+total via `PaymentsSelectionUtils.allAmountText`. Retired ARB key
+`selectSheetsCaption`, added `sheetsFoundLabel`. Files:
+`lib/widgets/payments/payments_found_caption.dart`,
+`lib/widgets/payments/desktop_payments_view.dart`,
+`lib/widgets/payments/mobile_payments_view.dart`,
+`lib/utils/payments_utils.dart`. Verified by user.
 
 ## Problem
 

@@ -10,7 +10,8 @@ import 'payment_status_badge.dart';
 /// One mobile Payments row (per the approved mobile mock): leading checkbox
 /// (Awaiting rows only), employee name, amount, payment badge, trailing "Edit"
 /// button — with the sheet's cycle label as an inline secondary line
-/// underneath. Body tap opens the sheet.
+/// underneath. The employee name is the link that opens the sheet (#8 — not the
+/// whole row).
 class MobilePaymentRow extends StatelessWidget {
   const MobilePaymentRow({
     super.key,
@@ -48,12 +49,10 @@ class MobilePaymentRow extends StatelessWidget {
             ? AppTheme.primaryTint
             : null;
 
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        color: rowColor,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        child: Column(
+    return Container(
+      color: rowColor,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -70,14 +69,24 @@ class MobilePaymentRow extends StatelessWidget {
                 ),
                 Expanded(
                   flex: 3,
-                  child: Text(
-                    row.employeeName,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.foreground,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(
+                        onTap: onTap,
+                        child: Text(
+                          row.employeeName,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primary,
+                            decoration: TextDecoration.underline,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Expanded(
@@ -134,7 +143,6 @@ class MobilePaymentRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }

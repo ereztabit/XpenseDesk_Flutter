@@ -13,6 +13,7 @@ import '../manager_dashboard/paging_overflow_notice.dart';
 import 'desktop_bulk_action_bar.dart';
 import 'desktop_payments_table.dart';
 import 'payments_filter_card.dart';
+import 'payments_found_caption.dart';
 
 /// Desktop composition of the Payments Report body (D17 scroll model): title
 /// row, filter card, animated bulk bar, and caption are pinned; only the
@@ -134,13 +135,10 @@ class DesktopPaymentsView extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 16),
-        Text(
-          l10n.selectSheetsCaption,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.foreground,
-          ),
+        PaymentsFoundCaption(
+          rows: rows,
+          locale: locale,
+          currencyCode: currencyCode,
         ),
         const SizedBox(height: 8),
         Expanded(

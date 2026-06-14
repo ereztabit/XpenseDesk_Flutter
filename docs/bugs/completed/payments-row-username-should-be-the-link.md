@@ -1,6 +1,14 @@
 # Bug: Make the employee name the clickable link, not the whole row
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+The employee name is now an underlined primary-colored link (pointer cursor on
+web) that opens the sheet; the whole-row tap was removed (dropped the row
+`InkWell`). Applied on desktop and mobile. Files:
+`lib/widgets/payments/desktop_payments_row.dart`,
+`lib/widgets/payments/mobile_payment_row.dart`. Verified by user.
 
 ## Problem
 

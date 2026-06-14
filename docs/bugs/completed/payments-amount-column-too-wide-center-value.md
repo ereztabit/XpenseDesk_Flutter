@@ -1,6 +1,13 @@
 # Bug: Amount column is too wide and the value should be centered
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Narrowed the amount column (100 → 86) and centered the value and its header.
+Files: `lib/widgets/payments/payments_table_columns.dart`,
+`lib/widgets/payments/desktop_payments_row.dart`,
+`lib/widgets/payments/desktop_payments_header_row.dart`. Verified by user.
 
 ## Problem
 

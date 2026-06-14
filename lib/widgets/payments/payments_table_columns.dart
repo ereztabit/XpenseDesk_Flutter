@@ -7,7 +7,7 @@ class PaymentsTableColumns {
   static const double email = 180;
   static const double cycle = 110;
   static const double approvedDate = 105;
-  static const double amount = 100;
+  static const double amount = 86;
   static const double paymentStatus = 130;
   static const double processedDate = 105;
 

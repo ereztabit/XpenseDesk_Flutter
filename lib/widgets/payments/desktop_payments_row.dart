@@ -9,9 +9,10 @@ import 'payment_status_badge.dart';
 import 'payments_table_columns.dart';
 
 /// One desktop Payments-table row. Checkbox only on Awaiting rows (blank slot
-/// on Processed — deliberately not a disabled control). Body tap opens the
-/// manager's read-only sheet view; the trailing "Edit" button opens the unified
-/// payment-status dialog (mark processed / edit / revert) for any row.
+/// on Processed — deliberately not a disabled control). The employee name is
+/// the link that opens the manager's read-only sheet view (#8 — not the whole
+/// row); the trailing "Edit" button opens the unified payment-status dialog
+/// (mark processed / edit / revert) for any row.
 class DesktopPaymentsRow extends StatelessWidget {
   const DesktopPaymentsRow({
     super.key,
@@ -43,6 +44,12 @@ class DesktopPaymentsRow extends StatelessWidget {
       TextStyle(fontSize: 13, color: AppTheme.foreground);
   static const _mutedCellStyle =
       TextStyle(fontSize: 13, color: AppTheme.mutedForeground);
+  static const _linkStyle = TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    color: AppTheme.primary,
+    decoration: TextDecoration.underline,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -57,15 +64,12 @@ class DesktopPaymentsRow extends StatelessWidget {
             ? AppTheme.primaryTint
             : null;
 
-    return InkWell(
-      onTap: onTap,
-      hoverColor: AppTheme.muted.withAlpha(102),
-      child: Container(
-        color: rowColor,
-        padding: const EdgeInsets.symmetric(
-            horizontal: PaymentsTableColumns.cellGap / 2, vertical: 10),
-        child: Row(
-          children: [
+    return Container(
+      color: rowColor,
+      padding: const EdgeInsets.symmetric(
+          horizontal: PaymentsTableColumns.cellGap / 2, vertical: 10),
+      child: Row(
+        children: [
             _cell(
               PaymentsTableColumns.checkbox,
               row.isAwaiting && onToggleSelection != null
@@ -78,9 +82,18 @@ class DesktopPaymentsRow extends StatelessWidget {
             ),
             _cell(
               PaymentsTableColumns.employee,
-              Text(row.employeeName,
-                  style: _cellStyle.copyWith(fontWeight: FontWeight.w500),
-                  overflow: TextOverflow.ellipsis),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: onTap,
+                    child: Text(row.employeeName,
+                        style: _linkStyle,
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ),
             ),
             _cell(
               PaymentsTableColumns.govId,
@@ -89,8 +102,14 @@ class DesktopPaymentsRow extends StatelessWidget {
             ),
             _cell(
               PaymentsTableColumns.email,
-              Text(row.employeeEmail ?? _dash,
-                  style: _mutedCellStyle, overflow: TextOverflow.ellipsis),
+              row.employeeEmail != null
+                  ? Tooltip(
+                      message: row.employeeEmail!,
+                      child: Text(row.employeeEmail!,
+                          style: _mutedCellStyle,
+                          overflow: TextOverflow.ellipsis),
+                    )
+                  : const Text(_dash, style: _mutedCellStyle),
             ),
             _cell(
               PaymentsTableColumns.cycle,
@@ -106,7 +125,7 @@ class DesktopPaymentsRow extends StatelessWidget {
             _cell(
               PaymentsTableColumns.amount,
               Align(
-                alignment: AlignmentDirectional.centerEnd,
+                alignment: Alignment.center,
                 child: Text(
                   amountText,
                   style: _cellStyle.copyWith(
@@ -151,8 +170,7 @@ class DesktopPaymentsRow extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   Widget _cell(double width, Widget child) {

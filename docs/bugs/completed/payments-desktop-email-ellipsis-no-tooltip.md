@@ -1,6 +1,12 @@
 # Bug: Desktop email cell ellipsizes with no tooltip
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+The desktop email cell is wrapped in a `Tooltip` showing the full address on
+hover (dash rows render plain, no tooltip). File:
+`lib/widgets/payments/desktop_payments_row.dart`. Verified by user.
 
 ## Problem
 

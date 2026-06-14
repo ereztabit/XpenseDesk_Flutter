@@ -699,7 +699,7 @@
   "govIdColumn": "Gov ID",
   "approvedDateColumn": "Approved Date",
   "markAsProcessed": "Mark as Processed",
-  "selectSheetsCaption": "Select sheets to process for payment",
+  "sheetsFoundLabel": "Sheets found",
   "noPaymentsFound": "No sheets match these filters.",
   "markSheetsProcessedTitle": "Mark sheets as processed",
   "noteField": "Note",

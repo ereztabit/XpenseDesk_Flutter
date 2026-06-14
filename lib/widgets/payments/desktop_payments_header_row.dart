@@ -85,6 +85,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             activeField: sortField,
             ascending: sortAscending,
             onSort: onSort,
+            centered: true,
           ),
           PaymentsHeaderCell(
             label: l10n.paymentStatusFilterLabel,
