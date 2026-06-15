@@ -1,5 +1,3 @@
-import 'expense_sheet_status.dart';
-
 /// Row shape returned by every sheet-list endpoint:
 ///   - GET /api/expense-sheets/me           (employee's own sheets)
 ///   - GET /api/expense-sheets/queue        (manager's pending hero card)
@@ -45,9 +43,6 @@ class ExpenseSheetListItem {
     required this.expenseCount,
     this.totalAmount,
   });
-
-  ExpenseSheetStatus? get status =>
-      ExpenseSheetStatus.fromId(expenseSheetStatusId);
 
   factory ExpenseSheetListItem.fromJson(Map<String, dynamic> json) {
     DateTime? parseDate(String? raw) =>

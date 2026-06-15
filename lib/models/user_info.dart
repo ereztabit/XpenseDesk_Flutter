@@ -47,18 +47,6 @@ class UserInfo {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'email': email,
-      'fullName': fullName,
-      'roleId': roleId,
-      'status': status,
-      'companyName': companyName,
-      'languageId': languageId,
-      'govId': govId,
-    };
-  }
-
   @override
   String toString() {
     return 'UserInfo(email: $email, fullName: $fullName, roleId: $roleId, companyName: $companyName, languageId: $languageId)';

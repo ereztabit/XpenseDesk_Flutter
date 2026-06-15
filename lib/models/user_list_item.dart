@@ -16,8 +16,6 @@ class UserListItem {
   });
 
   // Computed properties
-  String get roleName => roleId == 1 ? 'Manager' : 'Employee';
-  
   bool get isActive => status == 'Active';
   
   bool get isPending => status == 'Pending';
@@ -47,35 +45,6 @@ class UserListItem {
       invitedDate: json['invitedDate'] != null
           ? DateTime.parse(json['invitedDate'] as String)
           : null,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'userId': userId,
-      'email': email,
-      'fullName': fullName,
-      'roleId': roleId,
-      'status': status,
-      'invitedDate': invitedDate?.toIso8601String(),
-    };
-  }
-
-  UserListItem copyWith({
-    String? userId,
-    String? email,
-    String? fullName,
-    int? roleId,
-    String? status,
-    DateTime? invitedDate,
-  }) {
-    return UserListItem(
-      userId: userId ?? this.userId,
-      email: email ?? this.email,
-      fullName: fullName ?? this.fullName,
-      roleId: roleId ?? this.roleId,
-      status: status ?? this.status,
-      invitedDate: invitedDate ?? this.invitedDate,
     );
   }
 

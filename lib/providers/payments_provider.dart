@@ -25,8 +25,6 @@ class PaymentsFilterNotifier extends Notifier<PaymentsFilter> {
   PaymentsFilter build() => PaymentsFilter.defaults;
 
   void set(PaymentsFilter filter) => state = filter;
-
-  void reset() => state = PaymentsFilter.defaults;
 }
 
 /// The current report page. Re-fetches whenever the APPLIED filter changes

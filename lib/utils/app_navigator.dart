@@ -18,7 +18,6 @@ class AppRoutes {
   static const String managerProfile = '/manager/profile';
   static const String employeeProfile = '/employee/profile';
   static const String employeeNewExpense = '/employee/new-expense';
-  static const String completePayment = '/complete-payment';
   static const String managerPayments = '/manager/payments';
 }
 

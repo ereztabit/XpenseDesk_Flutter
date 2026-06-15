@@ -9,12 +9,6 @@ class LocaleNotifier extends Notifier<Locale> {
   void setLocale(Locale locale) {
     state = locale;
   }
-
-  void toggleLocale() {
-    state = state.languageCode == 'en' 
-        ? const Locale('he') 
-        : const Locale('en');
-  }
 }
 
 final localeProvider = NotifierProvider<LocaleNotifier, Locale>(

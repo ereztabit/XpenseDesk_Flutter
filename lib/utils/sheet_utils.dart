@@ -162,16 +162,16 @@ class SheetExpenseBuckets {
   /// non-Declined lines ("every still-Pending line → Approved"); Declined lines
   /// (`expenseStatusId == 3`) stay declined. Drives the Approve CTA count/amount
   /// so the caption never overstates the action.
-  static List<ExpenseSummary> approvable(List<ExpenseSummary> all) =>
+  static List<ExpenseSummary> _approvable(List<ExpenseSummary> all) =>
       all.where((e) => e.expenseStatusId != 3).toList(growable: false);
 
   /// Count of lines a whole-sheet approve will approve.
   static int approvableCount(List<ExpenseSummary> all) =>
-      approvable(all).length;
+      _approvable(all).length;
 
   /// Base-currency total of lines a whole-sheet approve will approve
   /// (nulls treated as 0).
-  static double approvableAmount(List<ExpenseSummary> all) => approvable(all)
+  static double approvableAmount(List<ExpenseSummary> all) => _approvable(all)
       .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
 
   /// Base-currency total of the APPROVED lines only — the payable amount

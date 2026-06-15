@@ -18,32 +18,3 @@ enum ExpenseSheetStatus {
     return null;
   }
 }
-
-/// UI-only mode derived from [ExpenseSheetStatus]. Drives the picker styling,
-/// the "+ New expense" button gating, the filter tabs, and the declined banner
-/// on the employee dashboard.
-///
-/// Mapping is 1:1 with the server status (`approved=3` never reaches this
-/// screen — finalised sheets live in history).
-enum SheetMode {
-  draft,
-  submitted,
-  declined;
-
-  static SheetMode? fromStatus(ExpenseSheetStatus? status) {
-    if (status == null) return null;
-    switch (status) {
-      case ExpenseSheetStatus.draft:
-        return SheetMode.draft;
-      case ExpenseSheetStatus.waitingForApproval:
-        return SheetMode.submitted;
-      case ExpenseSheetStatus.declined:
-        return SheetMode.declined;
-      case ExpenseSheetStatus.approved:
-        return null;
-    }
-  }
-
-  static SheetMode? fromStatusId(int? id) =>
-      fromStatus(ExpenseSheetStatus.fromId(id));
-}

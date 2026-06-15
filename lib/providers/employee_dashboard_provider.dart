@@ -78,12 +78,6 @@ class DismissedReturnedAlertKeyNotifier extends Notifier<String?> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsKey, key);
   }
-
-  Future<void> clear() async {
-    state = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_prefsKey);
-  }
 }
 
 final dismissedReturnedAlertKeyProvider =

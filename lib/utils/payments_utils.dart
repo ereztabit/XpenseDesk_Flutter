@@ -17,21 +17,21 @@ enum PaymentsSortField {
 /// Pure selection helpers for the Payments Report.
 class PaymentsSelectionUtils {
   /// Combined payable amount of the selected rows (bulk bar summary).
-  static double totalAmountFor(
+  static double _totalAmountFor(
       List<PaymentReportRow> rows, Set<String> selectedIds) {
     return rows
         .where((r) => selectedIds.contains(r.expenseSheetId))
         .fold<double>(0, (sum, r) => sum + r.amount);
   }
 
-  /// [totalAmountFor], formatted in the company locale/currency for display.
+  /// [_totalAmountFor], formatted in the company locale/currency for display.
   static String totalAmountTextFor(
     List<PaymentReportRow> rows,
     Set<String> selectedIds, {
     required String locale,
     required String? currencyCode,
   }) {
-    final total = totalAmountFor(rows, selectedIds);
+    final total = _totalAmountFor(rows, selectedIds);
     return _formatAmount(total, locale, currencyCode);
   }
 

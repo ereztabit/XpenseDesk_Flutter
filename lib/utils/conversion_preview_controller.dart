@@ -35,8 +35,6 @@ class ConversionPreviewController extends ChangeNotifier {
   ConversionPreview? preview;
   Object? error;
 
-  bool get isLoading => status == ConversionStatus.loading;
-
   /// Save is allowed only when there's no conversion pending and no error —
   /// i.e. idle (nothing to convert / base currency) or a settled success.
   bool get canSave =>
@@ -90,14 +88,6 @@ class ConversionPreviewController extends ChangeNotifier {
         _set(ConversionStatus.error, preview: null, error: e);
       }
     });
-  }
-
-  /// Reset to idle (e.g. after a successful save or when leaving edit mode).
-  void reset() {
-    _debounce?.cancel();
-    _seq++;
-    _lastKey = null;
-    _set(ConversionStatus.idle, preview: null, error: null);
   }
 
   void _set(ConversionStatus next,

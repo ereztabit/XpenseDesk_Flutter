@@ -52,10 +52,6 @@ class UserSearchNotifier extends Notifier<String> {
   void setQuery(String query) {
     state = query;
   }
-
-  void clear() {
-    state = '';
-  }
 }
 
 final userSearchQueryProvider = NotifierProvider<UserSearchNotifier, String>(

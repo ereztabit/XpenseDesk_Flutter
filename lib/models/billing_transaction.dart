@@ -20,7 +20,6 @@ class BillingTransaction {
   // Status IDs: 1=Paid, 2=Failed, 3=Free
   bool get isPaid => billingTransactionStatusId == 1;
   bool get isFailed => billingTransactionStatusId == 2;
-  bool get isFree => billingTransactionStatusId == 3;
   bool get hasInvoice => invoiceUrl != null && invoiceUrl!.isNotEmpty;
 
   factory BillingTransaction.fromJson(Map<String, dynamic> json) {

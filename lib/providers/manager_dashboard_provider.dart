@@ -42,8 +42,6 @@ class SelectedEmployeeFilterNotifier extends Notifier<String?> {
   String? build() => null;
 
   void set(String? userId) => state = userId;
-
-  void clear() => state = null;
 }
 
 final selectedEmployeeFilterProvider =

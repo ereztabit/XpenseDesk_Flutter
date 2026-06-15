@@ -1,5 +1,4 @@
 import 'expense_sheet_log_entry.dart';
-import 'expense_sheet_status.dart';
 import 'expense_summary.dart';
 import 'payment_status.dart';
 
@@ -63,16 +62,6 @@ class ExpenseSheetDetail {
     this.paymentReference,
     this.paymentNote,
   });
-
-  ExpenseSheetStatus? get status =>
-      ExpenseSheetStatus.fromId(expenseSheetStatusId);
-
-  /// Number of expense lines on the sheet.
-  int get expenseCount => expenses.length;
-
-  /// Sum of all line amounts (nulls treated as 0). Base-currency figure.
-  double get totalAmount =>
-      expenses.fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
 
   factory ExpenseSheetDetail.fromJson(Map<String, dynamic> json) {
     DateTime? parseDate(String? raw) =>

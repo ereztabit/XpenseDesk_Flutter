@@ -32,9 +32,7 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
 
   // Captured from context in didChangeDependencies — safe to use in async
   // callbacks that fire after the widget tree may have been torn down.
-  late ScaffoldMessengerState _messenger;
   late NavigatorState _navigator;
-  late String _successMsg;
   late String _failMsg;
   late String _popupBlockedMsg;
 
@@ -52,9 +50,7 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final l10n = AppLocalizations.of(context)!;
-    _messenger = ScaffoldMessenger.of(context);
     _navigator = Navigator.of(context);
-    _successMsg = l10n.subscriptionCreatedSuccess;
     _failMsg = l10n.subscriptionCreationFailed;
     _popupBlockedMsg = l10n.billingPopupBlocked;
 

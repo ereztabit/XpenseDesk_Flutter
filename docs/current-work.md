@@ -6,6 +6,9 @@
 
 Open bugs (see `## report bugs (pending)` below)
 
+Dead-code audit (2026-06-15): 15 stale files + ~25 dead members removed; build green.
+7 open questions need your call — see docs/in-progress/dead-code-audit-2026-06-15.md
+
 The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md).
 
@@ -20,6 +23,10 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
+- [ ] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
+- [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
+- [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
+- [ ] Incorrect logo / favicon -- see docs/bugs/incorrect-logo-favicon.md
 
 ## general environment
 

@@ -57,12 +57,6 @@ class ExchangeRateUnavailableException implements Exception {
   const ExchangeRateUnavailableException();
 }
 
-/// Thrown when the employee tries to edit an Approved expense that lives on a
-/// Declined sheet (server errorCode `ExpenseEditApprovedExpenseOnDeclinedSheet`).
-class EditApprovedExpenseOnDeclinedSheetException implements Exception {
-  const EditApprovedExpenseOnDeclinedSheetException();
-}
-
 /// Thrown when `GET /api/expense-sheets` is called with `statusId` outside
 /// `{2, 3, 4}` (server errorCode `InvalidExpenseSheetStatusForListing`).
 /// Defensive — shouldn't fire under normal use.

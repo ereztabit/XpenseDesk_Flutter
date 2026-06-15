@@ -6,7 +6,6 @@ import '../../models/company_info.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/billing_provider.dart';
 import '../../providers/company_provider.dart';
-import '../../theme/app_theme.dart';
 
 /// The type of billing alert banner to display.
 enum BillingBannerType {
