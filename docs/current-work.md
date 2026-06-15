@@ -6,9 +6,6 @@
 
 Open bugs (see `## report bugs (pending)` below)
 
-Dead-code audit (2026-06-15): 15 stale files + ~25 dead members removed; build green.
-7 open questions need your call — see docs/in-progress/dead-code-audit-2026-06-15.md
-
 The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md).
 
@@ -46,7 +43,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 ## manager expenses report
 
 - [ ] build the spend overview widget for manager and employee docs/in-progress/spend-overview-spec.md
-- [ ] Missing invite users option after signup - quick onboarding flow to allow manager invite users
 
 ## management screens
 - [ ] we need to configure which categories are available

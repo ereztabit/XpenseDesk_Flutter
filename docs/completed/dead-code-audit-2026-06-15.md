@@ -76,7 +76,11 @@ transformation (stories 01–03); the new UI lives in `widgets/employee_dashboar
 
 ---
 
-## ❓ Open questions — left untouched per your call
+## ❓ Open questions — CLOSED
+
+Task completed 2026-06-15. The remaining open questions (#2, #3, #5, #6) were
+reviewed and **disregarded** by the owner — no action needed. Recorded below for
+history only.
 
 ### 1. `CompletePaymentScreen` is an unreachable stub — RESOLVED (deleted, see above)
 
