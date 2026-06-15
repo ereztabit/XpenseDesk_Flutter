@@ -6,6 +6,8 @@
 
 Open bugs (see `## report bugs (pending)` below)
 
+Production readiness: see docs/pre-deployment-issues.md (1 hard blocker — dev auto-login not env-gated).
+
 The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 [docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md).
 
