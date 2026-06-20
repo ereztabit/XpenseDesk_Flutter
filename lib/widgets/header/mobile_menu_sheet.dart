@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
 import '../../utils/responsive_utils.dart';
 import '../language_switcher.dart';
+import 'menu_version_label.dart';
 
 class MobileMenuSheet extends ConsumerStatefulWidget {
   final VoidCallback onClose;
@@ -93,6 +94,12 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         break;
       case 'contact-support':
         await _handleContactSupport(userInfo);
+        break;
+      case 'privacy-policy':
+        await _navigateToRoute('/legal/privacy');
+        break;
+      case 'terms-of-service':
+        await _navigateToRoute('/legal/terms');
         break;
       case 'logout':
         await _handleLogout();
@@ -345,6 +352,8 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                                       ],
                                     )),
 
+                            const SizedBox(height: 8),
+                            const MenuVersionLabel(),
                             const SizedBox(height: 8),
                           ],
                         ),

@@ -156,6 +156,12 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         final t = AppLocalizations.of(context)!;
         await MenuItems.launchContactSupport(userInfo, t);
         break;
+      case 'privacy-policy':
+        if (mounted) Navigator.pushNamed(context, '/legal/privacy');
+        break;
+      case 'terms-of-service':
+        if (mounted) Navigator.pushNamed(context, '/legal/terms');
+        break;
       case 'logout':
         await ref.read(authServiceProvider).logout();
         ref.read(userInfoProvider.notifier).logout();

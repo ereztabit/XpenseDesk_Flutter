@@ -85,6 +85,18 @@ class MenuItems {
         label: t.contactSupport,
         isAction: true,
       ),
+      MenuItem(
+        id: 'privacy-policy',
+        icon: Icons.privacy_tip_outlined,
+        label: t.privacyPolicy,
+        isAction: true,
+      ),
+      MenuItem(
+        id: 'terms-of-service',
+        icon: Icons.article_outlined,
+        label: t.termsOfService,
+        isAction: true,
+      ),
     ];
 
     return allItems

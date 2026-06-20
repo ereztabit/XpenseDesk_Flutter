@@ -1,6 +1,6 @@
 # Bug: Move Privacy Policy and Terms of Service to the Main Menu
 
-> **Status: new**
+> **Status: in progress**
 
 ## Problem
 

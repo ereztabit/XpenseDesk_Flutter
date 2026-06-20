@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/menu_items.dart';
+import 'menu_version_label.dart';
 
 /// Desktop menu overlay - Jira-style popover
 class DesktopMenu extends ConsumerStatefulWidget {
@@ -164,6 +165,12 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                                 ],
                               );
                             }),
+                            Container(
+                              height: 1,
+                              width: double.infinity,
+                              color: AppTheme.border,
+                            ),
+                            const MenuVersionLabel(),
                           ],
                         ),
                       ),

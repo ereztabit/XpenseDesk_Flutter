@@ -10,6 +10,8 @@ class AppFooter extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final year = DateTime.now().year;
 
+    // Single-line footer. Privacy Policy / Terms of Service now live in the
+    // navigation menu (below Contact Support), so the footer is just copyright.
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -21,77 +23,11 @@ class AppFooter extends StatelessWidget {
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isMobile = constraints.maxWidth < 600;
-          
-          if (isMobile) {
-            // Stack vertically on mobile
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Legal Links
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 8,
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to privacy policy
-                      },
-                      child: Text(l10n.privacyPolicy),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to terms of service
-                      },
-                      child: Text(l10n.termsOfService),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Copyright
-                Text(
-                  '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            );
-          }
-          
-          // Desktop layout - side by side
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Copyright
-              Text(
-                '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              
-              // Legal Links
-              Row(
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to privacy policy
-                    },
-                    child: Text(l10n.privacyPolicy),
-                  ),
-                  const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to terms of service
-                    },
-                    child: Text(l10n.termsOfService),
-                  ),
-                ],
-              ),
-            ],
-          );
-        },
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      child: Text(
+        '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
+        style: Theme.of(context).textTheme.bodyMedium,
+        textAlign: TextAlign.center,
       ),
     );
   }

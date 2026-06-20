@@ -17,6 +17,7 @@ import 'screens/sheet_review_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
 import 'screens/expenses_analysis_screen.dart';
 import 'screens/payments_report_screen.dart';
+import 'screens/legal_document_screen.dart';
 import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
@@ -145,6 +146,25 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => const AuthGate(
           mode: AuthGateMode.managerOnly,
           child: CycleExpensesReportScreen(isManager: true),
+        ),
+      );
+
+    // --- Legal (any authenticated user) ---
+    case '/legal/privacy':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.authenticated,
+          child: LegalDocumentScreen(docType: LegalDocumentType.privacy),
+        ),
+      );
+
+    case '/legal/terms':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.authenticated,
+          child: LegalDocumentScreen(docType: LegalDocumentType.terms),
         ),
       );
 

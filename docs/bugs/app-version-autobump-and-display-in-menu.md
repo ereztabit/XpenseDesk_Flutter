@@ -1,6 +1,6 @@
 # Bug: Auto-Bump Minor Version in pubspec.yaml at Commit Time + Show Version in Main Menu
 
-> **Status: new**
+> **Status: in progress**
 
 ## Problem
 

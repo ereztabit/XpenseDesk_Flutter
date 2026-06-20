@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Auto-bump the MINOR component of pubspec.yaml's version on every commit and
+# stage the change so it lands in the same commit. This is how we tell which
+# build reached production (the version is shown at the bottom of the app menu).
+#
+# Format: version: MAJOR.MINOR.PATCH+BUILD  ->  MINOR is incremented.
+# The displayed version is v{MAJOR}.{MINOR} (see lib/providers/app_version_provider.dart).
+#
+# Enable once per clone with:  git config core.hooksPath .githooks
+#
+set -e
+
+# Don't bump on merge commits (avoids surprise bumps when resolving merges).
+GIT_DIR=$(git rev-parse --git-dir)
+if [ -f "$GIT_DIR/MERGE_HEAD" ]; then
+  exit 0
+fi
+
+PUBSPEC="pubspec.yaml"
+[ -f "$PUBSPEC" ] || exit 0
+
+current=$(grep -E '^version: ' "$PUBSPEC" | head -n1 | sed -E 's/^version:[[:space:]]*//')
+[ -n "$current" ] || exit 0
+
+verpart=${current%%+*}            # MAJOR.MINOR.PATCH
+build=""
+case "$current" in
+  *+*) build=${current##*+} ;;    # BUILD (if present)
+esac
+
+major=$(echo "$verpart" | cut -d'.' -f1)
+minor=$(echo "$verpart" | cut -d'.' -f2)
+patch=$(echo "$verpart" | cut -d'.' -f3)
+[ -n "$patch" ] || patch=0
+
+newminor=$((minor + 1))
+if [ -n "$build" ]; then
+  newver="$major.$newminor.$patch+$build"
+else
+  newver="$major.$newminor.$patch"
+fi
+
+# Portable in-place edit (works with both GNU and BSD sed).
+sed -i.bak -E "s/^version:[[:space:]]*.*/version: $newver/" "$PUBSPEC"
+rm -f "$PUBSPEC.bak"
+
+git add "$PUBSPEC"
+echo "pre-commit: bumped app version $current -> $newver"

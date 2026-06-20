@@ -1,6 +1,6 @@
 # Bug: Footer on Mobile Is Too Large — Should Be a Single Line
 
-> **Status: new**
+> **Status: in progress**
 
 ## Problem
 
