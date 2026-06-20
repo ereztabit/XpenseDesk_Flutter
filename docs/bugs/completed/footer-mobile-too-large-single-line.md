@@ -1,6 +1,6 @@
 # Bug: Footer on Mobile Is Too Large — Should Be a Single Line
 
-> **Status: in progress**
+> **Status: done**
 
 ## Problem
 
@@ -31,3 +31,11 @@ mobile footer reduces to just the copyright line, which naturally satisfies this
 Otherwise, lay the links + copyright out on one line (e.g. reduce font size /
 padding and use a single `Row`/`Wrap` that stays on one line). Coordinate the two
 fixes.
+
+## Resolution
+
+`lib/widgets/app_footer.dart` rewritten (98 -> 34 lines) to a single centered
+copyright `Text` for all viewports. The `LayoutBuilder` mobile/desktop split and
+the legal-link `TextButton`s were removed — the legal links moved into the
+navigation menu (see completed/move-legal-links-to-main-menu.md). Vertical
+padding reduced 20 -> 12. Shipped in commit e69c5bd.

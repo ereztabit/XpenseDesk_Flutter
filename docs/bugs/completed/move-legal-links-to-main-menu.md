@@ -1,6 +1,6 @@
 # Bug: Move Privacy Policy and Terms of Service to the Main Menu
 
-> **Status: in progress**
+> **Status: done**
 
 ## Problem
 
@@ -38,3 +38,17 @@ related footer bug `footer-mobile-too-large-single-line.md`).
   external URL. Confirm target with the user.
 - `lib/widgets/app_footer.dart` — remove the dead footer link stubs once the menu
   entries are wired (coordinate with the footer single-line bug).
+
+## Resolution
+
+Added `privacy-policy` and `terms-of-service` action items in
+`lib/models/menu_items.dart` directly after `contact-support`, visible to all
+roles. Wired selection handlers in `lib/widgets/header/app_header.dart` (desktop)
+and `lib/widgets/header/mobile_menu_sheet.dart` (mobile) to navigate to
+`/legal/privacy` and `/legal/terms`. Destinations are a new shared placeholder
+screen `lib/screens/legal_document_screen.dart` (enum-driven, routed through
+`AuthGate(authenticated)` in `lib/router.dart`) showing a localized
+"coming soon" notice (`legalContentComingSoon`, EN + HE) until real content is
+written (still tracked under current-work.md "general environment"). Dead footer
+stubs removed (see completed/footer-mobile-too-large-single-line.md). Shipped in
+commit e69c5bd.

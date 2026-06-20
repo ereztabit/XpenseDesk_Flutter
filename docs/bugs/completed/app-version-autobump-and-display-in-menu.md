@@ -1,6 +1,6 @@
 # Bug: Auto-Bump Minor Version in pubspec.yaml at Commit Time + Show Version in Main Menu
 
-> **Status: in progress**
+> **Status: done**
 
 ## Problem
 
@@ -70,9 +70,19 @@ commit (Claude's or the user's) — it does not depend on Claude remembering.
   - `lib/widgets/header/mobile_menu_sheet.dart` (after the action items)
 - No new ARB string needed — it is just `vX.Y` (a number, not translatable copy).
 
-## Open Questions (confirm with user before implementing)
+## Resolution
 
-- Hook delivery: a tracked script the repo installs, or a documented manual
-  `.git/hooks/pre-commit` setup? (Tracked + an install step is more reproducible.)
-- What happens to the `pubspec` `+build` metadata — leave at `+1`, or also bump?
-- Behavior on merge/rebase/amend commits — bump or skip?
+- **Bump:** tracked `.githooks/pre-commit` reads `version: MAJOR.MINOR.PATCH+BUILD`
+  from `pubspec.yaml`, increments MINOR, writes it back, and `git add`s it so it
+  lands in the same commit. Enabled via `git config core.hooksPath .githooks`.
+  Merge commits are skipped (checks for `MERGE_HEAD`). The `+build` suffix is
+  preserved as-is. First bump fired on commit e69c5bd: `1.0.0+1 -> 1.1.0+1`.
+- **Display:** `package_info_plus` added; `lib/providers/app_version_provider.dart`
+  (`appVersionProvider`, FutureProvider) reads the bundled version and formats it
+  `v{major}.{minor}`. Shared widget `lib/widgets/header/menu_version_label.dart`
+  renders it (muted, centered) at the bottom of both `desktop_menu.dart` and
+  `mobile_menu_sheet.dart`. No ARB key needed (it's a number).
+- Resolved open questions: tracked hook + `core.hooksPath` (reproducible);
+  `+build` left untouched; merge commits skipped.
+- Shipped in commit e69c5bd. Note: each contributor must run
+  `git config core.hooksPath .githooks` once per clone for the bump to fire.

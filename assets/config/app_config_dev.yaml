@@ -4,7 +4,6 @@ api:
 
 app:
   name: XpenseDesk Dev
-  version: 1.0.0
   environment: development
 
 payment:
