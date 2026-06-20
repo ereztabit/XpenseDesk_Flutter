@@ -1,6 +1,6 @@
 # Bug: Organize the Manager Menu by Context
 
-> **Status: new**
+> **Status: completed**
 
 ## Problem
 

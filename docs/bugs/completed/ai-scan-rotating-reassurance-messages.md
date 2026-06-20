@@ -1,6 +1,6 @@
 # Bug: AI Receipt Scan Feels Stuck — Rotate Reassuring Messages During Analysis
 
-> **Status: new**
+> **Status: done**
 
 ## Problem
 
@@ -48,9 +48,18 @@ text line cycles. Suggested copy (final wording TBD with user):
   copy should be its own natural phrasing, not a literal translation of the
   English jokes.
 
-## Open Questions
+## Resolution
 
-- Final message copy + count (and the Hebrew equivalents).
-- Should the messages loop, or stop on the last one if analysis runs very long?
-- Apply the same treatment anywhere else AI work blocks the UI, or just the
-  receipt scan for now?
+The scanning overlay now rotates through 8 reassuring status messages on a ~5s
+timer while analysis runs, fading between lines.
+
+- `lib/l10n/app_en.arb` + `lib/l10n/app_he.arb`: added `newExpenseScanMsg1`
+  through `newExpenseScanMsg8` (Hebrew copy is its own natural phrasing, not a
+  literal translation).
+- `lib/screens/new_expense_screen.dart`: a `Timer.periodic` advances a
+  `_scanMessageIndex` (modulo the message-list length, so it loops) while
+  `_isAnalyzing` is true; cancelled on completion and in `dispose`. The overlay
+  text is wrapped in an `AnimatedSwitcher` for a smooth fade. Existing scan-line,
+  pulse, and dot animations are unchanged.
+
+Verified by the user.
