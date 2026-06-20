@@ -26,6 +26,11 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] Incorrect logo / favicon -- see docs/bugs/incorrect-logo-favicon.md
+- [ ] Footer on mobile is too large -- should be a single line -- see docs/bugs/footer-mobile-too-large-single-line.md
+- [ ] Move Privacy Policy and Terms of Service into the main menu, below Contact Support -- see docs/bugs/move-legal-links-to-main-menu.md
+- [ ] Organize the manager menu by context (grouped sections) -- see docs/bugs/organize-manager-menu-by-context.md
+- [ ] Auto-bump minor version in pubspec.yaml at commit time (staged into the commit) + show v(major.minor) at bottom of main menu (deployment verification) -- see docs/bugs/app-version-autobump-and-display-in-menu.md
+- [ ] AI receipt scan feels stuck -- rotate reassuring status messages every ~5s during analysis -- see docs/bugs/ai-scan-rotating-reassurance-messages.md
 
 ## general environment
 
