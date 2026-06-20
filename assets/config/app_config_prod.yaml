@@ -8,5 +8,5 @@ app:
   environment: production
 
 payment:
-  tranzilaTerminal: xpensedesk
+  tranzilaTerminal: dev123
   use3ds: false
