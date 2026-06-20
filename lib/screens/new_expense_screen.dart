@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:ui_web' as ui_web;
@@ -46,6 +47,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   bool _isAnalyzing = false;
   ReceiptAnalysisResult? _analysisResult;
   bool _aiFailed = false;
+
+  // Rotating reassurance copy shown while the scan runs (~5s per line, loops).
+  Timer? _scanMessageTimer;
+  int _scanMessageIndex = 0;
 
   // Step 2 — form state
   int? _selectedCategoryId;
@@ -133,8 +138,23 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
+  void _startScanMessages() {
+    _scanMessageIndex = 0;
+    _scanMessageTimer?.cancel();
+    _scanMessageTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      setState(() => _scanMessageIndex++);
+    });
+  }
+
+  void _stopScanMessages() {
+    _scanMessageTimer?.cancel();
+    _scanMessageTimer = null;
+  }
+
   @override
   void dispose() {
+    _stopScanMessages();
     _scanController.dispose();
     _pulseController.dispose();
     _shakeCategoryController.dispose();
@@ -364,6 +384,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     });
     _scanController.repeat();
     _pulseController.repeat();
+    _startScanMessages();
 
     try {
       final expenseService = ref.read(expenseServiceProvider);
@@ -371,6 +392,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (!mounted) return;
       _scanController.stop();
       _pulseController.stop();
+      _stopScanMessages();
 
       if (result.aiFailed) {
         setState(() {
@@ -415,6 +437,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (!mounted) return;
       _scanController.stop();
       _pulseController.stop();
+      _stopScanMessages();
       setState(() {
         _aiFailed = true;
         _isAnalyzing = false;
@@ -641,7 +664,22 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     );
   }
 
+  List<String> _scanMessages(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      l10n.newExpenseScanMsg1,
+      l10n.newExpenseScanMsg2,
+      l10n.newExpenseScanMsg3,
+      l10n.newExpenseScanMsg4,
+      l10n.newExpenseScanMsg5,
+      l10n.newExpenseScanMsg6,
+      l10n.newExpenseScanMsg7,
+      l10n.newExpenseScanMsg8,
+    ];
+  }
+
   Widget _buildScanningOverlay(double height) {
+    final scanMessages = _scanMessages(context);
     return AnimatedBuilder(
       animation: Listenable.merge([_scanController, _pulseController]),
       builder: (context, _) {
@@ -734,12 +772,18 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        AppLocalizations.of(context)!.newExpenseAnalyzing,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.foreground,
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        child: Text(
+                          scanMessages[_scanMessageIndex % scanMessages.length],
+                          key: ValueKey(
+                              _scanMessageIndex % scanMessages.length),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.foreground,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),

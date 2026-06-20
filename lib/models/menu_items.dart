@@ -3,10 +3,16 @@ import 'package:url_launcher/url_launcher.dart';
 import '../generated/l10n/app_localizations.dart';
 import 'user_info.dart';
 
+/// Context buckets for the navigation menu. Items are ordered by group and the
+/// renderers draw a divider whenever the group changes (no text headers).
+/// `logout` is its own group so it always gets a dedicated divider.
+enum MenuGroup { work, reports, settings, support, logout }
+
 class MenuItem {
   final String id;
   final IconData icon;
   final String label;
+  final MenuGroup group;
   final bool requiresManagerRole;
   final bool isDestructive;
   final bool isAction;
@@ -16,6 +22,7 @@ class MenuItem {
     required this.id,
     required this.icon,
     required this.label,
+    required this.group,
     this.requiresManagerRole = false,
     this.isDestructive = false,
     this.isAction = false,
@@ -25,76 +32,94 @@ class MenuItem {
 
 class MenuItems {
   static List<MenuItem> getItems(AppLocalizations t, bool isManager) {
+    // Ordered by group; renderers insert a divider on each group change.
     final allItems = [
+      // Work
       MenuItem(
         id: 'dashboard',
         icon: Icons.dashboard_outlined,
         label: t.dashboard,
+        group: MenuGroup.work,
         requiresManagerRole: true,
       ),
       MenuItem(
         id: 'sheet-approvals',
         icon: Icons.fact_check_outlined,
         label: t.sheetApprovals,
+        group: MenuGroup.work,
         requiresManagerRole: true,
       ),
       MenuItem(
         id: 'payments',
         icon: Icons.payments_outlined,
         label: t.paymentsTitle,
+        group: MenuGroup.work,
         requiresManagerRole: true,
       ),
-      MenuItem(
-        id: 'profile',
-        icon: Icons.person_outline,
-        label: t.myProfile,
-      ),
+      // Reports
       MenuItem(
         id: 'expenses-analysis',
         icon: Icons.bar_chart,
         label: t.expensesAnalysis,
+        group: MenuGroup.reports,
         requiresManagerRole: true,
       ),
       MenuItem(
         id: 'expenses-detail-report',
         icon: Icons.description_outlined,
         label: t.expensesDetailReport,
+        group: MenuGroup.reports,
+      ),
+      // Settings — personal profile sits above company/admin settings
+      MenuItem(
+        id: 'profile',
+        icon: Icons.person_outline,
+        label: t.myProfile,
+        group: MenuGroup.settings,
       ),
       MenuItem(
         id: 'company-config',
         icon: Icons.settings_outlined,
         label: t.companyConfiguration,
+        group: MenuGroup.settings,
         requiresManagerRole: true,
       ),
       MenuItem(
         id: 'user-management',
         icon: Icons.people_outline,
         label: t.userManagement,
+        group: MenuGroup.settings,
         requiresManagerRole: true,
       ),
-      MenuItem(
-        id: 'logout',
-        icon: Icons.logout,
-        label: t.logout,
-        isDestructive: true,
-        isAction: true,
-      ),
+      // Support & legal
       MenuItem(
         id: 'contact-support',
         icon: Icons.email_outlined,
         label: t.contactSupport,
+        group: MenuGroup.support,
         isAction: true,
       ),
       MenuItem(
         id: 'privacy-policy',
         icon: Icons.privacy_tip_outlined,
         label: t.privacyPolicy,
+        group: MenuGroup.support,
         isAction: true,
       ),
       MenuItem(
         id: 'terms-of-service',
         icon: Icons.article_outlined,
         label: t.termsOfService,
+        group: MenuGroup.support,
+        isAction: true,
+      ),
+      // Logout — own group → always a dedicated divider
+      MenuItem(
+        id: 'logout',
+        icon: Icons.logout,
+        label: t.logout,
+        group: MenuGroup.logout,
+        isDestructive: true,
         isAction: true,
       ),
     ];

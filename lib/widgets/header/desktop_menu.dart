@@ -130,41 +130,8 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
                               color: AppTheme.border, // bg-border
                             ),
 
-                            // Menu items
-                            ...MenuItems.getItems(t!, widget.isManager).asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final item = entry.value;
-                              final items = MenuItems.getItems(t, widget.isManager);
-                              final isLast = index == items.length - 1;
-                              final isPrevItemAction = index > 0 && items[index - 1].isAction;
-                              
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (index == 0)
-                                    const SizedBox.shrink(),
-                                  if ((item.isAction && !isPrevItemAction) || (isLast && item.isDestructive) || item.id == 'contact-support')
-                                    Container(
-                                      height: 1,
-                                      width: double.infinity,
-                                      color: AppTheme.border,
-                                    ),
-                                  Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: (index == 0 || item.isAction) ? 4 : 0,
-                                    ),
-                                    child: _buildMenuItem(
-                                      icon: item.icon,
-                                      label: item.label,
-                                      onTap: () => widget.onMenuItemSelected(item.id),
-                                      isAction: item.isAction,
-                                      isActive: !item.isAction &&
-                                          item.id == MenuItems.activeIdForRoute(widget.currentRoute),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }),
+                            // Menu items — grouped, divider on each group change
+                            ..._buildGroupedItems(t!),
                             Container(
                               height: 1,
                               width: double.infinity,
@@ -243,6 +210,35 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
         ],
       ),
     );
+  }
+
+  /// Builds the menu rows in group order, inserting a divider whenever the
+  /// group changes. Empty groups (role-filtered) produce no stray dividers.
+  List<Widget> _buildGroupedItems(AppLocalizations t) {
+    final items = MenuItems.getItems(t, widget.isManager);
+    final widgets = <Widget>[];
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (i > 0 && item.group != items[i - 1].group) {
+        widgets.add(Container(
+          height: 1,
+          width: double.infinity,
+          color: AppTheme.border,
+        ));
+      }
+      widgets.add(Padding(
+        padding: EdgeInsets.symmetric(vertical: item.isAction ? 4 : 0),
+        child: _buildMenuItem(
+          icon: item.icon,
+          label: item.label,
+          onTap: () => widget.onMenuItemSelected(item.id),
+          isAction: item.isAction,
+          isActive: !item.isAction &&
+              item.id == MenuItems.activeIdForRoute(widget.currentRoute),
+        ),
+      ));
+    }
+    return widgets;
   }
 
   Widget _buildMenuItem({

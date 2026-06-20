@@ -140,6 +140,57 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
+  /// Builds the sheet rows in group order, inserting a divider whenever the
+  /// group changes. Empty groups (role-filtered) produce no stray dividers.
+  List<Widget> _buildGroupedItems(List<MenuItem> items) {
+    final widgets = <Widget>[];
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (i > 0 && item.group != items[i - 1].group) {
+        widgets.add(Container(
+          height: 1,
+          margin: const EdgeInsetsDirectional.only(
+              start: 20, end: 20, top: 8, bottom: 8),
+          color: AppTheme.border,
+        ));
+      }
+      final isActive = !item.isAction &&
+          item.id == MenuItems.activeIdForRoute(widget.currentRoute);
+      final textColor = isActive
+          ? AppTheme.primary
+          : (item.isAction ? AppTheme.mutedForeground : AppTheme.foreground);
+      widgets.add(InkWell(
+        onTap: () => _handleMenuItemSelected(item.id),
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: Container(
+          color: isActive ? AppTheme.primary.withAlpha(25) : null,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Icon(item.icon,
+                  size: 20,
+                  color:
+                      isActive ? AppTheme.primary : AppTheme.mutedForeground),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ));
+    }
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -265,92 +316,8 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                           children: [
                             const SizedBox(height: 8),
 
-                            // Nav items (non-action)
-                            ...menuItems
-                                .where((item) => !item.isAction)
-                                .map((item) {
-                                  final isActive = item.id ==
-                                      MenuItems.activeIdForRoute(widget.currentRoute);
-                                  return InkWell(
-                                      onTap: () =>
-                                          _handleMenuItemSelected(item.id),
-                                      hoverColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
-                                      child: Container(
-                                        color: isActive
-                                            ? AppTheme.primary.withAlpha(25)
-                                            : null,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 20,
-                                          vertical: 16,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(item.icon,
-                                                size: 20,
-                                                color: isActive
-                                                    ? AppTheme.primary
-                                                    : AppTheme.mutedForeground),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Text(
-                                                item.label,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: isActive
-                                                      ? AppTheme.primary
-                                                      : AppTheme.foreground,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                }),
-
-                            const Divider(height: 1),
-
-                            // Action items (logout, contact-support)
-                            ...menuItems
-                                .where((item) => item.isAction)
-                                .map((item) => Column(
-                                      children: [
-                                        if (item.id == 'contact-support')
-                                          const Divider(height: 1),
-                                        InkWell(
-                                          onTap: () =>
-                                              _handleMenuItemSelected(item.id),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 20,
-                                              vertical: 16,
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Icon(item.icon,
-                                                    size: 20,
-                                                    color:
-                                                        AppTheme.mutedForeground),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Text(
-                                                    item.label,
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight: FontWeight.w500,
-                                                      color:
-                                                          AppTheme.mutedForeground,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    )),
+                            // Menu items — grouped, divider on each group change
+                            ..._buildGroupedItems(menuItems),
 
                             const SizedBox(height: 8),
                             const MenuVersionLabel(),

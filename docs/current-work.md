@@ -26,8 +26,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] Incorrect logo / favicon -- see docs/bugs/incorrect-logo-favicon.md
-- [ ] Organize the manager menu by context (grouped sections) -- see docs/bugs/organize-manager-menu-by-context.md
-- [ ] AI receipt scan feels stuck -- rotate reassuring status messages every ~5s during analysis -- see docs/bugs/ai-scan-rotating-reassurance-messages.md
 
 ## general environment
 
