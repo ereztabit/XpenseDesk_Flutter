@@ -14,4 +14,5 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-06-21 | v1.7 | Remove manager login buttons | Remove the dev/manager quick-login buttons from the login screen so no dev login affordance reaches production. |
 | 2026-06-21 | v1.6 | Branching & release method | Adopt develop/main trunk-and-release flow with start-feature / finish-feature / ship-feature skills; block search-engine indexing for the private app. |
