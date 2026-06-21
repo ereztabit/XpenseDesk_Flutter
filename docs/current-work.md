@@ -26,7 +26,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] Incorrect logo / favicon -- see docs/bugs/incorrect-logo-favicon.md
 - [ ] Onboarding "send me updates" flag may not persist to the server -- see docs/bugs/onboarding-send-updates-flag-not-persisted.md
-- [ ] Billing -- monthly next-billing date off by one day (DB is correct) -- see docs/bugs/billing-monthly-next-billing-date-off-by-one.md
 - [ ] Cancel-plan confirmation is confusing during free / coupon-free period -- see docs/bugs/cancel-plan-during-free-period-confusing-confirm.md
 - [ ] OTP expiry unverified + test code 1-6 still works in prod -- see docs/bugs/otp-expiry-and-test-code-active-in-prod.md
 

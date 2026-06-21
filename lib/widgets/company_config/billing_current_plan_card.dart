@@ -94,20 +94,6 @@ class _PlanCard extends StatelessWidget {
     }
   }
 
-  /// First-charge date for a trial-with-commitment user.
-  ///
-  /// Charge fires the day after the trial ends; if the user has free coupon
-  /// months, those stack on top of the trial. The month-add uses
-  /// `DateTime(y, m + n, d)` which rolls over for end-of-month dates
-  /// (Jan 31 + 1 month → Mar 3) — acceptable until the API exposes a
-  /// canonical `firstChargeDate` field.
-  DateTime _firstChargeDateAfterTrial(DateTime trialEnd, int freeMonths) {
-    final base = freeMonths > 0
-        ? DateTime(trialEnd.year, trialEnd.month + freeMonths, trialEnd.day)
-        : trialEnd;
-    return base.add(const Duration(days: 1));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -153,18 +139,17 @@ class _PlanCard extends StatelessWidget {
             ),
 
             // Next Charge box — trial + active subscription (committed during trial).
-            // Date is derived from trialEndDate (+ free months), not subscription.endDate
-            // which represents the end of the full paid cycle.
+            // The first-charge date is the server's subscription.startDate (the day
+            // the paid period begins, already accounting for the trial + any free
+            // months). Falls back to trialEndDate for older payloads without it.
+            // Do NOT add a day — startDate is the authoritative charge date.
             if (_isInTrial &&
                 subscription.isActive &&
                 company?.trialEndDate != null) ...[
               const SizedBox(height: 12),
               _NextChargeBox(
                 planDisplayName: _planDisplayName(),
-                chargeDate: _firstChargeDateAfterTrial(
-                  company!.trialEndDate!,
-                  subscription.freeMonthsRemaining,
-                ),
+                chargeDate: subscription.startDate ?? company!.trialEndDate!,
                 chargeAmount: subscription.nextChargeAmount,
                 l10n: l10n,
                 locale: locale,
