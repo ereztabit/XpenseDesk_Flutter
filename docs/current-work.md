@@ -24,7 +24,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
-- [ ] (in progress) Billing -- cancelling during free trial (rollback, data:null) is treated as an error instead of refreshing to the trial screen -- see docs/bugs/trial-cancel-rollback-treated-as-error.md
 
 ## general environment
 

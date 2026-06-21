@@ -1,6 +1,24 @@
 # Bug: Trial cancel rollback is treated as an error
 
-> **Status: in progress**
+> **Status: done**
+
+## Resolution
+
+Fixed and shipped in **v1.10** (commit `e2110ff`). The cancel call no longer
+branches on the response shape; a successful cancel just validates `success`, and
+the UI is driven by a fresh billing fetch.
+
+- `lib/services/auth_service.dart` -> `cancelSubscription()` now returns `void`:
+  it validates `success` via `_validateResponse` and no longer throws on
+  `data: null` (the legitimate trial-rollback success).
+- `lib/providers/billing_provider.dart` -> `BillingNotifier.cancelSubscription()`
+  awaits the cancel then `refresh()`es from `GET /api/company/billing`, so the
+  trial-vs-`CancellationRequest` state comes from the single source of truth, not
+  the cancel response body.
+- Plan/billing UI (`plan_selection_step.dart`, `billing_current_plan_card.dart`,
+  `plan_card.dart`) verified to render the trial state cleanly with no error toast.
+
+Verified by the user before close.
 
 ## Problem
 
