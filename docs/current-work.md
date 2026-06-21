@@ -30,8 +30,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Billing -- monthly next-billing date off by one day (DB is correct) -- see docs/bugs/billing-monthly-next-billing-date-off-by-one.md
 - [ ] Cancel-plan confirmation is confusing during free / coupon-free period -- see docs/bugs/cancel-plan-during-free-period-confusing-confirm.md
 - [ ] OTP expiry unverified + test code 1-6 still works in prod -- see docs/bugs/otp-expiry-and-test-code-active-in-prod.md
-- [ ] Coupon typed but not applied should auto-apply on "Pay Now" -- see docs/bugs/coupon-autoapply-on-pay-now.md
-- [ ] Downgrade-to-monthly message is missing the monthly price -- see docs/bugs/downgrade-monthly-message-missing-price.md
 
 ## general environment
 

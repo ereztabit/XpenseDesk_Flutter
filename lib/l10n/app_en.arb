@@ -272,6 +272,7 @@
   "billingCancelScheduledChangeConfirm": "Are you sure you want to cancel the scheduled plan change?",
   "billingDoNothing": "Do nothing",
   "billingPendingSwitchTo": "Your plan will switch to",
+  "billingPendingSwitchCost": "at a cost of",
   "billingPendingSwitchOn": "on",
   "billingRefresh": "Refresh",
   "billingUpgradeTitle": "Switch to the annual plan",

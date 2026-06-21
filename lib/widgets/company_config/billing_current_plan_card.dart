@@ -835,6 +835,12 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
 
   @override
   Widget build(BuildContext context) {
+    // Future-plan charge from the API, formatted in the company currency.
+    final symbol =
+        ref.watch(companyProvider).asData?.value.currencySymbol ?? '';
+    final amount =
+        widget.futurePlan.chargeAmount.toCurrencyWithSymbol(widget.locale, symbol);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -852,7 +858,8 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${widget.l10n.billingPendingSwitchTo} ${_futurePlanShortName()}',
+                  '${widget.l10n.billingPendingSwitchTo} ${_futurePlanShortName()} '
+                  '${widget.l10n.billingPendingSwitchCost} $amount',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

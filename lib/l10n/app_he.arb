@@ -272,6 +272,7 @@
   "billingCancelScheduledChangeConfirm": "האם אתה בטוח שברצונך לבטל את שינוי התכנית המתוכנן?",
   "billingDoNothing": "לא משנה",
   "billingPendingSwitchTo": "התכנית שלך תעבור ל",
+  "billingPendingSwitchCost": "בעלות של",
   "billingPendingSwitchOn": "ב",
   "billingRefresh": "רענן",
   "billingUpgradeTitle": "עבור לתוכנית השנתית",
