@@ -59,7 +59,7 @@ class LoginHeader extends ConsumerWidget {
                   child: MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: Image.asset(
-                      'assets/images/logo.png',
+                      'assets/images/xpensedesk-main-logo-trans.png',
                       height: 24,
                       fit: BoxFit.contain,
                     ),

@@ -117,7 +117,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 
     case '/manager/company-config':
       final tab = uri.queryParameters['tab'];
-      final initialTab = tab == 'billing' ? 1 : tab == 'history' ? 2 : 0;
+      // 'history' (Billing History) is hidden/deferred to v2 — a stale or direct
+      // ?tab=history URL falls back to General (0). See docs/bugs/completed.
+      final initialTab = tab == 'billing' ? 1 : 0;
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => AuthGate(

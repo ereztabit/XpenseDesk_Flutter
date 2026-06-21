@@ -24,14 +24,15 @@ This is a Flutter **web** app, so the PWA baseline already exists:
 | `manifest.json` `description` | `"A new Flutter project."` | default |
 | `manifest.json` `theme_color` / `background_color` | `#0175C2` (Flutter blue) | not brand; should be brand purple / app background |
 | `manifest.json` `orientation` | `portrait-primary` | locks desktop/tablet to portrait — likely wrong for a desktop-first web app |
-| Icons (`web/icons/Icon-*.png`, `web/favicon.png`) | default Flutter logo | not XpenseDesk |
+| `web/favicon.png` | ✔ branded 32×32 (shipped) | done — browser-tab favicon fixed |
+| Icons (`web/icons/Icon-*.png`) | default Flutter logo | not XpenseDesk (and gitignored — see Blocker) |
 | `index.html` `<meta description>` | `"A new Flutter project."` | default |
 | `index.html` `apple-mobile-web-app-title` | `"xpensedesk_flutter"` | iOS home-screen label is the package name |
 | `index.html` `apple-touch-icon` | `icons/Icon-192.png` (default) | iOS uses the Flutter logo |
 | `<title>` | `XpenseDesk` ✔ | already branded |
 | loader spinner | brand colours (`#362B71`) ✔ | already branded |
 
-**Brand source available:** `assets/images/logo.png` (the in-app logo) — use it to
+**Brand source available:** `assets/images/xpensedesk-main-logo-trans.png` (the in-app logo) — use it to
 generate the icon set.
 **No icon tooling yet:** `pubspec.yaml` has no `flutter_launcher_icons`.
 
@@ -43,13 +44,37 @@ Brand colours (from `lib/theme/app_theme.dart`):
 Related backlog item this subsumes: *"need to replace the icon of the webpage"*
 (favicon) under `## general environment` in `current-work.md`.
 
+## ⚠️ Blocker found (2026-06-21): PWA assets are gitignored
+
+`.gitignore` excludes the PWA branding assets under a "Web related" block, so they
+were **never committed and never deployed** — the "manifest.json is present" note
+above is only true locally:
+
+```
+# Web related
+/web/icons/
+/web/manifest.json
+```
+
+Consequences on prod today: `<link rel="manifest" href="manifest.json">` and the
+icon refs **404**, so the app is **not actually installable** in production and the
+home-screen/install icons fall back to defaults — regardless of any branding work.
+
+**`web/favicon.png` has already been un-ignored and shipped** (the browser-tab
+favicon bug, commit `eb7232f`), so only `web/icons/` and `web/manifest.json` remain
+ignored.
+
+**First step for this task — must happen before any branding lands:** remove
+`/web/icons/` and `/web/manifest.json` from `.gitignore` and commit the (branded)
+files so they reach the build/deploy. Without this, none of the scope below ships.
+
 ## Scope
 
 1. **Branded `manifest.json`** — `name`: "XpenseDesk", `short_name`: "XpenseDesk",
    real `description`, `theme_color: #362B71`, `background_color: #F7F7FC`,
    `display: standalone`, drop/relax `orientation` (use `any` or omit for desktop),
    keep the 4 icon entries (standard + maskable) but point at branded icons.
-2. **Branded icon set** from `assets/images/logo.png`:
+2. **Branded icon set** from `assets/images/xpensedesk-main-logo-trans.png`:
    - `web/icons/Icon-192.png`, `Icon-512.png` (standard, transparent ok)
    - `web/icons/Icon-maskable-192.png`, `Icon-maskable-512.png` — **maskable needs
      ~10–20% safe-zone padding** so Android's circle/squircle mask doesn't crop the
@@ -74,6 +99,7 @@ Related backlog item this subsumes: *"need to replace the icon of the webpage"*
 
 | File | Change |
 |------|--------|
+| `.gitignore` | **first:** remove `/web/icons/` and `/web/manifest.json` so they deploy (see Blocker above) |
 | `web/manifest.json` | brand name/desc/colours/orientation + icon refs |
 | `web/index.html` | description, apple title, theme-color meta, apple-touch-icon |
 | `web/icons/*`, `web/favicon.png` | replace with branded, maskable-safe icons |
@@ -108,7 +134,7 @@ Related backlog item this subsumes: *"need to replace the icon of the webpage"*
 
 1. **Icon generation:** add `flutter_launcher_icons` (one source → all sizes,
    repeatable) vs hand-export the PNGs once? (Recommend the package.)
-2. **Source artwork:** is `assets/images/logo.png` square and high-res enough for a
+2. **Source artwork:** is `assets/images/xpensedesk-main-logo-trans.png` square and high-res enough for a
    crisp 512×512, and do we have a **maskable** variant (logo on a solid brand tile
    with padding)? May need a designer asset.
 3. **Orientation:** `any` (recommended for desktop-first) vs keep `portrait-primary`?

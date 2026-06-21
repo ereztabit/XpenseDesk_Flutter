@@ -94,20 +94,6 @@ class _PlanCard extends StatelessWidget {
     }
   }
 
-  /// First-charge date for a trial-with-commitment user.
-  ///
-  /// Charge fires the day after the trial ends; if the user has free coupon
-  /// months, those stack on top of the trial. The month-add uses
-  /// `DateTime(y, m + n, d)` which rolls over for end-of-month dates
-  /// (Jan 31 + 1 month → Mar 3) — acceptable until the API exposes a
-  /// canonical `firstChargeDate` field.
-  DateTime _firstChargeDateAfterTrial(DateTime trialEnd, int freeMonths) {
-    final base = freeMonths > 0
-        ? DateTime(trialEnd.year, trialEnd.month + freeMonths, trialEnd.day)
-        : trialEnd;
-    return base.add(const Duration(days: 1));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -153,18 +139,17 @@ class _PlanCard extends StatelessWidget {
             ),
 
             // Next Charge box — trial + active subscription (committed during trial).
-            // Date is derived from trialEndDate (+ free months), not subscription.endDate
-            // which represents the end of the full paid cycle.
+            // The first-charge date is the server's subscription.startDate (the day
+            // the paid period begins, already accounting for the trial + any free
+            // months). Falls back to trialEndDate for older payloads without it.
+            // Do NOT add a day — startDate is the authoritative charge date.
             if (_isInTrial &&
                 subscription.isActive &&
                 company?.trialEndDate != null) ...[
               const SizedBox(height: 12),
               _NextChargeBox(
                 planDisplayName: _planDisplayName(),
-                chargeDate: _firstChargeDateAfterTrial(
-                  company!.trialEndDate!,
-                  subscription.freeMonthsRemaining,
-                ),
+                chargeDate: subscription.startDate ?? company!.trialEndDate!,
                 chargeAmount: subscription.nextChargeAmount,
                 l10n: l10n,
                 locale: locale,
@@ -193,6 +178,10 @@ class _PlanCard extends StatelessWidget {
               _UpgradePromptBanner(
                 l10n: l10n,
                 subscription: subscription,
+                annualPrice: company?.annualPlan?.price,
+                monthlyPrice: company?.monthlyPlan?.price,
+                symbol: company?.currencySymbol ?? '',
+                locale: locale,
               ),
             ],
 
@@ -616,10 +605,21 @@ class _UpgradePromptBanner extends StatefulWidget {
   const _UpgradePromptBanner({
     required this.l10n,
     required this.subscription,
+    required this.annualPrice,
+    required this.monthlyPrice,
+    required this.symbol,
+    required this.locale,
   });
 
   final AppLocalizations l10n;
   final BillingSubscription subscription;
+
+  /// Server-driven plan prices from GET /api/company. Null only for older
+  /// payloads with no plans array — the banner then drops the price fragments.
+  final double? annualPrice;
+  final double? monthlyPrice;
+  final String symbol;
+  final String locale;
 
   @override
   State<_UpgradePromptBanner> createState() => _UpgradePromptBannerState();
@@ -630,6 +630,25 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final annual = widget.annualPrice;
+    final monthly = widget.monthlyPrice;
+
+    // Title with annual savings (monthly x 12 - annual); subtitle with the
+    // annual price. Both server-driven; fall back to price-less copy when the
+    // plans array is unavailable.
+    final annualStr =
+        annual?.toCurrencyWithSymbol(widget.locale, widget.symbol);
+    final savingsStr = (annual != null && monthly != null)
+        ? (monthly * 12 - annual).toCurrencyWithSymbol(widget.locale, widget.symbol)
+        : null;
+    final title = savingsStr != null
+        ? '${l10n.billingUpgradeSave} $savingsStr${l10n.perYear}'
+        : l10n.billingUpgradeTitle;
+    final subtitle = annualStr != null
+        ? '$annualStr${l10n.perYear} · ${l10n.billingUpgradeSubtitle}'
+        : l10n.billingUpgradeSubtitle;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -656,7 +675,7 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.l10n.billingUpgradeTitle,
+                      title,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -665,7 +684,7 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.l10n.billingUpgradeSubtitle,
+                      subtitle,
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppTheme.mutedForeground,
@@ -801,6 +820,12 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
 
   @override
   Widget build(BuildContext context) {
+    // Future-plan charge from the API, formatted in the company currency.
+    final symbol =
+        ref.watch(companyProvider).asData?.value.currencySymbol ?? '';
+    final amount =
+        widget.futurePlan.chargeAmount.toCurrencyWithSymbol(widget.locale, symbol);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -818,7 +843,8 @@ class _PendingSwitchBannerState extends ConsumerState<_PendingSwitchBanner> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${widget.l10n.billingPendingSwitchTo} ${_futurePlanShortName()}',
+                  '${widget.l10n.billingPendingSwitchTo} ${_futurePlanShortName()} '
+                  '${widget.l10n.billingPendingSwitchCost} $amount',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -874,6 +900,7 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
   /// Selected billingPlanId; null until the user taps (defaults to annual).
   int? _selectedPlanId;
   String? _couponCode;
+  final _couponKey = GlobalKey<CouponSectionState>();
   bool _busy = false;
   String? _errorMessage;
   TranzilaPopupService? _popupService;
@@ -937,11 +964,19 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
 
   Future<void> _handleProceed() async {
     if (_busy) return;
+    // Read context-derived values up front — the coupon validation below awaits.
+    final lang = Localizations.localeOf(context).languageCode;
     setState(() {
       _busy = true;
       _errorMessage = null;
     });
-    final lang = Localizations.localeOf(context).languageCode;
+    // Auto-apply a coupon the user typed but never pressed Apply on. If it's
+    // invalid, abort before opening payment — the section shows the inline error.
+    final couponOk = await _couponKey.currentState?.applyPendingCoupon() ?? true;
+    if (!couponOk) {
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
     await _popupService!.openPopup(lang: lang);
     if (mounted) setState(() => _busy = false);
   }
@@ -1071,6 +1106,7 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
 
             // Coupon section
             CouponSection(
+              key: _couponKey,
               onCouponResult: (code) {
                 setState(() => _couponCode = code);
               },

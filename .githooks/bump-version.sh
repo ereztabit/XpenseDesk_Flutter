@@ -1,27 +1,24 @@
 #!/bin/sh
 #
-# Auto-bump the MINOR component of pubspec.yaml's version on every commit and
-# stage the change so it lands in the same commit. This is how we tell which
-# build reached production (the version is shown at the bottom of the app menu).
+# Bump the MINOR component of pubspec.yaml's version and stage the change so it
+# lands in the next commit. This is how we tell which build reached production
+# (the version is shown at the bottom of the app menu).
 #
 # Format: version: MAJOR.MINOR.PATCH+BUILD  ->  MINOR is incremented.
 # The displayed version is v{MAJOR}.{MINOR} (see lib/providers/app_version_provider.dart).
 #
-# Enable once per clone with:  git config core.hooksPath .githooks
+# Run ONLY at feature finish (the `finish-feature` skill calls this), NOT on every
+# commit. Mid-feature commits must not bump the version.
+#
+#   sh .githooks/bump-version.sh
 #
 set -e
 
-# Don't bump on merge commits (avoids surprise bumps when resolving merges).
-GIT_DIR=$(git rev-parse --git-dir)
-if [ -f "$GIT_DIR/MERGE_HEAD" ]; then
-  exit 0
-fi
-
 PUBSPEC="pubspec.yaml"
-[ -f "$PUBSPEC" ] || exit 0
+[ -f "$PUBSPEC" ] || { echo "bump-version: $PUBSPEC not found"; exit 1; }
 
 current=$(grep -E '^version: ' "$PUBSPEC" | head -n1 | sed -E 's/^version:[[:space:]]*//')
-[ -n "$current" ] || exit 0
+[ -n "$current" ] || { echo "bump-version: no version line in $PUBSPEC"; exit 1; }
 
 verpart=${current%%+*}            # MAJOR.MINOR.PATCH
 build=""
@@ -46,4 +43,4 @@ sed -i.bak -E "s/^version:[[:space:]]*.*/version: $newver/" "$PUBSPEC"
 rm -f "$PUBSPEC.bak"
 
 git add "$PUBSPEC"
-echo "pre-commit: bumped app version $current -> $newver"
+echo "bump-version: $current -> $newver"

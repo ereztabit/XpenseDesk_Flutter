@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../models/company_billing.dart';
 import '../../providers/billing_provider.dart';
+import '../../providers/company_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/format_utils.dart';
 import '../../services/auth_service.dart';
@@ -71,10 +72,20 @@ class _SwitchPlanDialogState extends ConsumerState<SwitchPlanDialog> {
     }
   }
 
+  /// Formats the plan price from the company API. Falls back to the
+  /// subscription's next charge amount if the plans array is unavailable
+  /// (older payloads) — never a hardcoded literal.
+  String _planAmount(double? planPrice, String symbol, String locale) {
+    final value = planPrice ?? widget.subscription.nextChargeAmount;
+    return value.toCurrencyWithSymbol(locale, symbol);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
+    final company = ref.watch(companyProvider).asData?.value;
+    final symbol = company?.currencySymbol ?? '';
     final endDate = widget.subscription.endDate.toMediumDate(locale);
 
     return Dialog(
@@ -112,11 +123,17 @@ class _SwitchPlanDialogState extends ConsumerState<SwitchPlanDialog> {
                   border: Border.all(color: AppTheme.border),
                 ),
                 child: _isUpgrade
-                    ? _UpgradeContent(l10n: l10n, locale: locale)
+                    ? _UpgradeContent(
+                        l10n: l10n,
+                        locale: locale,
+                        amount: _planAmount(
+                            company?.annualPlan?.price, symbol, locale),
+                      )
                     : _DowngradeContent(
                         l10n: l10n,
                         endDate: endDate,
-                        locale: locale,
+                        amount: _planAmount(
+                            company?.monthlyPlan?.price, symbol, locale),
                       ),
               ),
 
@@ -184,16 +201,27 @@ class _SwitchPlanDialogState extends ConsumerState<SwitchPlanDialog> {
 // ─── Upgrade content (monthly → annual) ─────────────────────────────────────
 
 class _UpgradeContent extends StatelessWidget {
-  const _UpgradeContent({required this.l10n, required this.locale});
+  const _UpgradeContent({
+    required this.l10n,
+    required this.locale,
+    required this.amount,
+  });
 
   final AppLocalizations l10n;
   final String locale;
 
+  /// Annual plan price, server-driven and pre-formatted by the parent.
+  final String amount;
+
   @override
   Widget build(BuildContext context) {
+    // TODO(bug #8 / backend): the "starts on / renews on" dates are computed
+    // naively as today + 1 year and ignore the already-paid period and any
+    // remaining free months. The correct projected dates require a backend
+    // switch-preview — see docs/bugs/billing-plan-switch-preview-charge-and-dates.md
+    // in the server repo. Until then this date is approximate.
     final today = DateTime.now();
     final renewDate = DateTime(today.year + 1, today.month, today.day);
-    final amount = (300.0).toSmartCurrency(locale, 'USD');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,17 +274,17 @@ class _DowngradeContent extends StatelessWidget {
   const _DowngradeContent({
     required this.l10n,
     required this.endDate,
-    required this.locale,
+    required this.amount,
   });
 
   final AppLocalizations l10n;
   final String endDate;
-  final String locale;
+
+  /// Monthly plan price, server-driven and pre-formatted by the parent.
+  final String amount;
 
   @override
   Widget build(BuildContext context) {
-    final amount = (30.0).toSmartCurrency(locale, 'USD');
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

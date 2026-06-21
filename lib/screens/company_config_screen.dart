@@ -11,7 +11,9 @@ import '../widgets/company_config/billing_current_plan_card.dart';
 import '../widgets/company_config/billing_payment_method_card.dart';
 import '../widgets/company_config/billing_information_card.dart';
 import '../widgets/company_config/billing_danger_zone_card.dart';
-import '../widgets/company_config/billing_history_tab.dart';
+// Billing History tab hidden and deferred to v2 — restore this import and the
+// tab wiring below to bring it back. See docs/bugs/completed.
+// import '../widgets/company_config/billing_history_tab.dart';
 import '../widgets/app_button.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
@@ -77,9 +79,11 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      // Billing History (tab 3) is hidden and deferred to v2 — see
+      // docs/bugs/completed/hide-transaction-history-defer-v2.md
+      length: 2,
       vsync: this,
-      initialIndex: widget.initialTab.clamp(0, 2),
+      initialIndex: widget.initialTab.clamp(0, 1),
     );
     _companyNameFocusNode.addListener(() {
       if (!_companyNameFocusNode.hasFocus) _formKey.currentState?.validate();
@@ -270,7 +274,8 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                           final tabs = [
                             l10n.companyConfigTabGeneral,
                             l10n.companyConfigTabBilling,
-                            l10n.companyConfigTabHistory,
+                            // companyConfigTabHistory — Billing History hidden
+                            // and deferred to v2.
                           ];
                           return Row(
                             children: [
@@ -325,13 +330,9 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                       ),
                     ),
 
-                    // Tab 3: Billing History
-                    RefreshableScrollView(
-                      padding: const EdgeInsets.only(top: 16, bottom: 24),
-                      child: ConstrainedContent(
-                        child: const BillingHistoryTab(),
-                      ),
-                    ),
+                    // Tab 3: Billing History — hidden, deferred to v2.
+                    // Kept here (commented) alongside its widget/provider so it
+                    // can be restored quickly. See bug doc in docs/bugs/completed.
                   ],
                 ),
               ),
@@ -614,6 +615,7 @@ class _BillingTabContent extends ConsumerWidget {
       ),
       data: (billing) {
         final sub = billing.subscription;
+        final company = ref.watch(companyProvider).asData?.value;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -650,12 +652,18 @@ class _BillingTabContent extends ConsumerWidget {
               ),
             ),
 
-            // Danger Zone card — active subscriptions only
+            // Danger Zone card — active subscriptions only.
+            // Access ends at the trial-end date while still in trial (the
+            // upcoming paid period never starts on cancel), else subscription
+            // end date. See bug #4.
             if (sub != null && sub.isActive)
               Padding(
                 padding: const EdgeInsets.only(top: 24),
                 child: BillingDangerZoneCard(
-                  subscription: sub,
+                  accessUntilDate:
+                      (company?.isInTrial ?? false) && company?.trialEndDate != null
+                          ? company!.trialEndDate!
+                          : sub.endDate,
                   locale: ref.watch(companyLocaleProvider),
                 ),
               ),

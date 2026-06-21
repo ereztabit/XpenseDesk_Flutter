@@ -14,7 +14,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## TODO (Backlog)
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
-- [ ] disable the dev auto-login shortcut on the login screen (dev-only toggle; must never reach PROD). See docs/in-progress/disable-dev-auto-login.md
 - [ ] add logos to the authorize page
 - [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/in-progress/coupon-verbiage-review.md
 
@@ -25,7 +24,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
-- [ ] Incorrect logo / favicon -- see docs/bugs/incorrect-logo-favicon.md
 
 ## general environment
 

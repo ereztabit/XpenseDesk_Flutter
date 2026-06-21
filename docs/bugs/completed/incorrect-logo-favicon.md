@@ -1,6 +1,6 @@
 # Bug: Incorrect logo / favicon
 
-> **Status: new**
+> **Status: done** (favicon. PWA install icons/manifest deferred — see Resolution.)
 
 ## Problem
 
@@ -27,3 +27,22 @@ maskable variants), and make sure `web/index.html` `<link rel="icon">` and
 so tab, bookmark, and install icons are all correct. Note: this overlaps with the
 broader PWA-installable task in `docs/in-progress/pwa-installable-app.md` - the
 favicon can be fixed independently now, or folded into that effort.
+
+## Resolution
+
+Root cause: the branding assets were **gitignored** under a "Web related" block in
+`.gitignore` (`/web/favicon.png`, `/web/icons/`, `/web/manifest.json`), so they
+were never committed and never reached the build/deploy — the browser fell back
+to the default icon.
+
+Fix (favicon): un-ignored `/web/favicon.png`, committed a 32x32 branded
+`web/favicon.png` (2 KB), and added a `?v=2` cache-bust to the `<link rel="icon">`
+in `web/index.html` so stale cached favicons refresh. Verified by the user.
+Shipped on `develop` as part of the v1.7 batch (no version bump).
+
+Still deferred (tracked under docs/in-progress/pwa-installable-app.md): the PWA
+home-screen icons (`web/icons/Icon-*.png`) and `web/manifest.json` are also
+gitignored and need un-ignoring + re-branding so install icons and the manifest
+deploy. Not part of the browser-tab favicon fix.
+
+Files: .gitignore, web/favicon.png, web/index.html.

@@ -13,6 +13,17 @@ This Flutter application is **XpenseDesk** — an AI-powered expense approval to
 
 **These documents are the source of truth for what we're building.** All implementation decisions should align with the MVP definition and user journeys described in these specifications.
 
+## Branching & Release — READ FIRST
+
+**The authoritative method lives in [docs/branching-and-release.md](docs/branching-and-release.md). Follow it exactly.**
+
+- **`develop` is the trunk** — all work and commits happen there. **Never commit straight to `main`.**
+- **`main` is the release/deploy branch** — code reaches it only by merging `develop`. **Pushing `main` is the deploy** (CI auto-deploys the web build to Azure Static Web Apps). Pushing `develop` never deploys.
+- **Never commit, push, or merge without the user's explicit, in-turn consent.** Invoking the `start-feature` / `finish-feature` / `ship-feature` skills counts as consent for the steps those skills perform.
+- **Three phases:** `start-feature` (begin on `develop`) -> `finish-feature` (review + checks + commit/push `develop`, **no merge, no deploy**) -> `ship-feature` (merge `develop` -> `main` + push = deploy).
+- **"Finish the feature" means commit/push `develop` only** — it is NOT a release. Releasing is the separate, explicit `ship-feature` step. No manual deploys.
+- Every shipped feature gets one row in the root [README.md](README.md) feature log.
+
 ## Work Tracking — current-work.md
 
 **ALWAYS read `docs/current-work.md` at the start of every conversation.**

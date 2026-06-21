@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
-import '../../models/company_billing.dart';
 import '../../utils/format_utils.dart';
 import '../app_button.dart';
 import 'cancel_subscription_dialog.dart';
@@ -11,11 +10,14 @@ import 'cancel_subscription_dialog.dart';
 class BillingDangerZoneCard extends StatelessWidget {
   const BillingDangerZoneCard({
     super.key,
-    required this.subscription,
+    required this.accessUntilDate,
     required this.locale,
   });
 
-  final BillingSubscription subscription;
+  /// The date access actually ends on cancel: the trial-end date while still in
+  /// trial (the upcoming paid period never starts), otherwise the subscription
+  /// end date. Computed by the caller (bug #4).
+  final DateTime accessUntilDate;
   final String locale;
 
   @override
@@ -67,7 +69,7 @@ class BillingDangerZoneCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${l10n.billingCancelSubscriptionDesc} ${subscription.endDate.toMediumDate(locale)}.',
+                        '${l10n.billingCancelSubscriptionDesc} ${accessUntilDate.toMediumDate(locale)}.',
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppTheme.mutedForeground,
@@ -94,7 +96,7 @@ class BillingDangerZoneCard extends StatelessWidget {
     showDialog<bool>(
       context: context,
       builder: (_) => CancelSubscriptionDialog(
-        endDate: subscription.endDate,
+        endDate: accessUntilDate,
       ),
     );
   }
