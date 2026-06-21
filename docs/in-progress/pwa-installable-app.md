@@ -31,7 +31,7 @@ This is a Flutter **web** app, so the PWA baseline already exists:
 | `<title>` | `XpenseDesk` ✔ | already branded |
 | loader spinner | brand colours (`#362B71`) ✔ | already branded |
 
-**Brand source available:** `assets/images/logo.png` (the in-app logo) — use it to
+**Brand source available:** `assets/images/xpensedesk-main-logo-trans.png` (the in-app logo) — use it to
 generate the icon set.
 **No icon tooling yet:** `pubspec.yaml` has no `flutter_launcher_icons`.
 
@@ -49,7 +49,7 @@ Related backlog item this subsumes: *"need to replace the icon of the webpage"*
    real `description`, `theme_color: #362B71`, `background_color: #F7F7FC`,
    `display: standalone`, drop/relax `orientation` (use `any` or omit for desktop),
    keep the 4 icon entries (standard + maskable) but point at branded icons.
-2. **Branded icon set** from `assets/images/logo.png`:
+2. **Branded icon set** from `assets/images/xpensedesk-main-logo-trans.png`:
    - `web/icons/Icon-192.png`, `Icon-512.png` (standard, transparent ok)
    - `web/icons/Icon-maskable-192.png`, `Icon-maskable-512.png` — **maskable needs
      ~10–20% safe-zone padding** so Android's circle/squircle mask doesn't crop the
@@ -108,7 +108,7 @@ Related backlog item this subsumes: *"need to replace the icon of the webpage"*
 
 1. **Icon generation:** add `flutter_launcher_icons` (one source → all sizes,
    repeatable) vs hand-export the PNGs once? (Recommend the package.)
-2. **Source artwork:** is `assets/images/logo.png` square and high-res enough for a
+2. **Source artwork:** is `assets/images/xpensedesk-main-logo-trans.png` square and high-res enough for a
    crisp 512×512, and do we have a **maskable** variant (logo on a solid brand tile
    with padding)? May need a designer asset.
 3. **Orientation:** `any` (recommended for desktop-first) vs keep `portrait-primary`?

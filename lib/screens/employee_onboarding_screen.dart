@@ -173,7 +173,7 @@ class _EmployeeOnboardingScreenState
                             // Logo
                             Center(
                               child: Image.asset(
-                                'assets/images/logo.png',
+                                'assets/images/xpensedesk-main-logo-trans.png',
                                 height: 40,
                                 fit: BoxFit.contain,
                               ),

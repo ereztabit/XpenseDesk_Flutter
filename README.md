@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-06-21 | v1.7 | New brand logo + fix payment-screen logo | Replace the old logo.png with xpensedesk-main-logo-trans.png across the app, ship the logo as a static asset on the payment (card authorize) pages so it resolves on prod, and remove the old logo.png. |
 | 2026-06-21 | v1.7 | Plan-switch dialog: server-driven prices | Replace hardcoded plan prices/currency in the monthly/annual switch dialog with the company API's plan prices + currency symbol. Date/proration deferred to a backend follow-up. |
 | 2026-06-21 | v1.7 | Hide transaction history (v2) | Hide the Billing History tab on the Company Config screen and defer it to v2; code kept in place. |
 | 2026-06-21 | v1.7 | Remove manager login buttons | Remove the dev/manager quick-login buttons from the login screen so no dev login affordance reaches production. |

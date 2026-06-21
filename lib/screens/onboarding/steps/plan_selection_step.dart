@@ -26,6 +26,7 @@ class PlanSelectionStep extends ConsumerStatefulWidget {
 class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
   int? _selectedPlanId;
   String? _couponCode;
+  final _couponKey = GlobalKey<CouponSectionState>();
   bool _busy = false;
   String? _errorMessage;
   TranzilaPopupService? _popupService;
@@ -94,11 +95,19 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
 
   Future<void> _handleProceed() async {
     if (_busy) return;
+    // Read context-derived values up front — the coupon validation below awaits.
+    final lang = Localizations.localeOf(context).languageCode;
     setState(() {
       _busy = true;
       _errorMessage = null;
     });
-    final lang = Localizations.localeOf(context).languageCode;
+    // Auto-apply a coupon the user typed but never pressed Apply on. If it's
+    // invalid, abort before opening payment — the section shows the inline error.
+    final couponOk = await _couponKey.currentState?.applyPendingCoupon() ?? true;
+    if (!couponOk) {
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
     await _popupService!.openPopup(lang: lang);
     if (mounted) setState(() => _busy = false);
   }
@@ -230,6 +239,7 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
 
         // Coupon section
         CouponSection(
+          key: _couponKey,
           onCouponResult: (code) {
             setState(() => _couponCode = code);
           },

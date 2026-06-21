@@ -21,10 +21,10 @@ class CouponSection extends ConsumerStatefulWidget {
   final void Function(String? validCode) onCouponResult;
 
   @override
-  ConsumerState<CouponSection> createState() => _CouponSectionState();
+  ConsumerState<CouponSection> createState() => CouponSectionState();
 }
 
-class _CouponSectionState extends ConsumerState<CouponSection> {
+class CouponSectionState extends ConsumerState<CouponSection> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
   bool _isExpanded = false;
@@ -56,6 +56,22 @@ class _CouponSectionState extends ConsumerState<CouponSection> {
     if (_isValid == false) {
       setState(() => _isValid = null);
     }
+  }
+
+  /// Validates a typed-but-unapplied coupon before checkout.
+  ///
+  /// Called by the parent's "pay now" handler (via a [GlobalKey]) so a coupon
+  /// the user typed but never pressed Apply on still takes effect. Returns
+  /// `true` when it is safe to proceed with payment — already applied, nothing
+  /// typed, or the coupon was blocked (proceeds without a coupon) — and `false`
+  /// when a typed coupon is invalid, in which case the inline error is shown and
+  /// the caller should abort.
+  Future<bool> applyPendingCoupon() async {
+    if (_isValid == true || _blocked) return true;
+    if (_controller.text.trim().isEmpty) return true;
+    await _apply();
+    // _apply sets _isValid: true = valid, false = invalid, null = blocked.
+    return _isValid != false;
   }
 
   Future<void> _apply() async {

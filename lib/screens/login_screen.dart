@@ -87,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             // Logo
                             Image.asset(
-                              'assets/images/logo.png',
+                              'assets/images/xpensedesk-main-logo-trans.png',
                               height: 40,
                               fit: BoxFit.contain,
                             ),

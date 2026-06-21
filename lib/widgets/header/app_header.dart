@@ -422,7 +422,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                   child: MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: Image.asset(
-                      'assets/images/logo.png',
+                      'assets/images/xpensedesk-main-logo-trans.png',
                       height: isMobile ? 24 : 32,
                       fit: BoxFit.contain,
                     ),
