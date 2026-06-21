@@ -27,8 +27,10 @@ Azure Static Web Apps.
 
 ## Feature audit log
 
-Every shipped feature gets one row in the root [README.md](../README.md) table:
-`Date | Feature | Description` (description <= 200 chars), newest first. It must
+Every feature gets one row in the root [README.md](../README.md) table:
+`Date | Version | Feature | Description` (description <= 200 chars), newest first.
+The row is inserted at `start-feature` with Version `TBD`; `finish-feature` bumps
+the build and fills the row's Version with the displayed `v{MAJOR}.{MINOR}`. It must
 stay committed/pushed so it is readable on GitHub.
 
 ## The flow

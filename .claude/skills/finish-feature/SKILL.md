@@ -20,7 +20,8 @@ performs.
 
 1. **Be on develop.** `git checkout develop`. All work commits here - never `main`.
 2. **Feature log.** Confirm the feature has a row in the root `README.md` feature
-   log; if missing, add it (`Date | Feature | Description <= 200`).
+   log (added at `start-feature`); if missing, add it
+   (`Date | Version | Feature | Description <= 200`) with Version `TBD`.
 3. **Code review + security review.** Run the `code-review` skill and the
    `security-review` skill on the diff (`git diff origin/main` - covers
    committed-on-develop + working-tree changes). Report findings. A real blocking
@@ -28,9 +29,18 @@ performs.
 4. **Checks green.** Run `flutter analyze` (must be clean) and
    `flutter build web --release --dart-define=ENV=prod` (must compile). If a `test/`
    suite exists, run `flutter test` too. **Any failure -> STOP.**
-5. **Commit + push develop.** Stage the changes, commit with a clear message,
+5. **Bump the app version.** Run `sh .githooks/bump-version.sh` - bumps the minor
+   version in `pubspec.yaml` and stages it. It prints `old -> new` (e.g.
+   `1.6.0+1 -> 1.7.0+1`). **This is the ONLY place the version bumps** (mid-feature
+   commits must not bump). Skip only if this finish carries no shippable app change
+   (pure repo/docs chore) and the user agrees.
+6. **Stamp the version into the feature log.** Take the displayed form of the new
+   version - `v{MAJOR}.{MINOR}` (e.g. `1.7.0+1` -> `v1.7`) - and replace the `TBD`
+   in this feature's `README.md` row with it. If the bump was skipped (chore), leave
+   the row's Version as the current `v{MAJOR}.{MINOR}` or mark it `-`.
+7. **Commit + push develop.** Stage the changes, commit with a clear message,
    `git push origin develop`.
-6. **Done - report and STOP.** State clearly: committed + pushed on `develop`, **not
+8. **Done - report and STOP.** State clearly: committed + pushed on `develop`, **not
    released**. The work is banked on the trunk; deploy later with `ship-feature`.
 
 ## Notes

@@ -9,8 +9,9 @@ Azure Static Web Apps via CI. See [docs/branching-and-release.md](docs/branching
 
 ## Feature log
 
-Newest first. One row per shipped feature.
+Newest first. One row per feature. The row is inserted at `start-feature` (Version
+`TBD`); the version is filled in at `finish-feature` when the build is bumped.
 
-| Date | Feature | Description |
-|------|---------|-------------|
-| 2026-06-21 | Branching & release method | Adopt develop/main trunk-and-release flow with start-feature / ship-feature skills; block search-engine indexing for the private app. |
+| Date | Version | Feature | Description |
+|------|---------|---------|-------------|
+| 2026-06-21 | v1.6 | Branching & release method | Adopt develop/main trunk-and-release flow with start-feature / finish-feature / ship-feature skills; block search-engine indexing for the private app. |

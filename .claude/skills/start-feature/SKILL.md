@@ -24,8 +24,9 @@ improvise around it.
    - If 0, develop already has all of main - nothing to merge.
 4. **Log the work item** in the root `README.md` feature table: insert a new row
    directly under the header divider (newest first):
-   `| <today YYYY-MM-DD> | <feature/bug name> | <description <= 200 chars> |`
-   Ask the user for the name/description if they did not give one.
+   `| <today YYYY-MM-DD> | TBD | <feature/bug name> | <description <= 200 chars> |`
+   The Version is `TBD` here on purpose - `finish-feature` fills it in when the build
+   is bumped. Ask the user for the name/description if they did not give one.
 5. **Do NOT commit.** Leave the README edit (and the synced branch) in place - the
    feature is committed later by `ship-feature` (commits need explicit consent).
    Report: on `develop`, synced with `main`, README row added; ready to work.
