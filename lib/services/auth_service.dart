@@ -337,8 +337,17 @@ class AuthService {
 
   /// Cancel subscription
   /// POST /api/company/subscription/cancel
-  /// Returns updated BillingSubscription on success
-  Future<BillingSubscription> cancelSubscription() async {
+  ///
+  /// Two success shapes, both 200 / success:true:
+  /// - Paying customer (or trial after a real charge): `data` holds the
+  ///   subscription, now in CancellationRequest.
+  /// - Trial rollback (still in trial, never charged): the opt-in is undone,
+  ///   so there is no subscription and `data` is null.
+  ///
+  /// We do not branch on the response shape here — a successful cancel just
+  /// validates `success`. Callers reload billing from GET /api/company/billing
+  /// (the single source of truth) to render the resulting state.
+  Future<void> cancelSubscription() async {
     final sessionToken = await getSessionToken();
     _validateSessionToken(sessionToken);
 
@@ -349,13 +358,6 @@ class AuthService {
     );
 
     _validateResponse(response, 'Failed to cancel subscription');
-
-    final data = response['data'] as Map<String, dynamic>?;
-    if (data == null) {
-      throw const AuthException('Invalid response from server');
-    }
-
-    return BillingSubscription.fromJson(data);
   }
 
   /// Save billing information

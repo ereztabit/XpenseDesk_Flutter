@@ -78,7 +78,7 @@ class _PlanCardState extends State<PlanCard> {
                     : null,
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Price + period
                   Row(
@@ -104,18 +104,24 @@ class _PlanCardState extends State<PlanCard> {
                     ],
                   ),
 
-                  // Savings label
-                  if (widget.savingsLabel != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      widget.savingsLabel!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.success,
-                      ),
-                    ),
-                  ],
+                  // Savings label — fixed-height slot reserved on every card so
+                  // cards with and without a savings line stay equal height
+                  // without an IntrinsicHeight wrapper (which sub-pixel-overflows
+                  // under dart2js). See trial-cancel-rollback bug.
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 20,
+                    child: widget.savingsLabel != null
+                        ? Text(
+                            widget.savingsLabel!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.success,
+                            ),
+                          )
+                        : null,
+                  ),
 
                   // Selected indicator — fixed height to prevent layout shift
                   const SizedBox(height: 16),

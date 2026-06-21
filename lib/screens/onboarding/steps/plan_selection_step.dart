@@ -214,26 +214,24 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
         if (plans.isEmpty)
           _errorBox(l10n.subscriptionCreationFailed)
         else
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (int i = 0; i < plans.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 16),
-                  Expanded(
-                    child: PlanCard(
-                      price: plans[i]
-                          .price
-                          .toCurrencyWithSymbol(locale, company.currencySymbol),
-                      period: plans[i].isMonthly ? l10n.perMonth : l10n.perYear,
-                      isSelected: selectedId == plans[i].billingPlanId,
-                      onTap: () => setState(
-                          () => _selectedPlanId = plans[i].billingPlanId),
-                    ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (int i = 0; i < plans.length; i++) ...[
+                if (i > 0) const SizedBox(width: 16),
+                Expanded(
+                  child: PlanCard(
+                    price: plans[i]
+                        .price
+                        .toCurrencyWithSymbol(locale, company.currencySymbol),
+                    period: plans[i].isMonthly ? l10n.perMonth : l10n.perYear,
+                    isSelected: selectedId == plans[i].billingPlanId,
+                    onTap: () => setState(
+                        () => _selectedPlanId = plans[i].billingPlanId),
                   ),
-                ],
+                ),
               ],
-            ),
+            ],
           ),
         const SizedBox(height: 24),
 

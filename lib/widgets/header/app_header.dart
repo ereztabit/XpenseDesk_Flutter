@@ -12,8 +12,8 @@ import '../language_switcher.dart';
 import '../cycle/cycle_compact_badge.dart';
 import '../../providers/cycle_provider.dart';
 import 'billing_alert_banner.dart';
-import '../pwa/ios_install_auto_prompt.dart';
-import '../pwa/ios_install_instructions_sheet.dart';
+import '../pwa/pwa_install_auto_prompt.dart';
+import '../pwa/pwa_install_launcher.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 ///
@@ -160,7 +160,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         await MenuItems.launchContactSupport(userInfo, t);
         break;
       case 'install-app':
-        if (mounted) await IosInstallInstructionsSheet.show(context);
+        if (mounted) await showPwaInstallSheet(context);
         break;
       case 'privacy-policy':
         if (mounted) Navigator.pushNamed(context, '/legal/privacy');
@@ -448,7 +448,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       children: [
         headerBar,
         const BillingAlertBanner(),
-        const IosInstallAutoPrompt(), // non-visual: auto-opens the install drawer
+        const PwaInstallAutoPrompt(), // non-visual: auto-opens the install drawer
       ],
     );
   }

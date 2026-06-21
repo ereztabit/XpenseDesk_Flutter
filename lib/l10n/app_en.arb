@@ -736,5 +736,11 @@
   "iosInstallStepShare": "Tap the Share button",
   "iosInstallStepAddToHome": "Choose “Add to Home Screen”",
   "iosInstallStepAdd": "Tap “Add”",
-  "iosInstallSheetDone": "Got it"
+  "iosInstallSheetDone": "Got it",
+  "installAppMenuLabel": "Install app",
+  "nativeInstallSheetTitle": "Install XpenseDesk",
+  "nativeInstallSheetBody": "Add XpenseDesk to your device for quick, full-screen access — no app store needed.",
+  "nativeInstallButton": "Install",
+  "pwaInstallMaybeLater": "Maybe later",
+  "nativeInstallManualSteps": "Open your browser menu (⋮), then tap “Install app” (or “Add to Home Screen”)."
 }

@@ -34,3 +34,16 @@ When a v2 item is picked up, move it back into `current-work.md` (or its own
   (web/CreditCard/AuthorizeCard3DS.html lines 66-73) and as dead refs in
   web/CreditCard/authorize.js (labels, prefill, charge payload). Strip the 3DS
   page + JS.
+- [ ] **Track PWA installs / installed-app usage (OPEN QUESTION — investigate)** —
+  We want to know who installs the app. There is no direct "who downloaded" signal
+  on the web; install isn't tied to identity. Candidate approaches to evaluate later:
+  - `appinstalled` event → fire an analytics event (Chromium only; **iOS Safari does
+    not fire it**).
+  - `beforeinstallprompt` `userChoice` outcome (`accepted`/`dismissed`) → track
+    accept rate (Chromium only).
+  - **Most promising / cross-platform:** at app launch detect standalone display-mode
+    (`(display-mode: standalone)` / iOS `navigator.standalone`) and log it against the
+    authenticated user → count distinct users running the installed app (works on iOS
+    too, since it ties to the session, not the install event).
+  Depends on the analytics pipeline — see the "connect Google Analytics / GTM" item
+  in [../current-work.md](../current-work.md). Decide which signals to capture there.

@@ -6,7 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
 import '../../utils/responsive_utils.dart';
 import '../language_switcher.dart';
-import '../pwa/ios_install_instructions_sheet.dart';
+import '../pwa/pwa_install_launcher.dart';
 import 'menu_version_label.dart';
 
 class MobileMenuSheet extends ConsumerStatefulWidget {
@@ -102,7 +102,7 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         final rootNav = Navigator.of(context, rootNavigator: true);
         await _close();
         if (!rootNav.mounted) return;
-        await IosInstallInstructionsSheet.show(rootNav.context);
+        await showPwaInstallSheet(rootNav.context);
         break;
       case 'privacy-policy':
         await _navigateToRoute('/legal/privacy');

@@ -736,5 +736,11 @@
   "iosInstallStepShare": "הקישו על כפתור השיתוף",
   "iosInstallStepAddToHome": "בחרו ב“הוספה למסך הבית”",
   "iosInstallStepAdd": "הקישו על “הוספה”",
-  "iosInstallSheetDone": "הבנתי"
+  "iosInstallSheetDone": "הבנתי",
+  "installAppMenuLabel": "התקנת אפליקציה",
+  "nativeInstallSheetTitle": "התקנת XpenseDesk",
+  "nativeInstallSheetBody": "הוסיפו את XpenseDesk למכשיר לגישה מהירה במסך מלא — ללא צורך בחנות אפליקציות.",
+  "nativeInstallButton": "התקנה",
+  "pwaInstallMaybeLater": "אולי מאוחר יותר",
+  "nativeInstallManualSteps": "פתחו את תפריט הדפדפן (⋮), ולאחר מכן הקישו על “Install app” (או “הוספה למסך הבית”)."
 }
