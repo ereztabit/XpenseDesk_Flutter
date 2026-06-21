@@ -9,6 +9,10 @@ AI-powered expense approval tool for small businesses.
 ## v2 (Post-MVP Backlog)
 - [v2 Checklist](v2/README.md) — features/bugs deferred out of the MVP
 
+## Guides
+- [Flutter Web Deployment Guide](flutter-web-deployment-guide.md) — build + Azure Static Web Apps deploy
+- [PWA Debugging & Verification Guide](pwa-debugging-guide.md) — inspect manifest/icons/service worker; why `flutter run` stubs the manifest
+
 ## In Progress
 - [Card on File Flow](in-progress/card-on-file-flow.md)
 - [Tranzila Hosted Fields Spec](in-progress/tranzila_hosted_fields_spec.md)
