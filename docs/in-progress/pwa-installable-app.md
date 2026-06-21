@@ -1,6 +1,32 @@
 # PWA — Installable XpenseDesk (home-screen icon)
 
-Status: **planned, not started**
+Status: **implemented on `develop` (2026-06-21) — pending browser verification + ship**
+
+## Implemented (2026-06-21)
+
+- **`.gitignore`** — removed `/web/icons/` and `/web/manifest.json`; they now ship.
+- **`web/manifest.json`** — name/short_name → "XpenseDesk", real description,
+  `theme_color #362B71`, `background_color #F7F7FC`, `orientation: any`.
+- **Icon set** generated from `assets/branding/app-icon-source.png` (512² square
+  glyph, kept in-repo) via .NET `System.Drawing` (no ImageMagick on the machine):
+  `Icon-192/512` (transparent glyph), `Icon-maskable-192/512` (glyph at 70% on a
+  **white** tile — the glyph is dark-purple so a purple tile would hide it), and a
+  180² `apple-touch-icon.png` (white tile, 80%). Favicon left as the already-shipped
+  branded 32².
+- **`web/index.html`** — real description, `apple-mobile-web-app-title: "XpenseDesk"`,
+  `apple-touch-icon` → branded 180px, added `<meta name="theme-color" #362B71>`,
+  status-bar-style → `default` (light app).
+- **Decisions:** native browser install prompt only (no custom in-app button this
+  round); `flutter_launcher_icons` not added — hand-generated to keep full control of
+  the branded manifest. Push / background sync / custom SW out of scope.
+- `flutter build web --release` clean; manifest + all 5 icons confirmed in
+  `build/web`.
+
+Original plan below.
+
+---
+
+## (original) Status: planned, not started
 
 ## Goal
 
