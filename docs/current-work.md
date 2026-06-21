@@ -26,6 +26,16 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] Incorrect logo / favicon -- see docs/bugs/incorrect-logo-favicon.md
+- [ ] Onboarding "send me updates" flag may not persist to the server -- see docs/bugs/onboarding-send-updates-flag-not-persisted.md
+- [ ] Credit-card entry page -- headline looks like an input + logo empty on prod -- see docs/bugs/credit-card-entry-page-ui-issues.md
+- [ ] Billing -- monthly next-billing date off by one day (DB is correct) -- see docs/bugs/billing-monthly-next-billing-date-off-by-one.md
+- [ ] Cancel-plan confirmation is confusing during free / coupon-free period -- see docs/bugs/cancel-plan-during-free-period-confusing-confirm.md
+- [ ] OTP expiry unverified + test code 1-6 still works in prod -- see docs/bugs/otp-expiry-and-test-code-active-in-prod.md
+- [ ] Remove the manager login buttons from the login screen -- see docs/bugs/login-remove-manager-login-buttons.md
+- [ ] Coupon typed but not applied should auto-apply on "Pay Now" -- see docs/bugs/coupon-autoapply-on-pay-now.md
+- [ ] Monthly/yearly transition -- wrong message, wrong prices, wrong renewal date -- see docs/bugs/billing-monthly-yearly-transition-wrong-message-and-prices.md
+- [ ] Hide transaction history -- defer to v2 -- see docs/bugs/hide-transaction-history-defer-v2.md
+- [ ] Downgrade-to-monthly message is missing the monthly price -- see docs/bugs/downgrade-monthly-message-missing-price.md
 
 ## general environment
 
