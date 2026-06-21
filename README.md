@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-06-21 | v1.9 | iOS "Add to Home Screen" drawer | iOS has no native install prompt, so guide iPhone users with a bottom drawer: open Safari → go to app.xpensedesk.com → Share → Add to Home Screen. Auto-opens once (remembered when dismissed) + an "Add to Home Screen" menu item opens it on demand. iOS-only, hidden once installed; no effect on desktop/Android. |
 | 2026-06-21 | v1.8 | Installable PWA (branded manifest + icons) | Make XpenseDesk installable to home screen / desktop: brand manifest.json (name, colors, orientation), generate branded + maskable app icons, polish index.html meta, and un-gitignore web/icons + manifest.json so they deploy. Native browser install prompt; no custom in-app button. |
 | 2026-06-21 | v1.7 | Cancel notice uses trial-end date during trial | The cancel-subscription "active until" date showed subscription.endDate (a future paid period that never occurred) while on trial; use trialEndDate when the company is still in trial. |
 | 2026-06-21 | v1.7 | Branded browser-tab favicon | Un-ignore web/favicon.png (it was gitignored so it never deployed), ship a 32x32 branded favicon, and cache-bust the icon link. PWA install icons/manifest deferred to the PWA task. |

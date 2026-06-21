@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:
@@ -32,7 +32,6 @@ jobs:
           action: upload
           app_location: build/web   # the already-built output
           skip_app_build: true      # we built it above; do NOT let SWA build
-          skip_api_build: true      # no managed API
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

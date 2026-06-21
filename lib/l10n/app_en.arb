@@ -728,5 +728,13 @@
   "paymentEditButton": "Edit",
   "paymentStatusUpdatedToast": "Payment status updated",
   "showSpendBreakdown": "Show breakdown",
-  "hideSpendBreakdown": "Hide breakdown"
+  "hideSpendBreakdown": "Hide breakdown",
+  "iosInstallMenuLabel": "Add to Home Screen",
+  "iosInstallSheetTitle": "Add XpenseDesk to Home Screen",
+  "iosInstallStepOpenSafari": "Open Safari",
+  "iosInstallStepGoTo": "Go to this address:",
+  "iosInstallStepShare": "Tap the Share button",
+  "iosInstallStepAddToHome": "Choose “Add to Home Screen”",
+  "iosInstallStepAdd": "Tap “Add”",
+  "iosInstallSheetDone": "Got it"
 }

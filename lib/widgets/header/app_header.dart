@@ -12,6 +12,8 @@ import '../language_switcher.dart';
 import '../cycle/cycle_compact_badge.dart';
 import '../../providers/cycle_provider.dart';
 import 'billing_alert_banner.dart';
+import '../pwa/ios_install_auto_prompt.dart';
+import '../pwa/ios_install_instructions_sheet.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 ///
@@ -114,8 +116,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     _closeMenu();
 
     // Check navigation guard — same as logo tap — before any menu navigation.
-    // contact-support and logout are exempt (support opens external; logout is intentional).
-    if (value != 'contact-support' && value != 'logout') {
+    // contact-support, install-app and logout are exempt (no navigation: support
+    // opens external, install-app opens a sheet, logout is intentional).
+    if (value != 'contact-support' && value != 'install-app' && value != 'logout') {
       final guard = ref.read(navigationGuardProvider);
       if (guard != null) {
         final canLeave = await guard();
@@ -155,6 +158,9 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       case 'contact-support':
         final t = AppLocalizations.of(context)!;
         await MenuItems.launchContactSupport(userInfo, t);
+        break;
+      case 'install-app':
+        if (mounted) await IosInstallInstructionsSheet.show(context);
         break;
       case 'privacy-policy':
         if (mounted) Navigator.pushNamed(context, '/legal/privacy');
@@ -442,6 +448,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
       children: [
         headerBar,
         const BillingAlertBanner(),
+        const IosInstallAutoPrompt(), // non-visual: auto-opens the install drawer
       ],
     );
   }
