@@ -49,7 +49,10 @@ h2 {
   display: none;
 }
 .banner.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
-.banner.info    { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; display: block; }
+/* Info state is the idle "enter your card details" message — render it as a
+   plain subheading (no border/background) so it does not look like an input.
+   Error/success keep their alert-box styling. */
+.banner.info    { background: transparent; color: #374151; border: none; padding: 0; font-size: 14px; font-weight: 500; display: block; }
 .banner.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
 .field-group { margin-bottom: 14px; }
 label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #374151; }
