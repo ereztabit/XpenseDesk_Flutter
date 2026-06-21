@@ -40,6 +40,43 @@
   <title>XpenseDesk</title>
   <link rel="manifest" href="manifest.json">
 
+  <!--
+    PWA install plumbing (Chromium: Android Chrome/Edge, desktop Chrome/Edge).
+    Capture beforeinstallprompt early — it can fire before Flutter boots — stash
+    it, and expose state to Dart via a <html> data attribute + custom events.
+    Dart triggers the native dialog by dispatching 'pwa-install-trigger'.
+    iOS/Safari never fires this; that path uses the manual "Add to Home Screen" flow.
+  -->
+  <script>
+    (function () {
+      var deferred = null;
+      var root = document.documentElement;
+      function setInstallable(v) {
+        root.setAttribute('data-pwa-installable', v ? '1' : '0');
+      }
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();          // suppress Chrome's one-shot mini-infobar
+        deferred = e;
+        setInstallable(true);
+        window.dispatchEvent(new CustomEvent('pwa-install-available'));
+      });
+      window.addEventListener('pwa-install-trigger', function () {
+        if (!deferred) return;
+        deferred.prompt();           // must run inside a user gesture
+        deferred.userChoice.then(function () {
+          deferred = null;           // consumed; re-fires on next load if not installed
+          setInstallable(false);
+          window.dispatchEvent(new CustomEvent('pwa-install-consumed'));
+        });
+      });
+      window.addEventListener('appinstalled', function () {
+        deferred = null;
+        setInstallable(false);
+        window.dispatchEvent(new CustomEvent('pwa-install-consumed'));
+      });
+    })();
+  </script>
+
   <style>
     #flutter-loader {
       position: fixed;

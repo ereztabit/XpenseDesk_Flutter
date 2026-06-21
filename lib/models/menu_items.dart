@@ -93,13 +93,13 @@ class MenuItems {
         requiresManagerRole: true,
       ),
       // Support & legal
-      // iOS-only: install hint (iOS has no native install prompt). Hidden once
-      // the app is already running as an installed PWA.
-      if (PwaUtils.shouldShowIosHint)
+      // Install affordance — Chromium fires the native prompt; iOS shows the
+      // manual "Add to Home Screen" steps. Hidden once already installed.
+      if (PwaUtils.shouldShowInstallAffordance)
         MenuItem(
           id: 'install-app',
-          icon: Icons.ios_share,
-          label: t.iosInstallMenuLabel,
+          icon: PwaUtils.isIOS ? Icons.ios_share : Icons.install_mobile,
+          label: PwaUtils.isIOS ? t.iosInstallMenuLabel : t.installAppMenuLabel,
           group: MenuGroup.support,
           isAction: true,
         ),

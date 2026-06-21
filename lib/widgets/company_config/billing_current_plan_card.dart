@@ -1164,26 +1164,24 @@ class _NoPlanCardState extends ConsumerState<_NoPlanCard> {
     final selectedId = _selectedPlanId ?? company?.defaultPlan?.billingPlanId;
     final symbol = company?.currencySymbol ?? '';
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (int i = 0; i < plans.length; i++) ...[
-            if (i > 0) const SizedBox(width: 16),
-            Expanded(
-              child: PlanCard(
-                price: plans[i].price.toCurrencyWithSymbol(locale, symbol),
-                period: plans[i].isMonthly ? l10n.perMonth : l10n.perYear,
-                isSelected: selectedId == plans[i].billingPlanId,
-                onTap: () =>
-                    setState(() => _selectedPlanId = plans[i].billingPlanId),
-                badgeLabel: plans[i].isAnnual ? l10n.bestValue : null,
-                savingsLabel: plans[i].isAnnual ? l10n.savePercent : null,
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (int i = 0; i < plans.length; i++) ...[
+          if (i > 0) const SizedBox(width: 16),
+          Expanded(
+            child: PlanCard(
+              price: plans[i].price.toCurrencyWithSymbol(locale, symbol),
+              period: plans[i].isMonthly ? l10n.perMonth : l10n.perYear,
+              isSelected: selectedId == plans[i].billingPlanId,
+              onTap: () =>
+                  setState(() => _selectedPlanId = plans[i].billingPlanId),
+              badgeLabel: plans[i].isAnnual ? l10n.bestValue : null,
+              savingsLabel: plans[i].isAnnual ? l10n.savePercent : null,
             ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 }

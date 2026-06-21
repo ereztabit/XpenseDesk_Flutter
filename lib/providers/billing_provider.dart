@@ -64,11 +64,17 @@ class BillingNotifier extends AsyncNotifier<CompanyBilling> {
     _patchSubscription(updated);
   }
 
-  /// Cancels the subscription and patches state.
+  /// Cancels the subscription, then reloads billing from
+  /// GET /api/company/billing (the single source of truth).
+  ///
+  /// A cancel can either move the subscription to CancellationRequest or — when
+  /// still in trial before any charge — roll the opt-in back entirely, leaving
+  /// no subscription. We do not patch from the cancel response shape; we refresh
+  /// and let the billing fetch drive the CancellationRequest-vs-trial UI.
   Future<void> cancelSubscription() async {
     final authService = ref.read(authServiceProvider);
-    final updated = await authService.cancelSubscription();
-    _patchSubscription(updated);
+    await authService.cancelSubscription();
+    await refresh();
   }
 
   /// Saves billing information and refreshes billing state.
