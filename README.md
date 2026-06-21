@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-06-21 | v1.8 | Installable PWA (branded manifest + icons) | Make XpenseDesk installable to home screen / desktop: brand manifest.json (name, colors, orientation), generate branded + maskable app icons, polish index.html meta, and un-gitignore web/icons + manifest.json so they deploy. Native browser install prompt; no custom in-app button. |
 | 2026-06-21 | v1.7 | Cancel notice uses trial-end date during trial | The cancel-subscription "active until" date showed subscription.endDate (a future paid period that never occurred) while on trial; use trialEndDate when the company is still in trial. |
 | 2026-06-21 | v1.7 | Branded browser-tab favicon | Un-ignore web/favicon.png (it was gitignored so it never deployed), ship a 32x32 branded favicon, and cache-bust the icon link. PWA install icons/manifest deferred to the PWA task. |
 | 2026-06-21 | v1.7 | Fix next-charge date off-by-one | The trial next-charge box added +1 day to the trial-end date, showing the charge a day late. Use the server's subscription.startDate (the real charge date) instead of client date math. |

@@ -48,9 +48,8 @@ app.*.map.json
 /android/app/release
 
 # Web related
-# NOTE: favicon.png is intentionally tracked — it must ship in the build/deploy.
-/web/icons/
-/web/manifest.json
+# NOTE: favicon.png, web/icons/, and manifest.json are intentionally tracked —
+# they must ship in the build/deploy for the PWA to be installable.
 
 # Windows related
 windows/flutter/generated_plugin_registrant.cc

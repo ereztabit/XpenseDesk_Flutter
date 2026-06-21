@@ -29,7 +29,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 - [ ] create a real privacy policy
 - [ ] create a real terms and conditions
-- [ ] make the app installable as a PWA (branded manifest/icons, home-screen icon) — subsumes "replace the icon of the webpage". See docs/in-progress/pwa-installable-app.md
+- [x] make the app installable as a PWA (branded manifest/icons, home-screen icon) — subsumes "replace the icon of the webpage". Shipped v1.8 — see docs/in-progress/pwa-installable-app.md
 - [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
 - [ ] login with google
 - [ ] get zehut for customers in IL
