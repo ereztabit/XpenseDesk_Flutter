@@ -32,7 +32,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] OTP expiry unverified + test code 1-6 still works in prod -- see docs/bugs/otp-expiry-and-test-code-active-in-prod.md
 - [ ] Coupon typed but not applied should auto-apply on "Pay Now" -- see docs/bugs/coupon-autoapply-on-pay-now.md
 - [ ] Monthly/yearly transition -- wrong message, wrong prices, wrong renewal date -- see docs/bugs/billing-monthly-yearly-transition-wrong-message-and-prices.md
-- [ ] (in progress) Hide transaction history -- defer to v2 -- see docs/bugs/hide-transaction-history-defer-v2.md
 - [ ] Downgrade-to-monthly message is missing the monthly price -- see docs/bugs/downgrade-monthly-message-missing-price.md
 
 ## general environment
