@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-06-21 | v1.7 | Branded browser-tab favicon | Un-ignore web/favicon.png (it was gitignored so it never deployed), ship a 32x32 branded favicon, and cache-bust the icon link. PWA install icons/manifest deferred to the PWA task. |
 | 2026-06-21 | v1.7 | Fix next-charge date off-by-one | The trial next-charge box added +1 day to the trial-end date, showing the charge a day late. Use the server's subscription.startDate (the real charge date) instead of client date math. |
 | 2026-06-21 | v1.7 | Fix input-looking title on card page | Remove the meaningless "enter your card details" heading on the credit-card authorize page that was styled to look like a text input. Logo half of the bug was fixed by the brand-logo work. |
 | 2026-06-21 | v1.7 | Downgrade banner shows monthly price | The pending-switch banner on the Current Plan card now shows the future-plan charge ("...at a cost of X") from futurePlan.chargeAmount in company currency, not just the date. |

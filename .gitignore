@@ -48,7 +48,7 @@ app.*.map.json
 /android/app/release
 
 # Web related
-/web/favicon.png
+# NOTE: favicon.png is intentionally tracked — it must ship in the build/deploy.
 /web/icons/
 /web/manifest.json
 
