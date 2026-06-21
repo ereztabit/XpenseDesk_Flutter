@@ -25,7 +25,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] Onboarding "send me updates" flag may not persist to the server -- see docs/bugs/onboarding-send-updates-flag-not-persisted.md
-- [ ] Cancel-plan confirmation is confusing during free / coupon-free period -- see docs/bugs/cancel-plan-during-free-period-confusing-confirm.md
 
 ## general environment
 

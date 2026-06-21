@@ -615,6 +615,7 @@ class _BillingTabContent extends ConsumerWidget {
       ),
       data: (billing) {
         final sub = billing.subscription;
+        final company = ref.watch(companyProvider).asData?.value;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -651,12 +652,18 @@ class _BillingTabContent extends ConsumerWidget {
               ),
             ),
 
-            // Danger Zone card — active subscriptions only
+            // Danger Zone card — active subscriptions only.
+            // Access ends at the trial-end date while still in trial (the
+            // upcoming paid period never starts on cancel), else subscription
+            // end date. See bug #4.
             if (sub != null && sub.isActive)
               Padding(
                 padding: const EdgeInsets.only(top: 24),
                 child: BillingDangerZoneCard(
-                  subscription: sub,
+                  accessUntilDate:
+                      (company?.isInTrial ?? false) && company?.trialEndDate != null
+                          ? company!.trialEndDate!
+                          : sub.endDate,
                   locale: ref.watch(companyLocaleProvider),
                 ),
               ),
