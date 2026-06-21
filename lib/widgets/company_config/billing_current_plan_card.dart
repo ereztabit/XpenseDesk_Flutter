@@ -193,6 +193,10 @@ class _PlanCard extends StatelessWidget {
               _UpgradePromptBanner(
                 l10n: l10n,
                 subscription: subscription,
+                annualPrice: company?.annualPlan?.price,
+                monthlyPrice: company?.monthlyPlan?.price,
+                symbol: company?.currencySymbol ?? '',
+                locale: locale,
               ),
             ],
 
@@ -616,10 +620,21 @@ class _UpgradePromptBanner extends StatefulWidget {
   const _UpgradePromptBanner({
     required this.l10n,
     required this.subscription,
+    required this.annualPrice,
+    required this.monthlyPrice,
+    required this.symbol,
+    required this.locale,
   });
 
   final AppLocalizations l10n;
   final BillingSubscription subscription;
+
+  /// Server-driven plan prices from GET /api/company. Null only for older
+  /// payloads with no plans array — the banner then drops the price fragments.
+  final double? annualPrice;
+  final double? monthlyPrice;
+  final String symbol;
+  final String locale;
 
   @override
   State<_UpgradePromptBanner> createState() => _UpgradePromptBannerState();
@@ -630,6 +645,25 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final annual = widget.annualPrice;
+    final monthly = widget.monthlyPrice;
+
+    // Title with annual savings (monthly x 12 - annual); subtitle with the
+    // annual price. Both server-driven; fall back to price-less copy when the
+    // plans array is unavailable.
+    final annualStr =
+        annual?.toCurrencyWithSymbol(widget.locale, widget.symbol);
+    final savingsStr = (annual != null && monthly != null)
+        ? (monthly * 12 - annual).toCurrencyWithSymbol(widget.locale, widget.symbol)
+        : null;
+    final title = savingsStr != null
+        ? '${l10n.billingUpgradeSave} $savingsStr${l10n.perYear}'
+        : l10n.billingUpgradeTitle;
+    final subtitle = annualStr != null
+        ? '$annualStr${l10n.perYear} · ${l10n.billingUpgradeSubtitle}'
+        : l10n.billingUpgradeSubtitle;
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovered = true),
@@ -656,7 +690,7 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.l10n.billingUpgradeTitle,
+                      title,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -665,7 +699,7 @@ class _UpgradePromptBannerState extends State<_UpgradePromptBanner> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.l10n.billingUpgradeSubtitle,
+                      subtitle,
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppTheme.mutedForeground,
