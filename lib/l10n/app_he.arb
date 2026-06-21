@@ -728,5 +728,13 @@
   "paymentEditButton": "עריכה",
   "paymentStatusUpdatedToast": "סטטוס התשלום עודכן",
   "showSpendBreakdown": "הצג פירוט",
-  "hideSpendBreakdown": "הסתר פירוט"
+  "hideSpendBreakdown": "הסתר פירוט",
+  "iosInstallMenuLabel": "הוספה למסך הבית",
+  "iosInstallSheetTitle": "הוספת XpenseDesk למסך הבית",
+  "iosInstallStepOpenSafari": "פתחו את Safari",
+  "iosInstallStepGoTo": "עברו לכתובת הבאה:",
+  "iosInstallStepShare": "הקישו על כפתור השיתוף",
+  "iosInstallStepAddToHome": "בחרו ב“הוספה למסך הבית”",
+  "iosInstallStepAdd": "הקישו על “הוספה”",
+  "iosInstallSheetDone": "הבנתי"
 }

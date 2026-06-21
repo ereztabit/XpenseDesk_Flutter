@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
 import '../../utils/responsive_utils.dart';
 import '../language_switcher.dart';
+import '../pwa/ios_install_instructions_sheet.dart';
 import 'menu_version_label.dart';
 
 class MobileMenuSheet extends ConsumerStatefulWidget {
@@ -94,6 +95,14 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         break;
       case 'contact-support':
         await _handleContactSupport(userInfo);
+        break;
+      case 'install-app':
+        // Capture the root navigator before closing — `context` is defunct once
+        // the sheet route pops, but the root navigator stays mounted.
+        final rootNav = Navigator.of(context, rootNavigator: true);
+        await _close();
+        if (!rootNav.mounted) return;
+        await IosInstallInstructionsSheet.show(rootNav.context);
         break;
       case 'privacy-policy':
         await _navigateToRoute('/legal/privacy');

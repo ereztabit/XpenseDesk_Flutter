@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../generated/l10n/app_localizations.dart';
+import '../utils/pwa_utils.dart';
 import 'user_info.dart';
 
 /// Context buckets for the navigation menu. Items are ordered by group and the
@@ -92,6 +93,16 @@ class MenuItems {
         requiresManagerRole: true,
       ),
       // Support & legal
+      // iOS-only: install hint (iOS has no native install prompt). Hidden once
+      // the app is already running as an installed PWA.
+      if (PwaUtils.shouldShowIosHint)
+        MenuItem(
+          id: 'install-app',
+          icon: Icons.ios_share,
+          label: t.iosInstallMenuLabel,
+          group: MenuGroup.support,
+          isAction: true,
+        ),
       MenuItem(
         id: 'contact-support',
         icon: Icons.email_outlined,
