@@ -14,7 +14,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## TODO (Backlog)
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
-- [ ] disable the dev auto-login shortcut on the login screen (dev-only toggle; must never reach PROD). See docs/in-progress/disable-dev-auto-login.md
 - [ ] add logos to the authorize page
 - [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/in-progress/coupon-verbiage-review.md
 
@@ -33,7 +32,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] OTP expiry unverified + test code 1-6 still works in prod -- see docs/bugs/otp-expiry-and-test-code-active-in-prod.md
 - [ ] Coupon typed but not applied should auto-apply on "Pay Now" -- see docs/bugs/coupon-autoapply-on-pay-now.md
 - [ ] Monthly/yearly transition -- wrong message, wrong prices, wrong renewal date -- see docs/bugs/billing-monthly-yearly-transition-wrong-message-and-prices.md
-- [ ] Hide transaction history -- defer to v2 -- see docs/bugs/hide-transaction-history-defer-v2.md
+- [ ] (in progress) Hide transaction history -- defer to v2 -- see docs/bugs/hide-transaction-history-defer-v2.md
 - [ ] Downgrade-to-monthly message is missing the monthly price -- see docs/bugs/downgrade-monthly-message-missing-price.md
 
 ## general environment
