@@ -5,14 +5,11 @@ import '../app_button.dart';
 
 /// Bottom drawer explaining how to add XpenseDesk to the iOS home screen.
 ///
-/// Linear, browser-agnostic flow: open Safari → go to the app URL → Share →
-/// Add to Home Screen → Add. Starting with "Open Safari" covers users who
-/// arrived in a non-Safari iOS browser (which can't add to the home screen).
+/// The user is already viewing the app in their browser, and iOS launches the
+/// home-screen web clip full-screen regardless of browser — so no "open Safari"
+/// or URL step is needed. Just: Share → Add to Home Screen → Add.
 class IosInstallInstructionsSheet extends StatelessWidget {
   const IosInstallInstructionsSheet({super.key});
-
-  /// The production URL users navigate to in Safari.
-  static const appUrl = 'https://app.xpensedesk.com';
 
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet<void>(
@@ -65,19 +62,15 @@ class IosInstallInstructionsSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            _StepRow(number: 1, text: l10n.iosInstallStepOpenSafari),
-            const SizedBox(height: 14),
             _StepRow(
-              number: 2,
-              text: l10n.iosInstallStepGoTo,
-              extra: const _UrlChip(url: appUrl),
+              number: 1,
+              text: l10n.iosInstallStepShare,
+              refIcon: Icons.ios_share,
             ),
             const SizedBox(height: 14),
-            _StepRow(number: 3, text: l10n.iosInstallStepShare),
+            _StepRow(number: 2, text: l10n.iosInstallStepAddToHome),
             const SizedBox(height: 14),
-            _StepRow(number: 4, text: l10n.iosInstallStepAddToHome),
-            const SizedBox(height: 14),
-            _StepRow(number: 5, text: l10n.iosInstallStepAdd),
+            _StepRow(number: 3, text: l10n.iosInstallStepAdd),
             const SizedBox(height: 24),
             AppButton(
               label: l10n.iosInstallSheetDone,
@@ -92,13 +85,14 @@ class IosInstallInstructionsSheet extends StatelessWidget {
 }
 
 /// Numbered step row: a brand circle with the step number + the instruction,
-/// plus an optional [extra] widget rendered beneath the text (e.g. the URL).
+/// plus an optional [refIcon] chip so the user can recognise the button
+/// referenced in the text (e.g. the iOS Share glyph).
 class _StepRow extends StatelessWidget {
-  const _StepRow({required this.number, required this.text, this.extra});
+  const _StepRow({required this.number, required this.text, this.refIcon});
 
   final int number;
   final String text;
-  final Widget? extra;
+  final IconData? refIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -124,60 +118,33 @@ class _StepRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.35,
-                    color: AppTheme.foreground,
-                  ),
-                ),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              text,
+              style: const TextStyle(
+                fontSize: 15,
+                height: 1.35,
+                color: AppTheme.foreground,
               ),
-              if (extra != null) ...[
-                const SizedBox(height: 8),
-                extra!,
-              ],
-            ],
+            ),
           ),
         ),
+        if (refIcon != null) ...[
+          const SizedBox(width: 8),
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryTint,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppTheme.border),
+            ),
+            child: Icon(refIcon, size: 18, color: AppTheme.primary),
+          ),
+        ],
       ],
-    );
-  }
-}
-
-/// Selectable URL chip so the user can read (and copy) the address to type into
-/// Safari. Forced LTR — a URL must never be reordered under RTL.
-class _UrlChip extends StatelessWidget {
-  const _UrlChip({required this.url});
-
-  final String url;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppTheme.primaryTint,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: SelectableText(
-          url,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.primaryDark,
-          ),
-        ),
-      ),
     );
   }
 }
