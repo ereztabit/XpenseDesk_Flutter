@@ -2,10 +2,14 @@ import 'screen_imports.dart';
 
 enum LegalDocumentType { privacy, terms }
 
-/// Placeholder screen for the Privacy Policy / Terms of Service legal documents.
-/// Real content is tracked separately (see docs/current-work.md "general
-/// environment"); until then this shows a "coming soon" notice so the menu
-/// entries navigate somewhere meaningful.
+/// Placeholder screen for the Privacy Policy. Real content is tracked
+/// separately (see docs/current-work.md "general environment"); until then this
+/// shows a "coming soon" notice.
+///
+/// Terms of Service is NOT rendered here — it is a public static page
+/// (web/legal/terms-he.html) opened directly in a new tab (see
+/// MenuItems.launchTerms). Embedding it as an iframe broke the header's overlay
+/// menu (platform-view z-order) on web.
 class LegalDocumentScreen extends ConsumerStatefulWidget {
   final LegalDocumentType docType;
 

@@ -108,7 +108,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         await _navigateToRoute('/legal/privacy');
         break;
       case 'terms-of-service':
-        await _navigateToRoute('/legal/terms');
+        // Launch first (keeps window.open inside the tap gesture), then close.
+        await MenuItems.launchTerms();
+        await _close();
         break;
       case 'logout':
         await _handleLogout();

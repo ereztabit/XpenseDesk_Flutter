@@ -197,6 +197,15 @@ class MenuItems {
     return null;
   }
 
+  /// Opens the public Hebrew Terms of Service in a new browser tab.
+  /// The document is a static page served at /legal/terms-he.html (no auth),
+  /// so the same URL is reachable in-app, from the login footer, and publicly.
+  /// Always Hebrew, regardless of UI language.
+  static Future<void> launchTerms() async {
+    final uri = Uri.base.resolve('/legal/terms-he.html');
+    await launchUrl(uri, webOnlyWindowName: '_blank');
+  }
+
   static Future<void> launchContactSupport(
     UserInfo userInfo,
     AppLocalizations t,
