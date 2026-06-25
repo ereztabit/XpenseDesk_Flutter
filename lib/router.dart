@@ -161,14 +161,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    case '/legal/terms':
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) => const AuthGate(
-          mode: AuthGateMode.authenticated,
-          child: LegalDocumentScreen(docType: LegalDocumentType.terms),
-        ),
-      );
+    // Terms of Service is a public static page (web/legal/terms-he.html) opened
+    // directly via MenuItems.launchTerms — no in-app route.
 
     // --- Employee ---
     case '/user/dashboard':

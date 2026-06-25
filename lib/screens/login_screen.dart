@@ -189,7 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          const AppFooter(),
+          const AppFooter(showTermsLink: true),
         ],
       ),
     );
