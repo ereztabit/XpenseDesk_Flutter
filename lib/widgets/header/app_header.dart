@@ -116,11 +116,12 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
     _closeMenu();
 
     // Check navigation guard — same as logo tap — before any menu navigation.
-    // contact-support, install-app, terms-of-service and logout are exempt
-    // (no in-app navigation: support/terms open externally, install-app opens a
-    // sheet, logout is intentional).
+    // contact-support, install-app, privacy-policy, terms-of-service and logout
+    // are exempt (no in-app navigation: support/privacy/terms open externally,
+    // install-app opens a sheet, logout is intentional).
     if (value != 'contact-support' &&
         value != 'install-app' &&
+        value != 'privacy-policy' &&
         value != 'terms-of-service' &&
         value != 'logout') {
       final guard = ref.read(navigationGuardProvider);
@@ -167,7 +168,7 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         if (mounted) await showPwaInstallSheet(context);
         break;
       case 'privacy-policy':
-        if (mounted) Navigator.pushNamed(context, '/legal/privacy');
+        await MenuItems.launchPrivacy();
         break;
       case 'terms-of-service':
         await MenuItems.launchTerms();

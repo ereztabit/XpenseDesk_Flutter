@@ -6,7 +6,7 @@ import '../theme/app_theme.dart';
 class AppFooter extends StatelessWidget {
   /// Shows a Terms of Service link beside the copyright line. Used on screens
   /// with no navigation menu (e.g. the login screen) where the menu's legal
-  /// links are otherwise unreachable. Always opens the Hebrew document.
+  /// links are otherwise unreachable. Opens the public marketing-site Terms.
   final bool showTermsLink;
 
   const AppFooter({super.key, this.showTermsLink = false});

@@ -2,7 +2,6 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../models/menu_items.dart';
 import '../../../widgets/app_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
@@ -256,8 +255,6 @@ class _TermsCheckboxField extends StatelessWidget {
   final bool value;
   final ValueChanged<bool?> onChanged;
 
-  static final _privacyUri = Uri.parse('https://www.xpensedesk.com/privacy');
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -305,7 +302,7 @@ class _TermsCheckboxField extends StatelessWidget {
                       decorationColor: AppTheme.primaryDark,
                     ),
                     recognizer: TapGestureRecognizer()
-                      ..onTap = () => launchUrl(_privacyUri, mode: LaunchMode.externalApplication),
+                      ..onTap = MenuItems.launchPrivacy,
                   ),
                 ],
               ),
