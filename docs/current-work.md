@@ -35,7 +35,6 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] get zehut for customers in IL
 - [ ] we need to be able to impersonate a user
 - [ ] we need a admin view to see compaines usage
-- [ ] we need to connect google analytics / GTM
 - [ ] we need to translate better to hebrew
 - [ ] Date pickers: first day of week by country (Israel = Sunday, others = Monday) -- post-MVP. See docs/in-progress/calendar-week-start-localization-spec.md
 - [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/in-progress/post-login-deep-linking-spec.md
