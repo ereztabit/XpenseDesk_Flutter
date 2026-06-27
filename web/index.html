@@ -25,22 +25,24 @@
 
   <!--
     Google Analytics (GA4) — gtag.js, prod-only.
-    Gated to the production host so dev/local/staging traffic is never tracked.
-    The gtag.js <script> is injected programmatically, so off-prod the network
-    request to googletagmanager is never even made.
+    The gtag() queue stub + dataLayer are always defined and exposed on window so
+    Dart (lib/services/analytics_service.dart) can call window.gtag unconditionally.
+    Off-prod nothing drains the queue (no gtag.js loads), so events silently no-op
+    and the network request to googletagmanager is never made. On the production
+    host the real gtag.js loads and config runs, sending queued + live events.
   -->
   <script>
-    (function () {
-      if (window.location.hostname !== 'app.xpensedesk.com') return;
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    if (window.location.hostname === 'app.xpensedesk.com') {
       var s = document.createElement('script');
       s.async = true;
       s.src = 'https://www.googletagmanager.com/gtag/js?id=G-C0F5GTGNZD';
       document.head.appendChild(s);
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-C0F5GTGNZD');
-    })();
+    }
   </script>
 
   <!-- iOS meta tags & icons -->

@@ -6,6 +6,7 @@ import '../../../models/menu_items.dart';
 import '../../../widgets/app_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
+import '../../../providers/analytics_provider.dart';
 import '../../../providers/onboarding_provider.dart';
 import '../../../widgets/email_input_field.dart';
 import '../../../widgets/form_behavior_mixin.dart';
@@ -93,6 +94,8 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
           termsAccepted: _termsAccepted,
           isMarketingConsent: _isMarketingConsent,
         );
+
+    ref.read(analyticsServiceProvider).trackEvent('onboarding_user_info_completed');
 
     widget.onContinue();
   }

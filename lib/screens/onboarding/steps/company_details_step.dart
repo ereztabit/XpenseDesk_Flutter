@@ -6,6 +6,7 @@ import '../../../widgets/app_radio_group.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../models/onboarding/company_submit_request.dart';
 import '../../../models/onboarding/reference_data.dart';
+import '../../../providers/analytics_provider.dart';
 import '../../../providers/onboarding_provider.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../theme/app_theme.dart';
@@ -272,6 +273,10 @@ class _CompanyDetailsStepState extends ConsumerState<CompanyDetailsStep>
             timeZoneId: _selectedTimeZoneId,
           );
       ref.read(onboardingStateProvider.notifier).setOtpKey(otpKey);
+
+      ref
+          .read(analyticsServiceProvider)
+          .trackEvent('onboarding_company_details_completed');
 
       if (mounted) widget.onContinue();
     } on OnboardingException catch (e) {
