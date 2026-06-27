@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../models/onboarding/company_submit_request.dart';
+import '../../../providers/analytics_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/company_provider.dart';
 import '../../../providers/onboarding_provider.dart';
@@ -216,6 +217,8 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
 
       final authService = ref.read(authServiceProvider);
       await authService.storeSessionToken(sessionToken);
+
+      ref.read(analyticsServiceProvider).trackEvent('onboarding_otp_success');
 
       final userInfo = await authService.getUserInfo();
       // Don't sync locale during onboarding — respect the language

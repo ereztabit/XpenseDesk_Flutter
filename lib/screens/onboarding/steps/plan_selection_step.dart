@@ -4,6 +4,7 @@ import '../../../config/app_config.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 import '../../../models/company_info.dart';
+import '../../../providers/analytics_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/company_provider.dart';
 import '../../../services/tranzila_popup_service.dart';
@@ -141,6 +142,8 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
         billingPlanId: planId,
         couponCode: _couponCode,
       );
+
+      ref.read(analyticsServiceProvider).trackEvent('onboarding_payment_added');
     } catch (e) {
       debugPrint('[PlanSelectionStep] createSubscription failed: $e');
       if (!mounted) return;
@@ -155,7 +158,7 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
     // Navigate FIRST, then invalidate. This avoids the deactivated-widget
     // race where invalidate tears down the widget tree before navigate runs.
     try {
-      _navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
+      _completeOnboarding();
       ref.invalidate(companyProvider);
     } catch (_) {
       // Widget tree already torn down — verify status and force navigate.
@@ -169,10 +172,16 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
   }
 
   void _skipForNow() {
-    _navigator.pushNamedAndRemoveUntil(
-      '/dashboard',
-      (route) => false,
-    );
+    ref.read(analyticsServiceProvider).trackEvent('onboarding_payment_skipped');
+    _completeOnboarding();
+  }
+
+  /// Fires the one-time company_created event, then routes to the dashboard.
+  /// Both onboarding exits (paid + skipped) go through here, so the event fires
+  /// exactly once when a freshly created company lands on the dashboard.
+  void _completeOnboarding() {
+    ref.read(analyticsServiceProvider).trackEvent('company_created');
+    _navigator.pushNamedAndRemoveUntil('/dashboard', (route) => false);
   }
 
   @override
