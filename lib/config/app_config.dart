@@ -62,4 +62,11 @@ class AppConfig {
     return payment['use3ds'] as bool? ?? false;
   }
 
+  /// Length of the free trial in days, used for the plan-selection copy.
+  /// The authoritative trial end date still comes from the backend.
+  int get trialDays {
+    final trial = _config['trial'] as Map?;
+    return trial?['trialDays'] as int? ?? 14;
+  }
+
 }

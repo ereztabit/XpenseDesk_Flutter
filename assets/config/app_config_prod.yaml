@@ -9,3 +9,8 @@ app:
 payment:
   tranzilaTerminal: dev123
   use3ds: false
+
+trial:
+  # Length of the free trial in days, shown in the plan-selection copy.
+  # The authoritative trial end date still comes from the backend.
+  trialDays: 30
