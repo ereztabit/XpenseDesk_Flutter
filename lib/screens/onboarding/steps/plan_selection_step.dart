@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../config/app_config.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 import '../../../models/company_info.dart';
@@ -198,9 +199,9 @@ class _PlanSelectionStepState extends ConsumerState<PlanSelectionStep> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Static trial message
+        // Static trial message — trial length comes from config, not a literal
         Text(
-          l10n.plansIncludeTrial,
+          '${l10n.plansIncludeTrialPrefix}${AppConfig.instance.trialDays}${l10n.plansIncludeTrialSuffix}',
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 14,
