@@ -105,7 +105,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         await showPwaInstallSheet(rootNav.context);
         break;
       case 'privacy-policy':
-        await _navigateToRoute('/legal/privacy');
+        // Launch first (keeps window.open inside the tap gesture), then close.
+        await MenuItems.launchPrivacy();
+        await _close();
         break;
       case 'terms-of-service':
         // Launch first (keeps window.open inside the tap gesture), then close.

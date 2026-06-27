@@ -17,7 +17,6 @@ import 'screens/sheet_review_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
 import 'screens/expenses_analysis_screen.dart';
 import 'screens/payments_report_screen.dart';
-import 'screens/legal_document_screen.dart';
 import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
@@ -151,18 +150,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    // --- Legal (any authenticated user) ---
-    case '/legal/privacy':
-      return MaterialPageRoute(
-        settings: settings,
-        builder: (_) => const AuthGate(
-          mode: AuthGateMode.authenticated,
-          child: LegalDocumentScreen(docType: LegalDocumentType.privacy),
-        ),
-      );
-
-    // Terms of Service is a public static page (web/legal/terms-he.html) opened
-    // directly via MenuItems.launchTerms — no in-app route.
+    // Privacy Policy and Terms of Service are public marketing-site pages opened
+    // in a new tab via MenuItems.launchPrivacy / launchTerms — no in-app route.
 
     // --- Employee ---
     case '/user/dashboard':

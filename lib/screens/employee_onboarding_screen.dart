@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'screen_imports.dart';
+import '../models/menu_items.dart';
 import '../widgets/app_button.dart';
 import '../providers/locale_provider.dart';
 import '../services/auth_service.dart';
@@ -74,13 +74,6 @@ class _EmployeeOnboardingScreenState
       return l10n.nameOnlyLetters;
     }
     return null;
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 
   Future<void> _handleSubmit() async {
@@ -367,8 +360,7 @@ class _EmployeeOnboardingScreenState
                                           TextSpan(
                                             text: l10n.termsOfService,
                                             recognizer: TapGestureRecognizer()
-                                              ..onTap = () => _launchUrl(
-                                                  'https://xpensedesk.com/terms'),
+                                              ..onTap = MenuItems.launchTerms,
                                             style: const TextStyle(
                                               color: AppTheme.primary,
                                               decoration:
@@ -382,8 +374,7 @@ class _EmployeeOnboardingScreenState
                                           TextSpan(
                                             text: l10n.privacyPolicy,
                                             recognizer: TapGestureRecognizer()
-                                              ..onTap = () => _launchUrl(
-                                                  'https://xpensedesk.com/privacy'),
+                                              ..onTap = MenuItems.launchPrivacy,
                                             style: const TextStyle(
                                               color: AppTheme.primary,
                                               decoration:

@@ -197,13 +197,19 @@ class MenuItems {
     return null;
   }
 
-  /// Opens the public Hebrew Terms of Service in a new browser tab.
-  /// The document is a static page served at /legal/terms-he.html (no auth),
-  /// so the same URL is reachable in-app, from the login footer, and publicly.
-  /// Always Hebrew, regardless of UI language.
+  /// Privacy Policy and Terms of Service live on the public marketing site,
+  /// not in this app. Every in-app legal link opens these in a new browser tab.
+  static final _privacyUri = Uri.parse('https://xpensedesk.com/privacy');
+  static final _termsUri = Uri.parse('https://xpensedesk.com/terms');
+
+  /// Opens the public Privacy Policy (marketing site) in a new browser tab.
+  static Future<void> launchPrivacy() async {
+    await launchUrl(_privacyUri, webOnlyWindowName: '_blank');
+  }
+
+  /// Opens the public Terms of Service (marketing site) in a new browser tab.
   static Future<void> launchTerms() async {
-    final uri = Uri.base.resolve('/legal/terms-he.html');
-    await launchUrl(uri, webOnlyWindowName: '_blank');
+    await launchUrl(_termsUri, webOnlyWindowName: '_blank');
   }
 
   static Future<void> launchContactSupport(
