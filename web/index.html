@@ -23,6 +23,26 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#362B71">
 
+  <!--
+    Google Analytics (GA4) — gtag.js, prod-only.
+    Gated to the production host so dev/local/staging traffic is never tracked.
+    The gtag.js <script> is injected programmatically, so off-prod the network
+    request to googletagmanager is never even made.
+  -->
+  <script>
+    (function () {
+      if (window.location.hostname !== 'app.xpensedesk.com') return;
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=G-C0F5GTGNZD';
+      document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-C0F5GTGNZD');
+    })();
+  </script>
+
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
