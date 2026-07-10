@@ -19,6 +19,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 
 ## report bugs (pending)
 
+- [ ] Onboarding plan picker -- annual plan missing "2 months free (16% discount)" savings label -- see docs/bugs/onboarding-annual-plan-missing-savings-label.md
 - [ ] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
