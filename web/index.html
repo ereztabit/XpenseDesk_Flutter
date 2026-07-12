@@ -132,13 +132,70 @@
     <div class="spinner"></div>
   </div>
 
+  <!--
+    Sandboxed / opaque-origin notice. Shown when the app is opened inside a
+    context that lacks the sandbox `allow-same-origin` flag (e.g. a magic link
+    opened in an email client's in-app browser). There, same-origin storage
+    (localStorage/IndexedDB) throws and secure sign-in cannot complete, so we do
+    NOT boot Flutter — we tell the user to open the link in a real browser.
+    Strings are bilingual and hardcoded because this shell runs before Flutter
+    (and thus before AppLocalizations) is available.
+  -->
+  <div id="sandbox-notice" style="display:none; position:fixed; inset:0; flex-direction:column; align-items:center; justify-content:center; background:#ffffff; z-index:10000; padding:24px; text-align:center; font-family:'Assistant','Segoe UI',Arial,sans-serif; color:#1a1a2e;">
+    <div style="max-width:460px;">
+      <div style="font-size:44px; margin-bottom:16px;">&#128274;</div>
+      <h1 style="font-size:20px; font-weight:700; margin:0 0 12px;">Please open this link in your browser</h1>
+      <p style="font-size:15px; line-height:1.6; color:#555; margin:0 0 18px;">
+        This sign-in link was opened inside an in-app preview that blocks secure login.
+        Copy the address below and open it in Chrome, Safari, or Edge.
+      </p>
+      <div dir="rtl" style="font-size:15px; line-height:1.6; color:#555; margin:0 0 20px;">
+        &#1497;&#1513; &#1500;&#1508;&#1514;&#1493;&#1495; &#1511;&#1497;&#1513;&#1493;&#1512; &#1494;&#1492; &#1489;&#1491;&#1508;&#1491;&#1508;&#1503; (Chrome, Safari &#1488;&#1493; Edge). &#1492;&#1511;&#1497;&#1513;&#1493;&#1512; &#1504;&#1508;&#1514;&#1495; &#1489;&#1514;&#1510;&#1493;&#1490;&#1492; &#1502;&#1493;&#1496;&#1502;&#1506;&#1514; &#1513;&#1495;&#1493;&#1505;&#1502;&#1514; &#1492;&#1514;&#1495;&#1489;&#1512;&#1493;&#1514; &#1502;&#1488;&#1493;&#1489;&#1496;&#1495;&#1514;.
+      </div>
+      <div id="sandbox-url" style="direction:ltr; word-break:break-all; background:#f3f2f8; border:1px solid #e0dcec; border-radius:8px; padding:12px; font-size:13px; color:#362B71; user-select:all; -webkit-user-select:all;"></div>
+    </div>
+  </div>
+
   <script>
+    (function () {
+      // Detect a sandboxed / opaque-origin context. Both signals are true only
+      // in an opaque origin; a normal https top-level document passes both.
+      function isOpaqueOrigin() {
+        try {
+          if (self.origin === 'null' || document.origin === 'null') return true;
+        } catch (e) {
+          return true;
+        }
+        try {
+          window.localStorage.getItem('__xd_probe__');
+        } catch (e) {
+          return true;
+        }
+        return false;
+      }
+
+      if (isOpaqueOrigin()) {
+        var loader = document.getElementById('flutter-loader');
+        if (loader) loader.style.display = 'none';
+        var notice = document.getElementById('sandbox-notice');
+        notice.style.display = 'flex';
+        try {
+          document.getElementById('sandbox-url').textContent = window.location.href;
+        } catch (e) { /* location is always readable, but stay defensive */ }
+        return; // do not boot Flutter — storage/network are unusable here
+      }
+
+      // Not sandboxed — boot Flutter normally.
+      var s = document.createElement('script');
+      s.src = 'flutter_bootstrap.js';
+      s.async = true;
+      document.body.appendChild(s);
+    })();
+
     window.addEventListener('flutter-first-frame', function () {
       var loader = document.getElementById('flutter-loader');
       if (loader) loader.remove();
     });
   </script>
-
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
