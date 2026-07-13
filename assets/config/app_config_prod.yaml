@@ -7,7 +7,7 @@ app:
   environment: production
 
 payment:
-  tranzilaTerminal: dev123
+  tranzilaTerminal: xdprdil
   use3ds: false
 
 trial:

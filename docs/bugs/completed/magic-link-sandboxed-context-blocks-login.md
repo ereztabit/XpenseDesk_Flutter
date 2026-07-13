@@ -1,6 +1,37 @@
 # Bug: Magic-link login fails in sandboxed / in-app browser contexts (blank page)
 
-> **Status: in progress**
+> **Status: done**
+
+## Resolution
+
+Root cause turned out to be **external**: a browser extension (Torii, a
+SaaS-management/discovery tool) running in the reporter's Chrome profile injects a
+`Content-Security-Policy: sandbox` onto the page response. That makes the page a
+top-level but opaque, sandboxed origin (`self.origin === 'null'`), which blocks
+localStorage/IndexedDB/cookies and the service worker — so login could not
+complete and the app originally showed a blank page.
+
+Confirmed by process of elimination:
+- Production sends no sandbox/CSP header (verified via curl).
+- The site boots normally in a clean browser and in Incognito (extensions off).
+- The reporter's console showed `window.top === window.self` (top-level) yet
+  `self.origin === 'null'` and `localStorage` throwing "sandboxed and lacks the
+  'allow-same-origin' flag" — the signature of a client-side CSP-sandbox
+  injection. Incognito (extensions disabled) logs in fine.
+
+So this is not an app defect. Not fleet-wide — it affects only profiles running
+such a page-sandboxing extension. User workaround: use Incognito, or disable the
+extension for app.xpensedesk.com.
+
+We still shipped a genuine improvement (v1.19), which stays in place:
+- `web/flutter_bootstrap.js` — feature-detects the service worker so the
+  SecurityError no longer aborts boot.
+- `web/index.html` — detects the opaque-origin context and shows an actionable
+  "open this link in your browser" overlay instead of a blank white page.
+
+A follow-up "clickable link" tweak was explored and discarded: a `target="_blank"`
+link cannot escape a sandboxed context (popups are blocked or inherit the sandbox),
+so it adds no value here. No further code change; prod remains at v1.19.
 
 ## Problem
 
