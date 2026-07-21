@@ -14,6 +14,8 @@ AI-powered expense approval tool for small businesses.
 - [PWA Debugging & Verification Guide](pwa-debugging-guide.md) — inspect manifest/icons/service worker; why `flutter run` stubs the manifest
 
 ## In Progress
+- [Microsoft Login — Flutter Client Guide](in-progress/microsoft-login-flutter-guide.md) — original spec / API contract
+- [Microsoft Login — Implementation & Lessons](in-progress/microsoft-login-implementation.md) — how the flow works, why redirect not popup, problems hit, feature flags
 - [Card on File Flow](in-progress/card-on-file-flow.md)
 - [Tranzila Hosted Fields Spec](in-progress/tranzila_hosted_fields_spec.md)
 - [Credit Card Authorize Plan](in-progress/credit-card-authorize-plan.md)

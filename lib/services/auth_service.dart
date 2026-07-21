@@ -93,6 +93,50 @@ class AuthService {
     return sessionToken;
   }
 
+  /// Exchange a Microsoft ID token for our session token.
+  ///
+  /// POST /api/auth/microsoft-login with { idToken }. On success the response
+  /// has the SAME shape as /api/auth/login, so we store `data.sessionToken`
+  /// exactly like the magic-link path and everything downstream is unchanged.
+  ///
+  /// Login-only: unknown Microsoft users (no XpenseDesk account) and
+  /// invalid/expired tokens are rejected by the server with 401. We suppress the
+  /// global unauthorized handler (we are not in an authenticated session yet) and
+  /// surface a tagged [AuthException] (`errorCode: 'MicrosoftNoAccount'`) so the
+  /// UI can show the localized "no account" message.
+  Future<String> microsoftLogin(String idToken) async {
+    if (idToken.trim().isEmpty) {
+      throw const AuthException('Microsoft ID token is required');
+    }
+
+    final Map<String, dynamic> response;
+    try {
+      response = await _apiService.post(
+        '/api/auth/microsoft-login',
+        {'idToken': idToken},
+        suppressUnauthorized: true,
+      );
+    } on UnauthorizedException {
+      throw const AuthException(
+        'No XpenseDesk account for this Microsoft user',
+        errorCode: 'MicrosoftNoAccount',
+      );
+    }
+
+    _validateResponse(response, 'Microsoft sign-in failed');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    final sessionToken = data?['sessionToken'] as String?;
+
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const AuthException('Invalid response from server');
+    }
+
+    await _storeSessionToken(sessionToken);
+
+    return sessionToken;
+  }
+
   /// Store session token in secure storage.
   /// Called internally after login and externally after OTP verification.
   Future<void> storeSessionToken(String token) async {

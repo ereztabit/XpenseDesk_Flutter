@@ -2,6 +2,11 @@
 
 ## Currently Working On
 
+- Sign in with Microsoft (web) — MSAL auth-code+PKCE login on the login screen; posts the ID token to /api/auth/microsoft-login for the standard session token. Login-only for existing users. Spec: docs/in-progress/microsoft-login-flutter-guide.md
+  - REDIRECT flow (not popup — Microsoft COOP severs the app<->popup link). Token consumed in authBootstrapProvider on '/'; gated by feature flags enableMicrosoftLogin / enableMicrosoftLoginLogs (AppConfig). Shipped dark in prod.
+  - Full guide: docs/in-progress/microsoft-login-implementation.md (flow, popup lessons, flags).
+  - Verified end to end in dev: token obtained + POST /api/auth/microsoft-login; unknown user correctly rejected with the "no account" message. Awaiting a demo-tenant account registered in XpenseDesk to confirm a successful login lands on the dashboard.
+  - Do NOT commit/merge until the user gives the word.
 - Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end. Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/ (user scans them in dev).
 
 Open bugs (see `## report bugs (pending)` below)

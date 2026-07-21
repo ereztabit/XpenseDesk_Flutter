@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web/web.dart' as web;
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/post_login_navigator.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../widgets/app_button.dart';
 
@@ -30,7 +30,7 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
     if (widget.token == null || widget.token!.isEmpty) {
       setState(() {
         _isProcessing = false;
-        _errorMessage = 'Invalid login link';
+        _errorMessage = AppLocalizations.of(context)!.invalidLoginLink;
       });
       return;
     }
@@ -40,28 +40,10 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
     try {
       // Exchange token for session token
       await authService.login(widget.token!);
-      
-      // Fetch user info from /api/users/me
-      final userInfo = await authService.getUserInfo();
-      
-      // Set user info in provider
-      ref.read(userInfoProvider.notifier).setUserInfo(userInfo);
-      
-      if (mounted) {
-        final String route;
-        if (userInfo.roleId == 1) {
-          route = '/dashboard';
-        } else if (userInfo.termsConsentDate == null) {
-          route = '/employee/onboarding';
-        } else {
-          route = '/user/dashboard';
-        }
 
-        // Update browser URL to remove token
-        web.window.history.replaceState(null, '', route);
-        
-        // Navigate to appropriate dashboard
-        Navigator.of(context).pushReplacementNamed(route);
+      // Fetch user, seed provider, and route by role (shared with Microsoft login)
+      if (mounted) {
+        await completePostLogin(context, ref);
       }
     } on AuthException catch (e) {
       if (mounted) {
@@ -82,6 +64,7 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: Center(
@@ -101,7 +84,7 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
                       const CircularProgressIndicator(),
                       const SizedBox(height: 24),
                       Text(
-                        'Logging you in...',
+                        l10n.signingIn,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ] else if (_errorMessage != null) ...[
@@ -112,7 +95,7 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Login Failed',
+                        l10n.loginFailedTitle,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
@@ -123,7 +106,7 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
                       ),
                       const SizedBox(height: 32),
                       AppButton(
-                        label: AppLocalizations.of(context)!.backToLogin,
+                        label: l10n.backToLogin,
                         variant: AppButtonVariant.primary,
                         onPressed: () {
                           Navigator.of(context).pushReplacementNamed('/');

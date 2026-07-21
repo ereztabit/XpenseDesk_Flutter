@@ -69,4 +69,18 @@ class AppConfig {
     return trial?['trialDays'] as int? ?? 14;
   }
 
+  /// Feature flag: show the "Sign in with Microsoft" button and process the
+  /// Microsoft redirect on return. Defaults to false (safe/off) when absent.
+  bool get enableMicrosoftLogin {
+    final features = _config['features'] as Map?;
+    return features?['enableMicrosoftLogin'] as bool? ?? false;
+  }
+
+  /// Feature flag: emit Microsoft-login diagnostic logs (JS glue + bootstrap)
+  /// to the browser console. Intended for debugging Microsoft login in
+  /// production; defaults to false (quiet) when absent.
+  bool get enableMicrosoftLoginLogs {
+    final features = _config['features'] as Map?;
+    return features?['enableMicrosoftLoginLogs'] as bool? ?? false;
+  }
 }

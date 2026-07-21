@@ -14,3 +14,9 @@ trial:
   # Length of the free trial in days, shown in the plan-selection copy.
   # The authoritative trial end date still comes from the backend.
   trialDays: 30
+
+features:
+  # Show the "Sign in with Microsoft" button and process its redirect on return.
+  enableMicrosoftLogin: true
+  # Emit [xdMsal] diagnostic logs to the browser console (debugging aid).
+  enableMicrosoftLoginLogs: false
