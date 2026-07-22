@@ -124,6 +124,15 @@
     }
   </style>
 
+  <!--
+    Microsoft sign-in (MSAL.js). msal-browser.min.js is the official
+    @azure/msal-browser bundle; msal_interop.js exposes window.xdMsal to Dart.
+    `defer` keeps document order (library before glue) and runs them before
+    interactivity; the actual sign-in only fires on a user tap, long after load.
+  -->
+  <script src="msal-browser.min.js" defer></script>
+  <script src="msal_interop.js" defer></script>
+
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
 </head>
@@ -158,6 +167,12 @@
 
   <script>
     (function () {
+      // Microsoft sign-in uses the REDIRECT flow: the whole tab navigates to
+      // Microsoft and returns to /auth/microsoft-callback in the SAME tab. That
+      // path boots the app normally — msal_interop.js (loaded in <head>) processes
+      // the response via handleRedirectPromise() and MicrosoftCallbackScreen reads
+      // the resulting token. So there is no special-casing here; just boot Flutter.
+
       // Detect a sandboxed / opaque-origin context. Both signals are true only
       // in an opaque origin; a normal https top-level document passes both.
       function isOpaqueOrigin() {

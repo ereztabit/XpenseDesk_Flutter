@@ -14,3 +14,14 @@ trial:
   # Length of the free trial in days, shown in the plan-selection copy.
   # The authoritative trial end date still comes from the backend.
   trialDays: 30
+
+features:
+  # Microsoft login shipped dark: flip to true to expose the button in prod once
+  # rollout is ready.
+  enableMicrosoftLogin: true
+  # Flip to true to stream [xdMsal] diagnostic logs to the browser console when
+  # debugging Microsoft login in production.
+  enableMicrosoftLoginLogs: false
+  # Microsoft SSO onboarding shipped dark: flip to true to expose "Subscribe
+  # with Microsoft" on onboarding step 1 once rollout is ready.
+  enableMicrosoftOnboarding: true

@@ -41,38 +41,61 @@ class AuthGate extends ConsumerWidget {
         if (redirectRoute != null) {
           return _Redirector(route: redirectRoute);
         }
-        // App-wide text selection: every route renders its screen through
-        // AuthGate, so wrapping here makes ordinary Text selectable/copyable on
-        // every screen. Placed per-route (below the Navigator) so it has the
-        // Navigator's Overlay as an ancestor — no app-level Overlay hack, and no
-        // selection spanning across stacked routes. EditableText opts out.
-        return SelectionArea(child: child);
+        // NOTE: We deliberately do NOT wrap `child` in a SelectionArea here.
+        // An app-wide SelectionArea (added previously for "select any text on any
+        // screen") triggers a Flutter framework assertion on Flutter 3.41.2 —
+        // `SelectableRegion: _selectable == null is not true` — whenever a
+        // provider-driven rebuild re-inserts a widget that carries its own
+        // SelectionContainer (dropdown/menu/tooltip overlays use
+        // SelectionContainer.disabled) under the SelectionArea. That surfaces as a
+        // red error screen in debug and an illegal double-registration in release.
+        // App-wide text selection is a nicety, not core UX, so it is removed. If
+        // selection is wanted back, add a scoped SelectableText to the specific
+        // content, or re-introduce SelectionArea after a Flutter upgrade that
+        // carries the framework fix.
+        return child;
       },
     );
+  }
+
+  /// The home route for a signed-in user: manager dashboard, employee
+  /// dashboard, or employee onboarding when terms are still pending. Shared
+  /// with flows that navigate directly after establishing a session (e.g. the
+  /// Microsoft onboarding existing-account short-circuit).
+  static String defaultRouteForUser(UserInfo userInfo) {
+    if (userInfo.roleId == 1) {
+      return '/dashboard';
+    }
+
+    if (userInfo.termsConsentDate == null) {
+      return '/employee/onboarding';
+    }
+
+    return '/user/dashboard';
   }
 
   String? _resolveRedirect(AuthGateMode mode, UserInfo? userInfo) {
     switch (mode) {
       case AuthGateMode.guestOnly:
         if (userInfo == null) return null;
-        return _defaultRouteForUser(userInfo);
+        return defaultRouteForUser(userInfo);
       case AuthGateMode.authenticated:
         return userInfo == null ? '/' : null;
       case AuthGateMode.managerOnly:
         if (userInfo == null) return '/';
-        return userInfo.roleId == 1 ? null : _defaultRouteForUser(userInfo);
+        return userInfo.roleId == 1 ? null : defaultRouteForUser(userInfo);
       case AuthGateMode.employeeOnly:
         if (userInfo == null) return '/';
-        return userInfo.roleId == 2 ? null : _defaultRouteForUser(userInfo);
+        return userInfo.roleId == 2 ? null : defaultRouteForUser(userInfo);
       case AuthGateMode.employeeOnboardedOnly:
         if (userInfo == null) return '/';
-        if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);
+        if (userInfo.roleId != 2) return defaultRouteForUser(userInfo);
         return userInfo.termsConsentDate == null
             ? '/employee/onboarding'
             : null;
       case AuthGateMode.employeePendingOnboardingOnly:
         if (userInfo == null) return '/';
-        if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);
+        if (userInfo.roleId != 2) return defaultRouteForUser(userInfo);
         return userInfo.termsConsentDate == null ? null : '/user/dashboard';
       case AuthGateMode.selfExpenseAccess:
         if (userInfo == null) return '/';
@@ -85,17 +108,6 @@ class AuthGate extends ConsumerWidget {
     }
   }
 
-  String _defaultRouteForUser(UserInfo userInfo) {
-    if (userInfo.roleId == 1) {
-      return '/dashboard';
-    }
-
-    if (userInfo.termsConsentDate == null) {
-      return '/employee/onboarding';
-    }
-
-    return '/user/dashboard';
-  }
 }
 
 class _Redirector extends StatefulWidget {

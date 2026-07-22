@@ -9,8 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../models/onboarding/company_submit_request.dart';
 import '../../../providers/analytics_provider.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../providers/company_provider.dart';
 import '../../../providers/onboarding_provider.dart';
 import '../../../services/onboarding_service.dart';
 import '../../../theme/app_theme.dart';
@@ -215,19 +213,9 @@ class _OtpVerificationStepState extends ConsumerState<OtpVerificationStep>
       final sessionToken =
           await service.verifyOtp(otpKey: otpKey, otp: otp);
 
-      final authService = ref.read(authServiceProvider);
-      await authService.storeSessionToken(sessionToken);
+      await adoptOnboardingSession(ref, sessionToken);
 
       ref.read(analyticsServiceProvider).trackEvent('onboarding_otp_success');
-
-      final userInfo = await authService.getUserInfo();
-      // Don't sync locale during onboarding — respect the language
-      // the user chose at the start of the flow.
-      ref.read(userInfoProvider.notifier).setUserInfo(userInfo, syncLocale: false);
-
-      // Invalidate any stale company data so the fresh company
-      // (and its subscriptionStatus) is fetched when the dashboard loads.
-      ref.invalidate(companyProvider);
 
       ref.read(onboardingStateProvider.notifier).reset();
 

@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 
-/// 5-step horizontal progress indicator for the onboarding wizard.
+/// Horizontal progress indicator for the onboarding wizard: 5 steps normally,
+/// 4 when [skipVerification] removes the Verify step (Microsoft SSO mode).
 /// Lives inside the card, at the top of the card content.
 class OnboardingProgress extends StatelessWidget {
-  const OnboardingProgress({super.key, required this.currentStep});
+  const OnboardingProgress({
+    super.key,
+    required this.currentStep,
+    this.skipVerification = false,
+  });
 
-  /// 1-based: 1 = first step active, steps below are completed, above are upcoming.
+  /// 1-based WIZARD step (1–5, where 3 = Verify) — steps below are completed,
+  /// above are upcoming. In [skipVerification] mode the wizard never passes 3;
+  /// this widget maps wizard steps to display positions itself.
   final int currentStep;
+
+  /// Microsoft SSO mode: the Verify step is removed from the indicator — the
+  /// wizard shows You -> Company -> Plan -> Payment.
+  final bool skipVerification;
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +27,26 @@ class OnboardingProgress extends StatelessWidget {
     final labels = [
       l10n.onboardingStepYou,
       l10n.onboardingStepCompany,
-      l10n.onboardingStepVerify,
+      if (!skipVerification) l10n.onboardingStepVerify,
       l10n.onboardingStepPlan,
       l10n.onboardingStepPayment,
     ];
+    // Display position of the active step: wizard steps 4/5 shift down by one
+    // when Verify (wizard step 3) is not shown.
+    final displayStep = (skipVerification && currentStep > 3)
+        ? currentStep - 1
+        : currentStep;
+    final count = labels.length;
 
     return Column(
       children: [
         // Circles + connectors row
         Row(
-          children: List.generate(5, (i) {
+          children: List.generate(count, (i) {
             final step = i + 1;
-            final isActive = step == currentStep;
-            final isCompleted = step < currentStep;
-            final Widget connector = i < 4
+            final isActive = step == displayStep;
+            final isCompleted = step < displayStep;
+            final Widget connector = i < count - 1
                 ? Expanded(
                     child: Container(
                       height: 2,
@@ -53,10 +70,10 @@ class OnboardingProgress extends StatelessWidget {
         const SizedBox(height: 6),
         // Labels row
         Row(
-          children: List.generate(5, (i) {
+          children: List.generate(count, (i) {
             final step = i + 1;
-            final isActive = step == currentStep;
-            final isCompleted = step < currentStep;
+            final isActive = step == displayStep;
+            final isCompleted = step < displayStep;
             final Color labelColor = isCompleted
                 ? AppTheme.teal
                 : isActive

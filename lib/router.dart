@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/ping_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/login_callback_screen.dart';
+import 'screens/microsoft_callback_screen.dart';
 import 'screens/user_dashboard_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/users_screen.dart';
@@ -30,6 +31,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     return MaterialPageRoute(
       settings: settings,
       builder: (_) => LoginCallbackScreen(token: token),
+    );
+  }
+
+  // /auth/microsoft-callback — return target for the Microsoft redirect sign-in.
+  // Bare route (no AuthGate): the screen reads the redirect result and routes.
+  if (uri.path == '/auth/microsoft-callback') {
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) => const MicrosoftCallbackScreen(),
     );
   }
 

@@ -344,8 +344,12 @@ class _EmployeeOnboardingScreenState
                                   child: GestureDetector(
                                     onTap: () => setState(
                                         () => _consentChecked = !_consentChecked),
-                                    child: RichText(
-                                      text: TextSpan(
+                                    // Text.rich (not RichText) so the spans
+                                    // inherit ambient text style/scaling —
+                                    // same pattern as
+                                    // onboarding_terms_checkbox_field.dart.
+                                    child: Text.rich(
+                                      TextSpan(
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall

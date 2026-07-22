@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../config/app_config.dart';
 import '../models/user_info.dart';
 import '../services/auth_service.dart';
+import '../services/microsoft_auth_service.dart';
 import 'locale_provider.dart';
 
 /// Provider for AuthService singleton
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
+});
+
+/// Provider for the web-only Microsoft (MSAL) sign-in service.
+final microsoftAuthServiceProvider = Provider<MicrosoftAuthService>((ref) {
+  return const MicrosoftAuthService();
 });
 
 /// Provider for current authenticated user info
@@ -91,8 +98,101 @@ final userInfoProvider = NotifierProvider<UserInfoNotifier, UserInfo?>(
   UserInfoNotifier.new,
 );
 
+/// Why a Microsoft redirect sign-in failed, surfaced on the login screen after
+/// the redirect lands the user back on '/'. [accountExists] is set by the
+/// onboarding SSO flow when the email turns out to be registered already (409)
+/// and the user is routed to login.
+enum MicrosoftLoginError { noAccount, failed, accountExists }
+
+/// Holds why a returning Microsoft sign-in was rejected. Set by
+/// [authBootstrapProvider], read by the login screen, cleared on the next attempt.
+class MicrosoftLoginErrorNotifier extends Notifier<MicrosoftLoginError?> {
+  @override
+  MicrosoftLoginError? build() => null;
+
+  void set(MicrosoftLoginError value) => state = value;
+  void clear() => state = null;
+}
+
+final microsoftLoginErrorProvider =
+    NotifierProvider<MicrosoftLoginErrorNotifier, MicrosoftLoginError?>(
+  MicrosoftLoginErrorNotifier.new,
+);
+
+/// Holds the Microsoft ID token of a LOGIN sign-in that turned out to belong
+/// to a brand-new user (401 MicrosoftNoAccount). Instead of a login error, the
+/// user is routed into the onboarding wizard already signed in — exactly as if
+/// they had tapped "Subscribe with Microsoft" there. Set by
+/// [authBootstrapProvider], consumed (and cleared) by the onboarding screen.
+class PendingMicrosoftOnboardingNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String idToken) => state = idToken;
+  void clear() => state = null;
+}
+
+final pendingMicrosoftOnboardingProvider =
+    NotifierProvider<PendingMicrosoftOnboardingNotifier, String?>(
+  PendingMicrosoftOnboardingNotifier.new,
+);
+
 /// Completes when the app's initial session restore attempt has finished.
+///
+/// If this page load is the return from a Microsoft redirect sign-in, MSAL has
+/// already produced the ID token (web/msal_interop.js). We exchange it for our
+/// session token here — before restoring the session — so the normal
+/// [loadFromSession] path then finds the stored token and populates the user,
+/// and AuthGate routes to the right dashboard. An unknown user is rejected by the
+/// server (401 -> AuthException 'MicrosoftNoAccount'); we record it in
+/// [microsoftLoginErrorProvider] so the login screen can explain it. A normal
+/// load (no pending redirect) just falls through to session restore.
 final authBootstrapProvider = FutureProvider<void>((ref) async {
+  final config = AppConfig.instance;
+
+  // Only touch the Microsoft flow when the feature is enabled (feature flag).
+  if (config.enableMicrosoftLogin) {
+    final msAuth = ref.read(microsoftAuthServiceProvider);
+    final logs = config.enableMicrosoftLoginLogs;
+    if (logs) msAuth.enableLiveLogs();
+    var idToken = '';
+    try {
+      final result = await msAuth.getRedirectResult();
+      // Flush the glue's buffered log (captures lines emitted before Dart booted).
+      if (logs) debugPrint(msAuth.dumpLogs());
+      // A sign-in started from the onboarding wizard (state == 'onboarding') is
+      // consumed by OnboardingScreen on /onboarding — never exchanged here, so
+      // a brand-new user isn't rejected with the login "no account" error.
+      if (result.idToken.isNotEmpty &&
+          result.state != MicrosoftAuthService.onboardingState) {
+        idToken = result.idToken;
+        await ref.read(authServiceProvider).microsoftLogin(idToken);
+      }
+    } on AuthException catch (e) {
+      if (logs) debugPrint('[MSLogin] rejected: ${e.errorCode ?? e.message}');
+      if (e.errorCode == 'MicrosoftNoAccount' &&
+          config.enableMicrosoftOnboarding) {
+        // Brand-new user signing in from the LOGIN screen: instead of a "no
+        // account" error, hand the validated identity to the onboarding
+        // wizard — the login screen redirects there and the user continues in
+        // Microsoft mode, exactly as if they had started from onboarding.
+        if (logs) debugPrint('[MSLogin] new user -> onboarding handoff');
+        ref.read(pendingMicrosoftOnboardingProvider.notifier).set(idToken);
+      } else {
+        ref.read(microsoftLoginErrorProvider.notifier).set(
+              e.errorCode == 'MicrosoftNoAccount'
+                  ? MicrosoftLoginError.noAccount
+                  : MicrosoftLoginError.failed,
+            );
+      }
+    } catch (e) {
+      if (logs) debugPrint('[MSLogin] unexpected error: $e');
+      ref
+          .read(microsoftLoginErrorProvider.notifier)
+          .set(MicrosoftLoginError.failed);
+    }
+  }
+
   await ref.read(userInfoProvider.notifier).loadFromSession();
 });
 
