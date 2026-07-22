@@ -83,10 +83,13 @@ class ApiService {
 
   /// Make a POST request and return both the HTTP status code and the decoded body.
   /// Use this when you need to differentiate error types by status code (e.g. 400 vs 409).
+  /// Set [suppressUnauthorized] = true when a 401 is an expected, caller-handled
+  /// outcome (e.g. an expired provider ID token on an unauthenticated call).
   Future<({int statusCode, Map<String, dynamic> body})> postWithStatus(
     String endpoint,
     Map<String, dynamic> body, {
     String? authToken,
+    bool suppressUnauthorized = false,
   }) =>
       _run(() async {
         final uri = Uri.parse('$baseUrl$endpoint');
@@ -96,7 +99,7 @@ class ApiService {
           body: jsonEncode(body),
         );
         if (response.statusCode == 401) {
-          onUnauthorized?.call();
+          if (!suppressUnauthorized) onUnauthorized?.call();
           throw const UnauthorizedException();
         }
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;

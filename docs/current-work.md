@@ -2,6 +2,7 @@
 
 ## Currently Working On
 
+- Microsoft SSO onboarding (no-OTP "Subscribe with Microsoft") — DONE, banked on develop as v1.22 (2026-07-22), awaiting ship-feature. Tested end to end in dev: new-user SSO onboarding, existing-account short-circuit to own dashboard, login->onboarding handoff for unknown users, wizard-state clearing after completion. Spec: docs/in-progress/microsoft-onboarding-flutter-guide.md; CR: microsoft-onboarding-flutter-guide-CR.md. NOTE for backend: multitenant token email claims are tenant-admin-controllable (nOAuth) — match accounts by validated oid/tid, never by unverified email claim.
 - Sign in with Microsoft (web) — MSAL auth-code+PKCE login on the login screen; posts the ID token to /api/auth/microsoft-login for the standard session token. Login-only for existing users. Spec: docs/in-progress/microsoft-login-flutter-guide.md
   - REDIRECT flow (not popup — Microsoft COOP severs the app<->popup link). Token consumed in authBootstrapProvider on '/'; gated by feature flags enableMicrosoftLogin / enableMicrosoftLoginLogs (AppConfig). Shipped dark in prod.
   - Full guide: docs/in-progress/microsoft-login-implementation.md (flow, popup lessons, flags).

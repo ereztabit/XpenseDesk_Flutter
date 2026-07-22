@@ -10,14 +10,21 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.variant = AppButtonVariant.primary,
     this.icon,
+    this.iconWidget,
     this.isLoading = false,
     this.dense = false,
-  });
+  }) : assert(icon == null || iconWidget == null,
+            'Provide icon OR iconWidget, not both');
 
   final String label;
   final VoidCallback? onPressed;
   final AppButtonVariant variant;
   final IconData? icon;
+
+  /// Custom leading widget for non-glyph icons (e.g. the multicolor
+  /// [MicrosoftLogo]). Mutually exclusive with [icon].
+  final Widget? iconWidget;
+
   final bool isLoading;
 
   /// Compact form for inline/secondary controls (smaller padding, font, and
@@ -55,11 +62,11 @@ class AppButton extends StatelessWidget {
 
     final effectiveOnPressed = isLoading ? null : onPressed;
 
-    if (icon != null && !isLoading) {
+    if ((icon != null || iconWidget != null) && !isLoading) {
       return ElevatedButton.icon(
         onPressed: effectiveOnPressed,
         style: style,
-        icon: Icon(icon, size: dense ? 16 : 18),
+        icon: iconWidget ?? Icon(icon, size: dense ? 16 : 18),
         label: Text(label),
       );
     }

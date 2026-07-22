@@ -1,5 +1,6 @@
 import '../models/onboarding/reference_data.dart';
 import '../models/onboarding/company_submit_request.dart';
+import '../models/onboarding/sso_submit_request.dart';
 import 'api_service.dart';
 
 /// Exception thrown by onboarding API calls.
@@ -78,6 +79,46 @@ class OnboardingService {
     } catch (_) {
       return false; // Network / server error — let submit handle it
     }
+  }
+
+  /// POST /api/onboarding/sso
+  /// No auth required. Microsoft-mode onboarding: submits the provider ID token
+  /// plus company details; the server validates the token, creates the company,
+  /// and returns the [sessionToken] — no OTP step.
+  ///
+  /// Throws [OnboardingException] with [statusCode]:
+  ///   400 — validation error (show message below form)
+  ///   401 — invalid/expired/untrusted ID token (re-acquire and retry once)
+  ///   409 — email already registered (route to login)
+  ///   500+ — server error
+  Future<String> submitSso(SsoSubmitRequest request) async {
+    final int statusCode;
+    final Map<String, dynamic> body;
+    try {
+      // 401 here means an invalid/expired ID token on an unauthenticated call —
+      // NOT a session expiry, so the global unauthorized handler must not fire.
+      (:statusCode, :body) = await _api.postWithStatus(
+        '/api/onboarding/sso',
+        request.toJson(),
+        suppressUnauthorized: true,
+      );
+    } on UnauthorizedException {
+      throw const OnboardingException('Microsoft sign-in expired',
+          statusCode: 401);
+    }
+
+    final success = body['success'] as bool? ?? false;
+    if (!success) {
+      final message = body['message'] as String? ?? 'Failed to create company';
+      throw OnboardingException(message, statusCode: statusCode);
+    }
+
+    final data = body['data'] as Map<String, dynamic>?;
+    final sessionToken = data?['sessionToken'] as String?;
+    if (sessionToken == null || sessionToken.isEmpty) {
+      throw const OnboardingException('Invalid server response: missing sessionToken');
+    }
+    return sessionToken;
   }
 
   /// POST /api/onboarding/verify-otp

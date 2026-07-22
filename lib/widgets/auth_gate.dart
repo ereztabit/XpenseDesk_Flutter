@@ -58,28 +58,44 @@ class AuthGate extends ConsumerWidget {
     );
   }
 
+  /// The home route for a signed-in user: manager dashboard, employee
+  /// dashboard, or employee onboarding when terms are still pending. Shared
+  /// with flows that navigate directly after establishing a session (e.g. the
+  /// Microsoft onboarding existing-account short-circuit).
+  static String defaultRouteForUser(UserInfo userInfo) {
+    if (userInfo.roleId == 1) {
+      return '/dashboard';
+    }
+
+    if (userInfo.termsConsentDate == null) {
+      return '/employee/onboarding';
+    }
+
+    return '/user/dashboard';
+  }
+
   String? _resolveRedirect(AuthGateMode mode, UserInfo? userInfo) {
     switch (mode) {
       case AuthGateMode.guestOnly:
         if (userInfo == null) return null;
-        return _defaultRouteForUser(userInfo);
+        return defaultRouteForUser(userInfo);
       case AuthGateMode.authenticated:
         return userInfo == null ? '/' : null;
       case AuthGateMode.managerOnly:
         if (userInfo == null) return '/';
-        return userInfo.roleId == 1 ? null : _defaultRouteForUser(userInfo);
+        return userInfo.roleId == 1 ? null : defaultRouteForUser(userInfo);
       case AuthGateMode.employeeOnly:
         if (userInfo == null) return '/';
-        return userInfo.roleId == 2 ? null : _defaultRouteForUser(userInfo);
+        return userInfo.roleId == 2 ? null : defaultRouteForUser(userInfo);
       case AuthGateMode.employeeOnboardedOnly:
         if (userInfo == null) return '/';
-        if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);
+        if (userInfo.roleId != 2) return defaultRouteForUser(userInfo);
         return userInfo.termsConsentDate == null
             ? '/employee/onboarding'
             : null;
       case AuthGateMode.employeePendingOnboardingOnly:
         if (userInfo == null) return '/';
-        if (userInfo.roleId != 2) return _defaultRouteForUser(userInfo);
+        if (userInfo.roleId != 2) return defaultRouteForUser(userInfo);
         return userInfo.termsConsentDate == null ? null : '/user/dashboard';
       case AuthGateMode.selfExpenseAccess:
         if (userInfo == null) return '/';
@@ -92,17 +108,6 @@ class AuthGate extends ConsumerWidget {
     }
   }
 
-  String _defaultRouteForUser(UserInfo userInfo) {
-    if (userInfo.roleId == 1) {
-      return '/dashboard';
-    }
-
-    if (userInfo.termsConsentDate == null) {
-      return '/employee/onboarding';
-    }
-
-    return '/user/dashboard';
-  }
 }
 
 class _Redirector extends StatefulWidget {

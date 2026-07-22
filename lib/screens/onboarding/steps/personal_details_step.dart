@@ -1,15 +1,20 @@
 import 'package:email_validator/email_validator.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/menu_items.dart';
+import '../../../config/app_config.dart';
 import '../../../widgets/app_button.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 import '../../../providers/analytics_provider.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/onboarding_provider.dart';
+import '../../../services/microsoft_auth_service.dart';
 import '../../../widgets/email_input_field.dart';
 import '../../../widgets/form_behavior_mixin.dart';
+import '../../../widgets/onboarding/microsoft_identity_card.dart';
+import '../../../widgets/onboarding/onboarding_checkbox_field.dart';
+import '../../../widgets/onboarding/onboarding_terms_checkbox_field.dart';
+import '../../../widgets/onboarding/subscribe_with_microsoft.dart';
 import '../../../widgets/step_guard_mixin.dart';
 
 /// Step 1 — Personal Details form.
@@ -36,17 +41,27 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
   bool _isCheckingEmail = false;
   bool _emailTaken = false;
 
+  // Microsoft sign-in start state (redirects away on success)
+  bool _isMicrosoftLoading = false;
+  String? _microsoftError;
+
+  bool get _isMicrosoftMode =>
+      ref.read(onboardingStateProvider).isMicrosoftMode;
+
   @override
   bool get hasUnsavedChanges =>
       _nameController.text.trim().isNotEmpty ||
       _emailController.text.trim().isNotEmpty;
 
-  // Recomputed on every keystroke to drive button enable/disable.
+  // Recomputed on every keystroke to drive button enable/disable. In Microsoft
+  // mode the email is locked to the validated token claim — only the name and
+  // terms gate Continue.
   bool get _canContinue =>
       _nameController.text.trim().isNotEmpty &&
-      EmailValidator.validate(_emailController.text.trim()) &&
       _termsAccepted &&
-      !_emailTaken;
+      (_isMicrosoftMode ||
+          (EmailValidator.validate(_emailController.text.trim()) &&
+              !_emailTaken));
 
   @override
   void initState() {
@@ -74,19 +89,25 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
     if (!_formKey.currentState!.validate()) return;
     if (!_canContinue) return;
 
-    // Check email availability before advancing.
-    final email = _emailController.text.trim();
-    setState(() => _isCheckingEmail = true);
+    // Microsoft mode: identity is already validated (the existing-account check
+    // ran at the redirect return), so skip the email availability pre-check.
+    final String email;
+    if (_isMicrosoftMode) {
+      email = ref.read(onboardingStateProvider).email;
+    } else {
+      email = _emailController.text.trim();
+      setState(() => _isCheckingEmail = true);
 
-    final service = ref.read(onboardingServiceProvider);
-    final taken = await service.checkEmail(email);
+      final service = ref.read(onboardingServiceProvider);
+      final taken = await service.checkEmail(email);
 
-    if (!mounted) return;
-    setState(() {
-      _isCheckingEmail = false;
-      _emailTaken = taken;
-    });
-    if (taken) return;
+      if (!mounted) return;
+      setState(() {
+        _isCheckingEmail = false;
+        _emailTaken = taken;
+      });
+      if (taken) return;
+    }
 
     ref.read(onboardingStateProvider.notifier).setPersonalDetails(
           fullName: _nameController.text.trim(),
@@ -100,12 +121,61 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
     widget.onContinue();
   }
 
+  /// Starts the Microsoft sign-in for onboarding. Redirects the whole tab away
+  /// on success; the wizard consumes the result when the page returns.
+  Future<void> _handleSubscribeWithMicrosoft() async {
+    setState(() {
+      _isMicrosoftLoading = true;
+      _microsoftError = null;
+    });
+
+    final l10n = AppLocalizations.of(context)!;
+    ref
+        .read(analyticsServiceProvider)
+        .trackEvent('onboarding_microsoft_signin_start');
+
+    try {
+      await ref.read(microsoftAuthServiceProvider).startSignInRedirect(
+            state: MicrosoftAuthService.onboardingState,
+          );
+    } on MicrosoftSignInException {
+      if (mounted) {
+        setState(() {
+          _microsoftError = l10n.microsoftSignInFailed;
+          _isMicrosoftLoading = false;
+        });
+      }
+    }
+  }
+
+  /// "Use a different account" — drop the Microsoft tokens and restart the
+  /// flow on the plain step 1 form.
+  Future<void> _handleUseDifferentAccount() async {
+    await ref.read(microsoftAuthServiceProvider).clearAccountCache();
+    _nameController.clear();
+    _emailController.clear();
+    setState(() {
+      _termsAccepted = false;
+      _isMarketingConsent = false;
+      _emailTaken = false;
+      _microsoftError = null;
+    });
+    ref.read(onboardingStateProvider.notifier).exitMicrosoftMode();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Watch at top level — triggers rebuild whenever the 409 conflict error changes.
+    // Watch at top level — triggers rebuild whenever the 409 conflict error
+    // changes or Microsoft mode is entered/exited.
     final emailConflictError = ref.watch(
       onboardingStateProvider.select((s) => s.emailConflictError),
+    );
+    final isMicrosoftMode = ref.watch(
+      onboardingStateProvider.select((s) => s.isMicrosoftMode),
+    );
+    final microsoftEmail = ref.watch(
+      onboardingStateProvider.select((s) => s.email),
     );
 
     return Form(
@@ -113,12 +183,22 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Microsoft mode: verified identity card in place of the email field.
+          if (isMicrosoftMode) ...[
+            MicrosoftIdentityCard(
+              fullName: _nameController.text.trim(),
+              email: microsoftEmail,
+              onUseDifferentAccount: _handleUseDifferentAccount,
+            ),
+            const SizedBox(height: 20),
+          ],
+
           // Full Name
           FieldLabel(label: l10n.fullName, isRequired: true),
           const SizedBox(height: 6),
           TextFormField(
             controller: _nameController,
-            autofocus: true,
+            autofocus: !isMicrosoftMode,
             textInputAction: TextInputAction.next,
             maxLength: 50,
             decoration: InputDecoration(
@@ -133,46 +213,69 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
             },
           ),
 
-          const SizedBox(height: 16),
+          if (!isMicrosoftMode) ...[
+            const SizedBox(height: 16),
 
-          // Work Email
-          FieldLabel(label: l10n.workEmail, isRequired: true),
-          const SizedBox(height: 6),
-          EmailInputField(
-            controller: _emailController,
-            textInputAction: TextInputAction.done,
-            onChanged: (v) {
-              setState(() {
-                // Clear taken flag as soon as the user edits the address.
-                _emailTaken = false;
-              });
-              // Clear any 409 conflict error when the user edits the address.
-              if (ref.read(onboardingStateProvider).emailConflictError.isNotEmpty) {
-                ref.read(onboardingStateProvider.notifier).setEmailConflictError('');
-              }
-            },
-            onFieldSubmitted: (_) => _handleContinue(),
-            errorEmpty: l10n.onboardingEmailRequired,
-          ),
-          // Inline error: email already registered (from pre-check or 409 on submit)
-          if (_emailTaken || emailConflictError.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                emailConflictError.isNotEmpty
-                    ? emailConflictError
-                    : l10n.onboardingEmailConflict,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.destructive,
+            // Work Email
+            FieldLabel(label: l10n.workEmail, isRequired: true),
+            const SizedBox(height: 6),
+            EmailInputField(
+              controller: _emailController,
+              textInputAction: TextInputAction.done,
+              onChanged: (v) {
+                setState(() {
+                  // Clear taken flag as soon as the user edits the address.
+                  _emailTaken = false;
+                });
+                // Clear any 409 conflict error when the user edits the address.
+                if (ref.read(onboardingStateProvider).emailConflictError.isNotEmpty) {
+                  ref.read(onboardingStateProvider.notifier).setEmailConflictError('');
+                }
+              },
+              onFieldSubmitted: (_) => _handleContinue(),
+              errorEmpty: l10n.onboardingEmailRequired,
+            ),
+            // Inline error: email already registered (from pre-check or 409 on submit)
+            if (_emailTaken || emailConflictError.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  emailConflictError.isNotEmpty
+                      ? emailConflictError
+                      : l10n.onboardingEmailConflict,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.destructive,
+                  ),
                 ),
               ),
-            ),
+
+            // "or — Subscribe with Microsoft" (feature-flagged), between the
+            // email field and the consent checkboxes.
+            if (AppConfig.instance.enableMicrosoftOnboarding) ...[
+              const SizedBox(height: 20),
+              SubscribeWithMicrosoft(
+                isLoading: _isMicrosoftLoading,
+                onPressed: _handleSubscribeWithMicrosoft,
+              ),
+              if (_microsoftError != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _microsoftError!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.destructive,
+                  ),
+                ),
+              ],
+            ],
+          ],
 
           const SizedBox(height: 20),
 
           // Terms & Privacy (required)
-          _TermsCheckboxField(
+          OnboardingTermsCheckboxField(
             value: _termsAccepted,
             onChanged: (v) => setState(() => _termsAccepted = v ?? false),
           ),
@@ -180,7 +283,7 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
           const SizedBox(height: 8),
 
           // Marketing opt-in (optional)
-          _CheckboxField(
+          OnboardingCheckboxField(
             value: _isMarketingConsent,
             onChanged: (v) => setState(() => _isMarketingConsent = v ?? false),
             label: l10n.onboardingMarketingOptIn,
@@ -208,111 +311,3 @@ class _PersonalDetailsStepState extends ConsumerState<PersonalDetailsStep>
   }
 }
 
-/// Reusable labeled checkbox row.
-class _CheckboxField extends StatelessWidget {
-  const _CheckboxField({
-    required this.value,
-    required this.onChanged,
-    required this.label,
-    required this.labelStyle,
-  });
-
-  final bool value;
-  final ValueChanged<bool?> onChanged;
-  final String label;
-  final TextStyle labelStyle;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: Checkbox(
-              value: value,
-              onChanged: onChanged,
-              activeColor: AppTheme.primaryDark,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(label, style: labelStyle),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Terms & Privacy checkbox row with clickable links for ToS and Privacy Policy.
-class _TermsCheckboxField extends StatelessWidget {
-  const _TermsCheckboxField({required this.value, required this.onChanged});
-
-  final bool value;
-  final ValueChanged<bool?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: Checkbox(
-              value: value,
-              onChanged: onChanged,
-              activeColor: AppTheme.primaryDark,
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.compact,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                style: const TextStyle(fontSize: 13, color: AppTheme.foreground),
-                children: [
-                  TextSpan(text: l10n.onboardingTermsAcceptPrefix),
-                  TextSpan(
-                    text: l10n.termsOfService,
-                    style: const TextStyle(
-                      color: AppTheme.primaryDark,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppTheme.primaryDark,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = MenuItems.launchTerms,
-                  ),
-                  TextSpan(text: l10n.onboardingTermsAcceptMiddle),
-                  TextSpan(
-                    text: l10n.privacyPolicy,
-                    style: const TextStyle(
-                      color: AppTheme.primaryDark,
-                      decoration: TextDecoration.underline,
-                      decorationColor: AppTheme.primaryDark,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = MenuItems.launchPrivacy,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

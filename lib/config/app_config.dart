@@ -83,4 +83,12 @@ class AppConfig {
     final features = _config['features'] as Map?;
     return features?['enableMicrosoftLoginLogs'] as bool? ?? false;
   }
+
+  /// Feature flag: show "Subscribe with Microsoft" on onboarding step 1 and
+  /// consume its redirect return on /onboarding (no-OTP SSO onboarding).
+  /// Defaults to false (safe/off) when absent.
+  bool get enableMicrosoftOnboarding {
+    final features = _config['features'] as Map?;
+    return features?['enableMicrosoftOnboarding'] as bool? ?? false;
+  }
 }

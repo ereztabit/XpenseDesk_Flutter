@@ -5,11 +5,13 @@ import '../../config/app_config.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/analytics_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/onboarding_provider.dart';
 import '../../services/auth_service.dart';
 import '../../services/microsoft_auth_service.dart';
 import '../app_button.dart';
 import '../email_input_field.dart';
 import '../error_alert.dart';
+import '../microsoft_logo.dart';
 
 /// The login card: logo, magic-link email entry, "Sign in with Microsoft", and
 /// the create-account link. Owns its own form state and the two sign-in flows.
@@ -26,6 +28,20 @@ class _LoginCardState extends ConsumerState<LoginCard> {
   String? _errorMessage;
   String? _successMessage;
   bool _isMicrosoftLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // A Microsoft LOGIN sign-in by a brand-new user was handed off to the
+    // onboarding wizard by authBootstrapProvider (which completes before
+    // AuthGate builds this screen) — continue there, already signed in.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (ref.read(pendingMicrosoftOnboardingProvider) != null) {
+        Navigator.of(context).pushReplacementNamed('/onboarding');
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -97,6 +113,8 @@ class _LoginCardState extends ConsumerState<LoginCard> {
     final msError = switch (ref.watch(microsoftLoginErrorProvider)) {
       MicrosoftLoginError.noAccount => l10n.microsoftNoAccount,
       MicrosoftLoginError.failed => l10n.microsoftSignInFailed,
+      MicrosoftLoginError.accountExists =>
+        l10n.onboardingMicrosoftAlreadyRegistered,
       null => null,
     };
 
@@ -206,7 +224,7 @@ class _LoginCardState extends ConsumerState<LoginCard> {
                   child: AppButton(
                     label: l10n.signInWithMicrosoft,
                     variant: AppButtonVariant.normal,
-                    icon: Icons.window,
+                    iconWidget: const MicrosoftLogo(),
                     isLoading: _isMicrosoftLoading,
                     onPressed: _handleMicrosoftLogin,
                   ),
@@ -227,6 +245,10 @@ class _LoginCardState extends ConsumerState<LoginCard> {
                     label: l10n.createAccount,
                     variant: AppButtonVariant.ghost,
                     onPressed: () {
+                      // Always start onboarding with empty forms — clear any
+                      // state left over from a previous (completed or
+                      // abandoned) wizard session in this browser session.
+                      ref.read(onboardingStateProvider.notifier).reset();
                       ref
                           .read(analyticsServiceProvider)
                           .trackEvent('onboarding_start');

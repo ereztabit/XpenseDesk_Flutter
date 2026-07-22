@@ -19,4 +19,6 @@ features:
   # Show the "Sign in with Microsoft" button and process its redirect on return.
   enableMicrosoftLogin: true
   # Emit [xdMsal] diagnostic logs to the browser console (debugging aid).
-  enableMicrosoftLoginLogs: false
+  enableMicrosoftLoginLogs: true
+  # Show "Subscribe with Microsoft" on onboarding step 1 (no-OTP SSO onboarding).
+  enableMicrosoftOnboarding: true

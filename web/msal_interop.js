@@ -48,7 +48,10 @@
   })();
 
   // handleRedirectPromise() must run once on every load; called here and shared.
-  // Resolves to the Microsoft ID token on a successful return, or '' otherwise.
+  // Resolves to {idToken, state} on a successful return, or empty strings
+  // otherwise. `state` is the opaque string the app passed to signInRedirect()
+  // (e.g. 'onboarding'); MSAL echoes it back so the return load knows which flow
+  // started the sign-in. Client-side routing data only — never sent to our API.
   var redirectResultPromise = (async function () {
     var app = await appPromise;
     xlog('calling handleRedirectPromise; hashLen=' + window.location.hash.length);
@@ -57,25 +60,72 @@
       xlog('handleRedirectPromise resolved: hasIdToken=' +
         !!(result && result.idToken) +
         ' idTokenLen=' + (result && result.idToken ? result.idToken.length : 0) +
+        ' state=' + (result && result.state ? result.state : '') +
         ' account=' + (result && result.account ? result.account.username : 'null'));
-      return (result && result.idToken) ? result.idToken : '';
+      return {
+        idToken: (result && result.idToken) ? result.idToken : '',
+        state: (result && result.state) ? result.state : '',
+      };
     } catch (e) {
       xlog('handleRedirectPromise ERROR: ' + (e && (e.errorCode || e)));
-      return '';
+      return { idToken: '', state: '' };
     }
   })();
 
   window.xdMsal = {
-    signInRedirect: function () {
-      xlog('signInRedirect() called');
+    signInRedirect: function (state) {
+      xlog('signInRedirect() called; state=' + (state || ''));
       return appPromise.then(function (app) {
-        return app.loginRedirect({ scopes: SCOPES, prompt: 'select_account' });
+        var request = { scopes: SCOPES, prompt: 'select_account' };
+        if (state) request.state = state;
+        return app.loginRedirect(request);
       });
     },
+    // Returns a JSON string {"idToken": "...", "state": "..."} — JSON keeps the
+    // Dart interop to a single JSString crossing.
     getRedirectResult: function () {
-      return redirectResultPromise.then(function (t) {
-        xlog('getRedirectResult() -> token length ' + t.length);
-        return t;
+      return redirectResultPromise.then(function (r) {
+        xlog('getRedirectResult() -> token length ' + r.idToken.length +
+          ' state=' + r.state);
+        return JSON.stringify(r);
+      });
+    },
+    // Silently re-acquire a FRESH ID token for the signed-in account (ID tokens
+    // live ~1h and the user may park on a wizard step). Resolves to '' when
+    // there is no cached account or silent renewal fails — caller falls back to
+    // the interactive sign-in.
+    acquireTokenSilent: function () {
+      return appPromise.then(function (app) {
+        var accounts = app.getAllAccounts();
+        if (!accounts.length) {
+          xlog('acquireTokenSilent: no cached account');
+          return '';
+        }
+        return app
+          .acquireTokenSilent({
+            scopes: SCOPES,
+            account: accounts[0],
+            forceRefresh: true,
+          })
+          .then(function (result) {
+            xlog('acquireTokenSilent ok; idTokenLen=' +
+              (result && result.idToken ? result.idToken.length : 0));
+            return (result && result.idToken) ? result.idToken : '';
+          })
+          .catch(function (e) {
+            xlog('acquireTokenSilent ERROR: ' + (e && (e.errorCode || e)));
+            return '';
+          });
+      });
+    },
+    // Drop the cached MSAL account/tokens without a logout redirect ("Use a
+    // different account" restarts the onboarding flow from scratch).
+    clearCache: function () {
+      return appPromise.then(function (app) {
+        xlog('clearCache() called');
+        return app.clearCache().catch(function (e) {
+          xlog('clearCache ERROR: ' + (e && (e.errorCode || e)));
+        });
       });
     },
     // Enable live console streaming (Dart calls this when the log flag is on).
