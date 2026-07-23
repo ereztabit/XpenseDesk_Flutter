@@ -7,6 +7,7 @@ import '../providers/expense_sheet_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
+import '../utils/ref_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../widgets/app_button.dart';
@@ -54,10 +55,9 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     _didInvalidateOnEntry = true;
     // The sheet-detail family entry is cached across visits (no autoDispose), so
     // re-entering a sheet would otherwise show stale state with no network call.
-    // Invalidate here (after initState, before the first build) so each entry
-    // re-fetches exactly once. Not initState: `ref` can't do an inherited
-    // lookup there yet.
-    ref.invalidate(sheetDetailProvider(widget.expenseSheetId));
+    // invalidateOnEntry re-fetches exactly once per entry. Not initState: `ref`
+    // can't do an inherited lookup there yet.
+    ref.invalidateOnEntry([sheetDetailProvider(widget.expenseSheetId)]);
   }
 
   /// Whole-sheet approve: WaitingForApproval or Declined. Approving a Declined

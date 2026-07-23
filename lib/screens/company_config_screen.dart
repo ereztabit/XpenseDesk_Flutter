@@ -7,6 +7,7 @@ import '../models/company_info.dart';
 import '../providers/company_provider.dart';
 import '../providers/billing_provider.dart';
 import '../services/auth_service.dart';
+import '../utils/ref_utils.dart';
 import '../widgets/company_config/billing_current_plan_card.dart';
 import '../widgets/company_config/billing_payment_method_card.dart';
 import '../widgets/company_config/billing_information_card.dart';
@@ -101,7 +102,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
     // Must be here (not initState) because ref depends on inherited widgets.
     if (!_billingRefreshed) {
       _billingRefreshed = true;
-      ref.invalidate(billingProvider);
+      ref.invalidateOnEntry([billingProvider]);
     }
   }
 

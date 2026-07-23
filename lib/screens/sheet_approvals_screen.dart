@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../models/expense_sheet_list_item.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../utils/app_navigator.dart';
+import '../utils/ref_utils.dart';
 import '../widgets/app_button.dart';
 import '../widgets/manager_dashboard/approved_card.dart';
 import '../widgets/manager_dashboard/page_header_row.dart';
@@ -59,11 +60,13 @@ class _SheetApprovalsScreenState
     if (_didInvalidateOnEntry) return;
     _didInvalidateOnEntry = true;
     // Invalidate once, here rather than initState (where `ref` can't yet do an
-    // inherited lookup) or a post-frame callback (which fires after the first
-    // build already fetched, double-loading). didChangeDependencies runs after
-    // initState but before the first build: no-op on first mount, single fresh
-    // fetch on re-entry.
-    _refreshSheetProviders();
+    // inherited lookup), so re-entry gets a fresh fetch.
+    ref.invalidateOnEntry([
+      companyEmployeesProvider,
+      approvalsQueueProvider,
+      returnedSheetsProvider,
+      approvedSheetsProvider,
+    ]);
   }
 
   /// Invalidates the three bucket providers (each family) + the employees

@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../models/user_details.dart';
 import '../providers/users_provider.dart';
 import '../services/users_service.dart';
+import '../utils/ref_utils.dart';
 import '../widgets/app_button.dart';
 import '../widgets/profile/profile_editor.dart';
 
@@ -32,7 +33,7 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen>
     if (_didInvalidateOnEntry) return;
     _didInvalidateOnEntry = true;
     // Fresh fetch on (re)entry so a previously-edited user isn't stale.
-    ref.invalidate(userDetailsProvider(widget.targetUserId));
+    ref.invalidateOnEntry([userDetailsProvider(widget.targetUserId)]);
   }
 
   void _onDirtyChanged(bool dirty) {
