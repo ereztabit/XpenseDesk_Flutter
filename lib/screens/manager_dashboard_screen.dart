@@ -1,6 +1,7 @@
 import 'screen_imports.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../utils/manager_dashboard_state_utils.dart';
+import '../utils/ref_utils.dart';
 import '../widgets/dashboard_greeting.dart';
 import '../widgets/manager_dashboard/awaiting_payment_card.dart';
 import '../widgets/manager_dashboard/first_sheets_info_row.dart';
@@ -40,13 +41,13 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
     if (_didInvalidateOnEntry) return;
     _didInvalidateOnEntry = true;
     // Refresh the dashboard's data sources on (re)entry so counts are live when
-    // the manager returns from Sheet Approvals / Sheet Review (§8). Runs after
-    // initState but before the first build: no-op on first mount, single fresh
-    // fetch on re-entry.
-    ref.invalidate(approvalsQueueProvider);
-    ref.invalidate(approvedSheetsProvider);
-    ref.invalidate(returnedSheetsProvider);
-    ref.invalidate(companyEmployeesProvider);
+    // the manager returns from Sheet Approvals / Sheet Review (§8).
+    ref.invalidateOnEntry([
+      approvalsQueueProvider,
+      approvedSheetsProvider,
+      returnedSheetsProvider,
+      companyEmployeesProvider,
+    ]);
   }
 
   @override

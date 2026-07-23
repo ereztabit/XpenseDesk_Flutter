@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../models/expense_sheet_list_item.dart';
 import '../providers/employee_dashboard_provider.dart';
 import '../providers/expense_sheet_provider.dart';
+import '../utils/ref_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../widgets/employee_dashboard/employee_dashboard_body.dart';
 import '../widgets/employee_dashboard/page_header_row.dart';
@@ -39,10 +40,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     if (_didInvalidateOnEntry) return;
     _didInvalidateOnEntry = true;
     // Invalidate once, here rather than initState (where `ref` can't yet do an
-    // inherited lookup) or a post-frame callback (which double-loads after the
-    // first build already fetched). No-op on first mount; single fresh fetch on
-    // re-entry.
-    ref.invalidate(mySheetsProvider);
+    // inherited lookup). No-op on first mount; single fresh fetch on re-entry.
+    ref.invalidateOnEntry([mySheetsProvider]);
   }
 
   /// Schedules a default selection when the current `selectedId` is null or
