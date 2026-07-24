@@ -35,6 +35,7 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Regression -- grid columns and form read-only text not selectable after SelectionArea removal -- see docs/bugs/selection-regression-grid-and-form-text-not-selectable.md
 - [ ] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
 - [ ] Onboarding OTP step -- always-visible Microsoft signup option + slow-delivery warning after 30s (365 mailboxes up to ~3 min) -- see docs/bugs/onboarding-otp-slow-delivery-warning-and-microsoft-fallback.md
+- [ ] AI receipt scan -- "Detected details" card shows raw amount + ISO code ("1880.00 ILS") instead of "₪1,880.00" -- see docs/bugs/ai-detected-amount-not-currency-formatted.md
 
 ## general environment
 
