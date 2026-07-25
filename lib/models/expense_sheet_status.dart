@@ -1,5 +1,5 @@
 /// Server-side expense sheet status. Mirrors `ExpenseSheetStatusId` on the API
-/// (see docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md §0.2).
+/// (see docs/completed/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md §0.2).
 enum ExpenseSheetStatus {
   draft(1),
   waitingForApproval(2),

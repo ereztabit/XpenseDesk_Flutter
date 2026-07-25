@@ -1,6 +1,6 @@
 # Onboarding Flow — Implementation Plan
 
-**Source of truth:** [client-onboarding-company-api-guide.md](./client-onboarding-company-api-guide.md)
+**Source of truth:** [client-onboarding-company-api-guide.md](../api-guides/client-onboarding-company-api-guide.md)
 
 Each step is a complete vertical slice: model → service → provider → UI.
 After every step we **build**, **screenshot**, and **validate** before proceeding.

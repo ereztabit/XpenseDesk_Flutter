@@ -29,6 +29,9 @@ performs.
 4. **Checks green.** Run `flutter analyze` (must be clean) and
    `flutter build web --release --dart-define=ENV=prod` (must compile). If a `test/`
    suite exists, run `flutter test` too. **Any failure -> STOP.**
+   - Pre-existing findings tracked as their own backlog bug (e.g. the known
+     info-level lints) are not a failure of this change - say so explicitly with
+     the count, and confirm the change added none.
 5. **Bump the app version.** Run `sh .githooks/bump-version.sh` - bumps the minor
    version in `pubspec.yaml` and stages it. It prints `old -> new` (e.g.
    `1.6.0+1 -> 1.7.0+1`). **This is the ONLY place the version bumps** (mid-feature
@@ -38,13 +41,30 @@ performs.
    version - `v{MAJOR}.{MINOR}` (e.g. `1.7.0+1` -> `v1.7`) - and replace the `TBD`
    in this feature's `README.md` row with it. If the bump was skipped (chore), leave
    the row's Version as the current `v{MAJOR}.{MINOR}` or mark it `-`.
-7. **Commit + push develop.** Stage the changes, commit with a clear message,
+7. **Update the work-tracking docs.** The work is developed but NOT in production,
+   so it is not yet "done":
+   - In `docs/current-work.md`, keep the item under `## Currently Working On` and
+     rewrite its line to exactly one banked marker:
+     `<name> - banked on develop as v{MAJOR}.{MINOR} (<today YYYY-MM-DD>), awaiting ship-feature.`
+     plus any genuinely outstanding verification. **`ship-feature` deletes this
+     line when it releases** - it is a short-lived marker, never a permanent entry.
+   - Leave the spec in `docs/in-progress/` — the work is still in flight until it
+     is released. It moves to `docs/completed/` at `ship-feature`, because
+     "completed" means shipped to production, not merged.
+   - **A bug fix that the user has verified is done now**: close it through the
+     `bug` skill (Status `done` + Resolution, `git mv` the doc to
+     `docs/bugs/completed/`, delete its line from `current-work.md`) rather than
+     leaving a banked marker.
+8. **Commit + push develop.** Stage the changes, commit with a clear message,
    `git push origin develop`.
-8. **Done - report and STOP.** State clearly: committed + pushed on `develop`, **not
+9. **Done - report and STOP.** State clearly: committed + pushed on `develop`, **not
    released**. The work is banked on the trunk; deploy later with `ship-feature`.
 
 ## Notes
 - This skill deliberately stops at `develop`. It does NOT merge to `main` and does
   NOT trigger CI - so nothing deploys.
 - Several finished features can accumulate on `develop` and be released together in
-  one `ship-feature` run.
+  one `ship-feature` run; each keeps its own banked marker until then.
+- Editing the docs: use the Edit/Write tools. Do **not** rewrite these files with
+  PowerShell `Set-Content`/`Out-File` - PowerShell 5.1 mangles their UTF-8 content
+  (em dashes, box drawing, Hebrew) and adds a BOM.

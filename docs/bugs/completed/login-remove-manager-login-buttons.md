@@ -21,7 +21,7 @@ Remove the manager login buttons entirely from the login screen.
 
 Locate the manager login buttons in the login screen widget and remove them.
 Note this overlaps with the existing backlog item "disable the dev auto-login
-shortcut on the login screen" (docs/in-progress/disable-dev-auto-login.md) — if
+shortcut on the login screen" (docs/completed/disable-dev-auto-login.md) — if
 they are the same dev shortcuts, coordinate the two so the change is made once.
 Ensure no dev login affordance reaches production.
 

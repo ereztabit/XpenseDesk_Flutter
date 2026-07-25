@@ -1,27 +1,30 @@
-# Current Work & TODO
+# Backlog
 
-## Currently Working On
+This file is our state of mind: everything open, nothing left behind. **Nothing is
+in progress right now.**
 
-- Microsoft SSO onboarding (no-OTP "Subscribe with Microsoft") — DONE, banked on develop as v1.22 (2026-07-22), awaiting ship-feature. Tested end to end in dev: new-user SSO onboarding, existing-account short-circuit to own dashboard, login->onboarding handoff for unknown users, wizard-state clearing after completion. Spec: docs/in-progress/microsoft-onboarding-flutter-guide.md; CR: microsoft-onboarding-flutter-guide-CR.md. NOTE for backend: multitenant token email claims are tenant-admin-controllable (nOAuth) — match accounts by validated oid/tid, never by unverified email claim.
-- Sign in with Microsoft (web) — MSAL auth-code+PKCE login on the login screen; posts the ID token to /api/auth/microsoft-login for the standard session token. Login-only for existing users. Spec: docs/in-progress/microsoft-login-flutter-guide.md
-  - REDIRECT flow (not popup — Microsoft COOP severs the app<->popup link). Token consumed in authBootstrapProvider on '/'; gated by feature flags enableMicrosoftLogin / enableMicrosoftLoginLogs (AppConfig). Shipped dark in prod.
-  - Full guide: docs/in-progress/microsoft-login-implementation.md (flow, popup lessons, flags).
-  - Verified end to end in dev: token obtained + POST /api/auth/microsoft-login; unknown user correctly rejected with the "no account" message. Awaiting a demo-tenant account registered in XpenseDesk to confirm a successful login lands on the dashboard.
-  - Do NOT commit/merge until the user gives the word.
-- Multi-currency expenses (docs/in-progress/multi-currency-expenses.md) — core + Follow-up 1 (server-driven currency list from `trackedCurrencies`) shipped. Remaining: Follow-up 2 — verify AI receipt scan handles foreign currency end to end. Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/ (user scans them in dev).
+- **Start work on an item** → move its line into a `## Currently Working On`
+  section at the top of this file, and move its spec into `docs/in-progress/`.
+- **Finish and ship it** → delete the line from this file entirely and move its
+  spec to `docs/completed/`. Shipped work leaves no trace here; the record is the
+  `README.md` feature-log row plus `docs/completed/` (closed bugs go to
+  `docs/bugs/completed/`).
+- **Stop working on it, or ditch it** → move the line back to a backlog section
+  below and its spec back to `docs/backlog/`. Nothing stays parked in
+  `## Currently Working On` or in `docs/in-progress/`.
 
-Open bugs (see `## report bugs (pending)` below)
+So: `docs/in-progress/` holds specs for what we are working on **right now** and
+is empty when we are not; `docs/backlog/` holds specs for open features we are not
+working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
-Production readiness: see docs/pre-deployment-issues.md (1 hard blocker — dev auto-login not env-gated).
-
-The Expense Sheets transformation (stories 01–03) shipped; its record lives in
-[docs/in-progress/ExpenseSheetsTransformation/](in-progress/ExpenseSheetsTransformation/README.md).
-
+Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
 ## TODO (Backlog)
-- [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md
+
+- [ ] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
+- [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] add logos to the authorize page
-- [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/in-progress/coupon-verbiage-review.md
+- [ ] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/backlog/coupon-verbiage-review.md
 
 ## report bugs (pending)
 
@@ -35,47 +38,36 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
 - [ ] Onboarding OTP step -- always-visible Microsoft signup option + slow-delivery warning after 30s (365 mailboxes up to ~3 min) -- see docs/bugs/onboarding-otp-slow-delivery-warning-and-microsoft-fallback.md
 - [ ] AI receipt scan -- "Detected details" card shows raw amount + ISO code ("1880.00 ILS") instead of "₪1,880.00" -- see docs/bugs/ai-detected-amount-not-currency-formatted.md
+- [ ] "Add employee" multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
+- [ ] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
+- [ ] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
+- [ ] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
+- [ ] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
+- [ ] (deferred) Calendar widget is unstable and not cross-browser -- postponed, see docs/bugs/calendar-widget-unstable-cross-browser.md
+- [ ] (deferred to v2) Tranzila hosted-fields validation messages are always Hebrew -- fine for the Israel launch, see docs/bugs/tranzila-iframe-validation-language-hebrew-only.md
 
 ## general environment
 
-- [x] privacy policy & terms now live on the marketing site (https://xpensedesk.com/privacy, /terms); all in-app links open them in a new tab. In-app copies removed (web/legal/terms-he.html + LegalDocumentScreen + /legal/privacy route deleted).
-- [x] make the app installable as a PWA (branded manifest/icons, home-screen icon) — subsumes "replace the icon of the webpage". Shipped v1.8 — see docs/in-progress/pwa-installable-app.md
 - [ ] when an api fails it keeps calling it on a loop - if you get 400/500 - stop with an error.
 - [ ] login with google
-- [ ] get zehut for customers in IL
 - [ ] we need to be able to impersonate a user
-- [ ] we need a admin view to see compaines usage
+- [ ] we need an admin view to see companies usage
 - [ ] we need to translate better to hebrew
-- [ ] Date pickers: first day of week by country (Israel = Sunday, others = Monday) -- post-MVP. See docs/in-progress/calendar-week-start-localization-spec.md
-- [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/in-progress/post-login-deep-linking-spec.md
+- [ ] Date pickers: first day of week by country (Israel = Sunday, others = Monday) -- post-MVP. See docs/backlog/calendar-week-start-localization-spec.md
+- [ ] preserve protected deep links through login so users who open a report or dashboard URL while logged out land on that exact page after authentication - see docs/backlog/post-login-deep-linking-spec.md
 
 ## manager expenses report
 
-- [ ] build the spend overview widget for manager and employee docs/in-progress/spend-overview-spec.md
+- [ ] build the spend overview widget for manager and employee -- manager card is live; the employee side and the approvals-screen slot are still placeholders. See docs/backlog/spend-overview-spec.md
 
 ## management screens
-- [ ] we need to configure which categories are available
 
+- [ ] we need to configure which categories are available
 
 ## processes & other stuff
 
 - [ ] spend history - user
 
----
+## Tranzila support — open questions
 
-## Tranzila Support — Open Questions
-
-### SDK / Integration (still open)
-- [ ] **Q2** — `force_txn_on_3ds_fail` security: can this be locked at the terminal level or in the `thtk` issuance so the client-side value cannot be overridden?
-
-### Resolved
-- **Q1** (Hebrew-only iframe validation language) — deferred to v2; fine for the Israel launch. Filed as a bug: docs/bugs/tranzila-iframe-validation-language-hebrew-only.md
-- **Q3** (3DS testing) — there is no sandbox 3DS path; 3DS is tested on a **live terminal** with real cards. Accepted constraint — that's how Tranzila works.
-- **Q4** (phone validation in `fields.charge()`) — not needed; dropped.
-- **Q5** (sandbox terminal) — answered: sandbox is terminal-level, configured on Tranzila's end (no per-request flag).
-- **Q6** (testing the recurring charge flow) — done.
-- **Q7** (Hebrew receipt vs English invoice) — resolved, all good.
-- **Q8** (separate document number sequences) — resolved, all good.
-- **Q9** (charge IL in NIS / foreign in USD) — answered: a **dedicated terminal per country by lead currency** (IL, US, EU, …); not multiplexed through one terminal. Recorded in docs/completed/tranzila-card-tokenization.md.
-
----
+- [ ] **Q2** — `force_txn_on_3ds_fail` security: can this be locked at the terminal level or in the `thtk` issuance so the client-side value cannot be overridden? (Answered questions are recorded in docs/completed/tranzila-card-tokenization.md, not here.)

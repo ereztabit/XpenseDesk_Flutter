@@ -2,7 +2,7 @@
 
 **Status:** Working draft. Pair this with the discovery doc.
 
-**Source of truth (server side):** [`docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md`](./ExpenseSheetsEvolution.md). Read §0 (concept) before touching this file. Any answer that contradicts the discovery doc is wrong — update this plan, not the server contract.
+**Source of truth (server side):** [`docs/completed/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md`](./ExpenseSheetsEvolution.md). Read §0 (concept) before touching this file. Any answer that contradicts the discovery doc is wrong — update this plan, not the server contract.
 
 ---
 
@@ -245,7 +245,7 @@ Follow §7 of the discovery doc as the checklist:
 
 ## 7. References
 
-- Discovery doc: [`docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md`](./ExpenseSheetsEvolution.md)
+- Discovery doc: [`docs/completed/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md`](./ExpenseSheetsEvolution.md)
 - Product north star: [`docs/product/ai_expense_approval_mvp_north_star.md`](../../product/ai_expense_approval_mvp_north_star.md)
 - Screen map: [`docs/product/mvp_screen_map.md`](../../product/mvp_screen_map.md)
 - CLAUDE.md — screen scaffold, ARB-first rule, edit/delete matrix mirror requirement

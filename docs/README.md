@@ -13,14 +13,29 @@ AI-powered expense approval tool for small businesses.
 - [Flutter Web Deployment Guide](flutter-web-deployment-guide.md) — build + Azure Static Web Apps deploy
 - [PWA Debugging & Verification Guide](pwa-debugging-guide.md) — inspect manifest/icons/service worker; why `flutter run` stubs the manifest
 
-## In Progress
-- [Microsoft Login — Flutter Client Guide](in-progress/microsoft-login-flutter-guide.md) — original spec / API contract
-- [Microsoft Login — Implementation & Lessons](in-progress/microsoft-login-implementation.md) — how the flow works, why redirect not popup, problems hit, feature flags
-- [Card on File Flow](in-progress/card-on-file-flow.md)
-- [Tranzila Hosted Fields Spec](in-progress/tranzila_hosted_fields_spec.md)
-- [Credit Card Authorize Plan](in-progress/credit-card-authorize-plan.md)
-- [Spend Overview Spec](in-progress/spend-overview-spec.md)
-- [Post-Login Deep Linking](in-progress/post-login-deep-linking-spec.md)
+## Where a spec lives
+
+| Folder | Meaning |
+|--------|---------|
+| [in-progress/](in-progress/) | What we are actively working on **right now**. Empty when nothing is in flight. |
+| [backlog/](backlog/) | Open features we are not working on yet. Indexed in [current-work.md](current-work.md). |
+| [completed/](completed/) | Shipped to production. |
+| [bugs/](bugs/) + [bugs/completed/](bugs/completed/) | Open and closed bug reports. |
+
+A spec moves `backlog/` → `in-progress/` when work starts, → `completed/` when it
+ships, or back to `backlog/` if the work is paused or dropped.
+
+## Backlog specs (open, not started)
+- [Multi-Currency Expenses](backlog/multi-currency-expenses.md) — core + follow-up 1 shipped and verified; follow-up 2 (AI scan of foreign currency) open
+- [Spend Overview Spec](backlog/spend-overview-spec.md) — manager card live; employee side + the approvals-screen slot are still placeholders
+- [Post-Login Deep Linking](backlog/post-login-deep-linking-spec.md)
+- [Calendar Week-Start Localization](backlog/calendar-week-start-localization-spec.md) — post-MVP
+- [Coupon Verbiage Review](backlog/coupon-verbiage-review.md) — copy-only
+- [Manager Edit Decline Reason](backlog/manager-edit-decline-reason.md) — deferred to v2, blocked on the server API
+
+Shipped feature specs live in [completed/](completed/) — including the Microsoft
+login and SSO onboarding guides, payment status, PWA, and the Expense Sheets
+transformation.
 
 ## API Guides
 - [Authentication Client Guide](api-guides/authentication_client_guide.md)

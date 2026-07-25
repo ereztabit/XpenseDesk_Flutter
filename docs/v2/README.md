@@ -21,14 +21,14 @@ When a v2 item is picked up, move it back into `current-work.md` (or its own
 - [ ] Paginated "View all" screens for the manager dashboard bucket cards —
   cards show a "Showing 12 of N…" overflow notice until the paginated list
   screen ships.
-  See [../in-progress/ExpenseSheetsTransformation/README.md](../in-progress/ExpenseSheetsTransformation/README.md)
+  See [../completed/ExpenseSheetsTransformation/README.md](../completed/ExpenseSheetsTransformation/README.md)
 - [ ] **Tranzila iframe validation language** — hosted-fields validation messages
   always render in Hebrew with no SDK control. Fine for the Israel launch; matters
   only for international/English billing. (Formerly Tranzila open-question Q1.)
   See [../bugs/tranzila-iframe-validation-language-hebrew-only.md](../bugs/tranzila-iframe-validation-language-hebrew-only.md)
 - [ ] **Manager can modify the decline reason** on an already-declined sheet.
   Blocked on server (API WIP). Deferred out of the MVP.
-  See [../in-progress/manager-edit-decline-reason.md](../in-progress/manager-edit-decline-reason.md)
+  See [../backlog/manager-edit-decline-reason.md](../backlog/manager-edit-decline-reason.md)
 - [ ] **Finish phone/country removal in the authorize flow** — DONE on the
   standard page (web/CreditCard/Authorize.html); still present on the 3DS page
   (web/CreditCard/AuthorizeCard3DS.html lines 66-73) and as dead refs in

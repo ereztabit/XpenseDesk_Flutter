@@ -1,5 +1,7 @@
 # Bug: Billing Screen Does Not Refresh After Renewing a Subscription
 
+> **Status: new**
+
 ## Problem
 
 After renewing (resuming) a subscription, the billing screen continues to show

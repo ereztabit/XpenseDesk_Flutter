@@ -311,7 +311,7 @@ decisions below are authoritative where they differ from the prose above.
    `spend_overview_breakdown.dart` + `spend_breakdown_bar.dart` (presentation).
    **Consequence:** the old `spend_overview_widget.dart` is now orphaned dead
    code (was already unmounted) and is a candidate for deletion. This still
-   coordinates with `docs/in-progress/spend-overview-spec.md`.
+   coordinates with `docs/backlog/spend-overview-spec.md`.
 
 4. **"First sheets arrive in X days" uses the existing cycle countdown.**
    Reuse `cycleProvider.daysRemaining` (`lib/providers/cycle_provider.dart`) — the
@@ -442,7 +442,7 @@ Re-mount the existing `SpendOverviewWidget`
 (`lib/widgets/dashboard/spend_overview_widget.dart`). Rework its data source from
 expense-level (`List<ExpenseSummary>`) to **approved-sheet** totals for the
 active cycle (per §5). "View more" → `/manager/analysis`, visible only when
-Approved Spend > 0. Coordinate with `docs/in-progress/spend-overview-spec.md`.
+Approved Spend > 0. Coordinate with `docs/backlog/spend-overview-spec.md`.
 
 **Step 11 — State orchestration + State A muted preview.**
 Wire `managerDashboardStateProvider` into the screen: render exactly the elements

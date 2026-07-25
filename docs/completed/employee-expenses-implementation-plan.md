@@ -6,7 +6,7 @@ Each step produces a working end-to-end slice you can verify on both Desktop and
 **Reference documents:**
 
 - [Employee Expenses UI Spec](Exmployee-expenses-design.md) — layout, breakpoints, interactions
-- [Expense API Guide](expense-api-guide.md) — endpoints, payloads, status codes
+- [Expense API Guide](../api-guides/expense-api-guide.md) — endpoints, payloads, status codes
 
 **What already exists:**
 

@@ -14,7 +14,7 @@ Files: `lib/screens/edit_user_screen.dart`, `lib/widgets/profile/` (ProfileEdito
 + cards), `lib/services/users_service.dart` (`getUserDetails` / `adminUpdateUser`),
 `lib/widgets/users/user_list_item_widget.dart` + `user_list_card.dart` (pencil
 icon + navigation), route `/manager/edit-user/{id}` in `lib/router.dart`.
-Spec: docs/in-progress/employee-gov-id.md.
+Spec: docs/completed/employee-gov-id.md.
 
 ## Problem
 

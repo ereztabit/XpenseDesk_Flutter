@@ -25,7 +25,7 @@ In `web/`: replace `favicon.png` and the `icons/` PNGs (Icon-192, Icon-512, and
 maskable variants), and make sure `web/index.html` `<link rel="icon">` and
 `web/manifest.json` `icons` point at them. Provide the proper sizes (16/32/192/512)
 so tab, bookmark, and install icons are all correct. Note: this overlaps with the
-broader PWA-installable task in `docs/in-progress/pwa-installable-app.md` - the
+broader PWA-installable task in `docs/completed/pwa-installable-app.md` - the
 favicon can be fixed independently now, or folded into that effort.
 
 ## Resolution
@@ -40,7 +40,7 @@ Fix (favicon): un-ignored `/web/favicon.png`, committed a 32x32 branded
 in `web/index.html` so stale cached favicons refresh. Verified by the user.
 Shipped on `develop` as part of the v1.7 batch (no version bump).
 
-Still deferred (tracked under docs/in-progress/pwa-installable-app.md): the PWA
+Still deferred (tracked under docs/completed/pwa-installable-app.md): the PWA
 home-screen icons (`web/icons/Icon-*.png`) and `web/manifest.json` are also
 gitignored and need un-ignoring + re-branding so install icons and the manifest
 deploy. Not part of the browser-tab favicon fix.

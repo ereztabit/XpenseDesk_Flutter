@@ -2,7 +2,7 @@
 
 Six generated receipt images for verifying that the AI receipt scan handles
 foreign currency end to end (ISO code vs symbol, codes outside the tracked
-list). See docs/in-progress/multi-currency-expenses.md.
+list). See docs/backlog/multi-currency-expenses.md.
 
 Regenerate after editing `receipts.json`:
 

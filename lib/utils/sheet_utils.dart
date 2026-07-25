@@ -184,7 +184,7 @@ class SheetExpenseBuckets {
 // ─── Permissions ────────────────────────────────────────────────────────────
 
 /// Edit / delete authority. Mirrors the server matrix in
-/// `docs/in-progress/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md §0.7`.
+/// `docs/completed/ExpenseSheetsTransformation/ExpenseSheetsEvolution.md §0.7`.
 ///
 /// UI should mirror these checks so we don't paint buttons that will 409 / 403.
 /// Server enforces the same rules — these are a pre-emptive client check.
