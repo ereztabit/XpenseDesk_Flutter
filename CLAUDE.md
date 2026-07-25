@@ -44,6 +44,36 @@ When starting work on any feature or task:
 
 **Never start implementing without updating `current-work.md` first.**
 
+### "What's pending?" — MANDATORY response format
+
+When the user asks **"what's pending"** — or any variant ("what's open", "what's
+left", "what's on the list", "what are the open bugs", "what do we have") — read
+`docs/current-work.md` and reply with **one numbered table and nothing else**.
+No prose summary, no per-section headings, no recommendations unless asked.
+
+| Column | Content |
+|--------|---------|
+| `#` | Sequential number across the whole table, `1..N` — the user picks work by number |
+| `Type` | `Bug` or `Feature` |
+| `Item` | One short line — the gist, not the full sentence from the file. Link the spec/bug doc here |
+| `Status` | `IN PROGRESS`, `Open`, or `Deferred` |
+
+Row order:
+1. Everything in `## Currently Working On` — first, `IN PROGRESS`.
+2. Features — from `## TODO (Backlog)`, `## general environment`,
+   `## manager expenses report`, `## management screens`,
+   `## processes & other stuff`, and any other backlog section.
+3. Bugs — from `## report bugs (pending)`.
+4. Anything marked `(deferred)` / `(deferred to v2)` — last, `Deferred`.
+
+Rules:
+- **List every open item.** Never truncate, sample, or collapse to "and N more".
+- Numbering is contiguous — a picked number must map to exactly one row.
+- If nothing is in `## Currently Working On`, put a single line above the table:
+  `Nothing in progress right now.`
+- When the user answers with a number, that row is the item to work on — go
+  straight to `start-feature` for it.
+
 When the user asks to "clean up" `current-work.md`:
 - Delete every completed item (any `[x]` line, any entry marked DONE), including
   stale "Currently Working On" entries — history belongs in the `completed/`
