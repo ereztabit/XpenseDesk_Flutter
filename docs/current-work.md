@@ -1,7 +1,6 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind. **Nothing is
-in progress right now.**
+This file is our state of mind: everything open, nothing left behind.
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -18,6 +17,10 @@ is empty when we are not; `docs/backlog/` holds specs for open features we are n
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
+
+## Currently Working On
+
+- Receipt scan record viewer (dev only) — button beneath the receipt image in the expense editor that fetches the receipt's pipeline processing record and shows the pretty-printed JSON. Gated by the dev-environment flag, never rendered in production. Spec: docs/in-progress/receipt-scan-record-dev-viewer.md
 
 ## TODO (Backlog)
 
@@ -43,6 +46,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 - [ ] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
 - [ ] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
 - [ ] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
+- [ ] New Expense upload zone says "Drag or click to upload" but drag-and-drop was never implemented -- see docs/bugs/receipt-upload-zone-drag-and-drop-not-implemented.md
 - [ ] (deferred) Calendar widget is unstable and not cross-browser -- postponed, see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] (deferred to v2) Tranzila hosted-fields validation messages are always Hebrew -- fine for the Israel launch, see docs/bugs/tranzila-iframe-validation-language-hebrew-only.md
 
