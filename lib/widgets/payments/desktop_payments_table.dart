@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
+import '../selectable_scope.dart';
 import 'desktop_payments_header_row.dart';
 import 'desktop_payments_row.dart';
 import 'payments_table_columns.dart';
@@ -55,10 +56,12 @@ class DesktopPaymentsTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final selectableIds =
-        rows.where((r) => r.isAwaiting).map((r) => r.expenseSheetId).toSet();
-    final allSelected = selectableIds.isNotEmpty &&
-        selectableIds.every(selectedIds.contains);
+    final selectableIds = rows
+        .where((r) => r.isAwaiting)
+        .map((r) => r.expenseSheetId)
+        .toSet();
+    final allSelected =
+        selectableIds.isNotEmpty && selectableIds.every(selectedIds.contains);
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -71,8 +74,8 @@ class DesktopPaymentsTable extends StatelessWidget {
         builder: (context, constraints) {
           final tableWidth =
               constraints.maxWidth > PaymentsTableColumns.minTableWidth
-                  ? constraints.maxWidth
-                  : PaymentsTableColumns.minTableWidth;
+              ? constraints.maxWidth
+              : PaymentsTableColumns.minTableWidth;
           return Scrollbar(
             controller: horizontalScrollController,
             thumbVisibility: true,
@@ -96,7 +99,10 @@ class DesktopPaymentsTable extends StatelessWidget {
                       onToggleAll: onToggleAll,
                     ),
                     const Divider(
-                        height: 1, thickness: 1, color: AppTheme.border),
+                      height: 1,
+                      thickness: 1,
+                      color: AppTheme.border,
+                    ),
                     _body(l10n),
                   ],
                 ),
@@ -119,8 +125,10 @@ class DesktopPaymentsTable extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
-          child:
-              Text(error!, style: const TextStyle(color: AppTheme.destructive)),
+          child: Text(
+            error!,
+            style: const TextStyle(color: AppTheme.destructive),
+          ),
         ),
       );
     }
@@ -130,32 +138,36 @@ class DesktopPaymentsTable extends StatelessWidget {
         child: Center(
           child: Text(
             l10n.noPaymentsFound,
-            style:
-                const TextStyle(fontSize: 13, color: AppTheme.mutedForeground),
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppTheme.mutedForeground,
+            ),
           ),
         ),
       );
     }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < rows.length; i++) ...[
-          DesktopPaymentsRow(
-            row: rows[i],
-            locale: locale,
-            currencyCode: currencyCode,
-            isSelected: selectedIds.contains(rows[i].expenseSheetId),
-            isHighlighted: highlightedIds.contains(rows[i].expenseSheetId),
-            onToggleSelection: onToggleSelection != null
-                ? (selected) => onToggleSelection!(rows[i], selected)
-                : null,
-            onTap: () => onRowTap(rows[i]),
-            onEdit: onEdit != null ? () => onEdit!(rows[i]) : null,
-          ),
-          if (i < rows.length - 1)
-            const Divider(height: 1, color: AppTheme.border),
+    return SelectableScope(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            DesktopPaymentsRow(
+              row: rows[i],
+              locale: locale,
+              currencyCode: currencyCode,
+              isSelected: selectedIds.contains(rows[i].expenseSheetId),
+              isHighlighted: highlightedIds.contains(rows[i].expenseSheetId),
+              onToggleSelection: onToggleSelection != null
+                  ? (selected) => onToggleSelection!(rows[i], selected)
+                  : null,
+              onTap: () => onRowTap(rows[i]),
+              onEdit: onEdit != null ? () => onEdit!(rows[i]) : null,
+            ),
+            if (i < rows.length - 1)
+              const Divider(height: 1, color: AppTheme.border),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

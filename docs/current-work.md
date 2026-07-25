@@ -32,9 +32,9 @@ The Expense Sheets transformation (stories 01–03) shipped; its record lives in
 - [ ] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] flutter analyze reports 9 pre-existing info-level lints (4 dart:html deprecations also block wasm) -- see docs/bugs/flutter-analyze-info-lints-cleanup.md
-- [ ] Regression -- grid columns and form read-only text not selectable after SelectionArea removal -- see docs/bugs/selection-regression-grid-and-form-text-not-selectable.md
 - [ ] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
 - [ ] Onboarding OTP step -- always-visible Microsoft signup option + slow-delivery warning after 30s (365 mailboxes up to ~3 min) -- see docs/bugs/onboarding-otp-slow-delivery-warning-and-microsoft-fallback.md
+- [ ] AI receipt scan -- "Detected details" card shows raw amount + ISO code ("1880.00 ILS") instead of "₪1,880.00" -- see docs/bugs/ai-detected-amount-not-currency-formatted.md
 
 ## general environment
 

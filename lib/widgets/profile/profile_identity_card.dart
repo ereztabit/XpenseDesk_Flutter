@@ -66,10 +66,12 @@ class ProfileIdentityCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppTheme.border),
           ),
-          child: Text(
+          child: SelectableText(
             email,
             style: const TextStyle(
-                fontSize: 16, color: AppTheme.mutedForeground),
+              fontSize: 16,
+              color: AppTheme.mutedForeground,
+            ),
           ),
         ),
         const SizedBox(height: 24),
@@ -91,9 +93,8 @@ class ProfileIdentityCard extends StatelessWidget {
           ),
           enabled: enabled,
           onChanged: (_) => onGovIdChanged(),
-          validator: (value) => GovIdValidator.isValid(value)
-              ? null
-              : l10n.govIdInvalidFormat,
+          validator: (value) =>
+              GovIdValidator.isValid(value) ? null : l10n.govIdInvalidFormat,
         ),
       ],
     );

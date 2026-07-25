@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../employee_dashboard/sheet_status_badge.dart';
+import '../selectable_scope.dart';
 
 /// Sheet Review header card — status badge, employee, cycle, timestamps,
 /// totals, and a read-only decline-comment callout while the sheet is
@@ -32,10 +33,12 @@ class SheetReviewHeaderCard extends ConsumerWidget {
     final itemsText =
         '${sheet.expenses.length} ${sheet.expenses.length == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural}';
     final total = _sheetTotal();
-    final totalText =
-        total != null ? _formatTotal(total, companyLocale, baseCurrency) : null;
+    final totalText = total != null
+        ? _formatTotal(total, companyLocale, baseCurrency)
+        : null;
     final comment = sheet.latestDeclineComment?.trim();
-    final hasComment = comment != null &&
+    final hasComment =
+        comment != null &&
         comment.isNotEmpty &&
         sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
 
@@ -47,71 +50,75 @@ class SheetReviewHeaderCard extends ConsumerWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    cycleText,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.foreground,
+        // The line-item grid below has fully tappable rows, so the sheet's
+        // copyable values (name, email, totals, dates) are selectable here.
+        child: SelectableScope(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      cycleText,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.foreground,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                SheetStatusBadge(statusId: sheet.expenseSheetStatusId),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              sheet.createdByName,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.foreground,
+                  const SizedBox(width: 8),
+                  SheetStatusBadge(statusId: sheet.expenseSheetStatusId),
+                ],
               ),
-            ),
-            if ((sheet.createdByEmail ?? '').isNotEmpty)
+              const SizedBox(height: 4),
               Text(
-                sheet.createdByEmail!,
+                sheet.createdByName,
                 style: const TextStyle(
-                  fontSize: 12,
-                  color: AppTheme.mutedForeground,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.foreground,
                 ),
               ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 16,
-              runSpacing: 4,
-              children: [
-                _MetaItem(label: l10n.items, value: itemsText),
-                if (totalText != null)
-                  _MetaItem(label: l10n.tableTotalHeader, value: totalText),
-                if (sheet.submittedAt != null)
-                  _MetaItem(
-                    label: l10n.submitted,
-                    value: sheet.submittedAt!.toLongDate(companyLocale),
+              if ((sheet.createdByEmail ?? '').isNotEmpty)
+                Text(
+                  sheet.createdByEmail!,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.mutedForeground,
                   ),
-                if (sheet.reviewedAt != null)
-                  _MetaItem(
-                    label: l10n.approvedAt,
-                    value: sheet.reviewedAt!.toLongDate(companyLocale),
-                  ),
-              ],
-            ),
-            if (hasComment) ...[
+                ),
               const SizedBox(height: 12),
-              _DeclineCommentCallout(
-                comment: comment,
-                managerName: sheet.reviewedByName?.trim(),
+              Wrap(
+                spacing: 16,
+                runSpacing: 4,
+                children: [
+                  _MetaItem(label: l10n.items, value: itemsText),
+                  if (totalText != null)
+                    _MetaItem(label: l10n.tableTotalHeader, value: totalText),
+                  if (sheet.submittedAt != null)
+                    _MetaItem(
+                      label: l10n.submitted,
+                      value: sheet.submittedAt!.toLongDate(companyLocale),
+                    ),
+                  if (sheet.reviewedAt != null)
+                    _MetaItem(
+                      label: l10n.approvedAt,
+                      value: sheet.reviewedAt!.toLongDate(companyLocale),
+                    ),
+                ],
               ),
+              if (hasComment) ...[
+                const SizedBox(height: 12),
+                _DeclineCommentCallout(
+                  comment: comment,
+                  managerName: sheet.reviewedByName?.trim(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -119,8 +126,7 @@ class SheetReviewHeaderCard extends ConsumerWidget {
 
   double? _sheetTotal() {
     if (sheet.expenses.isEmpty) return null;
-    return sheet.expenses
-        .fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
+    return sheet.expenses.fold<double>(0, (sum, e) => sum + (e.amount ?? 0));
   }
 
   String _formatTotal(double total, String companyLocale, String baseCurrency) {
@@ -141,10 +147,7 @@ class _MetaItem extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppTheme.mutedForeground,
-          ),
+          style: const TextStyle(fontSize: 11, color: AppTheme.mutedForeground),
         ),
         Text(
           value,

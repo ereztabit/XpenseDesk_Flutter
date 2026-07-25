@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/expense_sheet_list_item.dart';
+import '../selectable_scope.dart';
 import 'desktop_sheet_bucket_header.dart';
 import 'desktop_sheet_bucket_row.dart';
 import 'sheet_bucket_enums.dart';
@@ -30,13 +31,21 @@ class DesktopSheetBucketTable extends StatelessWidget {
     return Column(
       children: [
         DesktopSheetBucketHeader(timestampLabel: timestampLabel),
-        ...items.map((sheet) => DesktopSheetBucketRow(
-              sheet: sheet,
-              companyLocale: companyLocale,
-              timestampSource: timestampSource,
-              actionStyle: actionStyle,
-              onTap: () => onRowTap(sheet),
-            )),
+        SelectableScope(
+          child: Column(
+            children: [
+              ...items.map(
+                (sheet) => DesktopSheetBucketRow(
+                  sheet: sheet,
+                  companyLocale: companyLocale,
+                  timestampSource: timestampSource,
+                  actionStyle: actionStyle,
+                  onTap: () => onRowTap(sheet),
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

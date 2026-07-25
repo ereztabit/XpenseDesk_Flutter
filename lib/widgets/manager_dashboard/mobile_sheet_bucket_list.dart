@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/expense_sheet_list_item.dart';
+import '../selectable_scope.dart';
 import 'mobile_sheet_bucket_row.dart';
 import 'sheet_bucket_enums.dart';
 
@@ -26,18 +27,20 @@ class MobileSheetBucketList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: List.generate(items.length, (index) {
-        return MobileSheetBucketRow(
-          sheet: items[index],
-          companyLocale: companyLocale,
-          timestampSource: timestampSource,
-          timestampLabel: timestampLabel,
-          actionStyle: actionStyle,
-          isLast: index == items.length - 1,
-          onTap: () => onRowTap(items[index]),
-        );
-      }),
+    return SelectableScope(
+      child: Column(
+        children: List.generate(items.length, (index) {
+          return MobileSheetBucketRow(
+            sheet: items[index],
+            companyLocale: companyLocale,
+            timestampSource: timestampSource,
+            timestampLabel: timestampLabel,
+            actionStyle: actionStyle,
+            isLast: index == items.length - 1,
+            onTap: () => onRowTap(items[index]),
+          );
+        }),
+      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
+import '../selectable_scope.dart';
 import 'desktop_sheet_table_header.dart';
 import 'desktop_sheet_table_row.dart';
 
@@ -43,16 +44,20 @@ class DesktopSheetExpenseTable extends StatelessWidget {
             : Column(
                 children: [
                   const DesktopSheetTableHeader(),
-                  ...List.generate(expenses.length, (index) {
-                    return DesktopSheetTableRow(
-                      rowNumber: index + 1,
-                      expense: expenses[index],
-                      companyLocale: companyLocale,
-                      onView: onView,
-                      onEdit: onEdit,
-                      onDelete: onDelete,
-                    );
-                  }),
+                  SelectableScope(
+                    child: Column(
+                      children: List.generate(expenses.length, (index) {
+                        return DesktopSheetTableRow(
+                          rowNumber: index + 1,
+                          expense: expenses[index],
+                          companyLocale: companyLocale,
+                          onView: onView,
+                          onEdit: onEdit,
+                          onDelete: onDelete,
+                        );
+                      }),
+                    ),
+                  ),
                 ],
               ),
       ),

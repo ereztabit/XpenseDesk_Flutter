@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'selectable_scope.dart';
 
 /// Column definition for [SectionTable].
 ///
@@ -72,8 +73,10 @@ class _SectionTableState extends State<SectionTable>
     );
     _heightFactor = _controller.drive(CurveTween(curve: Curves.easeInOut));
     _iconTurns = _controller.drive(
-      Tween<double>(begin: 0.0, end: 0.5)
-          .chain(CurveTween(curve: Curves.easeInOut)),
+      Tween<double>(
+        begin: 0.0,
+        end: 0.5,
+      ).chain(CurveTween(curve: Curves.easeInOut)),
     );
     if (_isExpanded) _controller.value = 1.0;
   }
@@ -197,14 +200,18 @@ class _SectionTableState extends State<SectionTable>
                       // Table header row
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 10),
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         child: Row(
                           children: [
                             for (final col in widget.columns)
                               Expanded(
                                 flex: col.flex,
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                  ),
                                   child: Text(
                                     col.label,
                                     style: const TextStyle(
@@ -219,8 +226,14 @@ class _SectionTableState extends State<SectionTable>
                         ),
                       ),
                       // Body rows
-                      for (final cells in widget.rows)
-                        _BodyRow(cells: cells, columns: widget.columns),
+                      SelectableScope(
+                        child: Column(
+                          children: [
+                            for (final cells in widget.rows)
+                              _BodyRow(cells: cells, columns: widget.columns),
+                          ],
+                        ),
+                      ),
                     ],
                   ],
                 ),
