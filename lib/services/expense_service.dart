@@ -673,7 +673,7 @@ class ExpenseService {
   /// Fetches the receipt-processing record the scan pipeline wrote for a
   /// receipt — conversion, image processing, AI scan/escalation, with per-step
   /// timings. Backs the dev-only scan-record viewer
-  /// (see docs/in-progress/receipt-scan-record-dev-viewer.md).
+  /// (see docs/completed/receipt-scan-record-dev-viewer.md).
   ///
   /// Pass [expenseId] for a saved expense (the server resolves its stored image
   /// URL) and/or [fileUrl] for a receipt that has been scanned but not saved yet

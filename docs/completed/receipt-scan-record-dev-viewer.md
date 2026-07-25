@@ -1,5 +1,30 @@
 # Receipt Scan Record Viewer - Flutter Client Spec (dev only)
 
+> **Status: shipped in v1.25 (2026-07-25).** Two deliberate deviations from the
+> spec below, decided during implementation:
+>
+> 1. **No in-app viewer.** "Placement and behavior" proposes a scrollable dialog
+>    or dedicated screen with copy-to-clipboard. We instead open the raw
+>    pretty-printed JSON in a **new browser tab** (blob, `application/json`,
+>    falling back to a download if the popup blocker refuses the tab). The
+>    browser shows the document, so new pipeline step types render for free and
+>    there is no viewer UI to keep in sync — which also satisfies "render the
+>    list generically, do not hardcode the set" in the strongest possible way.
+>    Copy-to-clipboard is the browser's job in that tab.
+> 2. **No typed model.** The record is passed around as a raw map for the same
+>    reason — a DTO would only break when the pipeline grows.
+>
+> Everything else shipped as written: dev-gate, both routes, 404 handling.
+>
+> **Caveat: shipped without a live-backend round-trip.** Neither route was ever
+> exercised against a running server. Verification is tracked as an open item in
+> `docs/current-work.md`.
+>
+> As built: `lib/widgets/expenses/dev_scan_record_button.dart`,
+> `lib/services/json_viewer_service.dart`,
+> `ExpenseService.fetchScanRecord`, `ApiService.getWithStatus`,
+> `AppConfig.isDev`. Review: `receipt-scan-record-dev-viewer-CR.md`.
+
 A debug tool for the expense editor screen: a button beneath the receipt image
 that fetches the receipt's processing record from the API and shows the JSON.
 It lets us see exactly how the pipeline handled a receipt - conversion,

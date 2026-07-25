@@ -1,6 +1,7 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind.
+This file is our state of mind: everything open, nothing left behind. **Nothing is
+in progress right now.**
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -18,12 +19,9 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- Receipt scan record viewer (dev only) - banked on develop as v1.25 (2026-07-25), awaiting ship-feature. Still unverified against a live backend: the endpoint round-trip was never exercised (saved-expense `expenseId` route, unsaved-scan `fileUrl` route, and a deliberate 404 showing the "no scan record" message). Spec: docs/in-progress/receipt-scan-record-dev-viewer.md
-
 ## TODO (Backlog)
 
+- [ ] verify the dev-only receipt scan record viewer against a live backend — it shipped in v1.25 without the endpoint round-trip ever being exercised. Check the saved-expense `expenseId` route, the unsaved-scan `fileUrl` route, and a deliberate 404 showing the "no scan record" message. Dev-only UI, so no user impact if it is broken. See docs/completed/receipt-scan-record-dev-viewer.md
 - [ ] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
 - [ ] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] add logos to the authorize page
