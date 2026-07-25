@@ -15,6 +15,7 @@ import '../utils/conversion_preview_controller.dart';
 import '../widgets/expenses/conversion_preview_label.dart';
 import '../widgets/expenses/expense_step_indicator.dart';
 import '../widgets/expenses/expense_create_image_panel.dart';
+import '../widgets/expenses/dev_scan_record_button.dart';
 import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../services/expense_service.dart';
@@ -1870,21 +1871,29 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                     ),
                                     const SizedBox(width: 24),
                                     Expanded(
-                                      child: ExpenseCreateImagePanel(
-                                        fileBytes: _fileBytes!,
-                                        isPdf: _isPdf,
-                                        pdfViewType: _pdfViewType,
-                                        aiFailed: _aiFailed,
-                                        hideAiBadge: _isModifying,
-                                        onExpand: _isPdf
-                                            ? (_pdfBlobUrl != null
-                                                ? () => web.window.open(
-                                                    _pdfBlobUrl!, '_blank')
-                                                : null)
-                                            : () => _showFullScreenImage(
-                                                context),
-                                        onDownload: _downloadFile,
-                                        onReplace: _resetToUpload,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ExpenseCreateImagePanel(
+                                            fileBytes: _fileBytes!,
+                                            isPdf: _isPdf,
+                                            pdfViewType: _pdfViewType,
+                                            aiFailed: _aiFailed,
+                                            hideAiBadge: _isModifying,
+                                            onExpand: _isPdf
+                                                ? (_pdfBlobUrl != null
+                                                    ? () => web.window.open(
+                                                        _pdfBlobUrl!, '_blank')
+                                                    : null)
+                                                : () => _showFullScreenImage(
+                                                    context),
+                                            onDownload: _downloadFile,
+                                            onReplace: _resetToUpload,
+                                          ),
+                                          DevScanRecordButton(
+                                              fileUrl: _aiImageUrl),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -1893,6 +1902,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                 _buildActionButtons(l10n, context),
                               ] else ...[
                                 _buildCollapsedReceiptRow(context, l10n),
+                                DevScanRecordButton(fileUrl: _aiImageUrl),
                                 const SizedBox(height: 16),
                                 _buildStep2Form(
                                     context, l10n, companyLocale),

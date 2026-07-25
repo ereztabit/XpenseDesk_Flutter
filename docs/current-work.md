@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- Receipt scan record viewer (dev only) — button beneath the receipt image in the expense editor that fetches the receipt's pipeline processing record and shows the pretty-printed JSON. Gated by the dev-environment flag, never rendered in production. Spec: docs/in-progress/receipt-scan-record-dev-viewer.md
+- Receipt scan record viewer (dev only) - banked on develop as v1.25 (2026-07-25), awaiting ship-feature. Still unverified against a live backend: the endpoint round-trip was never exercised (saved-expense `expenseId` route, unsaved-scan `fileUrl` route, and a deliberate 404 showing the "no scan record" message). Spec: docs/in-progress/receipt-scan-record-dev-viewer.md
 
 ## TODO (Backlog)
 

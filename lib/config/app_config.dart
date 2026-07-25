@@ -16,6 +16,11 @@ class AppConfig {
 
   static const String environment = String.fromEnvironment('ENV', defaultValue: 'dev');
 
+  /// True when running the dev build. Gates debug-only UI (dev tools must never
+  /// render in production). Safe to read before [getInstance] — it is a
+  /// compile-time constant and does not touch the loaded YAML.
+  static bool get isDev => environment == 'dev';
+
   AppConfig._();
 
   static Future<AppConfig> getInstance() async {

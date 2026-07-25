@@ -670,6 +670,63 @@ class ExpenseService {
     return const JsonEncoder.withIndent('  ').convert(response);
   }
 
+  /// Fetches the receipt-processing record the scan pipeline wrote for a
+  /// receipt — conversion, image processing, AI scan/escalation, with per-step
+  /// timings. Backs the dev-only scan-record viewer
+  /// (see docs/in-progress/receipt-scan-record-dev-viewer.md).
+  ///
+  /// Pass [expenseId] for a saved expense (the server resolves its stored image
+  /// URL) and/or [fileUrl] for a receipt that has been scanned but not saved yet
+  /// — the `altered_image_url` from `analyze-receipt`. Callers may pass both;
+  /// [expenseId] wins, because the expense route needs nothing but the id once
+  /// the expense exists. At least one must be supplied.
+  ///
+  /// Returns the raw record so the viewer can render it generically; the
+  /// pipeline may add step types and this must not need changing when it does.
+  /// Returns null when no record exists (HTTP 404) — expected for receipts
+  /// scanned before the pipeline recorded them, manually attached image URLs,
+  /// expenses with no receipt, and receipts belonging to another company.
+  /// Throws [ExpenseException] on any other failure.
+  Future<Map<String, dynamic>?> fetchScanRecord({
+    String? expenseId,
+    String? fileUrl,
+  }) async {
+    final id = (expenseId?.isNotEmpty ?? false) ? expenseId! : null;
+    final url = (fileUrl?.isNotEmpty ?? false) ? fileUrl! : null;
+    if (id == null && url == null) {
+      throw const ExpenseException(
+          'fetchScanRecord requires expenseId or fileUrl');
+    }
+
+    final sessionToken = await _authService.getSessionToken();
+    _validateSessionToken(sessionToken);
+
+    // queryParams goes through Uri.replace, which encodes fileUrl for us —
+    // encoding it here as well would double-encode it.
+    final result = id != null
+        ? await _apiService.getWithStatus(
+            '/api/expenses/$id/scan-record',
+            authToken: sessionToken,
+          )
+        : await _apiService.getWithStatus(
+            '/api/expenses/receipt-scan-record',
+            authToken: sessionToken,
+            queryParams: {'fileUrl': url!},
+          );
+
+    if (result.statusCode == 404) return null;
+
+    final data = result.body['data'] as Map<String, dynamic>?;
+    if (result.body['success'] != true || data == null) {
+      throw ExpenseException(
+        result.body['message'] as String? ?? 'Failed to load scan record',
+        errorCode: result.body['errorCode'] as String?,
+      );
+    }
+
+    return data;
+  }
+
   // ── Expenses Analysis ────────────────────────────────────────────────────
 
   /// Fetches the 12-cycle summary dataset for the Expenses Analysis screen.
