@@ -16,9 +16,7 @@
 >
 > Everything else shipped as written: dev-gate, both routes, 404 handling.
 >
-> **Caveat: shipped without a live-backend round-trip.** Neither route was ever
-> exercised against a running server. Verification is tracked as an open item in
-> `docs/current-work.md`.
+> Verified against a live backend on 2026-07-25, after release.
 >
 > As built: `lib/widgets/expenses/dev_scan_record_button.dart`,
 > `lib/services/json_viewer_service.dart`,
