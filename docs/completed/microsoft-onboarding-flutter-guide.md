@@ -185,3 +185,17 @@ Errors:
   email, and never type a code - identity is proven by the Microsoft sign-in.
 - First sign-in from a locked-down customer org may show a one-time consent prompt;
   expected with the multitenant registration, no client change needed.
+
+## Security note for the backend - account matching (nOAuth)
+
+With a multitenant registration, the `email`/`preferred_username` claims in the
+token are controllable by the customer tenant's own admin, so they are NOT proof
+of identity: a hostile tenant admin can set a user's email claim to a victim's
+address and, if the server matches on it, take over that account (the nOAuth
+abuse pattern).
+
+Match accounts by the validated `oid` + `tid` pair (immutable object id +
+tenant id) and never by the unverified email claim. The claim is fine for
+display or for pre-filling a form; it is not an identifier.
+
+Shipped: v1.22 (2026-07-22).

@@ -127,7 +127,7 @@ Confirmed removed server-side. No "reopen" affordance anywhere in this screen. A
 > a manager can approve a sheet they previously returned (declined lines stay
 > declined; an all-declined sheet just closes as Approved with ₪0). Re-declining
 > a Declined sheet is still rejected, and the per-expense `reopen` endpoint
-> stays dead. See docs/in-progress/manager-reapprove-declined-sheet.md.
+> stays dead. See docs/completed/manager-reapprove-declined-sheet.md.
 
 ---
 

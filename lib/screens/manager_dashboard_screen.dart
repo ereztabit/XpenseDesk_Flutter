@@ -18,7 +18,7 @@ import '../widgets/manager/manager_view_switcher.dart';
 /// sheet review lives on the Sheet Approvals screen (`/manager-approvals`).
 ///
 /// Renders one of four data-derived states (see
-/// docs/in-progress/manager-dashboard-landing-spec.md §3); the body composition
+/// docs/completed/manager-dashboard-landing-spec.md §3); the body composition
 /// is built out across spec Steps 5–11.
 class ManagerDashboardScreen extends ConsumerStatefulWidget {
   const ManagerDashboardScreen({super.key});

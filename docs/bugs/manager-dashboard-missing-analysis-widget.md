@@ -38,7 +38,7 @@ Context from the code:
   (master/detail cards, bar charts, pivot/master tables, filter card) but is now
   only wired into the separate `lib/screens/expenses_analysis_screen.dart`, not
   the manager dashboard.
-- A spend-overview spec already exists at `docs/in-progress/spend-overview-spec.md`
+- A spend-overview spec already exists at `docs/backlog/spend-overview-spec.md`
   — likely the intended replacement for the placeholder. Confirm whether the fix
   is to ship that spec, or to re-embed the existing analysis widget at the top of
   the dashboard.

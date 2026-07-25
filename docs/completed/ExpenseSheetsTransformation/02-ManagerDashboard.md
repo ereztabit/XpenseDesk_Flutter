@@ -20,7 +20,7 @@ The dashboard is **read-only**: row tap → Sheet Review (story 03) is the only 
 
 Layout top-to-bottom:
 
-1. **Spend Overview** (placeholder slot — see [spend-overview-spec.md](../spend-overview-spec.md)).
+1. **Spend Overview** (placeholder slot — see [spend-overview-spec.md](../../backlog/spend-overview-spec.md)).
 2. **Page header** — title + employee filter dropdown.
 3. **Pending review card** (hero, default expanded) — uses `/api/expense-sheets/queue`.
 4. **Returned to employee card** (default expanded if non-empty, collapsed if empty) — uses `/api/expense-sheets?statusId=4`.
@@ -43,7 +43,7 @@ Every behavior rule is in §2. Server contract is locked — §3 records what we
 ### 2.2 Spend Overview (soft-degrade placeholder)
 
 - Renders at the very top, full-width.
-- The real widget is specced in [spend-overview-spec.md](../spend-overview-spec.md) — not yet built.
+- The real widget is specced in [spend-overview-spec.md](../../backlog/spend-overview-spec.md) — not yet built.
 - Until then, this slot renders a **one-line placeholder** derived from the three providers: `'{queueCount} sheets pending · {grandTotalAmount} {currencySuffix}'`. Muted, no chrome, takes up minimal vertical space.
 - When the real widget ships, we swap the placeholder for it — no other layout changes.
 

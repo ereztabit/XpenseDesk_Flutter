@@ -28,17 +28,59 @@ This Flutter application is **XpenseDesk** — an AI-powered expense approval to
 
 **ALWAYS read `docs/current-work.md` at the start of every conversation.**
 
+`docs/current-work.md` is a pure backlog: it holds **open work only, never
+history**. An item is either open (in this file) or done (deleted from it, with
+its record in `docs/completed/` or `docs/bugs/completed/`). There is no `[x]`
+state and no "done" section — a finished item leaves no trace here.
+
 When starting work on any feature or task:
-1. Move it from the backlog to a `## Currently Working On` section in `docs/current-work.md`
-2. Mark it as in-progress (remove the `[ ]` and note it there)
-3. When done, mark the backlog item `[x]` and remove it from "Currently Working On"
+1. Move it from its backlog section to a `## Currently Working On` section at the
+   top of `docs/current-work.md` (create that section if it isn't there — it only
+   exists while something is actually in progress)
+2. Note it as in-progress there
+3. When it is done, **delete the item outright** — remove it from "Currently
+   Working On" and do not leave a `[x]` line behind. Remove the whole
+   "Currently Working On" section once nothing is in progress.
 
 **Never start implementing without updating `current-work.md` first.**
 
+### "What's pending?" — MANDATORY response format
+
+When the user asks **"what's pending"** — or any variant ("what's open", "what's
+left", "what's on the list", "what are the open bugs", "what do we have") — read
+`docs/current-work.md` and reply with **one numbered table and nothing else**.
+No prose summary, no per-section headings, no recommendations unless asked.
+
+| Column | Content |
+|--------|---------|
+| `#` | Sequential number across the whole table, `1..N` — the user picks work by number |
+| `Type` | `Bug` or `Feature` |
+| `Item` | One short line — the gist, not the full sentence from the file. Link the spec/bug doc here |
+| `Status` | `IN PROGRESS`, `Open`, or `Deferred` |
+
+Row order:
+1. Everything in `## Currently Working On` — first, `IN PROGRESS`.
+2. Features — from `## TODO (Backlog)`, `## general environment`,
+   `## manager expenses report`, `## management screens`,
+   `## processes & other stuff`, and any other backlog section.
+3. Bugs — from `## report bugs (pending)`.
+4. Anything marked `(deferred)` / `(deferred to v2)` — last, `Deferred`.
+
+Rules:
+- **List every open item.** Never truncate, sample, or collapse to "and N more".
+- Numbering is contiguous — a picked number must map to exactly one row.
+- If nothing is in `## Currently Working On`, put a single line above the table:
+  `Nothing in progress right now.`
+- When the user answers with a number, that row is the item to work on — go
+  straight to `start-feature` for it.
+
 When the user asks to "clean up" `current-work.md`:
-- Remove all `[x]` completed items entirely (do not keep them as history)
-- Remove any stale "Currently Working On" entries that are marked DONE
-- Fix any typos in section headers while you're there
+- Delete every completed item (any `[x]` line, any entry marked DONE), including
+  stale "Currently Working On" entries — history belongs in the `completed/`
+  folders, not here
+- Cross-check that `## report bugs (pending)` lists every open doc in
+  `docs/bugs/` — the file is the single index, and open bugs go missing from it
+- Fix typos in section headers while you're there
 
 ## How to Work With Me
 
@@ -94,14 +136,28 @@ docs/                            # Guides and dev implementation notes
     │   ├── expense-api-guide.md
     │   ├── users_api_documentation.md
     │   └── expenses-analysis-api-guide.md
-    ├── in-progress/                             # Features not yet shipped
-    │   ├── card-on-file-flow.md
-    │   ├── tranzila_hosted_fields_spec.md
-    │   ├── credit-card-authorize-plan.md
-    │   ├── spend-overview-spec.md
-    │   └── post-login-deep-linking-spec.md
-    └── completed/                               # Shipped feature specs
+    ├── bugs/                                    # Open bug reports (one file each)
+    │   └── completed/                           # Closed bug reports (archive)
+    ├── backlog/                                 # Specs for open work NOT started
+    ├── in-progress/                             # ONLY what we work on right now
+    └── completed/                               # Shipped to production
+        └── ExpenseSheetsTransformation/         # (folders allowed here too)
 ```
+
+**Spec folders track reality, not intent:**
+
+| Folder | Means |
+|--------|-------|
+| `docs/backlog/` | Open feature, nobody working on it. Indexed in `current-work.md`. |
+| `docs/in-progress/` | Being worked on **right now**. **Empty when nothing is in flight** — that is normal. |
+| `docs/completed/` | Shipped to production (merged is not enough). |
+
+A spec moves `backlog/` → `in-progress/` when work starts, → `completed/` when it
+ships, and **back to `backlog/` if the work is paused, dropped, or only partly
+built**. Never park a spec in `in-progress/` for work nobody is doing, and never
+author a new spec straight into `completed/`. Repoint inbound links on every move
+(they hide in `docs/README.md`, other specs, closed bug docs, and Dart doc
+comments in `lib/`).
 
 **Principles:**
 - Separation of concerns: Models, services, UI, state are isolated

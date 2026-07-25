@@ -84,7 +84,7 @@ Card banners only apply when `hasCardOnFile == true`. When `hasCardOnFile == fal
 
 ## Bug 3: Implement billing-alert-banners per spec
 
-**Problem:** The current `PendingPaymentBanner` is a single hardcoded amber banner for the old `PendingPayment` status. It needs to be reworked to use the new API fields and support multiple banner states per the spec (`docs/in-progress/billing-alert-banners-spec.md`).
+**Problem:** The current `PendingPaymentBanner` is a single hardcoded amber banner for the old `PendingPayment` status. It needs to be reworked to use the new API fields and support multiple banner states per the spec (`docs/completed/billing-alert-banners-spec.md`).
 
 ### What needs to change:
 

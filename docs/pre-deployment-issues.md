@@ -8,16 +8,21 @@
 
 ## Hard blockers (must fix before any prod build)
 
-- [ ] **Dev auto-login is not environment-gated.**
-  The "DEV: Login as Admin" / "DEV: Login as User" buttons in
-  `lib/screens/login_screen.dart` (DEV-ONLY UI block, ~line 202) render
-  **unconditionally** — no `AppConfig.environment == 'dev'` guard. In production
-  anyone on the login page gets one-click admin access via `tryToLoginDev`
-  (`lib/services/auth_service.dart:72`), which returns the magic link. This is a
-  security hole.
-  **Fix:** wrap the DEV-ONLY UI block (and ideally the DEV-ONLY import and
-  `_handleDevLogin`) in `if (AppConfig.environment == 'dev')`.
-  Tracked separately in `docs/in-progress/disable-dev-auto-login.md`.
+- [x] **RESOLVED 2026-07-25 — Dev auto-login is not environment-gated.**
+  Originally: the "DEV: Login as Admin" / "DEV: Login as User" buttons in
+  `lib/screens/login_screen.dart` rendered unconditionally, so in production
+  anyone on the login page got one-click admin access via `tryToLoginDev`,
+  which returned the magic link.
+  **Resolved by deletion rather than by gating** — the buttons, the handler and
+  the `tryToLoginDev` service path were all removed (shipped v1.7, "Remove the
+  manager login buttons"). Verified 2026-07-25: `lib/` has zero matches for
+  `tryToLoginDev` / `loginDev` / `autoLogin` / `devLogin`, and
+  `login_screen.dart` contains no DEV block at all.
+  Note the original doc's optional "keep it on dev behind a toggle" was dropped;
+  there is no dev-only login shortcut in any environment now.
+  Record: `docs/completed/disable-dev-auto-login.md`.
+
+No known hard blockers remain.
 
 ---
 
@@ -75,4 +80,4 @@
 
 - Better Hebrew translation pass.
 - PWA installability (branded manifest/icons) — overlaps with the favicon fix.
-  See `docs/in-progress/pwa-installable-app.md`.
+  See `docs/completed/pwa-installable-app.md`.

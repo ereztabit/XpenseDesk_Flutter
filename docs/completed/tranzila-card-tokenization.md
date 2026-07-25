@@ -176,6 +176,18 @@ Detected via null return from `window.open()`. Toast shown to user.
 Flutter decides which page based on config. Both share `authorize.css` and `authorize.js`.
 `force_txn_on_3ds_fail` hardcoded in the 3DS page (not a URL param — prevents client bypass).
 
+### Testing constraints (answers from Tranzila support)
+
+- **There is no sandbox 3DS path.** 3DS can only be exercised on a **live
+  terminal with real cards** — accept this when planning any 3DS test; there is
+  no way to simulate it.
+- **Sandbox mode is terminal-level**, configured on Tranzila's end. There is no
+  per-request sandbox flag, so switching to sandbox means pointing at a
+  different terminal.
+- Still open with support: whether `force_txn_on_3ds_fail` can be locked at the
+  terminal level or in `thtk` issuance so a client-side value cannot override it
+  (tracked in docs/current-work.md).
+
 ---
 
 ## Configuration

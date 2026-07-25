@@ -21,6 +21,7 @@ import '../utils/expense_amount_input_formatter.dart';
 import '../utils/conversion_preview_controller.dart';
 import '../widgets/expenses/conversion_preview_label.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
+import '../widgets/expenses/dev_scan_record_button.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
 import '../widgets/last_action_confirm_dialog.dart';
 
@@ -1181,6 +1182,7 @@ class _EmployeeExpenseDetailScreenState
                     ExcelExportService.downloadUrl(url, filename.isEmpty ? 'receipt' : filename);
                   },
                 ),
+                DevScanRecordButton(expenseId: _expense?.expenseId),
                 if (widget.isManagerMode) ...[
                   const Spacer(),
                   _buildManagerApproveDeclineRow(l10n),
@@ -1214,6 +1216,7 @@ class _EmployeeExpenseDetailScreenState
             ExcelExportService.downloadUrl(url, filename.isEmpty ? 'receipt' : filename);
           },
         ),
+        DevScanRecordButton(expenseId: _expense?.expenseId),
         if (widget.isManagerMode) ...[
           const SizedBox(height: 16),
           _buildManagerApproveDeclineRow(l10n),

@@ -119,6 +119,26 @@ class ApiService {
         return _decode(response);
       });
 
+  /// Make a GET request and return both the HTTP status code and the decoded body.
+  /// Use this when a non-200 is a meaningful outcome rather than an error — e.g.
+  /// a 404 that means "no such record" and must be told apart from a 500.
+  Future<({int statusCode, Map<String, dynamic> body})> getWithStatus(
+    String endpoint, {
+    String? authToken,
+    Map<String, String>? queryParams,
+  }) =>
+      _run(() async {
+        final base = Uri.parse('$baseUrl$endpoint');
+        final uri = queryParams != null ? base.replace(queryParameters: queryParams) : base;
+        final response = await http.get(uri, headers: _buildHeaders(authToken: authToken));
+        if (response.statusCode == 401) {
+          onUnauthorized?.call();
+          throw const UnauthorizedException();
+        }
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        return (statusCode: response.statusCode, body: decoded);
+      });
+
   /// Make a PUT request with optional authorization token
   Future<Map<String, dynamic>> put(
     String endpoint,

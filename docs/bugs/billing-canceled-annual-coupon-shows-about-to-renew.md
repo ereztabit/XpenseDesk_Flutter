@@ -1,5 +1,7 @@
 # Bug: Canceled Annual Subscription With Coupon Still Shows "About to Renew"
 
+> **Status: new**
+
 ## Problem
 
 A company that subscribed to the annual plan using a coupon code and then

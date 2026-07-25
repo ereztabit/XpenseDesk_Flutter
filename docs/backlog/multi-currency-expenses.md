@@ -1,9 +1,13 @@
 # Multi-Currency Expenses — Feature Plan
 
-Status: **core + Follow-up 1 shipped.** Submit sends `dynamicAmount`, base-currency
-display and live conversion-preview hint are live. Remaining: Follow-up 2 — verify
-the AI receipt scan handles foreign currency end to end (ISO code vs symbol, codes
-outside the tracked list).
+Status: **core + Follow-up 1 shipped and verified (2026-07-25).** Submit sends
+`dynamicAmount`, base-currency display and the live conversion-preview hint are
+live in production and confirmed working. Multi-currency expenses are done.
+
+Still open, tracked as a separate feature in the backlog: **Follow-up 2 — AI
+receipt scan support for foreign currency** (ISO code vs symbol, codes outside
+the tracked list). Everything above that follow-up has shipped — this doc sits in
+`docs/backlog/` because the remaining piece is not being worked on right now.
 Source of truth (backend): `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\guides\flutter-multi-currency-guide.md`
 
 ## Goal

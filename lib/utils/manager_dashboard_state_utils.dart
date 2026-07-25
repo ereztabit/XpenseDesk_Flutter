@@ -1,6 +1,6 @@
 /// Pure state derivation for the Manager Dashboard landing screen.
 ///
-/// See docs/in-progress/manager-dashboard-landing-spec.md §3. No Flutter or
+/// See docs/completed/manager-dashboard-landing-spec.md §3. No Flutter or
 /// Riverpod dependencies here — this file is unit-testable in isolation.
 library;
 

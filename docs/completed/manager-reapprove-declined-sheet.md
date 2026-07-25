@@ -9,7 +9,7 @@
 A manager who declines a sheet currently has no way to undo it. Per the Expense
 Sheets transformation design, there is no manager-side "reopen"/undo — the
 manager must wait for the employee to fix and resubmit, or contact them
-out-of-band. See `docs/in-progress/ExpenseSheetsTransformation/03-SheetReview.md`
+out-of-band. See `docs/completed/ExpenseSheetsTransformation/03-SheetReview.md`
 §3.7 and `ExpenseSheetsEvolution.md` §3.6/§9.
 
 This feature **intentionally reverses that decision**: the server is adding an

@@ -8,6 +8,11 @@ gate it. Companion to the original spec ([microsoft-login-flutter-guide.md](micr
 users are rejected by the backend (401) and shown a message. Magic-link email
 login is untouched and remains the universal path.
 
+**Status: shipped v1.21 and verified in production (2026-07-25).** A real
+Microsoft sign-in lands on the dashboard; unknown users are correctly rejected.
+Live behind `enableMicrosoftLogin: true` — only the verbose
+`enableMicrosoftLoginLogs` stays off in prod. Nothing outstanding.
+
 ---
 
 ## TL;DR

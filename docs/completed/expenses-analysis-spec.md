@@ -3,7 +3,7 @@
 Route: `/manager/history`
 This document is a platform-agnostic UX/UI spec for the Expenses Analysis screen. It describes layout, behavior, and visual design without framework-specific language.
 
-**API reference:** [`docs/expenses-analysis-api-guide.md`](expenses-analysis-api-guide.md)
+**API reference:** [`docs/expenses-analysis-api-guide.md`](../api-guides/expenses-analysis-api-guide.md)
 
 ---
 

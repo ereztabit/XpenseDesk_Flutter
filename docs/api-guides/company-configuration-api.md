@@ -5,7 +5,7 @@ This document defines all API endpoints, request/response models, and enums requ
 
 > All endpoints require Authorization: Bearer token and are scoped to the authenticated user's company via the CompanyId claim. Unless noted, only users with RoleId = 1 (Manager) may call these endpoints.
 
-> **Stored procedures:** All database access is implemented via stored procedures. See [company-configuration-stored-procedures.md](company-configuration-stored-procedures.md) for the full SQL definitions.
+> **Stored procedures:** All database access is implemented via stored procedures. The full SQL definitions live in the **backend** repo, not here: `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\company-configuration-stored-procedures.md`.
 
 ---
 
