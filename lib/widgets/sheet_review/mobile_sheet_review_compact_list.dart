@@ -32,6 +32,8 @@ class MobileSheetReviewCompactList extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: AppTheme.border),
       ),
+      // No SelectableScope: rows are fully tappable (InkWell), so selection
+      // can't start here; see DesktopSheetReviewTable for the rationale.
       child: Column(
         children: List.generate(expenses.length, (index) {
           final e = expenses[index];

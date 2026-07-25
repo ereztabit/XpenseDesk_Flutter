@@ -1,6 +1,40 @@
 # Bug: Regression - grid and form text no longer selectable after SelectionArea removal
 
-> **Status: new**
+> **Status: done**
+
+## Resolution
+
+Restored text selection with scoped selection regions instead of the app-wide
+wrapper. A new shared widget, lib/widgets/selectable_scope.dart (a thin
+SelectionArea wrapper, single kill-switch, crash history documented in-place),
+is applied at table/list-body level:
+
+- Baked into both generic shells - lib/widgets/sticky_report_table.dart
+  (cycle expenses report) and lib/widgets/section_table.dart (billing
+  history) - so anything built on them gets selection for free.
+- Added to the bespoke tables: payments desktop/mobile, employee sheet-expense
+  desktop/mobile, manager sheet-bucket desktop/mobile, analysis master/pivot,
+  and the user-management list.
+- Read-only form values: the Profile email (profile_identity_card.dart) is now
+  SelectableText; the user-list email is covered by the list scope.
+- Sheet Review line grids (desktop Table + mobile compact list) deliberately
+  have NO scope: every row is a TableRowInkWell/InkWell that wins the drag, so
+  selection can never start there, and a scope disposed by the approve/decline
+  provider rebuild triggered a defunct-element markNeedsBuild assertion. The
+  sheet's copyable values (name, email, totals, dates, decline comment) are
+  selectable in SheetReviewHeaderCard instead.
+
+The app-wide SelectionArea was NOT reintroduced - the framework assertion it
+tripped still exists in Flutter 3.44.7 (SelectableRegion.add,
+selectable_region.dart). Scoped regions avoid it structurally: overlay panels
+mount in the Navigator's Overlay, never inside a content-level scope.
+
+Verified by user in dev (seeded data): Payments report cell selection,
+Profile + User Management email copy, sheet header card selection, row taps on
+bucket/sheet-review tables, and the company-config dropdown/resize crash
+scenario stayed clean. CR pass: clean (see
+selection-regression-grid-and-form-text-not-selectable-CR.md). Shipped on
+develop as v1.24 (2026-07-25).
 
 ## Problem
 

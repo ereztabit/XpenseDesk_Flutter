@@ -7,6 +7,7 @@ import '../../providers/users_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/users_service.dart';
 import '../../theme/app_theme.dart';
+import '../selectable_scope.dart';
 import 'user_list_item_widget.dart';
 
 class UserListCard extends ConsumerWidget {
@@ -76,25 +77,27 @@ class UserListCard extends ConsumerWidget {
     List<UserListItem> users,
     String? currentUserEmail,
   ) {
-    return ListView.separated(
-      itemCount: users.length,
-      separatorBuilder: (context, index) =>
-          const Divider(height: 1, color: AppTheme.border),
-      itemBuilder: (context, index) {
-        final user = users[index];
-        final isCurrentUser = user.email == currentUserEmail;
+    return SelectableScope(
+      child: ListView.separated(
+        itemCount: users.length,
+        separatorBuilder: (context, index) =>
+            const Divider(height: 1, color: AppTheme.border),
+        itemBuilder: (context, index) {
+          final user = users[index];
+          final isCurrentUser = user.email == currentUserEmail;
 
-        return UserListItemWidget(
-          user: user,
-          isCurrentUser: isCurrentUser,
-          onEditDetails: () => _handleEditDetails(context, ref, user),
-          onPromote: () => _handlePromote(context, ref, user),
-          onDemote: () => _handleDemote(context, ref, user),
-          onDisable: () => _handleDisable(context, ref, user),
-          onEnable: () => _handleEnable(context, ref, user),
-          onDelete: () => _handleDelete(context, ref, user),
-        );
-      },
+          return UserListItemWidget(
+            user: user,
+            isCurrentUser: isCurrentUser,
+            onEditDetails: () => _handleEditDetails(context, ref, user),
+            onPromote: () => _handlePromote(context, ref, user),
+            onDemote: () => _handleDemote(context, ref, user),
+            onDisable: () => _handleDisable(context, ref, user),
+            onEnable: () => _handleEnable(context, ref, user),
+            onDelete: () => _handleDelete(context, ref, user),
+          );
+        },
+      ),
     );
   }
 

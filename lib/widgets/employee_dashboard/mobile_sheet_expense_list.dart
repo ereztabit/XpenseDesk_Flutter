@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
+import '../selectable_scope.dart';
 import 'mobile_sheet_expense_row.dart';
 
 /// Mobile compact list view — vertically stacked, divider-separated rows.
@@ -30,18 +31,20 @@ class MobileSheetExpenseList extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: AppTheme.border),
       ),
-      child: Column(
-        children: List.generate(expenses.length, (index) {
-          return MobileSheetExpenseRow(
-            rowNumber: index + 1,
-            expense: expenses[index],
-            companyLocale: companyLocale,
-            isLast: index == expenses.length - 1,
-            onView: onView,
-            onEdit: onEdit,
-            onDelete: onDelete,
-          );
-        }),
+      child: SelectableScope(
+        child: Column(
+          children: List.generate(expenses.length, (index) {
+            return MobileSheetExpenseRow(
+              rowNumber: index + 1,
+              expense: expenses[index],
+              companyLocale: companyLocale,
+              isLast: index == expenses.length - 1,
+              onView: onView,
+              onEdit: onEdit,
+              onDelete: onDelete,
+            );
+          }),
+        ),
       ),
     );
   }

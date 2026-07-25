@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'selectable_scope.dart';
 
 /// Shared scroll-container shell for full-page report tables.
 ///
@@ -84,7 +85,10 @@ class StickyReportTable extends StatelessWidget {
                 children: [
                   headerRow,
                   const Divider(
-                      height: 1, thickness: 1, color: AppTheme.border),
+                    height: 1,
+                    thickness: 1,
+                    color: AppTheme.border,
+                  ),
                   if (loading)
                     const Expanded(
                       child: Center(child: CircularProgressIndicator()),
@@ -96,8 +100,7 @@ class StickyReportTable extends StatelessWidget {
                           padding: const EdgeInsets.all(24),
                           child: Text(
                             error!,
-                            style: const TextStyle(
-                                color: AppTheme.destructive),
+                            style: const TextStyle(color: AppTheme.destructive),
                           ),
                         ),
                       ),
@@ -109,7 +112,7 @@ class StickyReportTable extends StatelessWidget {
                         thumbVisibility: true,
                         trackVisibility: true,
                         thickness: 8,
-                        child: body,
+                        child: SelectableScope(child: body),
                       ),
                     ),
                 ],

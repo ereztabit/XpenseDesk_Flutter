@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
+import '../selectable_scope.dart';
 import 'mobile_payment_row.dart';
 import 'mobile_payments_header_cell.dart';
 
@@ -51,8 +52,8 @@ class MobilePaymentsTable extends StatelessWidget {
         .where((r) => r.isAwaiting)
         .map((r) => r.expenseSheetId)
         .toSet();
-    final allSelected = selectableIds.isNotEmpty &&
-        selectableIds.every(selectedIds.contains);
+    final allSelected =
+        selectableIds.isNotEmpty && selectableIds.every(selectedIds.contains);
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -113,44 +114,48 @@ class MobilePaymentsTable extends StatelessWidget {
             child: loading
                 ? const Center(child: CircularProgressIndicator())
                 : error != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Text(error!,
-                              style: const TextStyle(
-                                  color: AppTheme.destructive)),
-                        ),
-                      )
-                    : rows.isEmpty
-                        ? Center(
-                            child: Text(
-                              l10n.noPaymentsFound,
-                              style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.mutedForeground),
-                            ),
-                          )
-                        : ListView.separated(
-                            itemCount: rows.length,
-                            separatorBuilder: (_, _) => const Divider(
-                                height: 1, color: AppTheme.border),
-                            itemBuilder: (context, index) {
-                              final row = rows[index];
-                              return MobilePaymentRow(
-                                row: row,
-                                locale: locale,
-                                currencyCode: currencyCode,
-                                isSelected: selectedIds
-                                    .contains(row.expenseSheetId),
-                                isHighlighted: highlightedIds
-                                    .contains(row.expenseSheetId),
-                                onToggleSelection: (selected) =>
-                                    onToggleSelection(row, selected),
-                                onTap: () => onRowTap(row),
-                                onEdit: () => onEdit(row),
-                              );
-                            },
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        error!,
+                        style: const TextStyle(color: AppTheme.destructive),
+                      ),
+                    ),
+                  )
+                : rows.isEmpty
+                ? Center(
+                    child: Text(
+                      l10n.noPaymentsFound,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppTheme.mutedForeground,
+                      ),
+                    ),
+                  )
+                : SelectableScope(
+                    child: ListView.separated(
+                      itemCount: rows.length,
+                      separatorBuilder: (_, _) =>
+                          const Divider(height: 1, color: AppTheme.border),
+                      itemBuilder: (context, index) {
+                        final row = rows[index];
+                        return MobilePaymentRow(
+                          row: row,
+                          locale: locale,
+                          currencyCode: currencyCode,
+                          isSelected: selectedIds.contains(row.expenseSheetId),
+                          isHighlighted: highlightedIds.contains(
+                            row.expenseSheetId,
                           ),
+                          onToggleSelection: (selected) =>
+                              onToggleSelection(row, selected),
+                          onTap: () => onRowTap(row),
+                          onEdit: () => onEdit(row),
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),

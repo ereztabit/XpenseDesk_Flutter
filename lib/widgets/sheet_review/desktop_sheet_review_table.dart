@@ -56,6 +56,11 @@ class DesktopSheetReviewTable extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: AppTheme.border),
       ),
+      // No SelectableScope here: every row is a TableRowInkWell, which wins
+      // the drag gesture, so selection can never start on this grid — and a
+      // scope that gets disposed on the approve/decline provider rebuild
+      // triggers a defunct-element markNeedsBuild assertion. Copyable sheet
+      // values live in SheetReviewHeaderCard instead.
       child: Table(
         columnWidths: _columnWidths,
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
