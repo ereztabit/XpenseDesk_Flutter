@@ -43,6 +43,7 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
+- [ ] [Business][P2] Expense validation gates removal — price and date are the only mandatory fields on new/edit expense; drop the category selector reminder; default category to "Other" (id 5) on submit if left blank. See docs/backlog/expense-validation-gates-removal.md
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
 - [ ] [Technical][P3] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] [LookAndFeel][P3] add logos to the authorize page
@@ -51,7 +52,6 @@ so in its spec rather than double-tagging here.
 ## report bugs (pending)
 
 - [ ] [Business][P1] Onboarding OTP step -- always-visible Microsoft signup option + slow-delivery warning after 30s (365 mailboxes up to ~3 min) -- see docs/bugs/onboarding-otp-slow-delivery-warning-and-microsoft-fallback.md
-- [ ] [Business][P1] Multi-page PDF upload silently scans page 1 only -- decline it gracefully and tell the user to split the pages (no bulk PDF for now) -- see docs/bugs/multipage-pdf-decline-and-ask-user-to-split-pages.md
 - [ ] [Security][P1] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] [Business][P1] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] [Business][P2] Onboarding plan picker -- annual plan missing "2 months free (16% discount)" savings label -- see docs/bugs/onboarding-annual-plan-missing-savings-label.md

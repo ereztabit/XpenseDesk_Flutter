@@ -1,6 +1,6 @@
 # Bug: Multi-page PDF upload must be declined gracefully, telling the user to split the pages first
 
-> **Status: new**
+> **Status: done**
 
 ## Problem
 
@@ -57,6 +57,47 @@ Not decisions -- just what we know now, so nobody re-derives it later:
 - Out of scope, recorded so it is not relitigated: actually scanning every page
   and creating many expenses from one file. The owner ruled batch scanning out
   for now; revisit as a feature story if customers ask.
+
+## Resolution
+
+Fixed in v1.26 (2026-08-13), verified by the owner. The client counts the PDF's
+pages the moment the file is picked and declines a multi-page file before it is
+uploaded, so the user never waits on a scan we know is wrong.
+
+What shipped:
+
+- `lib/utils/pdf_utils.dart` — `Future<int?> pdfPageCount(Uint8List)` built on
+  `dart_pdf_reader ^2.2.0` (pure Dart, Apache-2.0, works on web). It reads the
+  real page tree, so it is also correct for PDFs that keep their page tree inside
+  a compressed object stream, which is what Word, Acrobat and Ghostscript emit —
+  a byte/regex scan sees nothing in those files. `null` means "could not
+  determine", never "one page": an unparseable file is allowed through to the
+  server rather than refused on a guess.
+- `lib/screens/new_expense_screen.dart` — `_pickFile` checks the count before
+  anything else; more than one page sets `_uploadError` and returns, so the file
+  is never previewed, accepted, or sent. The existing shared `ErrorAlert` renders
+  the message above the upload zone.
+- ARB keys `newExpenseMultiPagePdfDeclined` and
+  `newExpenseMultiPagePdfPagesDetected` in EN + HE.
+- `test/utils/pdf_utils_test.dart` — 6 tests, the repo's first test suite. Two
+  checked-in Chrome-generated fixtures plus a compressed-object-stream PDF the
+  test builds in memory so it cannot rot.
+
+Measured, so it is not re-derived: 165 ms to count a 47 MB / 170-page scanner
+batch (no spinner needed), and +51 KB on the release `main.dart.js` (+1.1%).
+Review: `multipage-pdf-decline-and-ask-user-to-split-pages-CR.md` — one Rule 6
+note about the page count in the message was declined by the owner; the caption
+stays as written.
+
+Still open, deliberately:
+
+- The server half is unbuilt. `MultiPageReceiptNotSupported` does not exist yet,
+  so the client cannot map it to this same message and the server's rejection is
+  an untested backstop. Tracked in
+  `BackEnd/XpenseDeskServer/docs/bugs/multipage-pdf-receipt-upload-silently-scans-first-page-only.md`.
+- Nothing runs `flutter test` automatically, so the new regression tests only
+  protect when someone runs them.
+- The upload step was not extracted out of the 2083-line screen (CR Step 2).
 
 ## Related
 

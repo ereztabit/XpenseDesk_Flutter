@@ -465,6 +465,8 @@
   "newExpenseUploadTitle": "העלאת קבלה",
   "newExpenseUploadSubtitle": "גרור או לחץ להעלאה",
   "newExpenseUploadFormats": "JPG, PNG או PDF",
+  "newExpenseMultiPagePdfDeclined": "קובץ ה-PDF מכיל יותר מעמוד אחד. יש לפצל אותו ולהעלות קבלה אחת בכל קובץ.",
+  "newExpenseMultiPagePdfPagesDetected": "מספר העמודים שזוהו:",
   "newExpenseExpandImage": "הגדל תמונה",
   "newExpenseDownloadReceipt": "הורד",
   "newExpenseAnalyzeButton": "נתח קבלה",
