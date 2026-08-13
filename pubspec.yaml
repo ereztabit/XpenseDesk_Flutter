@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.25.0+1
+version: 1.26.0+1
 
 environment:
   sdk: ^3.10.8
@@ -59,6 +59,10 @@ dependencies:
   email_validator: ^3.0.0
   fl_chart: ^1.2.0
   excel: ^4.0.6
+
+  # PDF page count on the client (pure Dart, Apache-2.0) — a receipt upload must
+  # be one page, so a multi-page PDF is declined before it is sent.
+  dart_pdf_reader: ^2.2.0
 
   # App version (read pubspec version at runtime for the menu version label)
   package_info_plus: ^10.2.1

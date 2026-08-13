@@ -465,6 +465,8 @@
   "newExpenseUploadTitle": "Upload Receipt",
   "newExpenseUploadSubtitle": "Drag or click to upload",
   "newExpenseUploadFormats": "JPG, PNG or PDF",
+  "newExpenseMultiPagePdfDeclined": "This PDF has more than one page. Please split it and upload one receipt per file.",
+  "newExpenseMultiPagePdfPagesDetected": "Pages detected:",
   "newExpenseExpandImage": "Expand",
   "newExpenseDownloadReceipt": "Download",
   "newExpenseAnalyzeButton": "Analyze Receipt",

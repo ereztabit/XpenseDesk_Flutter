@@ -10,6 +10,7 @@ import 'screen_imports.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/app_button.dart';
 import '../utils/format_utils.dart';
+import '../utils/pdf_utils.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../utils/conversion_preview_controller.dart';
 import '../widgets/expenses/conversion_preview_label.dart';
@@ -46,6 +47,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   int? _imageHeight;
   bool _isHovering = false;
   bool _isAnalyzing = false;
+  /// Why the picked file was declined before upload (multi-page PDF today).
+  String? _uploadError;
   ReceiptAnalysisResult? _analysisResult;
   bool _aiFailed = false;
 
@@ -242,6 +245,23 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     final bytes = arrayBuffer.toDart.asUint8List();
     final isPdf = file.name.toLowerCase().endsWith('.pdf');
 
+    // One receipt per file: the scan reads a single page, so a multi-page PDF is
+    // declined here rather than uploaded and silently read as page 1.
+    // A null count means the file could not be parsed — let it through and let
+    // the server judge it, so a legitimate receipt is never refused on a guess.
+    if (isPdf) {
+      final pages = await pdfPageCount(bytes);
+      if (pages != null && pages > 1) {
+        if (!mounted) return;
+        final l10n = AppLocalizations.of(context)!;
+        setState(() {
+          _uploadError = '${l10n.newExpenseMultiPagePdfDeclined} '
+              '(${l10n.newExpenseMultiPagePdfPagesDetected} $pages)';
+        });
+        return;
+      }
+    }
+
     _revokePdfBlob();
 
     String? pdfBlobUrl;
@@ -265,6 +285,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
     if (!mounted) return;
     setState(() {
+      _uploadError = null;
       _fileBytes = bytes;
       _filename = file.name;
       _fileSizeKb = (bytes.length / 1024).ceil();
@@ -318,6 +339,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     _dateController.clear();
     _receiptRefController.clear();
     setState(() {
+      _uploadError = null;
       _fileBytes = null;
       _filename = null;
       _fileSizeKb = null;
@@ -1841,6 +1863,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                     currentStep: _currentStep),
                               const SizedBox(height: 24),
                               if (_currentStep == 0) ...[
+                                if (_uploadError != null) ...[
+                                  ErrorAlert(message: _uploadError!),
+                                  const SizedBox(height: 16),
+                                ],
                                 if (_fileBytes == null)
                                   _buildUploadZone(l10n, uploadHeight)
                                 else

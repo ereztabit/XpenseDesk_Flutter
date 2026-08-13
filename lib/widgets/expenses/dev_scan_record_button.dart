@@ -15,7 +15,7 @@ import '../app_button.dart';
 /// scanned but not saved yet. Both may be passed — which route to use is
 /// [ExpenseService.fetchScanRecord]'s call, not this widget's.
 ///
-/// See docs/in-progress/receipt-scan-record-dev-viewer.md.
+/// See docs/completed/receipt-scan-record-dev-viewer.md.
 class DevScanRecordButton extends ConsumerStatefulWidget {
   final String? expenseId;
   final String? fileUrl;

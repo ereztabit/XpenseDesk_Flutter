@@ -54,17 +54,22 @@ No prose summary, no per-section headings, no recommendations unless asked.
 | Column | Content |
 |--------|---------|
 | `#` | Sequential number across the whole table, `1..N` — the user picks work by number |
+| `P` | Priority from the line's tag: `P1`, `P2`, `P3` |
+| `Tag` | Category from the line's tag: `Business`, `Security`, `Technical`, `LookAndFeel` |
 | `Type` | `Bug` or `Feature` |
 | `Item` | One short line — the gist, not the full sentence from the file. Link the spec/bug doc here |
 | `Status` | `IN PROGRESS`, `Open`, or `Deferred` |
 
+Every line in `current-work.md` carries a `[Category][P#]` prefix — the legend
+lives in that file's `## Tags` section. Report the tags as written; never invent
+one for an untagged line, show it as `—` and say which lines need tagging.
+
 Row order:
 1. Everything in `## Currently Working On` — first, `IN PROGRESS`.
-2. Features — from `## TODO (Backlog)`, `## general environment`,
-   `## manager expenses report`, `## management screens`,
-   `## processes & other stuff`, and any other backlog section.
-3. Bugs — from `## report bugs (pending)`.
-4. Anything marked `(deferred)` / `(deferred to v2)` — last, `Deferred`.
+2. Then by priority, `P1` before `P2` before `P3`. Within a priority, Bugs
+   before Features.
+3. Anything marked `(deferred)` / `(deferred to v2)` — last, `Deferred`,
+   regardless of priority.
 
 Rules:
 - **List every open item.** Never truncate, sample, or collapse to "and N more".

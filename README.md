@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-08-13 | v1.26 | Decline multi-page PDF receipts | A multi-page PDF was uploaded and scanned as page 1 only, reporting success while discarding the rest. Detect the page count when the file is picked and decline it before upload, telling the user to split the pages and upload one receipt per file. |
 | 2026-07-25 | v1.25 | Receipt scan record viewer (dev only) | Dev-only "View scan record" button beneath the receipt image in the expense editor: fetches the receipt's scan-pipeline record (steps + per-step timings) and opens the raw JSON in a new browser tab. Never rendered in production builds. |
 | 2026-07-25 | v1.24 | Fix selection regression (grids + read-only form text) | Restore text selection lost when the app-wide SelectionArea was removed (Flutter SelectableRegion assertion): scoped selection for report/grid columns and read-only form values, keeping dropdown/menu/tooltip overlays outside any selection region. |
 | 2026-07-23 | v1.23 | Dependency upgrades + Riverpod 3.3 build-phase fix | Upgrade Flutter SDK 3.41.2->3.44.7 and all pub packages (riverpod 3.3.2, package_info_plus 10.2.1). Riverpod 3.3 forbids ref.invalidate during build; new ref.invalidateOnEntry defers screen-entry refreshes post-frame across six screens, fixing the red-screen crash on /manager/company-config. |
