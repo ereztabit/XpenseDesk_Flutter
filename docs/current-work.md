@@ -1,7 +1,12 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind. **Nothing is
-in progress right now.**
+This file is our state of mind: everything open, nothing left behind.
+
+## Currently Working On
+
+- [ ] [Business][P2] **FS-1000** Admin panel — login routing + companies management - banked on develop as v1.28 (2026-08-14), awaiting ship-feature. Spec: docs/in-progress/admin-login-and-companies-management-spec.md · CR: docs/in-progress/admin-panel-CR.md
+  - Outstanding verification: Hebrew/RTL pass and the narrow breakpoints on the companies table have not been exercised. Desktop, RTL on the shell, admin login, deep link to /admin/companies, sorting, search and text selection are all user-confirmed.
+  - Backend half (same mission) is live on dev but its **production schema migration has not been applied** — BackEnd/XpenseDeskServer/docs/admin-panel/fs-1000-admin-panel-schema.sql. Do not ship the frontend to production ahead of it.
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -67,6 +72,7 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
 - [ ] [Technical][P3] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] [Technical][P3] flutter analyze reports 9 pre-existing info-level lints (4 dart:html deprecations also block wasm) -- see docs/bugs/flutter-analyze-info-lints-cleanup.md
+- [ ] [Technical][P3] Startup frame throws a RenderFlex overflow at a 1x1 viewport -- debug-only console noise on all 17 screens, no user impact; real fix is a shared AppScaffold -- see docs/bugs/startup-frame-renderflex-overflow-at-1x1-viewport.md
 - [ ] [Technical][P3] (deferred) Calendar widget is unstable and not cross-browser -- postponed, see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] [LookAndFeel][P3] (deferred to v2) Tranzila hosted-fields validation messages are always Hebrew -- fine for the Israel launch, see docs/bugs/tranzila-iframe-validation-language-hebrew-only.md
 

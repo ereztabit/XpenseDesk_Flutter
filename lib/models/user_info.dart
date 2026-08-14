@@ -1,4 +1,10 @@
 class UserInfo {
+  /// `UserRole.PlatformAdmin` — XpenseDesk staff, not a customer. The single
+  /// source of truth for admin-ness on client and server; there is no separate
+  /// flag. Roles 1 = Manager (a *company* manager, despite older SQL comments
+  /// calling it "Admin"), 2 = Employee.
+  static const int platformAdminRoleId = 3;
+
   final String email;
   final String fullName;
   final int roleId;

@@ -498,6 +498,81 @@ class _MyScreenState extends ConsumerState<MyScreen> with FormBehaviorMixin {
 
 ---
 
+## Shared Widgets — LOOK HERE BEFORE BUILDING ONE
+
+**Before writing any new container-shaped widget — a table, a card shell, a
+scroll region, a filter, an input — check this table first.** Rebuilding one of
+these is the most expensive mistake available in this codebase: it passes every
+CR rule, because all six of them only inspect the file you wrote.
+
+| Widget | File (`lib/widgets/`) | Reach for it when |
+|--------|------------------------|-------------------|
+| `StickyReportTable` | `sticky_report_table.dart` | **Any data-dense table.** Sticky header, dual scroll with visible scrollbars, selectable body, loading/error states |
+| `SectionTable` | `section_table.dart` | Collapsible card table for a summary section (not for report tables — no horizontal scroll) |
+| `ConstrainedContent` | `constrained_content.dart` | Page body max-width + responsive padding |
+| `AppHeader` / `AppFooter` | `header/app_header.dart`, `app_footer.dart` | Standard screen chrome |
+| `RefreshableScrollView` | `refreshable_scroll_view.dart` | Scrolling page body with pull-to-refresh |
+| `AppButton` | `app_button.dart` | Any button |
+| `ActionIconButton` | `action_icon_button.dart` | 32×32 icon button in a table/list action column |
+| `SearchButton` | `search_button.dart` | 40px Search CTA matching the filter triggers |
+| `EmailInputField` | `email_input_field.dart` | Any email input |
+| `TagInput` | `tag_input.dart` | Multi-entry email/tag input |
+| `AppRadioGroup` | `app_radio_group.dart` | Radio group |
+| `DateRangeFilter` | `date_range_filter.dart` | from→to date-range filter |
+| `ErrorAlert` | `error_alert.dart` | Inline error banner |
+| `LanguageSwitcher` | `language_switcher.dart` | EN/HE picker — drop it into any header, no wiring needed |
+| `SelectableScope` | `selectable_scope.dart` | Make a content region copy-pasteable |
+| `RouteRedirector` | `route_redirector.dart` | Spinner + replace the route next frame |
+| `LastActionConfirmDialog` | `last_action_confirm_dialog.dart` | Confirm before an irreversible per-expense action |
+| `AiBadge` | `ai_badge.dart` | The `'AI'` initialism — never copy the literal |
+
+**Reusing a shell means adopting its constraints on your content, not just its
+chrome.** Read the widget's doc comment for what it *requires*, not only what it
+provides. Worked example: `StickyReportTable` wraps its body in a
+`SelectionArea`, so its rows must be **stateless** — a hover `setState` inside
+one re-registers text selectables on every mouse move and trips
+`SelectableRegion: _selectable == null is not true`. That is why the report
+tables use zebra striping instead of a hover tint.
+
+### Keeping this table honest
+
+**An inventory nobody updates is worse than none** — a stale table gives false
+confidence that nothing suitable exists. So the table is verified, not trusted.
+
+**Before adding any new widget, run this:**
+
+```bash
+for f in lib/widgets/*.dart; do grep -q "$(basename $f)" CLAUDE.md || echo "NOT IN INVENTORY: $(basename $f)"; done
+```
+
+It must print **nothing**. Any output means a root-level widget exists that this
+section has never heard of, and the table can no longer be trusted to answer
+"does something like this already exist?"
+
+When it prints something:
+
+1. **Tell the user the inventory is stale**, list what turned up, and offer to
+   refresh it.
+2. **Do not silently rewrite this table mid-task.** `CLAUDE.md` is a checked-in
+   project instruction file; editing it as a side effect of a feature drags an
+   unrelated change into that feature's diff. Refreshing the inventory is its own
+   small, deliberate task.
+3. Meanwhile, read the flagged files yourself before concluding nothing fits.
+
+The table covers `lib/widgets/` **root only** — the canonical shared pieces.
+Feature subfolders (`lib/widgets/<feature>/`) also hold reusable widgets, so
+always `ls` the relevant one too.
+
+**Deliberately not listed** (kept here so the check above stays silent): mixins
+and guards used via other rules — `auth_gate.dart`, `form_behavior_mixin.dart`,
+`step_guard_mixin.dart`; and single-purpose pieces nobody would rebuild by
+accident — `dashboard_greeting.dart`, `microsoft_logo.dart`,
+`shake_on_demand.dart`, `web_file_drop_region.dart`.
+
+**If you add a new shared shell, add a row above** and document its content
+requirements in its own doc comment. If you add a widget that is deliberately
+*not* a shared shell, name it in the paragraph above so the check stays quiet.
+
 ## New Screen Checklist — Required Steps Every Time
 
 Follow in order. Do not skip steps.
@@ -562,9 +637,15 @@ Only if the screen introduces a new shared export.
 | Icon direction | Use `Icons.arrow_back` not `Icons.arrow_back_ios` |
 | `EdgeInsets.only(left/right)` | Replace with `EdgeInsetsDirectional.only(start/end)` |
 
-### Step 6 — Plan and create widget files before writing any widget code
+### Step 6 — Reuse first, then create the widget files you still need
 
-Before writing any UI code, look at the screen spec and identify every distinct visual section. Create each one as its own file under `lib/widgets/<feature-name>/` **first**, then compose them in the screen.
+Before writing any UI code, look at the screen spec and identify every distinct visual section. Then, **for each section, in this order**:
+
+1. **Verify the inventory, then look for an existing widget.** Run the staleness check from [Keeping this table honest](#keeping-this-table-honest) — if it prints anything, say so and offer to refresh before relying on the table. Then check the [Shared Widgets](#shared-widgets--look-here-before-building-one) table, then `ls lib/widgets/` and `lib/widgets/<related-feature>/`. Open any candidate whose name is even close — read the file, do not judge by filename. `StickyReportTable` sounds feature-specific and is in fact the generic report-table shell; that misread is exactly how it once got rebuilt from scratch.
+2. **If one fits, use it** — and read its doc comment for what it requires of the content you put inside it, not just what it gives you.
+3. **Only if none fits**, create the section as its own file under `lib/widgets/<feature-name>/` **first**, then compose it in the screen.
+
+Record the outcome — which shared widget you reused, or why none fit — in the CR (Rule 7). "I didn't find one" is not an answer; name what you looked at.
 
 - Each card, chart, table, and filter pane → separate `StatelessWidget` / `ConsumerWidget` created upfront
 - Screen file should stay < 200 lines — just state, providers, and layout
@@ -641,13 +722,17 @@ Applies to: `_canContinue`/`_isFormValid` getters, `TextFormField` validators, s
 
 **ABSOLUTE RULE: every code change must be followed by a CR pass per [.claude/commands/code-review.md](.claude/commands/code-review.md).**
 
-The CR enforces six rules:
+The CR enforces seven rules. **Rule 7 is the one to run first** — Rules 1–6 only
+inspect the files you wrote, so all six pass cleanly on a widget that should
+never have existed.
+
 1. No file > 200 lines; every visible UI component is its own widget in its own file.
 2. Pure functions on domain data live in `lib/utils/<theme>_utils.dart`; HTTP/business logic lives in `lib/services/<theme>_service.dart`. Widgets do not house derived-data math.
 3. No hardcoded currency symbols — every amount uses `num.toCurrency(companyLocale, currencyCode)`.
 4. No hardcoded captions — every user-visible string uses `AppLocalizations.of(context)!`. Brand initialisms like `'AI'` live in **one** shared widget, not copy-pasted.
 5. Flutter modern-patterns hygiene — no `withOpacity`, no `EdgeInsets.only(left:|right:)`, no `TextAlign.left|right`, no `arrow_back_ios`, no raw `http.*` outside `ApiService`, no ARB placeholders.
 6. Responsive overflow risk — icon-button columns inside `Row` use `SizedBox(width: N)` not `Expanded(flex:)` so they have a hard minimum at narrow viewports.
+7. Reuse — every new container-shaped widget names the shared widget it reused, or states which candidates were read and why none fit. Not greppable by design: reuse is a relationship between your diff and the code you did *not* touch.
 
 Invoke `/code-review` after every change. Findings categorized blocker / should-fix / nit. Wait for user approval before applying fixes.
 
