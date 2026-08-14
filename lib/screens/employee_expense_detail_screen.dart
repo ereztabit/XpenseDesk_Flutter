@@ -24,6 +24,7 @@ import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/dev_scan_record_button.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
 import '../widgets/last_action_confirm_dialog.dart';
+import '../widgets/shake_on_demand.dart';
 
 class EmployeeExpenseDetailScreen extends ConsumerStatefulWidget {
   final String expenseId;
@@ -75,6 +76,14 @@ class _EmployeeExpenseDetailScreenState
   bool _isSaving = false;
   String? _saveError;
 
+  // Saving with a mandatory field empty shakes it, reddens it and scrolls it
+  // into view — same treatment as the New Expense wizard.
+  bool _hasAttemptedSave = false;
+  final _amountKey = GlobalKey();
+  final _dateKey = GlobalKey();
+  int _amountShakeToken = 0;
+  int _dateShakeToken = 0;
+
   /// Manager-mode: fields start locked; toggled by the Edit button.
   bool _isEditingEnabled = false;
 
@@ -110,10 +119,10 @@ class _EmployeeExpenseDetailScreenState
     );
   }
 
+  /// Amount and date are the only mandatory fields — merchant, category, note
+  /// and receipt # are optional (an unset category saves as "Other").
   bool get _canSave =>
       _amountController.text.trim().isNotEmpty &&
-      _selectedCategoryId != null &&
-      _merchantController.text.trim().isNotEmpty &&
       _selectedDate != null &&
       // Block save while a conversion is in flight or has failed (rules 3/5).
       _conversion.canSave;
@@ -269,8 +278,35 @@ class _EmployeeExpenseDetailScreenState
     }
   }
 
+  /// Reddens, shakes and scrolls to whichever mandatory field is still empty,
+  /// instead of leaving the user with a button that silently does nothing.
+  void _flagMissingMandatoryFields() {
+    final amountMissing = _amountController.text.trim().isEmpty;
+
+    setState(() {
+      _hasAttemptedSave = true;
+      if (amountMissing) _amountShakeToken++;
+      if (_selectedDate == null) _dateShakeToken++;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = (amountMissing ? _amountKey : _dateKey).currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.1,
+      );
+    });
+  }
+
   Future<void> _save() async {
-    if (!_canSave || _isSaving) return;
+    if (_isSaving) return;
+    if (!_canSave) {
+      _flagMissingMandatoryFields();
+      return;
+    }
 
     final l10n = AppLocalizations.of(context)!;
     final expense = _expense;
@@ -307,7 +343,7 @@ class _EmployeeExpenseDetailScreenState
         widget.expenseId,
         UpdateExpenseRequest(
           expenseDate: _selectedDate!.toIso8601String().split('T').first,
-          categoryId: _selectedCategoryId!,
+          categoryId: _selectedCategoryId ?? ExpenseCategory.other.id,
           merchantName: _merchantController.text.trim().isEmpty
               ? null : _merchantController.text.trim(),
           note: _noteController.text.trim().isEmpty
@@ -354,6 +390,12 @@ class _EmployeeExpenseDetailScreenState
 
   Future<void> _approve() async {
     if (_isSaving) return;
+    // Approving with editing on saves the form first — the same mandatory
+    // fields apply, and an empty date would blow up on `_selectedDate!` below.
+    if (_isEditingEnabled && !_canSave) {
+      _flagMissingMandatoryFields();
+      return;
+    }
 
     final l10n = AppLocalizations.of(context)!;
     final expense = _expense;
@@ -392,7 +434,7 @@ class _EmployeeExpenseDetailScreenState
           widget.expenseId,
           UpdateExpenseRequest(
             expenseDate: _selectedDate!.toIso8601String().split('T').first,
-            categoryId: _selectedCategoryId!,
+            categoryId: _selectedCategoryId ?? ExpenseCategory.other.id,
             merchantName: _merchantController.text.trim().isEmpty
                 ? null : _merchantController.text.trim(),
             note: _noteController.text.trim().isEmpty
@@ -487,6 +529,7 @@ class _EmployeeExpenseDetailScreenState
     int maxLines = 1,
     List<TextInputFormatter>? inputFormatters,
     TextInputType? keyboardType,
+    String? errorText,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,13 +555,18 @@ class _EmployeeExpenseDetailScreenState
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             filled: !enabled,
             fillColor: enabled ? null : AppTheme.muted.withAlpha(77),
+            errorText: errorText,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDateField(String label, String companyLocale, {bool required = false, bool enabled = true}) {
+  Widget _buildDateField(String label, String companyLocale,
+      {bool required = false, bool enabled = true, String? errorText}) {
+    // Hand-rolled field (it opens a picker rather than taking keystrokes), so
+    // the error border and message that InputDecoration would give us for free
+    // are built here.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -529,7 +577,9 @@ class _EmployeeExpenseDetailScreenState
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.border),
+              border: Border.all(
+                color: errorText != null ? AppTheme.destructive : AppTheme.border,
+              ),
               borderRadius: BorderRadius.circular(8),
               color: enabled ? null : AppTheme.muted.withAlpha(77),
             ),
@@ -551,6 +601,15 @@ class _EmployeeExpenseDetailScreenState
             ),
           ),
         ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 12, top: 8),
+            child: Text(
+              errorText,
+              style: const TextStyle(
+                  fontSize: 12, color: AppTheme.destructive),
+            ),
+          ),
       ],
     );
   }
@@ -559,7 +618,7 @@ class _EmployeeExpenseDetailScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(l10n.categoryLabel, required: true),
+        _buildLabel(l10n.categoryLabel),
         DropdownMenu<int>(
           initialSelection: _selectedCategoryId,
           enabled: enabled,
@@ -622,20 +681,38 @@ class _EmployeeExpenseDetailScreenState
   Widget _buildAmountCurrencyDateRow(
       AppLocalizations l10n, String companyLocale, {bool enabled = true}) {
     final isNarrow = context.isNarrow;
-    final amountField = _buildTextField(
-      l10n.amountLabel,
-      _amountController,
-      required: true,
-      enabled: enabled,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [ExpenseAmountInputFormatter()],
+    final amountField = ShakeOnDemand(
+      token: _amountShakeToken,
+      child: KeyedSubtree(
+        key: _amountKey,
+        child: _buildTextField(
+          l10n.amountLabel,
+          _amountController,
+          required: true,
+          enabled: enabled,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [ExpenseAmountInputFormatter()],
+          errorText: _hasAttemptedSave && _amountController.text.trim().isEmpty
+              ? l10n.amountRequired
+              : null,
+        ),
+      ),
     );
     final currencyField = _buildCurrencyDropdown(l10n, enabled: enabled);
-    final dateField = _buildDateField(
-      l10n.expenseDate,
-      companyLocale,
-      required: true,
-      enabled: enabled,
+    final dateField = ShakeOnDemand(
+      token: _dateShakeToken,
+      child: KeyedSubtree(
+        key: _dateKey,
+        child: _buildDateField(
+          l10n.expenseDate,
+          companyLocale,
+          required: true,
+          enabled: enabled,
+          errorText: _hasAttemptedSave && _selectedDate == null
+              ? l10n.expenseDateRequired
+              : null,
+        ),
+      ),
     );
     final conversionField = ConversionPreviewLabel(
       controller: _conversion,
@@ -763,7 +840,7 @@ class _EmployeeExpenseDetailScreenState
             _buildAmountCurrencyDateRow(l10n, companyLocale, enabled: _isEditable && !_isSaving),
             const SizedBox(height: 12),
             _buildTextField(l10n.merchantLabel, _merchantController,
-                required: true, enabled: _isEditable && !_isSaving),
+                enabled: _isEditable && !_isSaving),
             const SizedBox(height: 12),
             _buildTextField(l10n.receiptRefLabel, _receiptRefController,
                 monospace: true, enabled: _isEditable && !_isSaving),
@@ -801,7 +878,7 @@ class _EmployeeExpenseDetailScreenState
         _buildAmountCurrencyDateRow(l10n, companyLocale, enabled: enabled),
         const SizedBox(height: 16),
         _buildTextField(l10n.merchantLabel, _merchantController,
-            required: true, enabled: enabled),
+            enabled: enabled),
         const SizedBox(height: 16),
         _buildCategoryDropdown(l10n, uiLocale, enabled: enabled),
         const SizedBox(height: 16),
@@ -950,7 +1027,7 @@ class _EmployeeExpenseDetailScreenState
             variant: AppButtonVariant.primary,
             icon: Icons.save_outlined,
             isLoading: _isSaving,
-            onPressed: _canSave && _isDirty && !_isSaving ? _save : null,
+            onPressed: _isDirty && !_isSaving && _conversion.canSave ? _save : null,
           ),
         ],
       );
@@ -985,7 +1062,7 @@ class _EmployeeExpenseDetailScreenState
       variant: AppButtonVariant.primary,
       icon: Icons.save_outlined,
       isLoading: _isSaving,
-      onPressed: _canSave && _isDirty && !_isSaving ? _save : null,
+      onPressed: _isDirty && !_isSaving && _conversion.canSave ? _save : null,
     );
     final discardBtn = AppButton(
       label: l10n.discard,

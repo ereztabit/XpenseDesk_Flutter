@@ -91,6 +91,10 @@ class AppTheme {
           borderSide: const BorderSide(color: destructive, width: 2),
         ),
         hintStyle: TextStyle(color: mutedForeground),
+        // Validation messages wrap instead of ellipsing. Fields sitting two to
+        // a row (amount + currency) are far too narrow for one line, and a
+        // clipped "Amount is re..." tells the user nothing.
+        errorMaxLines: 3,
       ),
 
       // Elevated Button Theme

@@ -23,6 +23,23 @@ class ReceiptAnalysisResult {
 
   bool get aiFailed => status == 'failed';
 
+  /// True when the scan came back "success" but read nothing usable off the
+  /// receipt. There is nothing to present as detected details, so the caller
+  /// should open the plain form instead of a summary card full of blanks.
+  bool get hasNoDetectedFields =>
+      amount == null &&
+      _isBlank(expenseDate) &&
+      _isBlank(merchantName) &&
+      _isBlank(receiptNumber);
+
+  /// True when the scan read *something* but not everything the user must
+  /// supply before the expense can be saved. Those fields have to be presented
+  /// as editable and flagged, not hidden behind a "Modify" button.
+  bool get isMissingMandatoryFields =>
+      amount == null || DateTime.tryParse(expenseDate ?? '') == null;
+
+  static bool _isBlank(String? value) => value == null || value.trim().isEmpty;
+
   factory ReceiptAnalysisResult.fromJson(Map<String, dynamic> json) {
     return ReceiptAnalysisResult(
       status: json['status'] as String? ?? 'success',
