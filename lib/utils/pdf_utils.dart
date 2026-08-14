@@ -7,7 +7,7 @@ import 'package:dart_pdf_reader/dart_pdf_reader.dart';
 ///
 /// A receipt upload must be a single page: the AI scan reads one receipt per
 /// file, so a multi-page PDF is declined before it is sent (see
-/// docs/bugs/multipage-pdf-decline-and-ask-user-to-split-pages.md).
+/// docs/bugs/completed/multipage-pdf-decline-and-ask-user-to-split-pages.md).
 ///
 /// `null` means "we could not tell", never "one page" — callers must let an
 /// unreadable file through to the server rather than refuse a receipt the user

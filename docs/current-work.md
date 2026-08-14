@@ -1,7 +1,6 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind. **Nothing is
-in progress right now.**
+This file is our state of mind: everything open, nothing left behind.
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -18,6 +17,10 @@ is empty when we are not; `docs/backlog/` holds specs for open features we are n
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
+
+## Currently Working On
+
+- [Business][P2] New Expense entry improvements - banked on develop as v1.27 (2026-08-14), awaiting ship-feature. QA is green on desktop and mobile (docs/in-progress/new-expense-entry-improvements-QA.md); spec in docs/in-progress/new-expense-entry-improvements.md
 
 ## Tags
 
@@ -43,8 +46,9 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
-- [ ] [Business][P2] Expense validation gates removal — price and date are the only mandatory fields on new/edit expense; drop the category selector reminder; default category to "Other" (id 5) on submit if left blank. See docs/backlog/expense-validation-gates-removal.md
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
+- [ ] [Technical][P2] Nothing runs `flutter test` — the suite added in v1.26 (`test/utils/pdf_utils_test.dart`, 6 tests over PDF page counting) only protects when someone runs it by hand, so it will rot silently. Add it to the `finish-feature` checks, and to CI alongside the web build
+- [ ] [Business][P3] Multi-page PDF — handle the server's rejection with the same "split the pages, one receipt per file" message the client already shows, so both paths read identically. **Blocked:** `MultiPageReceiptNotSupported` does not exist yet — see BackEnd/XpenseDeskServer/docs/bugs/multipage-pdf-receipt-upload-silently-scans-first-page-only.md. Until it ships, a PDF whose page count the client cannot parse is still scanned as page 1. Client half shipped in v1.26: docs/bugs/completed/multipage-pdf-decline-and-ask-user-to-split-pages.md
 - [ ] [Technical][P3] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] [LookAndFeel][P3] add logos to the authorize page
 - [ ] [Business][P2] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/backlog/coupon-verbiage-review.md
@@ -61,11 +65,10 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P2] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
-- [ ] [LookAndFeel][P3] AI receipt scan -- "Detected details" card shows raw amount + ISO code ("1880.00 ILS") instead of "₪1,880.00" -- see docs/bugs/ai-detected-amount-not-currency-formatted.md
+- [ ] [LookAndFeel][P3] Dates and amounts follow the UI language, not the company locale -- an Israeli company read in English shows 7/24/2026 instead of 24.7.2026. Root cause is one provider, blast radius is every screen with a date or amount -- see docs/bugs/dates-and-amounts-follow-ui-language-not-company-locale.md
 - [ ] [LookAndFeel][P3] "Add employee" multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] [LookAndFeel][P3] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
 - [ ] [LookAndFeel][P3] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
-- [ ] [LookAndFeel][P3] New Expense upload zone says "Drag or click to upload" but drag-and-drop was never implemented -- see docs/bugs/receipt-upload-zone-drag-and-drop-not-implemented.md
 - [ ] [Technical][P3] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] [Technical][P3] flutter analyze reports 9 pre-existing info-level lints (4 dart:html deprecations also block wasm) -- see docs/bugs/flutter-analyze-info-lints-cleanup.md
 - [ ] [Technical][P3] (deferred) Calendar widget is unstable and not cross-browser -- postponed, see docs/bugs/calendar-widget-unstable-cross-browser.md

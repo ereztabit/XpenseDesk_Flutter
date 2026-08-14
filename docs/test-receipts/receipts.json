@@ -88,5 +88,50 @@
     "totalLabel": "AMOUNT DUE",
     "totalValue": "45.00",
     "footer": "Drive safely"
+  },
+  {
+    "file": "07_no_currency_mixed_formats.png",
+    "rtl": false,
+    "header": "NORTHGATE SUPPLY CO",
+    "sub": ["Unit 4, Northgate Industrial Park", "Invoice 2026-0714", "05/08/2026"],
+    "items": [
+      ["Office chair, mesh back", "1,234.56"],
+      ["Standing desk frame", "1.234,56"],
+      ["Monitor arm, dual", "1 234,56"],
+      ["Cable tray", "89.90"],
+      ["Desk mat", "45,00"]
+    ],
+    "totalLabel": "TOTAL",
+    "totalValue": "3.838,58",
+    "footer": "Payment due within 30 days"
+  },
+  {
+    "file": "08_merchant_no_amount.png",
+    "rtl": false,
+    "header": "STATIONERY HOUSE LTD",
+    "sub": ["17 Ha'Melacha Street, Holon", "Delivery note 88213", "06/08/2026"],
+    "items": [
+      ["Paper A4, 5 reams", ""],
+      ["Ballpoint pens, box of 12", ""],
+      ["Stapler, heavy duty", ""],
+      ["Envelopes C5, 100 pack", ""]
+    ],
+    "totalLabel": "Goods received in full",
+    "totalValue": "",
+    "footer": "Delivery note only - invoice follows separately"
+  },
+  {
+    "file": "09_no_date.png",
+    "rtl": false,
+    "header": "HARBOUR TOOL RENTAL",
+    "sub": ["Kiosk 3, Ashdod Port", "Rental ticket 44127"],
+    "items": [
+      ["Angle grinder - half day", "₪180.00"],
+      ["Cutting blade set", "₪45.00"],
+      ["Safety goggles", "₪22.50"]
+    ],
+    "totalLabel": "TOTAL",
+    "totalValue": "₪247.50",
+    "footer": "Return equipment to kiosk 3 before closing"
   }
 ]

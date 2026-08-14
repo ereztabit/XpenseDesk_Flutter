@@ -103,5 +103,5 @@ Still open, deliberately:
 
 - `BackEnd/XpenseDeskServer/docs/bugs/multipage-pdf-receipt-upload-silently-scans-first-page-only.md`
   -- the server-side half and the decision to decline rather than batch.
-- `docs/bugs/receipt-upload-zone-drag-and-drop-not-implemented.md` -- same upload
+- `docs/in-progress/new-expense-entry-improvements.md` (Part 3) -- same upload
   zone, unrelated defect.
