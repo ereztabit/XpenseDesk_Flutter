@@ -91,10 +91,14 @@ stays as written.
 
 Still open, deliberately:
 
-- The server half is unbuilt. `MultiPageReceiptNotSupported` does not exist yet,
-  so the client cannot map it to this same message and the server's rejection is
-  an untested backstop. Tracked in
-  `BackEnd/XpenseDeskServer/docs/bugs/multipage-pdf-receipt-upload-silently-scans-first-page-only.md`.
+- The server half is unbuilt, and **on 2026-08-14 the owner dropped the client
+  follow-up**: multi-page PDFs are caught on the client, so mirroring a
+  `MultiPageReceiptNotSupported` server message is not worth building. The line
+  was removed from `docs/current-work.md`. Residual gap, accepted: a PDF whose
+  page count the client cannot parse still falls through and is scanned as
+  page 1 with no warning. The backend bug
+  (`BackEnd/XpenseDeskServer/docs/bugs/multipage-pdf-receipt-upload-silently-scans-first-page-only.md`)
+  is left as filed — closing it is a backend call.
 - Nothing runs `flutter test` automatically, so the new regression tests only
   protect when someone runs them.
 - The upload step was not extracted out of the 2083-line screen (CR Step 2).
@@ -103,5 +107,5 @@ Still open, deliberately:
 
 - `BackEnd/XpenseDeskServer/docs/bugs/multipage-pdf-receipt-upload-silently-scans-first-page-only.md`
   -- the server-side half and the decision to decline rather than batch.
-- `docs/in-progress/new-expense-entry-improvements.md` (Part 3) -- same upload
+- `docs/completed/new-expense-entry-improvements.md` (Part 3) -- same upload
   zone, unrelated defect.

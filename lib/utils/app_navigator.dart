@@ -19,6 +19,10 @@ class AppRoutes {
   static const String employeeProfile = '/employee/profile';
   static const String employeeNewExpense = '/employee/new-expense';
   static const String managerPayments = '/manager/payments';
+
+  // --- Platform admin shell (FS-1000) ---
+  static const String adminLanding = '/admin';
+  static const String adminCompanies = '/admin/companies';
 }
 
 /// Which bucket the Sheet Approvals screen should auto-expand (and highlight)
