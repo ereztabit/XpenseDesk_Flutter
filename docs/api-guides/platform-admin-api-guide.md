@@ -3,10 +3,9 @@
 How the **platform admin** role works in XpenseDesk, and the API contract for the
 admin panel. Mission FS-1000.
 
-> **Status:** `GET /api/admin/companies` is **not implemented yet** — the contract
-> below is the agreed target, written before backend work starts. Everything in
-> "Authentication" and "Detecting an admin" describes endpoints that already
-> exist and are unchanged.
+> **Status:** implemented and tested on the backend as of 2026-08-14, live on dev.
+> `GET /api/admin/companies` behaves as documented below. Not yet released to
+> production — the schema migration has been applied to dev only.
 
 Related: [authentication_client_guide.md](authentication_client_guide.md) ·
 backend story `docs/admin-panel/admin-login-and-companies-management-story.md` ·
@@ -44,9 +43,11 @@ the server. There is no separate flag, and none is needed.
 ## 2. How the identity is modelled (and why it matters to clients)
 
 An admin is a normal `Users` row with `RoleId = 3`, belonging to one hidden
-**platform company** (`Companies.IsPlatformCompany = 1`, a fixed well-known id).
-That company holds no subscription, no expense cycles and no billing data, and is
-excluded from every customer-facing list and nightly job.
+**platform company**, identified by `Companies.IsPlatformCompany = 1` and nothing
+else — its id is a surrogate key with no meaning and may differ between
+environments, so never hardcode it. That company holds no subscription, no
+expense cycles and no billing data, and is excluded from every customer-facing
+list and nightly job.
 
 This was chosen over a separate `AdminUsers` table so the authentication
 pipeline stays untouched — magic link, Microsoft login and logout all work for
@@ -159,8 +160,6 @@ it. Do not remove that guard; it is what keeps this call harmless for admins.
 
 ## 5. `GET /api/admin/companies` — companies overview
 
-**Not implemented yet. This is the agreed contract.**
-
 Returns one row per **real** company. The platform company is excluded.
 
 ```http
@@ -180,6 +179,8 @@ Authorization: Bearer <sessionToken>
       "companyName": "XpenseDesk Demo Company",
       "creationDate": "2026-06-20T07:11:21Z",
       "paymentStatus": "Active",
+      "isActive": true,
+      "companyStatus": "Active",
       "userCount": 2,
       "expenseCount": 0
     }
@@ -193,6 +194,8 @@ Authorization: Bearer <sessionToken>
 | `companyName` | string | |
 | `creationDate` | ISO-8601 UTC | Format client-side; see §6. |
 | `paymentStatus` | enum string | `PendingPayment` \| `Active` \| `Inactive`. Server-computed — see below. |
+| `isActive` | bool | Whether the company is live. **Read this together with `paymentStatus`** — see below. |
+| `companyStatus` | string | Company lifecycle status, e.g. `Active`. |
 | `userCount` | int | All users in the company, active or not. |
 | `expenseCount` | int | All expenses in the company. |
 
@@ -210,6 +213,21 @@ returned string; never re-derive payment state on the client.**
 | `PendingPayment` | No subscription record yet. |
 | `Active` | Active subscription, not expired. |
 | `Inactive` | Subscription exists but is cancelled or expired. |
+
+**`paymentStatus` alone is not enough to describe a company.** The underlying
+function only considers companies that are live, so a **deactivated** company
+falls through to `PendingPayment` — identical to a brand-new signup that never
+paid. Use `isActive` to tell them apart:
+
+| `isActive` | `paymentStatus` | Read as |
+|---|---|---|
+| `true` | `PendingPayment` | New or unpaid — never subscribed |
+| `true` | `Active` | Paying customer |
+| `true` | `Inactive` | Subscription lapsed or cancelled |
+| `false` | *(any)* | **Deactivated** — ignore `paymentStatus`, it is not meaningful |
+
+Surface deactivated companies distinctly rather than showing them as merely
+unpaid.
 
 ### Errors
 
@@ -255,7 +273,9 @@ The companies list is module #1. When adding module #2:
    endpoints deliberately break per-tenant isolation; that is contained only by
    the role guard.
 3. **Exclude the platform company** from anything that lists, bills, or sweeps
-   companies — filter on `IsPlatformCompany = 0`, not on a hardcoded id.
+   companies — filter on `IsPlatformCompany = 0`. Never hardcode its id, in SQL
+   or C#: the flag is the only source of truth, and a filtered unique index
+   guarantees at most one row carries it.
 4. **Reject `roleId == 3` on company-scoped endpoints.** An admin session carries
    a valid company context, so an unguarded company endpoint will silently serve
    an admin against the platform company instead of refusing them. This is the
