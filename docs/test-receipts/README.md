@@ -29,7 +29,7 @@ bundled into the app build.
 | 9 | 09_no_date.png | ₪ symbol (base) | Base (ILS) | Amount 247.50 reads fine, and **no date appears anywhere** — no printed date, and nothing date-shaped in the ticket number to latch onto. Panel must open editable with the Date field red. If the AI invents today's date instead of returning null, that is itself a finding |
 
 Receipts 7-9 were added for the New Expense entry improvements QA
-(`docs/in-progress/new-expense-entry-improvements-QA.md`); 2, 3 and 4 double as
+(`docs/completed/new-expense-entry-improvements-QA.md`); 2, 3 and 4 double as
 the USD / EUR / untracked-currency cases for that same round.
 
 Note: #2/#3 assume the dev company tracks USD/EUR and #4/#5 assume it does NOT

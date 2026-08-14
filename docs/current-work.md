@@ -1,6 +1,7 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind.
+This file is our state of mind: everything open, nothing left behind. **Nothing is
+in progress right now.**
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -17,10 +18,6 @@ is empty when we are not; `docs/backlog/` holds specs for open features we are n
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
-
-## Currently Working On
-
-- [Business][P2] New Expense entry improvements - banked on develop as v1.27 (2026-08-14), awaiting ship-feature. QA is green on desktop and mobile (docs/in-progress/new-expense-entry-improvements-QA.md); spec in docs/in-progress/new-expense-entry-improvements.md
 
 ## Tags
 
