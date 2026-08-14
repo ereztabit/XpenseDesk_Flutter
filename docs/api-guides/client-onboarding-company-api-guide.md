@@ -21,10 +21,10 @@ Store it securely on the device and attach it to every protected request.
 ## Onboarding Flow Overview
 
 ```
-1. GET  /api/onboarding/reference-data   ? populate form dropdowns
-2. POST /api/onboarding/company          ? submit form, receive OtpKey
-3. POST /api/onboarding/verify-otp       ? submit OTP, receive SessionToken
-4. GET  /api/users/me                    ? initialize session (same as after login)
+1. GET  /api/onboarding/reference-data   → populate form dropdowns
+2. POST /api/onboarding/company          → submit form, receive OtpKey
+3. POST /api/onboarding/verify-otp       → submit OTP, receive SessionToken
+4. GET  /api/users/me                    → initialize session (same as after login)
 ```
 
 No session token is needed for steps 1�3.
@@ -76,7 +76,7 @@ After step 3, the client is fully authenticated and can call any protected endpo
       {
         "currencyCode": "ILS",
         "currencyName": "Israeli New Shekel",
-        "currencySymbol": "?"
+        "currencySymbol": "₪"
       }
     ]
   }
@@ -216,7 +216,7 @@ Proceed directly to `GET /api/users/me` to initialize the session.
     "languageName": "English",
     "companyName": "Acme Corp",
     "currencyCode": "ILS",
-    "currencySymbol": "?",
+    "currencySymbol": "₪",
     "timeZoneId": 1,
     "timeZoneName": "Israel Standard Time",
     "timeZoneDisplayName": "(UTC+02:00) Jerusalem"
@@ -258,7 +258,7 @@ Proceed directly to `GET /api/users/me` to initialize the session.
     "countryName": "Israel",
     "currencyCode": "ILS",
     "currencyName": "Israeli New Shekel",
-    "currencySymbol": "?",
+    "currencySymbol": "₪",
     "languageId": 1,
     "languageCode": "en",
     "languageName": "English",

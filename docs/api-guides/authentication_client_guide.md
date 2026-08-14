@@ -10,11 +10,11 @@ XpenseDesk uses **email-based magic link authentication**. There are no password
 
 ### Authentication Flow
 
-1. **User enters their email** ? Your app calls `POST /api/auth/try-login`
-2. **User receives magic link via email** ? Link contains a login token
-3. **User clicks the link** ? Your app extracts the token and calls `POST /api/auth/login`
-4. **Your app receives a session token** ? Store it securely
-5. **Use session token for all authenticated requests** ? Include it in the `Authorization` header
+1. **User enters their email** → Your app calls `POST /api/auth/try-login`
+2. **User receives magic link via email** → Link contains a login token
+3. **User clicks the link** → Your app extracts the token and calls `POST /api/auth/login`
+4. **Your app receives a session token** → Store it securely
+5. **Use session token for all authenticated requests** → Include it in the `Authorization` header
 
 ---
 
@@ -62,8 +62,9 @@ Content-Type: application/json
 
 - **Always returns success** - This prevents email enumeration attacks
 - The user will receive an email if their account exists
-- The magic link is valid for **15 minutes**
-- The magic link can only be used **once**
+- The magic link is valid for **60 minutes**
+- The magic link is **multi-use within that window** — it can be redeemed any
+  number of times until it expires. It is not burned on first use.
 
 ### Error Response
 
@@ -153,14 +154,22 @@ Content-Type: application/json
 
 ## 3. Get Current User Info
 
-**Endpoint:** `GET /api/auth/token-info`
+**Endpoint:** `GET /api/users/me`
 
-**Purpose:** Retrieve information about the currently authenticated user.
+**Purpose:** Retrieve information about the currently authenticated user,
+including the role your app routes on.
+
+> **There is no `GET /api/auth/token-info` endpoint.** Earlier versions of this
+> guide documented one; it never existed as a public route. `proc_GetTokenInfo`
+> is **server-internal only** — it resolves the session inside the auth handler
+> and deliberately exposes internal ids (`sessionId`, `userId`, `companyId`) that
+> must never reach a client. Use `GET /api/users/me`, which returns no internal
+> ids.
 
 ### Request
 
 ```http
-GET /api/auth/token-info
+GET /api/users/me
 Authorization: Bearer 1F8DA7EA-29D3-4C12-8665-47BB4E2F5A9C
 ```
 
@@ -171,20 +180,36 @@ Authorization: Bearer 1F8DA7EA-29D3-4C12-8665-47BB4E2F5A9C
 ```json
 {
   "success": true,
-  "message": "Token information retrieved successfully.",
+  "message": "User info retrieved successfully",
   "data": {
-    "sessionId": "90f8dc6f-d2e4-4a91-9e51-a6184839f23c",
-    "sessionExpiresAt": "2026-03-09T15:14:17.303",
-    "userId": "bb895e66-3849-454a-bcfe-37a029f37227",
     "email": "user@example.com",
     "fullName": "John Doe",
     "roleId": 1,
-    "userStatus": "Active",
-    "companyId": "3036b993-a22e-446f-abb9-7d4ef6311f58",
-    "companyName": "Acme Corp"
+    "status": "Active",
+    "govId": null,
+    "termsConsentDate": "2026-03-01T09:12:44.120",
+    "languageId": 2,
+    "languageCode": "he",
+    "languageName": "Hebrew",
+    "companyName": "Acme Corp",
+    "currencyCode": "ILS",
+    "currencySymbol": "₪",
+    "timeZoneId": 64,
+    "timeZoneName": "Israel Standard Time",
+    "timeZoneDisplayName": "Israel Standard Time (GMT +02:00)",
+    "dailingCode": "+972",
+    "cycleStartAt": "2026-08-01T00:00:00",
+    "cycleEndAt": "2026-08-31T23:59:59",
+    "cycleLabel": "2026/08"
   }
 }
 ```
+
+`roleId`: `1` = Manager, `2` = Employee, `3` = PlatformAdmin. Cycle fields are
+`null` when the company has no open cycle. See
+[users_api_documentation.md](users_api_documentation.md) for the full user API,
+and [platform-admin-api-guide.md](platform-admin-api-guide.md) for how `roleId 3`
+changes routing.
 
 ### Error Response
 
@@ -263,7 +288,7 @@ async function login(loginToken) {
 async function getUserInfo() {
   const sessionToken = localStorage.getItem('sessionToken');
   
-  const response = await fetch('https://api.xpensedesk.com/api/auth/token-info', {
+  const response = await fetch('https://api.xpensedesk.com/api/users/me', {
     headers: {
       'Authorization': `Bearer ${sessionToken}`
     }
@@ -314,7 +339,7 @@ Future<String> login(String loginToken) async {
 // 3. Make authenticated request
 Future<Map<String, dynamic>> getUserInfo(String sessionToken) async {
   final response = await http.get(
-    Uri.parse('https://api.xpensedesk.com/api/auth/token-info'),
+    Uri.parse('https://api.xpensedesk.com/api/users/me'),
     headers: {
       'Authorization': 'Bearer $sessionToken',
     },
@@ -367,9 +392,9 @@ if (response.status === 401) {
 ## Security Best Practices
 
 ### 1. **Store Session Tokens Securely**
-- ? Use secure storage mechanisms
-- ? Don't log tokens to console
-- ? Don't include tokens in URLs
+- ✅ Use secure storage mechanisms
+- ❌ Don't log tokens to console
+- ❌ Don't include tokens in URLs
 
 ### 2. **Handle Token Expiration**
 - Session tokens expire after 30 days
@@ -391,28 +416,28 @@ if (response.status === 401) {
 ### First Time Login
 
 ```
-User ? Enter email ? Click "Send Magic Link"
-     ? Check email ? Click magic link
-     ? App extracts token ? Calls /api/auth/login
-     ? Stores session token ? User is logged in
+User → Enter email → Click "Send Magic Link"
+     ↓ Check email → Click magic link
+     ↓ App extracts token → Calls /api/auth/login
+     ↓ Stores session token → User is logged in
 ```
 
 ### Returning User (Token Still Valid)
 
 ```
-User ? Opens app ? App checks for stored session token
-     ? Calls /api/auth/token-info to verify
-     ? Token valid ? User is logged in
-     ? Token expired ? Redirect to login
+User → Opens app → App checks for stored session token
+     ↓ Calls /api/users/me to verify
+     ↓ Token valid → User is logged in
+     ↓ Token expired → Redirect to login
 ```
 
 ### Session Expired
 
 ```
-User ? Tries to access protected resource
-     ? API returns 401
-     ? App clears token ? Redirects to login
-     ? User enters email again
+User → Tries to access protected resource
+     ↓ API returns 401
+     ↓ App clears token → Redirects to login
+     ↓ User enters email again
 ```
 
 ---
@@ -432,10 +457,14 @@ User ? Tries to access protected resource
 3. Wait a minute and try requesting again (the previous link may still work)
 
 ### Q: Can I use the same magic link multiple times?
-**A:** No, magic links are single-use only. Once used, you must request a new one.
+**A:** Yes, within its 60-minute validity window. Redemption is no longer
+single-use — an email security scanner pre-fetching the link used to burn it
+before the real user clicked, so the link now survives repeated redemption until
+it expires.
 
 ### Q: How do I know which company/role the user belongs to?
-**A:** Call `GET /api/auth/token-info` - it returns `companyId`, `companyName`, and `roleId`.
+**A:** Call `GET /api/users/me` - it returns `companyName` and `roleId`. It does
+not return `companyId`, by design: no internal ids are exposed to clients.
 
 ---
 

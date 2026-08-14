@@ -43,6 +43,7 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
+- [ ] [Business][P2] **FS-1000** Admin panel — login routing + companies management. Admin session (no company) lands on a separate `/admin` shell: no user menu, no cycle in header, no company API calls, modules as boxes; first module is a static read-only companies table (name, creation date, payment status, user count, expense count). Built after the backend half (FS-1000 in XpenseDeskServer), against the real endpoint, no mocks. Spec: docs/backlog/admin-login-and-companies-management-spec.md
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
 - [ ] [Technical][P2] Nothing runs `flutter test` — the suite added in v1.26 (`test/utils/pdf_utils_test.dart`, 6 tests over PDF page counting) only protects when someone runs it by hand, so it will rot silently. Add it to the `finish-feature` checks, and to CI alongside the web build
 - [ ] [Technical][P3] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
