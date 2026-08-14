@@ -1,12 +1,7 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind.
-
-## Currently Working On
-
-- [ ] [Business][P2] **FS-1000** Admin panel — login routing + companies management - banked on develop as v1.28 (2026-08-14), awaiting ship-feature. Spec: docs/in-progress/admin-login-and-companies-management-spec.md · CR: docs/in-progress/admin-panel-CR.md
-  - Outstanding verification: Hebrew/RTL pass and the narrow breakpoints on the companies table have not been exercised. Desktop, RTL on the shell, admin login, deep link to /admin/companies, sorting, search and text selection are all user-confirmed.
-  - Backend half (same mission) is live on dev but its **production schema migration has not been applied** — BackEnd/XpenseDeskServer/docs/admin-panel/fs-1000-admin-panel-schema.sql. Do not ship the frontend to production ahead of it.
+This file is our state of mind: everything open, nothing left behind. **Nothing is
+in progress right now.**
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
