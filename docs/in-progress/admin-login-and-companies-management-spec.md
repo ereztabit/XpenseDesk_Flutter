@@ -1,6 +1,7 @@
 # Admin Panel — Login Routing + Companies Management — Client Spec
 
-Status: FILED 2026-08-14. Not started.
+Status: IN PROGRESS 2026-08-14 — built on `feature/fs-1000-admin-panel`, not yet
+verified against a running backend (see §8).
 
 > Mission: FS-1000 (backend: `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\admin-panel\admin-login-and-companies-management-story.md`)
 
@@ -95,9 +96,15 @@ Static read-only table, one row per company. Columns:
 | Number of users | |
 | Number of expenses | |
 
-Explicitly **out of scope for V1**: sorting, filtering, search, pagination,
-row click-through/drill-down, export, editing anything. It is a static table.
-Say so rather than quietly adding affordances.
+**Scope changed 2026-08-14, after the first successful admin login.** Sorting by
+column header and search by company name were pulled into V1 at the user's
+request. Both are client-side over the single payload the endpoint returns — it
+takes no query parameters, so nothing round-trips and the read-only contract is
+unchanged.
+
+Still **out of scope**: pagination, row click-through/drill-down, export, and
+editing anything. The table remains read-only. Say so rather than quietly adding
+affordances.
 
 ## 4. Language vs formatting locale — RESOLVED
 
@@ -184,3 +191,42 @@ Nothing here is exempt from the repo's standing rules:
    backend side, so there is no "invite admin" UI to build.
 3. Fixed Israel formatting locale (§4) is correct only while every company is
    Israeli and billing is in shekel — revisit on international expansion.
+
+## 8. What was built (2026-08-14)
+
+| Piece | Where |
+|-------|-------|
+| Role constant | `UserInfo.platformAdminRoleId` (`lib/models/user_info.dart`) |
+| Routing | `AppRoutes.adminLanding` / `.adminCompanies`, `lib/router.dart` |
+| Post-login dispatch | `completePostLogin` (magic link) + `AuthGate.defaultRouteForUser` (Microsoft + session restore) |
+| Admin-out-of-normal-app redirect | early branch in `AuthGate._resolveRedirect` — covers every gate mode, incl. `selfExpenseAccess`, which would otherwise have sent an admin to employee onboarding |
+| Gate | `lib/widgets/admin/admin_auth_gate.dart` |
+| Header + disconnect | `lib/widgets/admin/admin_header.dart` |
+| Landing | `lib/screens/admin_landing_screen.dart` + `admin_module_grid.dart` / `admin_module_box.dart` |
+| Companies table | `lib/screens/admin_companies_screen.dart` + `admin_companies_body.dart` / `admin_companies_table.dart` / `admin_companies_table_header.dart` / `admin_companies_sort_header_cell.dart` / `admin_company_table_row.dart` / `admin_company_status_badge.dart` |
+| Sort + search | `models/admin_companies_sort.dart`, `utils/admin_companies_utils.dart`, `widgets/admin/admin_companies_search_field.dart`, providers in `admin_provider.dart` (+ `test/utils/admin_companies_utils_test.dart`) |
+| API | `lib/services/admin_service.dart`, `lib/providers/admin_provider.dart`, `lib/models/admin_company_row.dart` |
+| Pinned Israel locale + timezone | `lib/utils/admin_format_utils.dart` (+ `test/utils/admin_format_utils_test.dart`) |
+
+Notes:
+
+- **Default English needs no code.** The seeded admin rows carry `LanguageId = 1`,
+  and `UserInfoNotifier._setLocaleFromUserInfo` already applies it on login. The
+  app-wide `localeProvider` default stays Hebrew for everyone else.
+- **Israel timezone is hand-rolled**, not a tz database — no `timezone` package
+  was added. The rule (DST from 02:00 on the Friday before the last Sunday of
+  March to 02:00 on the last Sunday of October) is the one in force since 2013;
+  if Israel changes it, `_israelUtcOffset` must change with it.
+- **The table reuses the shared `StickyReportTable` shell**, same as the Cycle
+  Expenses report — sticky header, dual scroll with visible scrollbars,
+  selectable body text, built-in loading/error states. It was hand-rolled first;
+  see [admin-panel-CR.md](admin-panel-CR.md) §3a for why that was wrong and what
+  adopting the shell changed (fixed column widths, and a screen that no longer
+  page-scrolls).
+- **Admin login confirmed working end to end** against dev on 2026-08-14. Not
+  yet exercised: the RTL/Hebrew pass, the narrow breakpoints, and the disconnect
+  path.
+- `flutter analyze` (9 pre-existing info lints), `flutter build web` and
+  `flutter test` (33 passing) are green. CR and security review:
+  [admin-panel-CR.md](admin-panel-CR.md) — clean, no HIGH/MEDIUM security
+  findings.

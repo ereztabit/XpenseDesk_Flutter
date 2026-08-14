@@ -18,9 +18,12 @@ import 'screens/sheet_review_screen.dart';
 import 'screens/cycle_expenses_report_screen.dart';
 import 'screens/expenses_analysis_screen.dart';
 import 'screens/payments_report_screen.dart';
+import 'screens/admin_landing_screen.dart';
+import 'screens/admin_companies_screen.dart';
 import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
+import 'widgets/admin/admin_auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   final uri = Uri.parse(settings.name ?? '/');
@@ -59,6 +62,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           mode: AuthGateMode.guestOnly,
           child: LoginScreen(),
         ),
+      );
+
+    // --- Platform admin shell (FS-1000) ---
+    // Wrapped in AdminAuthGate, never AuthGate: these routes admit only
+    // roleId == 3 and must not touch any company-scoped provider.
+    case AppRoutes.adminLanding:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AdminAuthGate(child: AdminLandingScreen()),
+      );
+
+    case AppRoutes.adminCompanies:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AdminAuthGate(child: AdminCompaniesScreen()),
       );
 
     // --- Company onboarding ---

@@ -1,7 +1,12 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind. **Nothing is
-in progress right now.**
+This file is our state of mind: everything open, nothing left behind.
+
+## Currently Working On
+
+- [ ] [Business][P2] **FS-1000** Admin panel — login routing + companies management - banked on develop as v1.28 (2026-08-14), awaiting ship-feature. Spec: docs/in-progress/admin-login-and-companies-management-spec.md · CR: docs/in-progress/admin-panel-CR.md
+  - Outstanding verification: Hebrew/RTL pass and the narrow breakpoints on the companies table have not been exercised. Desktop, RTL on the shell, admin login, deep link to /admin/companies, sorting, search and text selection are all user-confirmed.
+  - Backend half (same mission) is live on dev but its **production schema migration has not been applied** — BackEnd/XpenseDeskServer/docs/admin-panel/fs-1000-admin-panel-schema.sql. Do not ship the frontend to production ahead of it.
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -43,7 +48,6 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
-- [ ] [Business][P2] **FS-1000** Admin panel — login routing + companies management. Admin session (no company) lands on a separate `/admin` shell: no user menu, no cycle in header, no company API calls, modules as boxes; first module is a static read-only companies table (name, creation date, payment status, user count, expense count). Built after the backend half (FS-1000 in XpenseDeskServer), against the real endpoint, no mocks. Spec: docs/backlog/admin-login-and-companies-management-spec.md
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
 - [ ] [Technical][P2] Nothing runs `flutter test` — the suite added in v1.26 (`test/utils/pdf_utils_test.dart`, 6 tests over PDF page counting) only protects when someone runs it by hand, so it will rot silently. Add it to the `finish-feature` checks, and to CI alongside the web build
 - [ ] [Technical][P3] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
@@ -68,6 +72,7 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
 - [ ] [Technical][P3] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] [Technical][P3] flutter analyze reports 9 pre-existing info-level lints (4 dart:html deprecations also block wasm) -- see docs/bugs/flutter-analyze-info-lints-cleanup.md
+- [ ] [Technical][P3] Startup frame throws a RenderFlex overflow at a 1x1 viewport -- debug-only console noise on all 17 screens, no user impact; real fix is a shared AppScaffold -- see docs/bugs/startup-frame-renderflex-overflow-at-1x1-viewport.md
 - [ ] [Technical][P3] (deferred) Calendar widget is unstable and not cross-browser -- postponed, see docs/bugs/calendar-widget-unstable-cross-browser.md
 - [ ] [LookAndFeel][P3] (deferred to v2) Tranzila hosted-fields validation messages are always Hebrew -- fine for the Israel launch, see docs/bugs/tranzila-iframe-validation-language-hebrew-only.md
 

@@ -11,6 +11,29 @@ import 'selectable_scope.dart';
 ///     independently while the header stays fixed.
 ///   - Standard loading spinner and error text states.
 ///
+/// **Use this for any data-dense table.** Do not hand-roll a `LayoutBuilder` +
+/// min-width + horizontal `SingleChildScrollView` — that is this widget, minus
+/// the sticky header, the visible scrollbars and text selection.
+///
+/// ## What this shell REQUIRES of your content
+///
+/// Reusing it means adopting these, not just its chrome:
+///
+/// 1. **Rows must be stateless.** [body] is wrapped in a [SelectableScope]
+///    (`SelectionArea`). A `setState` inside a row — a hover tint is the
+///    tempting one — re-registers that row's text selectables on every mouse
+///    move and trips `SelectableRegion: _selectable == null is not true`
+///    (still present in Flutter 3.44.7; see `selectable_scope.dart`). Use zebra
+///    striping for row banding instead, as the report tables do.
+/// 2. **No per-row keys** unless a row genuinely holds state. A changing key
+///    forces the same subtree re-insert under the `SelectionArea`.
+/// 3. **Fixed pixel column widths**, not flex. [minWidth] must be their sum, and
+///    header and body must use the same constants or they drift apart under the
+///    shared horizontal scroll.
+/// 4. **A bounded height.** This sizes itself to `constraints.maxHeight`, so it
+///    needs an `Expanded`/`SliverFillRemaining` parent — never an unbounded
+///    scrolling page.
+///
 /// Callers are responsible for building [headerRow] and [body], and for
 /// creating/disposing both [ScrollController]s.
 ///

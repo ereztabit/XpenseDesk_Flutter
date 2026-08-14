@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_info.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
+import '../utils/app_navigator.dart';
+import 'route_redirector.dart';
 
 enum AuthGateMode {
   guestOnly,
@@ -35,11 +37,11 @@ class AuthGate extends ConsumerWidget {
         backgroundColor: AppTheme.background,
         body: Center(child: CircularProgressIndicator()),
       ),
-      error: (_, _) => _Redirector(route: '/'),
+      error: (_, _) => const RouteRedirector(route: AppRoutes.login),
       data: (_) {
         final redirectRoute = _resolveRedirect(mode, userInfo);
         if (redirectRoute != null) {
-          return _Redirector(route: redirectRoute);
+          return RouteRedirector(route: redirectRoute);
         }
         // NOTE: We deliberately do NOT wrap `child` in a SelectionArea here.
         // An app-wide SelectionArea (added previously for "select any text on any
@@ -58,11 +60,19 @@ class AuthGate extends ConsumerWidget {
     );
   }
 
-  /// The home route for a signed-in user: manager dashboard, employee
-  /// dashboard, or employee onboarding when terms are still pending. Shared
-  /// with flows that navigate directly after establishing a session (e.g. the
-  /// Microsoft onboarding existing-account short-circuit).
+  /// The home route for a signed-in user: the admin shell, manager dashboard,
+  /// employee dashboard, or employee onboarding when terms are still pending.
+  /// Shared with flows that navigate directly after establishing a session
+  /// (e.g. the Microsoft onboarding existing-account short-circuit).
   static String defaultRouteForUser(UserInfo userInfo) {
+    // Platform admin (FS-1000). Branch on the role — never on a missing
+    // company: an admin session carries the hidden platform company, so a
+    // null-company check never fires and would drop an admin into the normal
+    // app. See docs/api-guides/platform-admin-api-guide.md §2.
+    if (userInfo.roleId == UserInfo.platformAdminRoleId) {
+      return AppRoutes.adminLanding;
+    }
+
     if (userInfo.roleId == 1) {
       return '/dashboard';
     }
@@ -75,6 +85,15 @@ class AuthGate extends ConsumerWidget {
   }
 
   String? _resolveRedirect(AuthGateMode mode, UserInfo? userInfo) {
+    // A platform admin belongs only in the /admin shell — no AuthGateMode
+    // admits one. This redirect is load-bearing, not cosmetic: an admin session
+    // carries a valid (platform) CompanyId, so a company-scoped screen would
+    // render against that internal seed row rather than failing. The backend
+    // guards this too; the client must not rely on that alone.
+    if (userInfo != null && userInfo.roleId == UserInfo.platformAdminRoleId) {
+      return AppRoutes.adminLanding;
+    }
+
     switch (mode) {
       case AuthGateMode.guestOnly:
         if (userInfo == null) return null;
@@ -108,32 +127,4 @@ class AuthGate extends ConsumerWidget {
     }
   }
 
-}
-
-class _Redirector extends StatefulWidget {
-  final String route;
-
-  const _Redirector({required this.route});
-
-  @override
-  State<_Redirector> createState() => _RedirectorState();
-}
-
-class _RedirectorState extends State<_Redirector> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(widget.route);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Center(child: CircularProgressIndicator()),
-    );
-  }
 }

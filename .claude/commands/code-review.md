@@ -6,6 +6,51 @@ Output: a CR markdown next to the relevant implementation doc (typically `docs/i
 
 ## Rules to enforce
 
+### Rule 7 — Reuse ⚠️ RUN THIS FIRST
+
+**Rules 1–6 all inspect only the files in the diff. A widget that duplicates one
+we already have passes all six cleanly — that has happened, and the CR signed it
+off as clean.** Reuse is a relationship between the diff and the code you did
+*not* touch, so no grep over changed files can ever detect it. This rule is
+answered with evidence, not a grep.
+
+Applies to every **container-shaped** widget added by the change: a table, a card
+shell, a scroll region, a filter, a header, an input, a dialog.
+
+For each one, the CR must state **one** of:
+
+- **Reused** `<Widget>` — name it; or
+- **Considered and rejected** `<Widget>` — name each candidate *read* (not just
+  seen in a directory listing) and the concrete reason it does not fit.
+
+Rules for answering honestly:
+
+- **Confirm the inventory is not stale before citing it.** Run:
+  ```
+  for f in lib/widgets/*.dart; do grep -q "$(basename $f)" CLAUDE.md || echo "NOT IN INVENTORY: $(basename $f)"; done
+  ```
+  It must print nothing. Paste the (empty) result in the CR. If it prints
+  anything, say so in the CR, read the flagged files before concluding nothing
+  fits, and recommend refreshing the table as a separate task — never edit
+  `CLAUDE.md` as a side effect of the change under review.
+- Check the **Shared Widgets** table in `CLAUDE.md` first, then `ls lib/widgets/`
+  and the relevant `lib/widgets/<feature>/`.
+- **Judge by opening the file, never by the filename.** `StickyReportTable` reads
+  as belonging to the expense reports; it is the generic report-table shell. That
+  misread is how it got rebuilt from scratch once already.
+- "I looked and found nothing" is not an acceptable answer. Name what you read.
+- A hand-rolled `LayoutBuilder` + min-width + `SingleChildScrollView` around a
+  header row and a list **is** a report table. So is anything with a sticky
+  header, a horizontal scroll, or column-width constants.
+
+Second half of the rule — **reuse means adopting the shell's constraints, not
+just its chrome.** When a shared widget is reused, confirm in the CR that its doc
+comment was read for what it *requires* of the content placed inside it. Worked
+example: `StickyReportTable` wraps its body in a `SelectionArea`, so its rows
+must be stateless; a hover `setState` in a row trips
+`SelectableRegion: _selectable == null is not true`. Adopting the shell but not
+its row shape produced a second round of bugs after the first was fixed.
+
 ### Rule 1 — File size & component-per-file
 
 - Every **widget / screen** Dart file under 200 lines. Run `wc -l <files>`.
@@ -78,9 +123,18 @@ Layout/RTL bugs this codebase has repeatedly hit — check each on any new layou
 ## How to apply
 
 1. Identify files touched in the current change. Use `git status --short` if needed.
-2. Run line counts on every touched file (`wc -l`) and grep audits per the rules above.
-3. Write a CR markdown next to the implementation doc:
+2. **Run Rule 7 first, before any grep.** List every container-shaped widget the
+   change adds and answer reused / considered-and-rejected for each. Do this
+   before the greps — once the mechanical audits come back clean it is much
+   harder to ask whether the code should exist at all.
+3. Run line counts on every touched file (`wc -l`) and grep audits per the rules above.
+4. Write a CR markdown next to the implementation doc:
    - `## TL;DR` — one paragraph
+   - `## 0. Reuse audit` — per new container widget: reused `<Widget>`, or the
+     candidates read and why each was rejected. **First section, before the
+     greps** — a clean grep sheet on a widget that should not exist is a false
+     pass, and putting this first is what stops the CR from manufacturing
+     confidence in the wrong thing
    - `## 1. File-size audit` — table of files + verdict
    - `## 2. Embedded private classes` — list
    - `## 3. Inline logic` — what to extract, where to
@@ -88,5 +142,5 @@ Layout/RTL bugs this codebase has repeatedly hit — check each on any new layou
    - `## 5. Flutter hygiene` — withOpacity / EdgeInsets.only / etc.
    - `## 6. Responsive overflow risk` — flagged breakpoints to check
    - `## 7. Recommended fix plan` — sequenced steps, each independently shippable
-4. Present findings to the user. Recommend an option. **Wait for explicit go-ahead** before applying fixes.
-5. After applying fixes, re-run the audits and confirm zero findings.
+5. Present findings to the user. Recommend an option. **Wait for explicit go-ahead** before applying fixes.
+6. After applying fixes, re-run the audits and confirm zero findings — including Rule 7 if the fix changed which widgets exist.
