@@ -14,6 +14,10 @@ mixin FormBehaviorMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   // throw "Looking up a deactivated widget's ancestor is unsafe".
   NavigationGuardNotifier? _guardNotifier;
 
+  // Kept so dispose can clear OUR guard specifically rather than whatever is
+  // registered by then — see NavigationGuardNotifier.clearGuard.
+  NavigationGuard? _guard;
+
   @override
   void initState() {
     super.initState();
@@ -21,14 +25,25 @@ mixin FormBehaviorMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
       if (!mounted) return;
       // Cache the notifier here while the context is still valid.
       _guardNotifier = ref.read(navigationGuardProvider.notifier);
-      _guardNotifier!.setGuard(() async => confirmDiscard());
+      _guard = () async => confirmDiscard();
+      _guardNotifier!.setGuard(_guard);
     });
   }
 
   @override
   void dispose() {
     // Use the cached reference — no context/ProviderScope lookup needed.
-    _guardNotifier?.setGuard(null);
+    //
+    // Deferred past this frame. `dispose` runs while the framework is
+    // finalizing the tree, which is inside the build phase, and writing to a
+    // provider there throws "Tried to modify a provider while the widget tree
+    // was building". Clearing inline surfaced that on every navigation away from
+    // a screen that had registered a guard.
+    final notifier = _guardNotifier;
+    final guard = _guard;
+    if (notifier != null && guard != null) {
+      Future(() => notifier.clearGuard(guard));
+    }
     super.dispose();
   }
   /// Override this getter to indicate if the form has unsaved changes

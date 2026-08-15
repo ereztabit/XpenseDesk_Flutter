@@ -513,6 +513,7 @@ CR rule, because all six of them only inspect the file you wrote.
 | `AppHeader` / `AppFooter` | `header/app_header.dart`, `app_footer.dart` | Standard screen chrome |
 | `RefreshableScrollView` | `refreshable_scroll_view.dart` | Scrolling page body with pull-to-refresh |
 | `AppButton` | `app_button.dart` | Any button |
+| `ModuleTabBar` | `module_tab_bar.dart` | Tab strip for a multi-section module. **Not** Material `TabBar` — the caller owns the `TabController` so a tap can await a guard before switching |
 | `ActionIconButton` | `action_icon_button.dart` | 32×32 icon button in a table/list action column |
 | `SearchButton` | `search_button.dart` | 40px Search CTA matching the filter triggers |
 | `EmailInputField` | `email_input_field.dart` | Any email input |

@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
+import 'impersonation_token_store.dart';
 import '../models/user_info.dart';
 import '../models/company_billing.dart';
 import '../models/billing_transaction.dart';
@@ -23,10 +24,12 @@ class AuthException implements Exception {
 /// Authentication service using XpenseDesk API
 class AuthService {
   final ApiService _apiService;
+  final ImpersonationTokenStore _impersonationTokens;
   static const String _sessionTokenKey = 'session_token';
 
-  AuthService({ApiService? apiService}) 
-      : _apiService = apiService ?? ApiService();
+  AuthService({ApiService? apiService, ImpersonationTokenStore? impersonationTokens})
+      : _apiService = apiService ?? ApiService(),
+        _impersonationTokens = impersonationTokens ?? const ImpersonationTokenStore();
 
   /// Validates API response and throws exception if not successful
   void _validateResponse(Map<String, dynamic> response, String defaultErrorMessage) {
@@ -87,8 +90,15 @@ class AuthService {
       throw const AuthException('Invalid response from server');
     }
 
-    // Store session token
-    await _storeSessionToken(sessionToken);
+    // FS-1001: a support connect link is redeemed through this exact route — it
+    // is a magic link in every respect except that the server flags it. The flag
+    // has to be honoured HERE, before storage: an impersonation token written to
+    // the shared store would overwrite the agent's own session in that browser.
+    if (data?['isImpersonation'] as bool? ?? false) {
+      _impersonationTokens.write(sessionToken);
+    } else {
+      await _storeSessionToken(sessionToken);
+    }
 
     return sessionToken;
   }
@@ -139,7 +149,16 @@ class AuthService {
 
   /// Store session token in secure storage.
   /// Called internally after login and externally after OTP verification.
+  ///
+  /// This is the ONE path that means "an ordinary session now owns this tab" —
+  /// magic link, Microsoft, or onboarding OTP. So it also drops any support-tab
+  /// marker: a tab whose connection was revoked lands on the login screen, and
+  /// without this the agent's fresh sign-in would be written to shared storage
+  /// while the tab kept reading its own empty support slot, bouncing them back
+  /// to the login screen forever.
   Future<void> storeSessionToken(String token) async {
+    _impersonationTokens.clearTab();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_sessionTokenKey, token);
   }
@@ -147,14 +166,58 @@ class AuthService {
   // Keep the private alias for backward-compat with internal callers
   Future<void> _storeSessionToken(String token) => storeSessionToken(token);
 
-  /// Retrieve stored session token
+  /// The token every service should send: this tab's impersonation token when
+  /// this is a support tab, otherwise the ordinary stored session.
+  ///
+  /// FS-1001: this is the single chokepoint that makes impersonation invisible
+  /// to the rest of the app — no screen, provider or service needs to change.
+  /// The one caller that must NOT go through here is [AdminService], which talks
+  /// to `/api/admin/*` and uses [getAdminSessionToken] instead.
+  ///
+  /// A support tab whose connection has ended returns **null**, not the agent's
+  /// shared session. Falling back would silently promote a dead support tab into
+  /// the agent's own account — the customer's screen turning into staff access
+  /// on a stale tab is not a fallback anyone asked for.
   Future<String?> getSessionToken() async {
+    if (_impersonationTokens.isImpersonationTab) {
+      return _impersonationTokens.read();
+    }
+
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_sessionTokenKey);
   }
 
-  /// Clear stored session token (logout)
+  /// The agent's OWN session, ignoring any impersonation in this tab.
+  ///
+  /// Admin-panel calls must use this: an impersonated session reports the
+  /// target's role, so sending it to `/api/admin/*` would 403 the panel in a tab
+  /// that has ever connected to someone.
+  Future<String?> getAdminSessionToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_sessionTokenKey);
+  }
+
+  /// True when THIS TAB is a support connection.
+  bool get isImpersonating => _impersonationTokens.isImpersonationTab;
+
+  /// Clear the stored session token (logout).
+  ///
+  /// FS-1001: ending a connection must not sign the agent out of their own
+  /// session. In a support tab only the tab-scoped token goes — the shared one
+  /// belongs to the agent's real login, in another tab, and is left alone.
+  ///
+  /// The test is "is this a support TAB", not "is there a token right now".
+  /// Starting a second connection revokes the first, so the stale tab takes a
+  /// burst of 401s; keyed on the token, the first call cleared it and every one
+  /// after it mistook the tab for an ordinary session and wiped the agent's
+  /// shared login. That is the "everything logged out" this guard exists to
+  /// prevent, and it is idempotent by construction.
   Future<void> clearSessionToken() async {
+    if (_impersonationTokens.isImpersonationTab) {
+      _impersonationTokens.clearToken();
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_sessionTokenKey);
   }

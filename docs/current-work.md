@@ -1,7 +1,6 @@
 # Backlog
 
-This file is our state of mind: everything open, nothing left behind. **Nothing is
-in progress right now.**
+This file is our state of mind: everything open, nothing left behind.
 
 - **Start work on an item** → move its line into a `## Currently Working On`
   section at the top of this file, and move its spec into `docs/in-progress/`.
@@ -18,6 +17,10 @@ is empty when we are not; `docs/backlog/` holds specs for open features we are n
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
+
+## Currently Working On
+
+- [ ] [Business][P2] Support impersonation (FS-1001) — banked on develop as v1.29 (2026-08-15), awaiting ship-feature. **Cannot ship until the production schema migration is applied** (`BackEnd/XpenseDeskServer/docs/admin-panel/fs-1001-impersonation-schema.sql`); the backend half is banked on its own develop. Spec: docs/in-progress/support-impersonation-spec.md
 
 ## Tags
 
