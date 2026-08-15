@@ -97,7 +97,17 @@ performs, and for the feature-branch merge-back in step 9.
       `develop`. If git still reports a conflict here, something is wrong -
       **STOP**.
    7. `git push origin develop`.
-   8. Leave the feature branch in place; deleting it is the user's call.
+   8. **Delete the feature branch, local and remote** - the merge-back is what
+      finishes it, exactly as `git flow feature finish` does. Only after step 7
+      has succeeded:
+      - `git branch -d feature/<slug>` - the safe `-d`, never `-D`. It refuses
+        if the branch is not fully merged, which at this point means something
+        went wrong in step 6: **STOP and report** rather than forcing it.
+      - `git push origin --delete feature/<slug>` - skip silently if the branch
+        was never pushed.
+      Invoking this skill is the user's consent for both deletions. The work is
+      not lost: it is in `develop`, and the `--no-ff` merge commit from step 6
+      keeps the branch's shape in the history.
 10. **Done - report and STOP.** State clearly: committed + pushed on `develop`, **not
     released**. The work is banked on the trunk; deploy later with `ship-feature`.
     On a full-stack mission, say plainly that this repo is banked and name the

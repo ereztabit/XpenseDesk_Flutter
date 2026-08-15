@@ -1,6 +1,7 @@
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/admin_company_row.dart';
+import '../models/admin_company_user_row.dart';
 
 /// Exception thrown when a platform-admin operation fails.
 class AdminException implements Exception {
@@ -20,6 +21,13 @@ class AdminException implements Exception {
 /// This service must never call a company-scoped endpoint: an admin session
 /// carries the hidden platform company, so such a call would silently succeed
 /// against it instead of being refused.
+///
+/// FS-1001: this is also the ONE service that must not use
+/// `AuthService.getSessionToken()`. In a tab that has connected to a customer,
+/// that returns the impersonation token, which reports the target's role and
+/// would 403 every call here. It asks for `getAdminSessionToken()` instead — the
+/// agent's own session — which is what keeps the panel working in parallel with
+/// a live connection.
 class AdminService {
   final ApiService _apiService;
   final AuthService _authService;
@@ -50,7 +58,7 @@ class AdminService {
   /// GET /api/admin/companies — one row per real company, newest first.
   /// Requires a platform-admin session (403 otherwise).
   Future<List<AdminCompanyRow>> getCompanies() async {
-    final sessionToken = await _authService.getSessionToken();
+    final sessionToken = await _authService.getAdminSessionToken();
     _validateSessionToken(sessionToken);
 
     final response = await _apiService.get(
@@ -65,5 +73,66 @@ class AdminService {
         .whereType<Map<String, dynamic>>()
         .map(AdminCompanyRow.fromJson)
         .toList();
+  }
+
+  /// GET /api/admin/companies/{companyId}/users — one company's people, for the
+  /// impersonation picker. Managers first, then employees, each by name.
+  ///
+  /// Inactive people are included and flagged; the screen hides them behind a
+  /// checkbox rather than asking again.
+  Future<List<AdminCompanyUserRow>> getCompanyUsers(String companyId) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/admin/companies/$companyId/users',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load company users');
+
+    final data = response['data'] as List<dynamic>? ?? const [];
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(AdminCompanyUserRow.fromJson)
+        .toList();
+  }
+
+  /// POST /api/admin/companies/{companyId}/impersonation/start — mints the
+  /// connect link.
+  ///
+  /// The returned `loginUrl` is a BEARER CREDENTIAL: it mints a session for
+  /// whoever opens it. Open it and forget it — never log it, never persist it.
+  /// Its shape is identical to a magic link, so the app's existing
+  /// `/login?token=` route redeems it with no new client route.
+  ///
+  /// Starting a connection revokes the agent's previous one server-side, so any
+  /// older connected tab simply starts failing auth.
+  Future<({String loginUrl, String targetUserName})> startImpersonation({
+    required String companyId,
+    required String userId,
+  }) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/admin/companies/$companyId/impersonation/start',
+      {'userId': userId},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to start impersonation');
+
+    final data = response['data'] as Map<String, dynamic>?;
+    final loginUrl = data?['loginUrl'] as String?;
+
+    if (loginUrl == null || loginUrl.isEmpty) {
+      throw const AdminException('No connection link was returned');
+    }
+
+    return (
+      loginUrl: loginUrl,
+      targetUserName: data?['targetUserName'] as String? ?? '',
+    );
   }
 }

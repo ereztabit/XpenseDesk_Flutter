@@ -9,14 +9,32 @@ import '../models/admin_company_row.dart';
 class AdminCompaniesQuery {
   const AdminCompaniesQuery._();
 
-  /// Filter by [search], then sort by [sort]. Returns a new list; [rows] is
-  /// left untouched (it is the provider's cached value).
+  /// Drop deactivated companies unless asked for, filter by [search], then sort
+  /// by [sort]. Returns a new list; [rows] is left untouched (it is the
+  /// provider's cached value).
   static List<AdminCompanyRow> apply(
     List<AdminCompanyRow> rows, {
     required String search,
     required AdminCompaniesSort sort,
+    required bool showInactive,
   }) {
-    return sorted(filterByName(rows, search), sort);
+    return sorted(
+      filterByName(filterByActive(rows, showInactive), search),
+      sort,
+    );
+  }
+
+  /// Deactivated companies are hidden by default: the list is a support tool,
+  /// and a company nobody can log into is not who is on the phone. The flag is
+  /// [AdminCompanyRow.isActive], never the payment status — a deactivated
+  /// company reports `PendingPayment` on the wire and would be indistinguishable
+  /// from a new signup.
+  static List<AdminCompanyRow> filterByActive(
+    List<AdminCompanyRow> rows,
+    bool showInactive,
+  ) {
+    if (showInactive) return rows;
+    return rows.where((row) => row.isActive).toList();
   }
 
   /// Case-insensitive "contains" match on the company name. A blank or

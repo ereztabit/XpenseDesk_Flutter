@@ -170,6 +170,7 @@ void main() {
         column: AdminCompanySortColumn.name,
         ascending: true,
       ),
+      showInactive: true,
     );
     expect(_names(result), ['Alpha', 'bravo', 'Charlie']);
 
@@ -180,7 +181,52 @@ void main() {
         column: AdminCompanySortColumn.name,
         ascending: false,
       ),
+      showInactive: true,
     );
     expect(_names(narrowed), ['Charlie', 'Alpha']);
+  });
+
+  group('deactivated companies (FS-1001)', () {
+    test('are hidden by default', () {
+      final visible = AdminCompaniesQuery.filterByActive(rows, false);
+
+      expect(
+        visible.every((row) => row.isActive),
+        isTrue,
+        reason:
+            'the list is a support tool - a company nobody can log into is not '
+            'the one on the phone, so it is out of the way unless asked for',
+      );
+    });
+
+    test('are included when asked for', () {
+      final all = AdminCompaniesQuery.filterByActive(rows, true);
+
+      expect(
+        all.length,
+        rows.length,
+        reason: 'ticking the box must reveal every company, not merely more',
+      );
+    });
+
+    test('apply hides them before searching and sorting', () {
+      final result = AdminCompaniesQuery.apply(
+        rows,
+        search: '',
+        sort: const AdminCompaniesSort(
+          column: AdminCompanySortColumn.name,
+          ascending: true,
+        ),
+        showInactive: false,
+      );
+
+      expect(
+        result.every((row) => row.isActive),
+        isTrue,
+        reason:
+            'the deactivated filter is part of apply, so every caller gets it '
+            'without having to remember a second call',
+      );
+    });
   });
 }

@@ -21,6 +21,15 @@ class UserInfo {
   /// Nullable: a user without a gov ID is valid.
   final String? govId;
 
+  /// FS-1001. Null on every ordinary session; the support agent's name while a
+  /// platform admin is connected as this user.
+  ///
+  /// This is the **only** thing the app learns about impersonation — everything
+  /// else on this object keeps describing the person being helped, which is the
+  /// whole point of connecting. When it is non-null, the header shows the
+  /// impersonation banner.
+  final String? impersonatorName;
+
   const UserInfo({
     required this.email,
     required this.fullName,
@@ -33,7 +42,12 @@ class UserInfo {
     this.dailingCode,
     this.termsConsentDate,
     this.govId,
+    this.impersonatorName,
   });
+
+  /// True when this session is a support agent connected as this user.
+  bool get isImpersonated =>
+      impersonatorName != null && impersonatorName!.trim().isNotEmpty;
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
     return UserInfo(
@@ -50,6 +64,7 @@ class UserInfo {
           ? DateTime.tryParse(json['termsConsentDate'] as String)
           : null,
       govId: json['govId'] as String?,
+      impersonatorName: json['impersonatorName'] as String?,
     );
   }
 

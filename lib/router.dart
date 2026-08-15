@@ -20,6 +20,7 @@ import 'screens/expenses_analysis_screen.dart';
 import 'screens/payments_report_screen.dart';
 import 'screens/admin_landing_screen.dart';
 import 'screens/admin_companies_screen.dart';
+import 'screens/admin_company_screen.dart';
 import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
@@ -34,6 +35,24 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     return MaterialPageRoute(
       settings: settings,
       builder: (_) => LoginCallbackScreen(token: token),
+    );
+  }
+
+  // /admin/companies/{companyId}[/{tab}] — the company module (FS-1001).
+  // Matched by pattern rather than by `case` because the id is part of the path:
+  // that is what makes refresh, bookmarking and pasting a company link work. It
+  // must be tested BEFORE the switch, whose /admin/companies case would
+  // otherwise never see these longer paths.
+  final companyRoute = AppRoutes.parseAdminCompanyPath(uri.path);
+  if (companyRoute != null) {
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) => AdminAuthGate(
+        child: AdminCompanyScreen(
+          companyId: companyRoute.companyId,
+          initialTab: companyRoute.tab,
+        ),
+      ),
     );
   }
 
@@ -78,6 +97,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings: settings,
         builder: (_) => const AdminAuthGate(child: AdminCompaniesScreen()),
       );
+
 
     // --- Company onboarding ---
     case '/onboarding':

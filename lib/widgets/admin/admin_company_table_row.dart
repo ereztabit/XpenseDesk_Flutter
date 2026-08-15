@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../../generated/l10n/app_localizations.dart';
 import '../../models/admin_company_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/admin_format_utils.dart';
 import '../../utils/format_utils.dart';
+import '../action_icon_button.dart';
 import 'admin_companies_table_header.dart';
 import 'admin_company_status_badge.dart';
 
-/// One company row. Read-only — no drill-down, no row action.
+/// One company row.
+///
+/// FS-1001 added a way in: the pencil beside the name opens that company's
+/// module, whose first tab is its people. The company data itself is still
+/// read-only — nothing here writes.
 ///
 /// **Stateless, with zebra striping instead of a hover tint — deliberately, and
 /// it must stay that way.** This row lives inside [StickyReportTable]'s
@@ -25,10 +31,15 @@ class AdminCompanyTableRow extends StatelessWidget {
     super.key,
     required this.company,
     required this.isEven,
+    required this.onOpen,
   });
 
   final AdminCompanyRow company;
   final bool isEven;
+
+  /// Opens this company's module. Supplied by the table rather than navigated
+  /// from here, so the row keeps no context and stays stateless.
+  final VoidCallback onOpen;
 
   static const _cellStyle = TextStyle(
     fontSize: 13,
@@ -37,6 +48,12 @@ class AdminCompanyTableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return _buildRow(l10n);
+  }
+
+  Widget _buildRow(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
         color: isEven ? AppTheme.muted.withAlpha(25) : null,
@@ -48,14 +65,38 @@ class AdminCompanyTableRow extends StatelessWidget {
         children: [
           _Cell(
             width: AdminCompaniesColumns.name,
-            child: Text(
-              company.companyName,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.foreground,
-              ),
+            child: Row(
+              children: [
+                // Leads the row, matching the people table: an explicit control
+                // rather than a tap on the whole row (which has no affordance
+                // and, on a touch screen, competes with scrolling and with
+                // selecting the text in a cell), and in a fixed position every
+                // row shares rather than chasing the end of a name.
+                //
+                // Do NOT wrap this in SelectionContainer.disabled — see the
+                // matching note in admin_company_user_table_row.dart. That is
+                // itself a SelectionContainer, and inserting one under this
+                // table's SelectionArea is the precise trigger for
+                // `SelectableRegion: _selectable == null is not true`.
+                ActionIconButton(
+                  icon: Icons.edit_outlined,
+                  tooltip: l10n.adminCompanyOpen,
+                  color: AppTheme.primary,
+                  onPressed: onOpen,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    company.companyName,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.foreground,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           _Cell(

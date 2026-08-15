@@ -16,6 +16,7 @@ import '../widgets/company_config/billing_danger_zone_card.dart';
 // tab wiring below to bring it back. See docs/bugs/completed.
 // import '../widgets/company_config/billing_history_tab.dart';
 import '../widgets/app_button.dart';
+import '../widgets/module_tab_bar.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
   const CompanyConfigScreen({super.key, this.initialTab = 0});
@@ -278,15 +279,10 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                             // companyConfigTabHistory — Billing History hidden
                             // and deferred to v2.
                           ];
-                          return Row(
-                            children: [
-                              for (int i = 0; i < tabs.length; i++)
-                                _GuardedTab(
-                                  label: tabs[i],
-                                  isActive: active == i,
-                                  onTap: () => _handleTabTap(i),
-                                ),
-                            ],
+                          return ModuleTabBar(
+                            labels: tabs,
+                            activeIndex: active,
+                            onTap: _handleTabTap,
                           );
                         },
                       ),
@@ -854,49 +850,4 @@ class _ErrorCard extends StatelessWidget {
   }
 }
 
-/// A single custom tab button that delegates tap handling to the parent so
-/// the parent can await a guard dialog before calling animateTo.
-class _GuardedTab extends StatelessWidget {
-  const _GuardedTab({
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.only(right: 4, bottom: 8),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppTheme.primary.withAlpha(20)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? AppTheme.primary : AppTheme.mutedForeground,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
