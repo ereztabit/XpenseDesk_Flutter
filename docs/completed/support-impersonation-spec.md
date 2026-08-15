@@ -1,18 +1,27 @@
 # Support Impersonation - Frontend Spec
 
-Status: BUILT 2026-08-15. Implemented against the live backend; `flutter analyze`
-clean and `flutter build web` green. **Not committed** - awaiting manual QA.
+Status: SHIPPED 2026-08-15 as v1.29. QA'd by the owner, released to production
+alongside the backend half; the production schema migration was applied and
+verified beforehand.
 
-Not browser-verified by Claude: port 8080 was already serving the owner's own dev
-instance (left untouched), and a second instance could not reach the API from the
-sandboxed browser because the dev API's certificate is self-signed and untrusted
-there. The flows below are therefore built and statically verified, but the
-click-through is the owner's QA pass.
+**What shipped differs from the first design below in four places, all from QA
+feedback — read the sections further down as the record of the final shape:**
+
+- The companies list has **no row drill-down**. A pencil beside the company name
+  opens it, so the flow works on a phone.
+- The people list is the **first tab of a tabbed company module**, and the
+  company id is in the **URL** (`/admin/companies/{id}/users`) so refresh and
+  bookmarks work. Route arguments did not survive a refresh.
+- Connect is an **icon beside each person's name**, not a labelled button in a
+  trailing action column — a trailing column is the first thing off-screen on a
+  phone.
+- The header marker is a **chip inside the header bar**, not a full-width banner
+  below it. A banner pushed every screen down for the whole call.
 
 > Mission: FS-1001 (backend: `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\admin-panel\support-impersonation-story.md`)
 
-An admin on a support call opens the admin panel, drills from the companies list
-into a company, sees its employees, and clicks **Connect** next to the caller. A
+An admin on a support call opens the admin panel, opens a company, sees its
+people, and clicks **Connect** next to the caller. A
 new tab opens running the app exactly as that employee sees it, with a
 permanent banner saying whose account is on screen.
 

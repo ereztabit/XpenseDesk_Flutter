@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [ ] [Business][P2] Support impersonation (FS-1001) — banked on develop as v1.29 (2026-08-15), awaiting ship-feature. **Cannot ship until the production schema migration is applied** (`BackEnd/XpenseDeskServer/docs/admin-panel/fs-1001-impersonation-schema.sql`); the backend half is banked on its own develop. Spec: docs/in-progress/support-impersonation-spec.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
