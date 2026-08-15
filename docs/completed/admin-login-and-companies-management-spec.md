@@ -1,7 +1,15 @@
 # Admin Panel — Login Routing + Companies Management — Client Spec
 
-Status: IN PROGRESS 2026-08-14 — built on `feature/fs-1000-admin-panel`, not yet
-verified against a running backend (see §8).
+Status: SHIPPED 2026-08-14 as **v1.28** (frontend). Verified against the live dev
+backend; see §8 for what is confirmed and what is not.
+
+> **Shipped ahead of the backend, deliberately.** Production has no `roleId == 3`
+> user until the FS-1000 schema migration is applied, so this panel is
+> unreachable in production until then — `AdminAuthGate` redirects any non-admin
+> away from `/admin`, and the rest of the change is additive and gated on that
+> role. The backend half is banked on its own `develop` and **not** released.
+> Migration script:
+> `BackEnd/XpenseDeskServer/docs/admin-panel/fs-1000-admin-panel-schema.sql`.
 
 > Mission: FS-1000 (backend: `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\admin-panel\admin-login-and-companies-management-story.md`)
 

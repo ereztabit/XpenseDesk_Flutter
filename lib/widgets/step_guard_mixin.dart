@@ -49,19 +49,31 @@ mixin StepGuardMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
     return result ?? false;
   }
 
+  // Kept so dispose can clear OUR guard specifically rather than whatever is
+  // registered by then — see NavigationGuardNotifier.clearGuard.
+  NavigationGuard? _guard;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _guardNotifier = ref.read(navigationGuardProvider.notifier);
-      _guardNotifier!.setGuard(() async => confirmDiscard());
+      _guard = () async => confirmDiscard();
+      _guardNotifier!.setGuard(_guard);
     });
   }
 
   @override
   void dispose() {
-    _guardNotifier?.setGuard(null);
+    // Deferred past this frame, same reason as FormBehaviorMixin: dispose runs
+    // while the framework finalizes the tree, which is inside the build phase,
+    // and a provider write there throws.
+    final notifier = _guardNotifier;
+    final guard = _guard;
+    if (notifier != null && guard != null) {
+      Future(() => notifier.clearGuard(guard));
+    }
     super.dispose();
   }
 }

@@ -5,6 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/admin_company_row.dart';
 import '../../providers/admin_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/app_navigator.dart';
 import '../sticky_report_table.dart';
 import 'admin_companies_table_header.dart';
 import 'admin_company_table_row.dart';
@@ -35,6 +36,14 @@ class _AdminCompaniesTableState extends ConsumerState<AdminCompaniesTable> {
     super.dispose();
   }
 
+  /// FS-1001: opens the company module. A real URL, not route arguments, so the
+  /// agent can refresh, bookmark or paste it.
+  void _openCompanyUsers(AdminCompanyRow company) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.adminCompanyUsers(company.companyId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -59,6 +68,7 @@ class _AdminCompaniesTableState extends ConsumerState<AdminCompaniesTable> {
             : _Rows(
                 companies: visible,
                 controller: _verticalScrollController,
+                onOpen: _openCompanyUsers,
               ),
         verticalScrollController: _verticalScrollController,
         horizontalScrollController: _horizScrollController,
@@ -68,10 +78,15 @@ class _AdminCompaniesTableState extends ConsumerState<AdminCompaniesTable> {
 }
 
 class _Rows extends StatelessWidget {
-  const _Rows({required this.companies, required this.controller});
+  const _Rows({
+    required this.companies,
+    required this.controller,
+    required this.onOpen,
+  });
 
   final List<AdminCompanyRow> companies;
   final ScrollController controller;
+  final void Function(AdminCompanyRow) onOpen;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +102,7 @@ class _Rows extends StatelessWidget {
       itemBuilder: (context, index) => AdminCompanyTableRow(
         company: companies[index],
         isEven: index.isEven,
+        onOpen: () => onOpen(companies[index]),
       ),
     );
   }

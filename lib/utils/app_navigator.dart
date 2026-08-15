@@ -23,6 +23,33 @@ class AppRoutes {
   // --- Platform admin shell (FS-1000) ---
   static const String adminLanding = '/admin';
   static const String adminCompanies = '/admin/companies';
+
+  // --- Company module (FS-1001) ---
+  //
+  // The company id lives in the PATH, not in route arguments, so the address bar
+  // is the state: refreshing, bookmarking or pasting a company link all land on
+  // the same company. Arguments would be null on a cold load and drop the agent
+  // back at the list — which is exactly what QA hit.
+  //
+  // The tab is part of the path too, so a future second tab is a URL a support
+  // agent can share, not a click someone has to describe.
+  static String adminCompanyUsers(String companyId) =>
+      '$adminCompanies/$companyId/$adminCompanyTabUsers';
+
+  static const String adminCompanyTabUsers = 'users';
+
+  /// Parses `/admin/companies/{guid}[/{tab}]`, or null when [path] is not a
+  /// company-module route. Returns the tab segment verbatim; an unknown tab is
+  /// the caller's problem to default.
+  static ({String companyId, String? tab})? parseAdminCompanyPath(String path) {
+    final match = RegExp(
+      '^${RegExp.escape(adminCompanies)}/([0-9a-fA-F-]{36})(?:/([a-z-]+))?/?\$',
+    ).firstMatch(path);
+
+    if (match == null) return null;
+
+    return (companyId: match.group(1)!, tab: match.group(2));
+  }
 }
 
 /// Which bucket the Sheet Approvals screen should auto-expand (and highlight)

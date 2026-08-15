@@ -16,7 +16,10 @@ import 'admin_companies_sort_header_cell.dart';
 class AdminCompaniesColumns {
   const AdminCompaniesColumns._();
 
-  static const double name = 240;
+  /// Wider since FS-1001: the name cell now leads with the open-company
+  /// control, so the text needs room not to ellipsize the moment a name is
+  /// average-length.
+  static const double name = 280;
   static const double creationDate = 130;
   static const double paymentStatus = 150;
   static const double userCount = 90;
