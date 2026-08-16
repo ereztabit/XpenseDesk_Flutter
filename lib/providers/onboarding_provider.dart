@@ -244,6 +244,14 @@ class OnboardingStateNotifier extends Notifier<OnboardingWizardState> {
     state = const OnboardingWizardState();
   }
 
+  /// FS-1002: seeds the email a visitor already typed on the login screen, where
+  /// it turned out to have no account. Only the email — everything else stays
+  /// blank and the field stays editable, unlike [enterMicrosoftMode], because
+  /// nothing here is verified: a typo is the other reason an address is unknown.
+  void seedEmail(String email) {
+    state = state.copyWith(email: email, emailConflictError: '');
+  }
+
   /// Called when POST /api/onboarding/company returns 409 Conflict.
   /// Stores the error so Step 1 can display it on the email field.
   void setEmailConflictError(String message) {
