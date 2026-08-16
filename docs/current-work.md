@@ -58,6 +58,7 @@ so in its spec rather than double-tagging here.
 - [ ] [Business][P2] Login with an unregistered email dead-ends on "check your email" instead of continuing to onboarding with that email pre-filled (needs a backend change; reopens email enumeration) -- see docs/bugs/login-unknown-email-should-continue-to-onboarding.md
 - [ ] [Business][P2] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
 - [ ] [LookAndFeel][P2] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
+- [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] [LookAndFeel][P3] Dates and amounts follow the UI language, not the company locale -- an Israeli company read in English shows 7/24/2026 instead of 24.7.2026. Root cause is one provider, blast radius is every screen with a date or amount -- see docs/bugs/dates-and-amounts-follow-ui-language-not-company-locale.md
