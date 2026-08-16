@@ -55,9 +55,9 @@ so in its spec rather than double-tagging here.
 - [ ] [Business][P1] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
 - [ ] [Business][P2] Onboarding plan picker -- annual plan missing "2 months free (16% discount)" savings label -- see docs/bugs/onboarding-annual-plan-missing-savings-label.md
 - [ ] [LookAndFeel][P2] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
-- [ ] [Business][P2] Login with an unregistered email dead-ends on "check your email" instead of continuing to onboarding with that email pre-filled (needs a backend change; reopens email enumeration) -- see docs/bugs/login-unknown-email-should-continue-to-onboarding.md
 - [ ] [Business][P2] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
 - [ ] [LookAndFeel][P2] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
+- [ ] [LookAndFeel][P3] Login screen shows "Please enter a valid email address" twice for a malformed address -- once inline under the field, once in the red alert; two independent validators (EmailInputField's, and a regex re-check in AuthService.tryToLogin) both fire. Found in FS-1002 QA -- see docs/bugs/login-invalid-email-message-shown-twice.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
