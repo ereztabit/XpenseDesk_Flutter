@@ -48,7 +48,7 @@ Content-Type: application/json
 
 ### Response
 
-**Status:** `200 OK` (always, even if email doesn't exist)
+**Status:** `200 OK` — an active account exists and the link was sent.
 
 ```json
 {
@@ -60,22 +60,52 @@ Content-Type: application/json
 
 ### Important Notes
 
-- **Always returns success** - This prevents email enumeration attacks
-- The user will receive an email if their account exists
 - The magic link is valid for **60 minutes**
 - The magic link is **multi-use within that window** — it can be redeemed any
   number of times until it expires. It is not burned on first use.
 
-### Error Response
+### Error Responses
+
+**FS-1002:** this endpoint no longer answers every address identically. It used
+to always return `200` to prevent email enumeration; that was reversed
+deliberately, because an unregistered visitor was told to wait for a link that
+would never arrive with no route into signup. (`GET /api/onboarding/check-email`
+already exposed registration status unauthenticated, so nothing new is leaked.)
+
+| Status | `errorCode` | Meaning | Client behaviour |
+|--------|-------------|---------|------------------|
+| `200` | — | Active account, link sent | "Check your email" |
+| `404` | `AuthUserNotFound` | No account for this email | Continue into `/onboarding` carrying the typed email |
+| `403` | `AuthUserInactive` | Account exists but is deactivated | Show the disabled-account error. **Never** route into signup |
+| `403` | `CompanyInactive` | The user is fine, their company is deactivated | Show the locked-account error |
+| `400` | — | `email` missing from the request | — |
+
+`CompanyInactive` is checked ahead of `AuthUserInactive` — with the whole company
+off there is no administrator to appeal to. This is the **hard** lock only; the
+billing block modes (`SoftLocked`, `MustPayNextLogin`) still sign in normally so
+people can pay.
 
 ```json
 {
   "success": false,
-  "message": "Email is required."
+  "message": "No account exists for this email.",
+  "errorCode": "AuthUserNotFound",
+  "data": null
 }
 ```
 
-**Status:** `400 Bad Request`
+```json
+{
+  "success": false,
+  "message": "This account is disabled. Contact your company administrator.",
+  "errorCode": "AuthUserInactive",
+  "data": null
+}
+```
+
+In the app this is mapped in `lib/services/auth_service.dart` — `tryToLogin()`
+returns a `TryLoginOutcome` rather than a raw response map, so no widget reads
+these strings directly.
 
 ---
 

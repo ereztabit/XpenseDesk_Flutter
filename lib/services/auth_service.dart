@@ -21,6 +21,30 @@ class AuthException implements Exception {
   String toString() => message;
 }
 
+/// What `POST /api/auth/try-login` decided about the email that was typed.
+enum TryLoginOutcome {
+  /// Active account — a magic link is on its way.
+  linkSent,
+
+  /// No account exists for this email. Not an error: the person is a prospect,
+  /// and the app continues into onboarding carrying the address they typed.
+  userNotFound,
+
+  /// The account exists but is deactivated. Must NOT continue into onboarding —
+  /// signing up again is not the remedy; their administrator is.
+  userInactive,
+
+  /// The user is fine but their whole company is deactivated. Refused at the
+  /// door rather than handed a link, because the session it would mint is worth
+  /// nothing — every call inside 403s. Not the billing block modes, which still
+  /// sign in normally.
+  companyInactive,
+}
+
+/// Outcome of a magic-link request. [magicLink] is non-null only on the
+/// `@xpensedesk.com` test domain, where the server echoes the link back.
+typedef TryLoginResult = ({TryLoginOutcome outcome, String? magicLink});
+
 /// Authentication service using XpenseDesk API
 class AuthService {
   final ApiService _apiService;
@@ -54,10 +78,18 @@ class AuthService {
     return emailRegex.hasMatch(email);
   }
 
-  /// Request magic link - calls API
-  /// Always succeeds (API returns 200 even if email doesn't exist).
-  /// Returns the response map so callers can check for a magicLink field.
-  Future<Map<String, dynamic>> tryToLogin(String email) async {
+  /// Request a magic link.
+  ///
+  /// FS-1002: the server no longer answers every address identically. Typing an
+  /// email nobody has signed up with is not a failed login, it is the start of a
+  /// signup, so the outcomes are told apart here and returned as
+  /// [TryLoginOutcome] rather than leaving the widget to read magic strings out
+  /// of a response map.
+  ///
+  /// [TryLoginResult.magicLink] is only ever populated for `@xpensedesk.com`
+  /// addresses (the server echoes the link back so automated runs can follow it);
+  /// it is null for everyone else.
+  Future<TryLoginResult> tryToLogin(String email) async {
     final normalizedEmail = email.trim().toLowerCase();
 
     // Validate email format
@@ -65,8 +97,30 @@ class AuthService {
       throw const AuthException('Please enter a valid email address');
     }
 
-    // Call API - always returns success
-    return await _apiService.post('/api/auth/try-login', {'email': normalizedEmail});
+    final response = await _apiService.post(
+      '/api/auth/try-login',
+      {'email': normalizedEmail},
+    );
+
+    if (response['success'] as bool? ?? false) {
+      final data = response['data'] as Map<String, dynamic>?;
+      return (
+        outcome: TryLoginOutcome.linkSent,
+        magicLink: data?['magicLink'] as String?,
+      );
+    }
+
+    // Anything unrecognised stays an AuthException: better a visible error than
+    // silently walking someone into signup on a response we do not understand.
+    return switch (response['errorCode'] as String?) {
+      'AuthUserNotFound' => (outcome: TryLoginOutcome.userNotFound, magicLink: null),
+      'AuthUserInactive' => (outcome: TryLoginOutcome.userInactive, magicLink: null),
+      'CompanyInactive' => (outcome: TryLoginOutcome.companyInactive, magicLink: null),
+      final code => throw AuthException(
+          response['message'] as String? ?? 'Login failed',
+          errorCode: code,
+        ),
+    };
   }
 
   /// Exchange login token for session token

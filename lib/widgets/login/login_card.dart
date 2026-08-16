@@ -6,6 +6,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../providers/analytics_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
+import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/microsoft_auth_service.dart';
 import '../app_button.dart';
@@ -63,20 +64,65 @@ class _LoginCardState extends ConsumerState<LoginCard> {
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      final response = await authService.tryToLogin(email);
+      final result = await authService.tryToLogin(email);
 
-      final data = response['data'] as Map<String, dynamic>?;
-      final magicLink = data?['magicLink'] as String?;
-      if (magicLink != null && magicLink.isNotEmpty) {
-        await launchUrl(Uri.parse(magicLink), mode: LaunchMode.externalApplication);
+      switch (result.outcome) {
+        case TryLoginOutcome.linkSent:
+          final magicLink = result.magicLink;
+          if (magicLink != null && magicLink.isNotEmpty) {
+            await launchUrl(Uri.parse(magicLink), mode: LaunchMode.externalApplication);
+          }
+          setState(() => _successMessage = l10n.checkEmailForMagicLink);
+
+        case TryLoginOutcome.userNotFound:
+          // FS-1002: nobody has signed up with this address, so this is the
+          // start of a signup rather than a failed login. Hand it to the wizard
+          // the same way an unknown Microsoft user is handed over above.
+          _startOnboardingWith(email.trim().toLowerCase());
+
+        case TryLoginOutcome.userInactive:
+          setState(() => _errorMessage = l10n.loginAccountDeactivated);
+
+        case TryLoginOutcome.companyInactive:
+          setState(() => _errorMessage = l10n.loginAccountLocked);
       }
-
-      setState(() {
-        _successMessage = l10n.checkEmailForMagicLink;
-      });
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
+    } on NetworkException {
+      // Without this the Continue button just dies: main.dart deliberately
+      // swallows NetworkException so it never even reaches the console, on the
+      // assumption that the UI already shows it — which was not true here.
+      //
+      // It covers two different failures that arrive identically. The obvious
+      // one is offline / server unreachable. The other is being rate limited:
+      // try-login runs under the Moderated policy and the limiter returns 429
+      // with an EMPTY body, so decoding it throws and ApiService reports it as a
+      // network failure. Hence "try again in a moment" rather than a pure
+      // connectivity message — it has to fit both.
+      setState(() => _errorMessage = l10n.loginConnectionError);
     }
+  }
+
+  /// Sends the visitor into the onboarding wizard carrying the email they typed.
+  ///
+  /// The wizard state is seeded here, in an event handler, rather than handed
+  /// over through a provider for the wizard to consume in its initState: this
+  /// runs outside any build, and by the time OnboardingScreen mounts, step 1
+  /// already finds the email in [onboardingStateProvider] and prefills it.
+  /// (The Microsoft handoff needs a pending provider because its token is
+  /// produced by app bootstrap, not by a widget. This one does not.)
+  void _startOnboardingWith(String email) {
+    if (!mounted) return;
+    // reset() first — it clears anything left from an earlier (completed or
+    // abandoned) wizard session in this browser tab, seedEmail() would be
+    // wiped by it. Same reset the "Create account" button does.
+    ref.read(onboardingStateProvider.notifier).reset();
+    ref.read(onboardingStateProvider.notifier).seedEmail(email);
+    ref.read(analyticsServiceProvider).trackEvent('onboarding_start');
+    // pushNamed, not pushReplacementNamed: a typo in a well-formed address is a
+    // leading reason to land here, so the login screen must stay underneath for
+    // the person (or the browser Back button) to return to.
+    Navigator.of(context).pushNamed('/onboarding');
   }
 
   Future<void> _handleMicrosoftLogin() async {
@@ -232,15 +278,21 @@ class _LoginCardState extends ConsumerState<LoginCard> {
               ],
               const SizedBox(height: 24),
 
-              // Sign Up Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              // Sign Up Link.
+              // Wrap, not Row: the caption plus the button need ~292px of
+              // natural width and the card gives them 276px at a narrow
+              // viewport, so a Row overflowed by 16px. Wrap drops the button to
+              // its own line instead, and stays correct in RTL where the two
+              // strings are different lengths again.
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 4,
                 children: [
                   Text(
                     l10n.noAccount,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const SizedBox(width: 4),
                   AppButton(
                     label: l10n.createAccount,
                     variant: AppButtonVariant.ghost,
