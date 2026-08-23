@@ -38,6 +38,27 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     with FormBehaviorMixin, TickerProviderStateMixin {
   static int _pdfViewTypeCounter = 0;
 
+  /// Dead space appended below the content on mobile so the page always has
+  /// scroll extent to spare.
+  ///
+  /// A mobile browser can report a viewport taller than what it actually shows
+  /// — iOS Safari lays out behind its own bottom toolbar — and this screen sizes
+  /// its image area to fill whatever space is left, so the content "fits" and a
+  /// `SingleChildScrollView` with a child no taller than its viewport does not
+  /// scroll at all. The last strip of the page (the Continue / Finish button)
+  /// then sits under the browser chrome with no gesture that can reach it, and
+  /// because Safari only retracts that chrome in response to a scroll, it never
+  /// recovers: rotating the device was the only escape.
+  ///
+  /// This forces extent rather than trying to predict the visible height, which
+  /// is the part that cannot be measured reliably. 120 comfortably exceeds the
+  /// chrome any current phone hides. Costs nothing visually — Flutter paints no
+  /// scrollbar on touch platforms, so it is only reachable by deliberately
+  /// dragging, and the first drag is what wins the hidden strip back.
+  ///
+  /// See docs/bugs/new-expense-mobile-upload-zone-hides-action-button.md
+  static const double _mobileScrollTail = 120.0;
+
   // Step 1 — upload/preview state
   int _currentStep = 0;
   Uint8List? _fileBytes;
@@ -1751,6 +1772,12 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                   final availableHeight = constraints.maxHeight;
                   // chrome: scrollPad(48)+backBtn(36)+gap(8)+cardBorder(2)+
                   //         cardPad(32)+stepIndicator(46)+stepGap(32)+continueArea(66)
+                  // Approximate on purpose — the layout no longer depends on this
+                  // being right. It used to: sizing the zone to fill exactly the
+                  // leftover space meant the content always fit, the scroll view
+                  // had zero extent, and any error in the reported viewport left
+                  // the Continue button unreachable. `_mobileScrollTail` below is
+                  // what guarantees reachability now.
                   const mobileChrome = 270.0;
                   // fileInfo row adds ~44px in preview state
                   final uploadHeight = context.isMobile
@@ -1761,7 +1788,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                   // File-info row + Continue button extend below (tiny scroll acceptable).
                   final previewHeight = uploadHeight;
                   return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 24),
+                padding: EdgeInsets.only(
+                  top: 24,
+                  bottom: context.isMobile ? 24 + _mobileScrollTail : 24,
+                ),
                 child: ConstrainedContent(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
