@@ -23,13 +23,17 @@ above them now says so.
 
 Desktop is unchanged (24 px top and bottom, as before).
 
-**Not verified on a device at close.** The failure only reproduces on real mobile
-Safari — desktop devtools emulation has no retracting browser chrome — so the
-check belongs to whoever has the phone. `flutter analyze` clean (bar the 9
+**Verified on the reporting device** — iPhone 14 Pro, portrait, Safari, manager
+session with the billing banner showing — on 2026-08-23, after the v1.31 deploy.
+"Continue" is reachable without rotating. `flutter analyze` clean (bar the 9
 pre-existing info lints tracked in `flutter-analyze-info-lints-cleanup.md`, none
-in this file), release build compiles, 36 tests pass. If it turns out still
-broken on the device, reopen this doc rather than filing a new one: the diagnosis
-above is the expensive part and it stands regardless of whether 120 px was enough.
+in this file), release build compiles, 36 tests pass.
+
+120 px was enough for this device and this banner. It is a margin, not a
+measurement: if a future header addition or a longer banner string ever puts an
+action button under the browser chrome again, the tail is the dial to turn, and
+the band analysis above explains why turning `mobileChrome` instead would not
+help.
 
 ## Problem
 
