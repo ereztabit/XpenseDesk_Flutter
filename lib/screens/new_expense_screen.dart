@@ -56,7 +56,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   /// scrollbar on touch platforms, so it is only reachable by deliberately
   /// dragging, and the first drag is what wins the hidden strip back.
   ///
-  /// See docs/bugs/new-expense-mobile-upload-zone-hides-action-button.md
+  /// See docs/bugs/completed/new-expense-mobile-upload-zone-hides-action-button.md
   static const double _mobileScrollTail = 120.0;
 
   // Step 1 — upload/preview state

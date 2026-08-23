@@ -1,6 +1,35 @@
 # Bug: New Expense step 1 on mobile -- "Continue" sits below the fold and the page has no scroll to reach it
 
-> **Status: in progress**
+> **Status: done**
+
+## Resolution
+
+Shipped in **v1.31**, 2026-08-23 — commit `f8d2411` on `develop`, released as
+`e74b1cd` on `main`.
+
+`_NewExpenseScreenState._mobileScrollTail` (`lib/screens/new_expense_screen.dart`)
+appends 120 px of dead space below the content on mobile, applied through the
+`SingleChildScrollView`'s bottom padding. That guarantees the scroll view has
+extent instead of trying to predict the visible viewport height — the quantity
+that cannot be measured reliably and the reason the original formula failed.
+
+Chosen over the two alternatives on the table: correcting `mobileChrome` to its
+real value would have bought back less than the billing banner costs, and pinning
+the action button to the bottom of the viewport was a larger change to the screen's
+shape that would have had to be repeated per screen. The padding also covers step
+2's "Finish" button for free, since it shares the shape. `mobileChrome` and the
+leftover-space formula are left in place but no longer load-bearing; the comment
+above them now says so.
+
+Desktop is unchanged (24 px top and bottom, as before).
+
+**Not verified on a device at close.** The failure only reproduces on real mobile
+Safari — desktop devtools emulation has no retracting browser chrome — so the
+check belongs to whoever has the phone. `flutter analyze` clean (bar the 9
+pre-existing info lints tracked in `flutter-analyze-info-lints-cleanup.md`, none
+in this file), release build compiles, 36 tests pass. If it turns out still
+broken on the device, reopen this doc rather than filing a new one: the diagnosis
+above is the expensive part and it stands regardless of whether 120 px was enough.
 
 ## Problem
 

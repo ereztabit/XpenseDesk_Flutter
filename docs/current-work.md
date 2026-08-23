@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- New Expense mobile: "Continue" reachable on a phone - banked on develop as v1.31 (2026-08-23), awaiting ship-feature. Outstanding: not verified on a device - only the user's iPhone 14 Pro can confirm it, and they will check after the release. See docs/bugs/new-expense-mobile-upload-zone-hides-action-button.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
