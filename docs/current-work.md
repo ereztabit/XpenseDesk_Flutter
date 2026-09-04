@@ -43,6 +43,7 @@ so in its spec rather than double-tagging here.
 ## TODO (Backlog)
 
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
+- [ ] [Business][P1] **FS-1003** Add expenses to a non-approved sheet + explicit resubmit — a declined employee cannot supply the missing receipt: "+ New expense" is gated to the current-cycle Draft (`isCurrentCycleDraft`, `lib/utils/sheet_utils.dart:54`), and the Declined banner is button-free by design. Needs the sheet id threaded through the create flow, a "Submit for approval" CTA on the banner (one tap resubmits the whole sheet — the banner's current "fix every line and we'll resend it" copy has to go with it), a manager "Add expense" action in Sheet Review (WaitingForApproval/Declined only, never a private Draft), and — required — a "returned earlier" marker on re-submitted lines (Pending + non-null `reviewedAt`), since a whole-sheet resubmit now un-declines lines the manager had refused. **Blocked on the backend half** (no `expenseSheetId` on create, no submit endpoint). see docs/backlog/add-expenses-to-non-approved-sheet-spec.md
 - [ ] [Technical][P2] Nothing runs `flutter test` — the suite added in v1.26 (`test/utils/pdf_utils_test.dart`, 6 tests over PDF page counting) only protects when someone runs it by hand, so it will rot silently. Add it to the `finish-feature` checks, and to CI alongside the web build
 - [ ] [Technical][P3] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] [LookAndFeel][P3] add logos to the authorize page
@@ -50,6 +51,7 @@ so in its spec rather than double-tagging here.
 
 ## report bugs (pending)
 
+- [ ] [Business][P1] A declined expense cannot be resubmitted without editing a field -- the save CTA is gated on `_isDirty`, so an employee with nothing to correct sees a permanently greyed button and no explanation; the only workaround is to falsify a field. The server accepts an unchanged save and resets the line to Pending. Overlaps FS-1003 -- see docs/bugs/declined-expense-cannot-be-resubmitted-without-editing-a-field.md
 - [ ] [Business][P1] Onboarding OTP step -- always-visible Microsoft signup option + slow-delivery warning after 30s (365 mailboxes up to ~3 min) -- see docs/bugs/onboarding-otp-slow-delivery-warning-and-microsoft-fallback.md
 - [ ] [Security][P1] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md
 - [ ] [Business][P1] Billing -- canceled annual subscription with coupon still shows as "about to renew" -- see docs/bugs/billing-canceled-annual-coupon-shows-about-to-renew.md
