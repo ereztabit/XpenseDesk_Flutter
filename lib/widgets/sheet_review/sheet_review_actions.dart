@@ -25,10 +25,17 @@ class SheetReviewActions extends StatelessWidget {
     required this.expenseCount,
     required this.amountText,
     this.onDecline,
+    this.onAddExpense,
   });
 
   final VoidCallback onApprove;
   final VoidCallback? onDecline;
+
+  /// FS-1004. Files a line onto this sheet on the owner's behalf, approved on
+  /// entry. Sits beside the approve CTA because it is part of the same decision
+  /// moment - the manager adds the receipt the employee could not, then
+  /// approves. Null omits it (an Approved sheet takes no new lines).
+  final VoidCallback? onAddExpense;
   final bool isBusy;
 
   /// Number of lines the approve will actually approve (non-declined lines).
@@ -44,9 +51,12 @@ class SheetReviewActions extends StatelessWidget {
         expenseCount == 1 ? l10n.expenseWordSingular : l10n.expensesWord;
     // All-declined sheet: approving is the close path — say so instead of
     // "Approve 0 expenses".
+    // approveCtaPrefix, not l10n.approve: this reads as a noun phrase ("Approve
+    // 3 expenses of X" / "אישור 3 הוצאות בסך X"), and Hebrew needs the noun
+    // form here where the bare button elsewhere needs the imperative.
     final approveLabel = expenseCount == 0
         ? l10n.closeSheetNothingToApprove
-        : '${l10n.approve} $expenseCount $expenseWord '
+        : '${l10n.approveCtaPrefix} $expenseCount $expenseWord '
             '${l10n.approveOfAmountConnector} $amountText';
 
     final approveButton = AppButton(
@@ -61,14 +71,30 @@ class SheetReviewActions extends StatelessWidget {
         : AppButton(
             label: l10n.returnSheetToUserCta,
             variant: AppButtonVariant.destructive,
-            icon: Icons.undo,
+            // assignment_return (a document handed back), not undo: this does
+            // not reverse anything, it sends the sheet back to its owner to
+            // edit. An undo arrow read as "cancel my last action".
+            icon: Icons.assignment_return,
             onPressed: isBusy ? null : onDecline,
+          );
+    final addExpenseButton = onAddExpense == null
+        ? null
+        : AppButton(
+            label: l10n.sheetReviewAddExpense,
+            variant: AppButtonVariant.normal,
+            icon: Icons.add,
+            onPressed: isBusy ? null : onAddExpense,
           );
 
     if (isMobile) {
+      // Add Expenses leads: completing the sheet comes before deciding on it.
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (addExpenseButton != null) ...[
+            addExpenseButton,
+            const SizedBox(height: 8),
+          ],
           approveButton,
           if (declineButton != null) ...[
             const SizedBox(height: 8),
@@ -78,13 +104,17 @@ class SheetReviewActions extends StatelessWidget {
       );
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    // Wrap, not Row: three descriptive labels (the approve CTA carries a count
+    // and an amount) can exceed the available width at the 768px desktop
+    // breakpoint, especially in Hebrew. A Row would render an overflow stripe;
+    // this drops the buttons onto a second line instead.
+    return Wrap(
+      alignment: WrapAlignment.end,
+      spacing: 12,
+      runSpacing: 8,
       children: [
-        if (declineButton != null) ...[
-          declineButton,
-          const SizedBox(width: 12),
-        ],
+        ?addExpenseButton,
+        ?declineButton,
         approveButton,
       ],
     );

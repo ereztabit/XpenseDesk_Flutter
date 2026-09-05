@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../models/expense_sheet_detail.dart';
 import '../models/expense_sheet_status.dart';
 import '../models/expense_summary.dart';
+import '../models/dashboard_ui_state.dart';
 import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
@@ -22,6 +23,7 @@ import '../widgets/sheet_review/sheet_review_back_row.dart';
 import '../widgets/sheet_review/sheet_review_error_view.dart';
 import '../widgets/sheet_review/sheet_review_header_card.dart';
 import '../widgets/sheet_review/sheet_review_line_section.dart';
+import '../widgets/sheet_review/sheet_review_just_added_strip.dart';
 
 /// Manager's sheet-decision screen. Opened from a manager-dashboard row tap
 /// via `/manager/sheet/{id}`.
@@ -43,8 +45,33 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     with FormBehaviorMixin {
   bool _isBusy = false;
 
+  /// FS-1004. True from the moment a line is filed until its cue has faded.
+  bool _showJustAddedCue = false;
+
   @override
   bool get hasUnsavedChanges => false;
+
+  /// Approved line ids as they stood before the filing form was opened.
+  ///
+  /// POST /api/expenses returns no body, so the client never learns the new
+  /// expense's id and has to work it out by difference. It cannot simply take
+  /// the newest approved line: `AsyncValue.when` keeps showing the previous data
+  /// while the refresh is in flight, so "newest" would name a line that was
+  /// already approved before this filing. Comparing against this set names
+  /// nothing until the genuinely new line arrives.
+  Set<String> _approvedIdsBeforeFiling = const {};
+
+  /// The line the manager just filed: the approved line that was not there when
+  /// the form opened. Null while the refresh is still in flight.
+  ExpenseSummary? _justAddedLine(ExpenseSheetDetail sheet) {
+    final added = sheet.expenses
+        .where((e) =>
+            e.expenseStatusId == 2 &&
+            !_approvedIdsBeforeFiling.contains(e.expenseId))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return added.isEmpty ? null : added.first;
+  }
 
   bool _didInvalidateOnEntry = false;
 
@@ -71,6 +98,53 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   /// sheet is rejected by the server (409).
   bool _canDeclineSheet(ExpenseSheetDetail sheet) =>
       sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id;
+
+  /// FS-1004. Add an expense to this sheet: WaitingForApproval or Declined only.
+  /// Never on Approved - approval closes the sheet - and never on a Draft, which
+  /// a manager cannot reach anyway because a draft is private to its owner until
+  /// they submit it. Same statuses the server accepts.
+  bool _canAddExpense(ExpenseSheetDetail sheet) =>
+      sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
+      sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
+
+  /// Opens the new-expense form aimed at this sheet. The line will belong to the
+  /// sheet's owner and be approved on entry, so on return the sheet is refreshed
+  /// and the new line shows in the Approved bucket - the sheet's own status is
+  /// unchanged.
+  /// Guarded against re-entry: without it a double tap stacks two filing forms
+  /// on the same sheet, and because these lines are approved on entry a second
+  /// save files a duplicate approved expense with no pending step to catch it.
+  Future<void> _handleAddExpense(ExpenseSheetDetail sheet) async {
+    if (_isBusy) return;
+    setState(() {
+      _isBusy = true;
+      _showJustAddedCue = false;
+      _approvedIdsBeforeFiling = sheet.expenses
+          .where((e) => e.expenseStatusId == 2)
+          .map((e) => e.expenseId)
+          .toSet();
+    });
+
+    try {
+      final filed = await Navigator.of(context).pushNamed<Object?>(
+        '/manager/sheet-add-expense',
+        arguments: <String, String?>{
+          'expenseSheetId': sheet.expenseSheetId,
+        },
+      );
+      if (!mounted) return;
+      if (filed == true) {
+        // The new line is approved on entry, so it lands in the Approved
+        // bucket while this screen defaults to Pending. Flag it so the section
+        // switches tabs and the cue points at it - otherwise the manager looks
+        // at an empty Pending list and concludes nothing was saved.
+        _showJustAddedCue = true;
+        _refresh();
+      }
+    } finally {
+      if (mounted) setState(() => _isBusy = false);
+    }
+  }
 
   void _refresh() =>
       ref.invalidate(sheetDetailProvider(widget.expenseSheetId));
@@ -187,6 +261,17 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   /// formatted in the company locale + base currency. Used by the approve CTA
   /// caption and the approve confirm dialog. Equals the sheet total when no
   /// line is declined.
+  /// Merchant (or category, when the receipt carried no merchant) plus the
+  /// amount in the company locale and base currency.
+  String _lineDescription(ExpenseSummary line) {
+    final companyLocale = ref.read(companyLocaleProvider);
+    final baseCurrency = ref.read(companyBaseCurrencyProvider);
+    final name = (line.merchantName?.trim().isNotEmpty ?? false)
+        ? line.merchantName!.trim()
+        : line.categoryName;
+    return '$name  ${(line.amount ?? 0).toCurrency(companyLocale, baseCurrency)}';
+  }
+
   String _approvableAmountText(ExpenseSheetDetail sheet) {
     final companyLocale = ref.read(companyLocaleProvider);
     final baseCurrency = ref.read(companyBaseCurrencyProvider);
@@ -344,6 +429,9 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
                 child: SheetReviewActions(
                   onApprove: () => _handleApprove(sheet),
                   onDecline: _canDeclineSheet(sheet) ? _handleDecline : null,
+                  onAddExpense: _canAddExpense(sheet)
+                      ? () => _handleAddExpense(sheet)
+                      : null,
                   isBusy: _isBusy,
                   expenseCount:
                       SheetExpenseBuckets.approvableCount(sheet.expenses),
@@ -370,6 +458,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     // decline on a Declined line). Whole-sheet decline stays WfA-only.
     final isSheetLocked =
         sheet.expenseSheetStatusId == ExpenseSheetStatus.approved.id;
+    final justAdded = _showJustAddedCue ? _justAddedLine(sheet) : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -382,6 +471,8 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
           SheetReviewActions(
             onApprove: () => _handleApprove(sheet),
             onDecline: canDeclineSheet ? _handleDecline : null,
+            onAddExpense:
+                _canAddExpense(sheet) ? () => _handleAddExpense(sheet) : null,
             isBusy: _isBusy,
             expenseCount:
                 SheetExpenseBuckets.approvableCount(sheet.expenses),
@@ -392,6 +483,15 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
           const SizedBox(height: 16),
           PaymentStatusStrip(sheet: sheet),
         ],
+        if (_showJustAddedCue && justAdded != null) ...[
+          const SizedBox(height: 16),
+          SheetReviewJustAddedStrip(
+            description: _lineDescription(justAdded),
+            onFinished: () {
+              if (mounted) setState(() => _showJustAddedCue = false);
+            },
+          ),
+        ],
         const SizedBox(height: 16),
         SheetReviewLineSection(
           expenses: sheet.expenses,
@@ -400,6 +500,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
           onApproveLine: canApproveSheet ? _handleLineApprove : null,
           onDeclineLine: canApproveSheet ? _handleLineDecline : null,
           onDeleteLine: !isSheetLocked ? _handleLineDelete : null,
+          focusTab: _showJustAddedCue ? FilterTab.approved : null,
         ),
         const SizedBox(height: 16),
         SheetActivityTimeline(log: sheet.log),

@@ -238,6 +238,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
+    // FS-1004. A manager filing a line onto an employee's sheet. Same screen as
+    // the self-service flow, but manager-only and told which sheet to file onto:
+    // without the arguments there is no target, so a bare navigation falls back
+    // to the ordinary flow rather than filing somewhere unintended.
+    case '/manager/sheet-add-expense':
+      final args = settings.arguments is Map<String, String?>
+          ? settings.arguments as Map<String, String?>
+          : const <String, String?>{};
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => AuthGate(
+          mode: AuthGateMode.managerOnly,
+          child: NewExpenseScreen(targetSheetId: args['expenseSheetId']),
+        ),
+      );
+
     case '/employee/history/report':
       return MaterialPageRoute(
         settings: settings,

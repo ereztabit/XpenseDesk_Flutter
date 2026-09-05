@@ -666,6 +666,7 @@
   "declineSheet": "Decline sheet",
   "expenseWordSingular": "expense",
   "approveOfAmountConnector": "of",
+  "approveCtaPrefix": "Approve",
   "returnSheetToUserCta": "Return this sheet to user to edit",
   "governmentId": "Government ID",
   "governmentIdHint": "Digits only (optional)",
@@ -814,5 +815,8 @@
   "adminCompanyUsersNoMatches": "No people match your search.",
   "impersonationBannerLabel": "Support session",
   "impersonationBannerConnectedAs": "You are viewing as",
-  "impersonationBannerAgent": "Connected by"
+  "impersonationBannerAgent": "Connected by",
+  "backToSheet": "Back to sheet",
+  "sheetReviewAddExpense": "Add Expenses",
+  "sheetReviewJustAdded": "Added and approved - it is in the Approved tab"
 }

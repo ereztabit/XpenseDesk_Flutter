@@ -115,6 +115,35 @@ Create a new expense in Pending status.
 | note | string | |
 | receiptRef | string | Internal reference or receipt number |
 | imageUrl | string | URL of the uploaded receipt image |
+| expenseSheetId | guid | **Manager only.** Files the expense onto that sheet instead of the caller's own. See below |
+
+#### Filing onto someone else's sheet (FS-1004)
+
+Without `expenseSheetId` the server resolves the target itself: the caller's own
+sheet on the **open** cycle, lazily created if it does not exist. That is the
+employee's ordinary new-expense flow and is unchanged.
+
+With `expenseSheetId`, a **manager** files a line onto an employee's sheet - the
+receipt the employee could not produce, most often on a sheet that was returned
+to them. Four rules, all enforced server-side:
+
+| Rule | Behavior |
+|------|----------|
+| Manager only | An employee sending `expenseSheetId` gets **403 ExpensesCreateNotAuthorized**, even for their own sheet |
+| Status 2 or 4 only | WaitingForApproval or Declined. **Approved (3)** is refused - approval closes the sheet. **Draft (1)** is refused too, even another user's: a draft is private to its owner until they submit it |
+| The line belongs to the sheet owner | `createdByUserId` is the **employee**, never the acting manager - they are the one reimbursed. It appears in the employee's own expense list |
+| Approved on entry | `expenseStatusId` is **2 (Approved)** immediately, with `reviewedByUserId` = the acting manager and `reviewedAt` = now. The manager entering it is the one who would approve it, so there is no second approval step |
+
+Two consequences worth designing the client around:
+
+- **The line takes the SHEET's cycle, not the open one.** This is what makes a
+  Declined sheet carried over on a *closed* cycle reachable at all. The client
+  must show the target cycle, because it is usually not the current one.
+- **The sheet's own status does not change.** Adding to a Declined sheet leaves
+  it Declined - the manager-added line does not clear the employee's declined
+  lines, and sending the sheet back stays the employee's decision. Adding to a
+  WaitingForApproval sheet leaves it waiting.
+
 
 #### Response (200 OK)
 
@@ -143,6 +172,36 @@ Status: 400 Bad Request
 }
 ```
 Status: 400 Bad Request
+
+```json
+{
+  "success": false,
+  "message": "Expense sheet not found.",
+  "errorCode": "ExpenseSheetNotFound"
+}
+```
+Status: 404 Not Found - no such sheet **in the caller's company**. A sheet id
+belonging to another company answers identically, on purpose: it must not be
+distinguishable from an id that does not exist.
+
+```json
+{
+  "success": false,
+  "message": "An approved expense sheet is closed - no expense can be added to it.",
+  "errorCode": "ExpenseSheetWrongStatusForAction"
+}
+```
+Status: 409 Conflict - also returned for a Draft sheet ("A draft expense sheet is
+private to its owner until it is submitted.").
+
+```json
+{
+  "success": false,
+  "message": "Only a manager can file an expense onto a specific expense sheet.",
+  "errorCode": "ExpensesCreateNotAuthorized"
+}
+```
+Status: 403 Forbidden
 
 ---
 
