@@ -666,6 +666,7 @@
   "declineSheet": "דחה גליון",
   "expenseWordSingular": "הוצאה",
   "approveOfAmountConnector": "בסך",
+  "approveCtaPrefix": "אישור",
   "returnSheetToUserCta": "החזר את הגליון למשתמש לעריכה",
   "governmentId": "תעודת זהות",
   "governmentIdHint": "ספרות בלבד (אופציונלי)",
@@ -814,5 +815,8 @@
   "adminCompanyUsersNoMatches": "לא נמצאו משתמשים התואמים לחיפוש.",
   "impersonationBannerLabel": "התחברות תמיכה",
   "impersonationBannerConnectedAs": "צפייה בתור",
-  "impersonationBannerAgent": "התחבר על ידי"
+  "impersonationBannerAgent": "התחבר על ידי",
+  "backToSheet": "חזרה לדוח",
+  "sheetReviewAddExpense": "הוספת הוצאות",
+  "sheetReviewJustAdded": "נוסף ואושר - מופיע בלשונית המאושרות"
 }

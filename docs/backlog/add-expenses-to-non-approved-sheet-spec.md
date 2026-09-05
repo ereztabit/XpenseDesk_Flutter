@@ -70,7 +70,7 @@ approve/decline CTAs already handle.
 Extracted 2026-09-05 into its own mission, with a changed rule: the
 manager-added line is created **already approved** (the manager entering it is
 the one who would approve it), rather than Pending. Nothing in this spec depends
-on it. See docs/backlog/manager-adds-expense-to-employee-sheet-spec.md.
+on it. See docs/in-progress/manager-adds-expense-to-employee-sheet-spec.md.
 
 ### 5. Sheet Review must mark a line that was declined in an earlier round
 
