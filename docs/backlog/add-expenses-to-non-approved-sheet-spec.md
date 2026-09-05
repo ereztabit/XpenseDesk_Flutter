@@ -6,8 +6,7 @@
 
 The manager declines an employee's sheet during the approval pass (typically:
 missing receipts). The employee adds the missing receipts **to that same
-sheet** and submits it back when they feel ready. A manager may add an expense
-to any sheet that is not yet Approved. Approval closes the sheet.
+sheet** and submits it back when they feel ready. Approval closes the sheet.
 
 The sheet is normally on the **previous** cycle, since decline happens after
 cycle promotion.
@@ -66,16 +65,12 @@ Confirm before sending (it leaves the employee's hands), then refresh
 (wrong status / empty sheet), and the billing 403 block-mode response the
 approve/decline CTAs already handle.
 
-### 4. Manager: add an expense from Sheet Review
+### 4. Manager: add an expense from Sheet Review -- MOVED to FS-1004
 
-`lib/screens/sheet_review_screen.dart` gains an "Add expense" action for a
-sheet in **WaitingForApproval or Declined only**. Not Draft: managers do not
-see Draft sheets, and an employee's Draft is private until they submit it (the
-server returns 403 for a manager targeting a Draft). The created line belongs
-to the **sheet owner**, not the manager -- the UI must say so, since the
-manager is filling a form for someone else's reimbursement.
-
-Hidden on an Approved sheet.
+Extracted 2026-09-05 into its own mission, with a changed rule: the
+manager-added line is created **already approved** (the manager entering it is
+the one who would approve it), rather than Pending. Nothing in this spec depends
+on it. See docs/backlog/manager-adds-expense-to-employee-sheet-spec.md.
 
 ### 5. Sheet Review must mark a line that was declined in an earlier round
 
