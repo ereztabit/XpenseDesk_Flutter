@@ -26,9 +26,21 @@ import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/expense_category.dart';
 import '../providers/company_provider.dart';
+import '../providers/manager_dashboard_provider.dart';
 
 class NewExpenseScreen extends ConsumerStatefulWidget {
-  const NewExpenseScreen({super.key});
+  /// FS-1004. When set, this is a manager filing a line onto someone else's
+  /// sheet: the expense is filed onto that sheet, belongs to the sheet's owner,
+  /// takes the sheet's cycle rather than the open one, and is approved the
+  /// moment it is saved. Null means the ordinary self-service flow.
+  final String? targetSheetId;
+
+  const NewExpenseScreen({
+    super.key,
+    this.targetSheetId,
+  });
+
+  bool get isFilingForEmployee => targetSheetId != null;
 
   @override
   ConsumerState<NewExpenseScreen> createState() => _NewExpenseScreenState();
@@ -56,7 +68,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   /// scrollbar on touch platforms, so it is only reachable by deliberately
   /// dragging, and the first drag is what wins the hidden strip back.
   ///
-  /// See docs/bugs/new-expense-mobile-upload-zone-hides-action-button.md
+  /// See docs/bugs/completed/new-expense-mobile-upload-zone-hides-action-button.md
   static const double _mobileScrollTail = 120.0;
 
   // Step 1 — upload/preview state
@@ -583,6 +595,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         receiptRef: receiptRef,
         imageUrl: _aiImageUrl,
         isAiData: _isAiData,
+        expenseSheetId: widget.targetSheetId,
       );
       if (!mounted) return;
       // Refresh the cycle view AND the dashboard's sheet list + per-sheet
@@ -590,6 +603,17 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       ref.invalidate(expenseSearchProvider);
       ref.invalidate(mySheetsProvider);
       ref.invalidate(sheetDetailProvider);
+
+      // FS-1004: filing for an employee returns to the sheet the manager came
+      // from, not to the manager's own dashboard - they are mid-review. The
+      // review screen refreshes itself on the popped result.
+      if (widget.isFilingForEmployee) {
+        ref.invalidate(approvalsQueueProvider(null));
+        ref.invalidate(returnedSheetsProvider(null));
+        Navigator.of(context).pop(true);
+        return;
+      }
+
       Navigator.of(context).pushReplacementNamed('/user/dashboard');
     } on ExpenseDateTooOldException {
       if (!mounted) return;
@@ -1797,11 +1821,14 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppButton(
-                        label: l10n.backToDashboard,
+                        label: widget.isFilingForEmployee
+                            ? l10n.backToSheet
+                            : l10n.backToDashboard,
                         variant: AppButtonVariant.ghost,
                         icon: Icons.arrow_back,
-                        onPressed: () =>
-                            handleBackNavigation('/user/dashboard'),
+                        onPressed: widget.isFilingForEmployee
+                            ? () => Navigator.of(context).pop(false)
+                            : () => handleBackNavigation('/user/dashboard'),
                       ),
                       const SizedBox(height: 8),
                       Card(

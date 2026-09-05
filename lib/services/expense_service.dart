@@ -352,6 +352,12 @@ class ExpenseService {
   }
 
   /// Create a new pending expense for the authenticated user.
+  ///
+  /// [expenseSheetId] (FS-1004) names the sheet to file onto instead of letting
+  /// the server resolve the caller's own sheet on the open cycle. Only a manager
+  /// may pass it, and only for a sheet that is WaitingForApproval or Declined:
+  /// the line is then owned by that sheet's owner and approved on entry. Leave
+  /// it null for the employee's own new-expense flow.
   Future<void> createExpense({
     required DateTime expenseDate,
     required int categoryId,
@@ -362,6 +368,7 @@ class ExpenseService {
     String? receiptRef,
     String? imageUrl,
     bool? isAiData,
+    String? expenseSheetId,
   }) async {
     final sessionToken = await _authService.getSessionToken();
     _validateSessionToken(sessionToken);
@@ -402,6 +409,11 @@ class ExpenseService {
 
     if (isAiData != null) {
       body['isAiData'] = isAiData;
+    }
+
+    final trimmedSheetId = expenseSheetId?.trim();
+    if (trimmedSheetId != null && trimmedSheetId.isNotEmpty) {
+      body['expenseSheetId'] = trimmedSheetId;
     }
 
     final response = await _apiService.post(

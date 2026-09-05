@@ -4,8 +4,18 @@
     {
       "name": "xpensedesk-flutter",
       "runtimeExecutable": "flutter",
-      "runtimeArgs": ["run", "-d", "chrome", "--dart-define=ENV=dev"],
-      "port": 8080
+      "runtimeArgs": [
+        "run",
+        "-d",
+        "web-server",
+        "--web-hostname=localhost",
+        "--web-port=8080",
+        "--web-tls-cert-path=localhost+1.pem",
+        "--web-tls-cert-key-path=localhost+1-key.pem",
+        "--dart-define=ENV=dev"
+      ],
+      "port": 8080,
+      "url": "https://localhost:8080"
     }
   ]
 }

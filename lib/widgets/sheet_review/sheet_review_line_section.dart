@@ -26,7 +26,14 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
+    this.focusTab,
   });
+
+  /// FS-1004. Set to move the selection off the default Pending bucket — used
+  /// after a manager files a line, which is approved on entry and so lands in
+  /// Approved. Each new non-null value switches the tab once; the user can
+  /// still change tabs freely afterwards.
+  final FilterTab? focusTab;
 
   final List<ExpenseSummary> expenses;
   final void Function(ExpenseSummary) onTapLine;
@@ -46,6 +53,22 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
 class _SheetReviewLineSectionState
     extends ConsumerState<SheetReviewLineSection> {
   FilterTab _selectedTab = FilterTab.pending;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.focusTab != null) _selectedTab = widget.focusTab!;
+  }
+
+  @override
+  void didUpdateWidget(SheetReviewLineSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only on a change, so a rebuild for any other reason does not yank the
+    // user back out of a tab they picked themselves.
+    if (widget.focusTab != null && widget.focusTab != oldWidget.focusTab) {
+      _selectedTab = widget.focusTab!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -2,7 +2,34 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Flutter Dev (Chrome)",
+      // FIRST = what Ctrl+F5 / F5 runs by default. HTTPS is the default on
+      // purpose: AppSettings:FrontendUrl on the API is https://localhost:8080,
+      // so every magic link it mints is an https URL. Served over plain http the
+      // link fails with ERR_CONNECTION_CLOSED and local login is impossible.
+      // Needs localhost+1.pem / localhost+1-key.pem in the repo root (gitignored)
+      // - regenerate with: mkcert localhost 127.0.0.1
+      "name": "Flutter Dev HTTPS (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "preLaunchTask": "flutter pub get",
+      "args": [
+        "-d",
+        "chrome",
+        "--web-hostname",
+        "localhost",
+        "--web-port=8080",
+        "--web-tls-cert-path",
+        "localhost+1.pem",
+        "--web-tls-cert-key-path",
+        "localhost+1-key.pem",
+        "--dart-define=ENV=dev"
+      ]
+    },
+    {
+      // Plain http. Fine for UI work, but magic-link login will NOT work here
+      // - see the note on the HTTPS config above.
+      "name": "Flutter Dev (Chrome, http - no magic-link login)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
@@ -29,25 +56,6 @@
         "127.0.0.1",
         "--web-port=8080",
         "--dart-define=ENV=prod"
-      ]
-    },
-    {
-      "name": "Flutter Dev HTTPS (Chrome)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart",
-      "preLaunchTask": "flutter pub get",
-      "args": [
-        "-d",
-        "chrome",
-        "--web-hostname",
-        "localhost",
-        "--web-port=8080",
-        "--web-tls-cert-path",
-        "localhost+1.pem",
-        "--web-tls-cert-key-path",
-        "localhost+1-key.pem",
-        "--dart-define=ENV=dev"
       ]
     },
     {
