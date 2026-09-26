@@ -818,5 +818,16 @@
   "impersonationBannerAgent": "Connected by",
   "backToSheet": "Back to sheet",
   "sheetReviewAddExpense": "Add Expenses",
-  "sheetReviewJustAdded": "Added and approved - it is in the Approved tab"
+  "sheetReviewJustAdded": "Added and approved - it is in the Approved tab",
+  "adminDestroyCompany": "Destroy company",
+  "adminDestroyCompanyTitle": "Destroy this company?",
+  "adminDestroyCompanyWarning": "This permanently deletes the company and everything in it: all users, expenses, receipt images and billing history. It cannot be undone.",
+  "adminDestroyCompanyTypeName": "Type the company name to confirm",
+  "adminDestroyCompanyConfirm": "Destroy",
+  "adminDestroyCompanyDone": "Company destroyed",
+  "adminDestroyCompanyNameMismatch": "The name does not match the company name. Nothing was deleted.",
+  "adminDestroyCompanyNotFound": "This company no longer exists.",
+  "adminDestroyCompanyBillingFailed": "Cancelling the payment provider's standing order failed. Nothing was deleted - try again.",
+  "adminDestroyCompanyFilesFailed": "Deleting the receipt images failed. Nothing else was deleted - try again.",
+  "adminDestroyCompanyFailed": "Destroying the company failed. Go back to the list to check whether it is still there."
 }

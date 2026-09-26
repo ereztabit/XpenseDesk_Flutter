@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [Business][P2] **FS-1005** Destroy company from the admin panel - banked on develop as v1.34 (2026-09-26), awaiting ship-feature. Backend half banked too; **ship is blocked until the backend's fs-1005-destroy-company-schema.sql is applied to PROD** (applied on dev only). see docs/in-progress/destroy-company-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -47,6 +51,7 @@ so in its spec rather than double-tagging here.
 - [ ] [Technical][P2] Nothing runs `flutter test` — the suite added in v1.26 (`test/utils/pdf_utils_test.dart`, 6 tests over PDF page counting) only protects when someone runs it by hand, so it will rot silently. Add it to the `finish-feature` checks, and to CI alongside the web build
 - [ ] [Technical][P3] block-mode pre-gating on sheet approve/decline CTAs — surface `blockMode` into a provider so the CTA is gated before the call (currently handles the 403 gracefully). See docs/completed/ExpenseSheetsTransformation/03-SheetReview.md
 - [ ] [LookAndFeel][P3] add logos to the authorize page
+- [ ] [Business][P3] **FS-1006** Soft delete company from the admin panel (after FS-1005) -- plain confirm; company hidden unless "Show deleted", users can't sign in and their emails are freed for re-registration; billing is NOT stopped, so a must-dismiss reminder tells the admin to cancel it by hand; no Connect into a deleted company. see docs/backlog/soft-delete-company-spec.md
 - [ ] [Business][P2] review verbiage on the coupon code on the billing page (both during trial and after trial) — current wording is unclear. Audit + task in docs/backlog/coupon-verbiage-review.md
 
 ## report bugs (pending)
