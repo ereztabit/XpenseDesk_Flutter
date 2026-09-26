@@ -229,4 +229,22 @@ void main() {
       );
     });
   });
+
+  group('AdminDestroyConfirmation.matches', () {
+    test('the exact name matches, surrounding spaces ignored', () {
+      expect(AdminDestroyConfirmation.matches('Acme Ltd', 'Acme Ltd'), isTrue);
+      expect(AdminDestroyConfirmation.matches('  Acme Ltd ', 'Acme Ltd'), isTrue);
+    });
+
+    test('a different, partial or different-case name does not', () {
+      expect(AdminDestroyConfirmation.matches('Acme', 'Acme Ltd'), isFalse);
+      expect(AdminDestroyConfirmation.matches('acme ltd', 'Acme Ltd'), isFalse);
+      expect(AdminDestroyConfirmation.matches('Acme  Ltd', 'Acme Ltd'), isFalse);
+    });
+
+    test('nothing matches while the name is unknown', () {
+      expect(AdminDestroyConfirmation.matches('', ''), isFalse,
+          reason: 'an unloaded name must never enable Destroy');
+    });
+  });
 }

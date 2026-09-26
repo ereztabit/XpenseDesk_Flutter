@@ -10,7 +10,7 @@ addresses are freed so the same people can sign up again as a new company. The
 data stays in the database. Billing is NOT stopped automatically - the admin does
 that by hand at the payment provider, and the app says so.
 
-Comes after FS-1005 (destroy) - see docs/backlog/destroy-company-spec.md.
+Comes after FS-1005 (destroy) - see docs/in-progress/destroy-company-spec.md.
 
 ## Admin companies list
 
