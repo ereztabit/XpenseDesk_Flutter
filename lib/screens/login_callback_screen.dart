@@ -49,7 +49,9 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
       if (mounted) {
         setState(() {
           _isProcessing = false;
-          _errorMessage = e.message;
+          _errorMessage = e.errorCode == 'LoginLinkInvalid'
+              ? AppLocalizations.of(context)!.invalidLoginLink
+              : e.message;
         });
       }
     } catch (e) {
@@ -108,7 +110,14 @@ class _LoginCallbackScreenState extends ConsumerState<LoginCallbackScreen> {
                       AppButton(
                         label: l10n.backToLogin,
                         variant: AppButtonVariant.primary,
-                        onPressed: () {
+                        onPressed: () async {
+                          // A link load skips the startup session restore, so
+                          // run it now: a browser still holding a valid session
+                          // goes back into it rather than to the login form.
+                          await ref
+                              .read(userInfoProvider.notifier)
+                              .loadFromSession();
+                          if (!context.mounted) return;
                           Navigator.of(context).pushReplacementNamed('/');
                         },
                       ),

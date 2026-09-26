@@ -30,7 +30,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   final uri = Uri.parse(settings.name ?? '/');
 
   // /login?token=... — magic link callback
-  if (uri.path == '/login') {
+  if (uri.path == AppRoutes.loginCallback) {
     final token = uri.queryParameters['token'];
     return MaterialPageRoute(
       settings: settings,

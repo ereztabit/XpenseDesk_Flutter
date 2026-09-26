@@ -4,6 +4,7 @@ import '../config/app_config.dart';
 import '../models/user_info.dart';
 import '../services/auth_service.dart';
 import '../services/microsoft_auth_service.dart';
+import '../utils/app_navigator.dart';
 import 'locale_provider.dart';
 
 /// Provider for AuthService singleton
@@ -147,6 +148,13 @@ final pendingMicrosoftOnboardingProvider =
 /// server (401 -> AuthException 'MicrosoftNoAccount'); we record it in
 /// [microsoftLoginErrorProvider] so the login screen can explain it. A normal
 /// load (no pending redirect) just falls through to session restore.
+///
+/// A login-link load (`/login?token=`) skips the restore: the link always wins.
+/// Restoring would race LoginCallbackScreen's redemption with the browser's
+/// PREVIOUS token — its 401 wiped the new session, its 200 showed the previous
+/// account. The old token is left in place: if the link fails, LoginCallbackScreen
+/// restores it on "Back to login". See
+/// docs/bugs/completed/login-link-races-startup-session-restore.md.
 final authBootstrapProvider = FutureProvider<void>((ref) async {
   final config = AppConfig.instance;
 
@@ -192,6 +200,8 @@ final authBootstrapProvider = FutureProvider<void>((ref) async {
           .set(MicrosoftLoginError.failed);
     }
   }
+
+  if (AppRoutes.isLoginLink(Uri.base)) return;
 
   await ref.read(userInfoProvider.notifier).loadFromSession();
 });

@@ -16,10 +16,6 @@ So: `docs/in-progress/` holds specs for what we are working on **right now** and
 is empty when we are not; `docs/backlog/` holds specs for open features we are not
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
-
-## Currently Working On
-
-- [ ] [Business][P1] **FS-1004** Manager adds an expense to an employee's sheet - banked on develop as v1.32 (2026-09-05), awaiting ship-feature. Verified on mobile in both languages by the owner (English + Hebrew, Declined and WaitingForApproval sheets). Outstanding: the desktop (>=768px) three-button layout has not been looked at - the buttons sit in a Wrap and may fall onto two rows with long Hebrew labels. **Backend half is banked too (develop 29c5b2e), but the proc_CreateExpense migration is NOT applied to production - that blocks ship-feature on BOTH repos.** see docs/in-progress/manager-adds-expense-to-employee-sheet-spec.md
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
 ## Tags

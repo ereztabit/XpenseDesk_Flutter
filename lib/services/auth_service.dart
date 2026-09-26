@@ -125,15 +125,30 @@ class AuthService {
 
   /// Exchange login token for session token
   /// Returns the session token on success
+  ///
+  /// An expired or already-used link is a 401. It is kept away from the global
+  /// unauthorized handler: that handler would clear the browser's CURRENT
+  /// session (or, on a support-connect link, the agent's own) and bounce to
+  /// login without a word. A bad link must fail alone — surfaced as
+  /// `errorCode: 'LoginLinkInvalid'` for the callback screen to explain.
   Future<String> login(String loginToken) async {
     if (loginToken.trim().isEmpty) {
       throw const AuthException('Login token is required');
     }
 
-    final response = await _apiService.post(
-      '/api/auth/login',
-      {'loginToken': loginToken},
-    );
+    final Map<String, dynamic> response;
+    try {
+      response = await _apiService.post(
+        '/api/auth/login',
+        {'loginToken': loginToken},
+        suppressUnauthorized: true,
+      );
+    } on UnauthorizedException {
+      throw const AuthException(
+        'Invalid or expired login token',
+        errorCode: 'LoginLinkInvalid',
+      );
+    }
 
     _validateResponse(response, 'Login failed');
 
