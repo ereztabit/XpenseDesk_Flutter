@@ -10,6 +10,7 @@ class AppRoutes {
   static const String managerApprovals = '/manager-approvals';
   static const String employeeDashboard = '/user/dashboard';
   static const String login = '/';
+  static const String loginCallback = '/login';
   static const String onboarding = '/onboarding';
   static const String managerAnalysis = '/manager/analysis';
   static const String managerAnalysisReport = '/manager/analysis/report';
@@ -50,6 +51,14 @@ class AppRoutes {
 
     return (companyId: match.group(1)!, tab: match.group(2));
   }
+
+  /// True when [uri] is a login link that is about to be redeemed:
+  /// `/login?token=<non-empty>`. Only ever reached as a fresh page load (emailed
+  /// link, website signup tab, support connect tab), so it is checked against
+  /// `Uri.base` at startup.
+  static bool isLoginLink(Uri uri) =>
+      uri.path == loginCallback &&
+      (uri.queryParameters['token']?.isNotEmpty ?? false);
 }
 
 /// Which bucket the Sheet Approvals screen should auto-expand (and highlight)
