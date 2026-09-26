@@ -90,3 +90,15 @@ class AdminCompaniesQuery {
     }
   }
 }
+
+/// FS-1005: the typed-name gate on "Destroy company". Mirrors the server's rule
+/// exactly — surrounding spaces ignored, case-sensitive — so the button enables
+/// only for text the server will accept.
+class AdminDestroyConfirmation {
+  const AdminDestroyConfirmation._();
+
+  static bool matches(String typed, String companyName) {
+    final name = companyName.trim();
+    return name.isNotEmpty && typed.trim() == name;
+  }
+}

@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../utils/app_navigator.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/admin/admin_company_users_body.dart';
+import '../widgets/admin/admin_destroy_company_button.dart';
 import '../widgets/admin/admin_header.dart';
 import '../widgets/app_button.dart';
 import '../widgets/module_tab_bar.dart';
@@ -106,6 +107,7 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final companyName = _companyName();
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -133,9 +135,20 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        _companyName(),
-                        style: Theme.of(context).textTheme.headlineMedium,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              companyName,
+                              style: Theme.of(context).textTheme.headlineMedium,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          AdminDestroyCompanyButton(
+                            companyId: widget.companyId,
+                            companyName: companyName,
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       // Same tab strip as the Company Configuration module —

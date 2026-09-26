@@ -135,4 +135,29 @@ class AdminService {
       targetUserName: data?['targetUserName'] as String? ?? '',
     );
   }
+
+  /// POST /api/admin/companies/{companyId}/destroy — FS-1005. Permanently
+  /// deletes the company and everything it owns; there is no undo.
+  ///
+  /// [confirmationName] is what the admin typed. The server re-checks it against
+  /// the company name, so it is sent as typed, not replaced by the known name.
+  /// Failures arrive as [AdminException] with the server's `errorCode`
+  /// (`AdminDestroyConfirmationMismatch`, `AdminCompanyNotFound`,
+  /// `DeleteCompanyTranzilaCleanupFailed`, `DeleteCompanyFileCleanupFailed`).
+  /// See docs/api-guides/destroy-company-api-guide.md.
+  Future<void> destroyCompany({
+    required String companyId,
+    required String confirmationName,
+  }) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/admin/companies/$companyId/destroy',
+      {'confirmationName': confirmationName},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to destroy company');
+  }
 }

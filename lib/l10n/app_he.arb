@@ -818,5 +818,16 @@
   "impersonationBannerAgent": "התחבר על ידי",
   "backToSheet": "חזרה לדוח",
   "sheetReviewAddExpense": "הוספת הוצאות",
-  "sheetReviewJustAdded": "נוסף ואושר - מופיע בלשונית המאושרות"
+  "sheetReviewJustAdded": "נוסף ואושר - מופיע בלשונית המאושרות",
+  "adminDestroyCompany": "השמדת החברה",
+  "adminDestroyCompanyTitle": "להשמיד את החברה?",
+  "adminDestroyCompanyWarning": "הפעולה מוחקת לצמיתות את החברה ואת כל מה שבה: כל המשתמשים, ההוצאות, תמונות הקבלות והיסטוריית החיובים. אי אפשר לבטל אותה.",
+  "adminDestroyCompanyTypeName": "הקלידו את שם החברה לאישור",
+  "adminDestroyCompanyConfirm": "השמדה",
+  "adminDestroyCompanyDone": "החברה הושמדה",
+  "adminDestroyCompanyNameMismatch": "השם אינו תואם לשם החברה. דבר לא נמחק.",
+  "adminDestroyCompanyNotFound": "החברה הזו כבר לא קיימת.",
+  "adminDestroyCompanyBillingFailed": "ביטול הוראת הקבע אצל ספק התשלומים נכשל. דבר לא נמחק - נסו שוב.",
+  "adminDestroyCompanyFilesFailed": "מחיקת תמונות הקבלות נכשלה. דבר נוסף לא נמחק - נסו שוב.",
+  "adminDestroyCompanyFailed": "השמדת החברה נכשלה. חזרו לרשימה כדי לבדוק אם היא עדיין שם."
 }
