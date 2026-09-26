@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [Business][P2] **FS-1005** Destroy company from the admin panel - banked on develop as v1.34 (2026-09-26), awaiting ship-feature. Backend half banked too; **ship is blocked until the backend's fs-1005-destroy-company-schema.sql is applied to PROD** (applied on dev only). see docs/in-progress/destroy-company-spec.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
