@@ -4,10 +4,10 @@ The contract the Flutter bulk-upload flow and the notifications widget are built
 against. An employee (or manager) uploads up to 20 receipts in one go; the
 server reads each one in the background and files one expense per receipt.
 
-> **Status:** backend S1 built and tested on dev (full suite green,
-> 2026-09-28), **not yet on `develop` or in production**. No FS number yet - the Flutter half is filed separately when
-> scheduled. UI/UX reference: the S1 guide in the Flutter repo,
-> `FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-receipt-upload-ui-ux-guide.md`,
+> **Status:** mission FS-1007. S1 + S1.01 **in production since 2026-09-28**
+> (schema applied and verified on prod, App Service WebSockets on), dark
+> behind the per-company flag. UI/UX reference: the S1 guide in the Flutter repo,
+> `FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-receipt-upload-ui-ux-guide.md`,
 > extracted from the approved Lovable prototype. Its §9 lists where it
 > overrides this guide on UX.
 

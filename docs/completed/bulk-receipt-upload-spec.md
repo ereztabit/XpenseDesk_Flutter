@@ -2,9 +2,10 @@
 
 > Mission: FS-1007 (backend: BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md)
 
-**Status:** S1 client built on `feature/bulk-receipt-upload` (uncommitted),
-CR + security review done — see
-[bulk-receipt-upload-CR.md](bulk-receipt-upload-CR.md). Awaiting manual QA.
+**Status:** S1 + S1.01 shipped in v1.35 (2026-09-28), dark behind the
+per-company flag. CR + security review:
+[bulk-receipt-upload-CR.md](bulk-receipt-upload-CR.md). Later steps (S2–S5)
+are specced in the backend's `docs/bulk-upload/`.
 Design: [bulk-receipt-upload-ui-ux-guide.md](bulk-receipt-upload-ui-ux-guide.md).
 API contract copy: [../api-guides/bulk-upload-api-guide.md](../api-guides/bulk-upload-api-guide.md).
 
