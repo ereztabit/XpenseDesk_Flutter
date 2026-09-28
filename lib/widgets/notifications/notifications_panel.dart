@@ -9,9 +9,11 @@ import '../../utils/bulk_upload_utils.dart';
 import 'notification_batch_card.dart';
 
 /// The alerts center's content (UI/UX guide §6.3), shared by the desktop
-/// popover and the mobile sheet. Fetches on open and on Refresh; opening or
-/// refreshing marks everything seen, while the "new" tint keeps using
-/// [previousSeen] — the moment the panel was last opened before this one.
+/// popover and the mobile sheet. Live pushes (S1.01) keep it current, so
+/// there is no Refresh button; it still loads once on open as a fallback for
+/// a dropped connection. Everything shown is marked seen — including what
+/// arrives while it is open — while the "new" tint keeps using
+/// [previousSeen], the moment the panel was last opened before this one.
 class NotificationsPanel extends ConsumerStatefulWidget {
   const NotificationsPanel({
     super.key,
@@ -29,21 +31,17 @@ class NotificationsPanel extends ConsumerStatefulWidget {
 }
 
 class _NotificationsPanelState extends ConsumerState<NotificationsPanel> {
-  bool _refreshing = false;
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refresh());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      _markSeen(ref.read(bulkUploadBatchesProvider).asData?.value);
+      await ref.read(bulkUploadBatchesProvider.notifier).refresh();
+    });
   }
 
-  Future<void> _refresh() async {
-    if (!mounted || _refreshing) return;
-    setState(() => _refreshing = true);
-    await ref.read(bulkUploadBatchesProvider.notifier).refresh();
-    if (!mounted) return;
-    setState(() => _refreshing = false);
-    final batches = ref.read(bulkUploadBatchesProvider).asData?.value;
+  void _markSeen(List<BulkUploadBatch>? batches) {
     if (batches != null) {
       ref.read(notificationsLastSeenProvider.notifier).markSeen(batches);
     }
@@ -52,6 +50,9 @@ class _NotificationsPanelState extends ConsumerState<NotificationsPanel> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    ref.listen(bulkUploadBatchesProvider, (_, next) {
+      _markSeen(next.asData?.value);
+    });
     final batchesAsync = ref.watch(bulkUploadBatchesProvider);
     final now = DateTime.now().toUtc();
     const muted = TextStyle(fontSize: 13, color: AppTheme.mutedForeground);
@@ -93,24 +94,13 @@ class _NotificationsPanelState extends ConsumerState<NotificationsPanel> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 14),
           child: Row(
             children: [
               Expanded(
                 child: Text(l10n.notifTitle,
                     style: const TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w600)),
-              ),
-              IconButton(
-                tooltip: l10n.notifRefresh,
-                onPressed: _refreshing ? null : _refresh,
-                icon: _refreshing
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.refresh, size: 20),
               ),
             ],
           ),

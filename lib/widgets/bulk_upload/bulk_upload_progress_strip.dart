@@ -9,33 +9,18 @@ import '../../utils/bulk_upload_utils.dart';
 import '../notifications/notifications_processing_badge.dart';
 
 /// My expenses "receipts are being processed" strip, under the drop zone:
-/// the AI badge, "Processing 7 receipts", a bar with "3 of 7", and Refresh.
-/// Renders nothing when no batch is processing.
+/// the AI badge, "Processing 7 receipts" and a bar with "3 of 7", summed over
+/// the current run of overlapping batches (`processingProgress`). Renders
+/// nothing when no batch is processing.
 ///
-/// S1 has no push or polling, so the bar moves on a fetch — page load, the
-/// bell, or this Refresh. A fetch that finds the batch done hides the strip
-/// and refetches the expense list (`BulkUploadBatchesNotifier.refresh`).
-class BulkUploadProgressStrip extends ConsumerStatefulWidget {
+/// S1.01: moves on its own from live pushes — no Refresh. When the run
+/// finishes the strip hides and the expense list refetches
+/// (`BulkUploadBatchesNotifier`).
+class BulkUploadProgressStrip extends ConsumerWidget {
   const BulkUploadProgressStrip({super.key});
 
   @override
-  ConsumerState<BulkUploadProgressStrip> createState() =>
-      _BulkUploadProgressStripState();
-}
-
-class _BulkUploadProgressStripState
-    extends ConsumerState<BulkUploadProgressStrip> {
-  bool _refreshing = false;
-
-  Future<void> _refresh() async {
-    if (_refreshing) return;
-    setState(() => _refreshing = true);
-    await ref.read(bulkUploadBatchesProvider.notifier).refresh();
-    if (mounted) setState(() => _refreshing = false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(isBulkUploadEnabledProvider)) return const SizedBox.shrink();
     final batches = ref.watch(bulkUploadBatchesProvider).asData?.value;
     final progress = batches == null ? null : processingProgress(batches);
@@ -46,7 +31,7 @@ class _BulkUploadProgressStripState
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 6, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.primaryTint,
         borderRadius: BorderRadius.circular(10),
@@ -85,20 +70,6 @@ class _BulkUploadProgressStripState
                   ),
                 ),
               ],
-            ),
-          ),
-          SizedBox(
-            width: 40,
-            child: IconButton(
-              tooltip: l10n.notifRefresh,
-              onPressed: _refreshing ? null : _refresh,
-              icon: _refreshing
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.refresh, size: 20),
             ),
           ),
         ],

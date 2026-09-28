@@ -893,7 +893,6 @@
   "bulkItemDetailsRefused": "פרטי הקבלה נדחו (למשל תאריך עתידי)",
 
   "notifTitle": "התראות",
-  "notifRefresh": "רענון",
   "notifEmpty": "אין התראות חדשות",
   "notifLoadError": "לא הצלחנו לטעון את ההתראות.",
   "notifProcessingPrefix": "מעבדים",

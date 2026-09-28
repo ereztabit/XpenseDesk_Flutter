@@ -893,7 +893,6 @@
   "bulkItemDetailsRefused": "The receipt's details were refused (e.g. a future date)",
 
   "notifTitle": "Notifications",
-  "notifRefresh": "Refresh",
   "notifEmpty": "No new notifications",
   "notifLoadError": "Couldn't load notifications.",
   "notifProcessingPrefix": "Processing",

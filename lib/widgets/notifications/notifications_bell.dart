@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/bulk_upload_provider.dart';
 import '../../providers/expense_sheet_provider.dart';
+import '../../providers/live_updates_provider.dart';
 import '../../providers/navigation_guard_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
@@ -141,6 +142,8 @@ class _NotificationsBellState extends ConsumerState<NotificationsBell> {
     if (!ref.watch(isBulkUploadEnabledProvider)) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;
+    // S1.01: keeps the live connection up while the app shell is showing.
+    ref.watch(liveUpdatesProvider);
     final batches = ref.watch(bulkUploadBatchesProvider).asData?.value ??
         const [];
     final lastSeen = ref.watch(notificationsLastSeenProvider);

@@ -258,8 +258,9 @@ Every file is checked **the moment it's added**, before any upload (api-guide
 
 ## 6. Notifications: the bell and panel (S1)
 
-The app's general alerts center. Bulk upload is its first user. In S1 it
-reads `GET /api/bulk-uploads` (api-guide §6). There's no push.
+The app's general alerts center. Bulk upload is its first user. It reads
+`GET /api/bulk-uploads` (api-guide §6) and, from S1.01, stays current through
+live pushes (api-guide §9) — there is no Refresh button anywhere.
 
 ### 6.1 The bell
 
@@ -271,18 +272,24 @@ reads `GET /api/bulk-uploads` (api-guide §6). There's no push.
   number, LTR, capped at "9+". In S1 it counts the batches that completed
   since the user last opened the panel, kept on the device. Opening the panel
   clears it.
-- A small **pulsing primary dot** on the bottom end corner while any batch in
-  the last fetch is still `Submitted`.
+- While any batch is `Submitted`: an animated **AI badge** (16 px, sparkle,
+  cycling primary ↔ violet with a gentle pulse) on the bottom end corner, the
+  bell glyph turns primary, and its tooltip reads "Processing receipts".
+  (Replaced the S1 8 px dot, which users missed — QA 2026-09-28.)
+- My expenses shows the same badge in a **progress strip** under the drop
+  zone: "Processing N receipts", a bar, "X of N" — summed over the current
+  run of overlapping batches, so a second batch sent mid-run extends the total
+  instead of resetting it.
 
-### 6.2 When S1 fetches
+### 6.2 When it loads
 
-- When the app shell loads (so the badge and dot are right).
-- Every time the panel opens.
-- On the panel's **Refresh** button.
+- When the app shell loads, and after every live (re)connect (S1.01).
+- Once when the panel opens (a fallback if the live connection is down).
+- In between, live pushes update batches in place.
 
 ### 6.3 The panel
 
-- Header: "Notifications" + a **Refresh** icon button (it spins while loading).
+- Header: "Notifications".
 - Batches, **newest first** (the API returns the 10 most recent).
 - **No dismiss/X.** Items can't be removed.
 - Items new since the last open get a light primary tint + a small primary dot
@@ -290,7 +297,8 @@ reads `GET /api/bulk-uploads` (api-guide §6). There's no push.
 - **The whole card is tappable**: it closes the panel and opens **My
   expenses** (employee or manager). There are no inner links.
 - Empty state: "No new notifications", centered and muted.
-- Load error: a short inline error in the panel with Refresh still available.
+- Load error: a short inline error in the panel; the next live reconnect or
+  panel open loads again.
 
 ### 6.4 The card
 
@@ -447,7 +455,6 @@ panel.
 | Suggested key | English | Hebrew |
 |---|---|---|
 | notifTitle | Notifications | התראות |
-| notifRefresh (a11y) | Refresh | רענון |
 | notifEmpty | No new notifications | אין התראות חדשות |
 | notifLoadError | Couldn't load notifications. | לא הצלחנו לטעון את ההתראות. |
 | notifProcessingTitle | Processing {total} receipts | מעבדים {total} קבלות |
@@ -515,3 +522,4 @@ panel.
 | 2026-09-28 | First version, extracted from the Lovable mock. |
 | 2026-09-28 | Scoped to S1 (the built API): later steps moved to the backend `ui-ux-guide-later.md`. Added the platform admin switch (§7) and the S1 polling panel (§6). |
 | 2026-09-28 | Moved from the backend repo into the Flutter repo (`docs/in-progress/`). The S1 decisions not taken from Lovable (device-local unread badge, fetch points, the admin Configuration tab, confirming the switch both ways) are approved. |
+| 2026-09-28 | QA changes and S1.01: equal-height cards, tinted rejected files with Remove, "Process N receipts", AI processing badge, My expenses progress strip, live updates replacing both Refresh buttons (§6). |

@@ -27,7 +27,7 @@ Related: product plan [00-plan.md](../../../../../BackEnd/XpenseDeskServer/docs/
 | Send up to 20 files as one batch | Yes | - |
 | Background reading, one expense per receipt | Yes | - |
 | Outcomes | **Created** or **Unreadable** | S2 adds **Action Required** |
-| Progress | **Poll** `GET /api/bulk-uploads` (Refresh button) | S4: live push (SignalR) |
+| Progress | Live push over SignalR (§9), S1.01 | - |
 | Emails (batch summary, reminder) | No | S4 |
 | AI credits / limits | No | S3 |
 
@@ -174,8 +174,9 @@ minutes for a full batch - it is deliberately one file at a time server-wide.
 
     GET /api/bulk-uploads
 
-The caller's **10 most recent** batches, newest first. S1 has no push: call it
-when the bell panel opens and on the **Refresh** button.
+The caller's **10 most recent** batches, newest first. Call it when the app
+shell loads and on every live-connection (re)connect (§9); after that the
+`batchUpdated` pushes keep the list current.
 
 ```json
 [
@@ -315,6 +316,57 @@ already in use elsewhere, so reuse their keys if the app has them.
 The English `message` on an error response is for logs only, and an item never
 carries text at all - the UI shows only translated codes.
 
+## 9. Live updates (S1.01)
+
+Replaces polling. Design and rationale:
+[01.01-s1.01-live-updates.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/01.01-s1.01-live-updates.md).
+
+### 9.1 Get a connection ticket
+
+    POST /api/notifications/ticket
+    Authorization: Bearer <session token>
+
+`200`:
+
+```json
+{ "ticket": "k3Jd...", "expiresInSeconds": 60 }
+```
+
+- Single use, valid 60 s, bound to the caller's session. Get a new one for
+  every connect and reconnect.
+- Not gated by the bulk-upload flag (the hub is the general alerts channel).
+- A platform-admin session gets `403`.
+
+### 9.2 Connect
+
+    wss://<api host>/hubs/notifications?access_token=<ticket>
+
+SignalR, JSON protocol v1, **WebSockets transport, no negotiate** (connect
+straight to the URL above). Frames end with the record separator `\u001e`.
+
+| Step | Client sends / receives |
+|---|---|
+| Handshake | send `{"protocol":"json","version":1}\u001e`, receive `{}\u001e` (or `{"error":"..."}`) |
+| Keep-alive | send `{"type":6}\u001e` every 15 s; the server drops a silent client after 30 s |
+| Push | receive `{"type":1,"target":"batchUpdated","arguments":[<batch>]}\u001e` |
+| Server close | `{"type":7,...}` — reconnect with a new ticket |
+
+A bad, used or expired ticket fails the upgrade with `401`.
+
+### 9.3 `batchUpdated`
+
+`<batch>` is exactly one element of `GET /api/bulk-uploads` (§6), including
+`items`. Sent to the batch's owner — every tab and device they have
+connected — when the batch is submitted and after each file's outcome. The
+last push of a batch has `status: "Completed"`.
+
+Client rules:
+
+- Replace the batch with the same `batchId`, or insert it (newest first).
+- On every connect and reconnect, load `GET /api/bulk-uploads` once: pushes are
+  deltas, and anything sent while disconnected is only recovered that way.
+- Never show a Refresh button for batches; the connection keeps them current.
+
 ## Changelog
 
 | Date | Change |
@@ -323,3 +375,4 @@ carries text at all - the UI shows only translated codes.
 | 2026-09-28 | No server-side draft batch: files are staged with no DB write and sent as one list (removed the create-batch, add-file, remove-file and submit-batch calls). |
 | 2026-09-28 | Flat error codes: `BulkUploadInvalidFile` + `data.reason` replaced by one dedicated code per rule; items return `failureCode` instead of an English `failureReason`. |
 | 2026-09-28 | `GET /api/bulk-uploads` is no longer blocked when the flag is off. |
+| 2026-09-28 | S1.01: live updates (§9) — connection ticket, `/hubs/notifications`, `batchUpdated`. Polling (§1 "Progress") is replaced. |

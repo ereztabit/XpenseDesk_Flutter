@@ -177,5 +177,31 @@ bool hasNewlyFiledExpenses(
       b.isCompleted && b.createdCount > 0 && wasDone[b.batchId] != true);
 }
 
+/// Applies one live `batchUpdated` push (S1.01) to the batch list: replaces
+/// the batch with the same id or inserts it, newest first, capped at the 10
+/// the API returns.
+///
+/// A push that is *behind* what the list already shows is ignored: the
+/// submit push and the worker's first item push can cross on the wire, and
+/// a batch must never step backwards (Completed → Submitted, or more files
+/// pending than before).
+List<BulkUploadBatch> mergeBatch(
+  List<BulkUploadBatch> batches,
+  BulkUploadBatch pushed,
+) {
+  final existing =
+      batches.where((b) => b.batchId == pushed.batchId).firstOrNull;
+  if (existing != null) {
+    final regresses = (existing.isCompleted && !pushed.isCompleted) ||
+        pushed.pendingCount > existing.pendingCount;
+    if (regresses) return batches;
+  }
+  final merged = [
+    pushed,
+    ...batches.where((b) => b.batchId != pushed.batchId),
+  ]..sort((a, b) => b.submittedAt.compareTo(a.submittedAt));
+  return merged.take(10).toList();
+}
+
 /// "9+" cap for the unread badge.
 String unreadBadgeLabel(int count) => count > 9 ? '9+' : '$count';

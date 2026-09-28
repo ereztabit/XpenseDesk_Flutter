@@ -26,9 +26,10 @@ final isBulkUploadEnabledProvider = Provider<bool>((ref) {
 
 /// The caller's recent batches (GET /api/bulk-uploads) behind the bell.
 ///
-/// S1 has no push (UI/UX guide §6.2): fetched when the header first mounts,
-/// and again via [refresh] on panel open and the Refresh button. Rebuilds on a
-/// user change so one account's batches never show under another.
+/// Loaded when the header first mounts and on every live-connection
+/// (re)connect ([refresh]); in between, S1.01 pushes keep it current
+/// ([applyPush]). Rebuilds on a user change so one account's batches never
+/// show under another.
 class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
   @override
   Future<List<BulkUploadBatch>> build() {
@@ -37,11 +38,7 @@ class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
   }
 
   /// Re-fetches without dropping to a loading state, so the panel keeps its
-  /// cards while the Refresh icon spins.
-  ///
-  /// A batch that filed expenses since the last fetch means My expenses is
-  /// showing a stale sheet, so the sheet list and details are refetched too —
-  /// the worker adds lines behind the app's back.
+  /// cards while it reloads.
   Future<void> refresh() async {
     final before = state.asData?.value;
     final next = await AsyncValue.guard(
@@ -50,10 +47,29 @@ class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
     if (!ref.mounted) return;
     state = next;
     final after = next.asData?.value;
-    if (after != null && hasNewlyFiledExpenses(before, after)) {
-      ref.invalidate(mySheetsProvider);
-      ref.invalidate(sheetDetailProvider);
-    }
+    if (after != null) _refreshSheetsIfFiled(before, after);
+  }
+
+  /// Applies one live `batchUpdated` push. Ignored until the first load has
+  /// landed — the load that follows every connect brings the batch anyway.
+  void applyPush(BulkUploadBatch pushed) {
+    final before = state.asData?.value;
+    if (before == null) return;
+    final after = mergeBatch(before, pushed);
+    if (identical(after, before)) return;
+    state = AsyncData(after);
+    _refreshSheetsIfFiled(before, after);
+  }
+
+  /// A batch that filed expenses since [before] means My expenses is showing
+  /// a stale sheet: the worker adds lines behind the app's back.
+  void _refreshSheetsIfFiled(
+    List<BulkUploadBatch>? before,
+    List<BulkUploadBatch> after,
+  ) {
+    if (!hasNewlyFiledExpenses(before, after)) return;
+    ref.invalidate(mySheetsProvider);
+    ref.invalidate(sheetDetailProvider);
   }
 }
 

@@ -229,6 +229,50 @@ void main() {
       });
     });
 
+    group('mergeBatch (live pushes)', () {
+      BulkUploadBatch b(String id, int minute,
+              {String status = 'Submitted', int pending = 2}) =>
+          BulkUploadBatch(
+            batchId: id,
+            status: status,
+            submittedAt: DateTime.utc(2026, 9, 28, 12, minute),
+            totalCount: 3,
+            createdCount: 3 - pending,
+            unreadableCount: 0,
+            pendingCount: pending,
+          );
+
+      test('a new batch is inserted newest first', () {
+        final merged = mergeBatch([b('old', 1)], b('new', 5));
+        expect(merged.map((x) => x.batchId), ['new', 'old']);
+      });
+
+      test('a known batch is replaced in place', () {
+        final merged =
+            mergeBatch([b('a', 5, pending: 2), b('z', 1)], b('a', 5, pending: 1));
+        expect(merged.map((x) => x.batchId), ['a', 'z']);
+        expect(merged.first.pendingCount, 1);
+      });
+
+      test('a push that would step a batch backwards is ignored', () {
+        final list = [b('a', 5, pending: 1)];
+        expect(identical(mergeBatch(list, b('a', 5, pending: 2)), list), isTrue,
+            reason: 'more pending than already shown');
+        final done = [b('a', 5, status: 'Completed', pending: 0)];
+        expect(identical(mergeBatch(done, b('a', 5, pending: 0)), done), isTrue,
+            reason: 'Completed never goes back to Submitted');
+      });
+
+      test('the list stays capped at the 10 the API returns', () {
+        final ten = [for (var i = 0; i < 10; i++) b('b$i', i)];
+        final merged = mergeBatch(ten, b('newest', 30));
+        expect(merged.length, 10);
+        expect(merged.first.batchId, 'newest');
+        expect(merged.any((x) => x.batchId == 'b0'), isFalse,
+            reason: 'the oldest drops off');
+      });
+    });
+
     test('badge caps at 9+', () {
       expect(unreadBadgeLabel(9), '9');
       expect(unreadBadgeLabel(10), '9+');

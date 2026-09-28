@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [Business][P2] **FS-1007** Bulk receipt upload (S1) -- up to 20 receipts in one batch behind a per-company flag: client validation, parallel upload, send, and a minimal notifications widget with Refresh. Backend built; Flutter S1 built on feature/bulk-receipt-upload (uncommitted), CR done, awaiting manual QA. see docs/in-progress/bulk-receipt-upload-spec.md
+- [Business][P2] **FS-1007** Bulk receipt upload (S1) -- up to 20 receipts in one batch behind a per-company flag: client validation, parallel upload, send, and a minimal notifications widget with Refresh. S1 built + QA rounds done and pushed (feature/bulk-receipt-upload); S1.01 live updates (WebSockets, no Refresh) built, uncommitted, local E2E verified. see docs/in-progress/bulk-receipt-upload-spec.md
 
 ## Tags
 

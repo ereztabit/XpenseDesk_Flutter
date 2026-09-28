@@ -38,12 +38,29 @@ The backend leads this mission. The rest lives in the backend repo,
   while uploads are in flight.
 - Send with `POST /api/bulk-uploads`, then the hand-off message.
 - Minimal notifications widget: a bell in `AppHeader`, a panel of recent batches
-  from `GET /api/bulk-uploads`, and a **Refresh** button (no push in S1).
+  from `GET /api/bulk-uploads` (the Refresh button S1 shipped with is gone in
+  S1.01, below).
 - Every error and item `failureCode` maps to an ARB key (en + he). No server
   text is shown.
 - Platform admin panel: per-company switch for `isBulkUploadEnabled`.
 
-## Out of scope for S1
+## S1.01 client scope — live updates
 
-Action Required status (S2), AI credits (S3), live push + emails (S4), and kill
-switch / staging cleanup (S5).
+Backend scope: [`01.01-s1.01-live-updates.md`](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/01.01-s1.01-live-updates.md);
+contract: API guide §9.
+
+- `LiveUpdatesNotifier` (`lib/providers/live_updates_provider.dart`): up while
+  signed in with the flag on. Each connect: `POST /api/notifications/ticket`,
+  then `wss://…/hubs/notifications?access_token=<ticket>` via the in-house
+  `SignalRJsonSocket` (JSON protocol, WebSockets only, no negotiate), then one
+  `GET /api/bulk-uploads`. Reconnects with backoff 1/2/5/10/30 s.
+- `batchUpdated` pushes go through `mergeBatch` (replace/insert by id, never
+  step a batch backwards, cap 10) into `BulkUploadBatchesNotifier.applyPush`.
+- Panel and progress strip lose their Refresh buttons. The panel still loads
+  once on open (fallback if the socket is down) and marks what arrives while
+  open as seen.
+
+## Out of scope for S1 / S1.01
+
+Action Required status (S2), AI credits (S3), server read state + first-use
+auto-open + emails (S4), and kill switch / staging cleanup (S5).

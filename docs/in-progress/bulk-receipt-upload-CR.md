@@ -191,6 +191,26 @@ strip hides and the list refreshes (8 items). 81/81 tests pass.
 Verified in the browser: 7 then 4 → "2 of 11"; after the 7 finished →
 "8 of 11" (no reset), and the list refreshed. 85/85 tests pass.
 
+## 14. S1.01 live updates (2026-09-28)
+
+Scope + security: backend `docs/bulk-upload/01.01-s1.01-live-updates.md`.
+
+| Area | Result |
+|---|---|
+| Reuse | No SignalR package: `SignalRJsonSocket` (132 lines) hand-rolls the JSON protocol over `package:web` WebSocket — we own both ends and need WebSockets only. Ticket call goes through `ApiService` (rule 5) |
+| New files | `signalr_json_socket.dart`, `notifications_service.dart`, `live_updates_provider.dart` — all < 200 lines |
+| Logic in utils | `mergeBatch` (replace/insert, no regression, cap 10) in `bulk_upload_utils.dart`, 4 tests |
+| Removed | Both Refresh buttons; the unused `notifRefresh` ARB key (en + he) and its guide row |
+| Captions / hygiene greps | Empty |
+| Lifecycle | Generation counter guards in-flight connects across rebuilds (logout, account switch, flag off); not autoDispose so navigation doesn't drop the socket |
+
+Local E2E (dev API + dev DB): ticket 200 → handshake → reload; a 4-receipt
+batch advanced 0 → 3 → done on the strip with no interaction, then the strip
+hid, the list refreshed (7 items) and the bell updated; after a backend restart
+the client retried with backoff and reconnected by itself. Backend: 396/396
+tests (5 new live scenarios, push payload deep-equal to the batch list).
+Flutter: 89/89.
+
 ## Security review
 
 Scope: the client diff only (no backend change in this pass).
