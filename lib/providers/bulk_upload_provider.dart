@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,17 +63,53 @@ class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
     _refreshSheetsIfFiled(before, after);
   }
 
-  /// A batch that filed expenses since [before] means My expenses is showing
-  /// a stale sheet: the worker adds lines behind the app's back.
+  /// Files that became expenses since [before] mean My expenses is showing a
+  /// stale sheet: refetch it, and mark those expenses "just added" so their
+  /// rows animate in. Runs per push, so the list grows file by file.
   void _refreshSheetsIfFiled(
     List<BulkUploadBatch>? before,
     List<BulkUploadBatch> after,
   ) {
-    if (!hasNewlyFiledExpenses(before, after)) return;
+    final filed = newlyCreatedExpenseIds(before, after);
+    if (filed.isEmpty) return;
+    ref.read(recentlyFiledExpensesProvider.notifier).add(filed);
     ref.invalidate(mySheetsProvider);
     ref.invalidate(sheetDetailProvider);
   }
 }
+
+/// Expenses a bulk batch filed in the last few seconds — the rows My
+/// expenses highlights as "just added". Each id leaves the set on its own
+/// after [_lifetime], long enough for the list refetch to land.
+class RecentlyFiledExpensesNotifier extends Notifier<Set<String>> {
+  static const _lifetime = Duration(seconds: 8);
+  final List<Timer> _timers = [];
+
+  @override
+  Set<String> build() {
+    ref.onDispose(() {
+      for (final t in _timers) {
+        t.cancel();
+      }
+    });
+    return const {};
+  }
+
+  void add(Set<String> expenseIds) {
+    state = {...state, ...expenseIds};
+    late final Timer timer;
+    timer = Timer(_lifetime, () {
+      _timers.remove(timer);
+      if (ref.mounted) state = state.difference(expenseIds);
+    });
+    _timers.add(timer);
+  }
+}
+
+final recentlyFiledExpensesProvider =
+    NotifierProvider<RecentlyFiledExpensesNotifier, Set<String>>(
+  RecentlyFiledExpensesNotifier.new,
+);
 
 final bulkUploadBatchesProvider =
     AsyncNotifierProvider<BulkUploadBatchesNotifier, List<BulkUploadBatch>>(

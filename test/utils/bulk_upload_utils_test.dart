@@ -147,30 +147,50 @@ void main() {
       expect(hasProcessingBatch(batches), isTrue);
     });
 
-    test('the expense list refreshes only when a batch newly filed expenses',
-        () {
-      BulkUploadBatch b(String id, String status, int created) =>
+    test('newly filed expenses are found per file, not per batch', () {
+      BulkUploadItem item(String id, String status, [String? expenseId]) =>
+          BulkUploadItem(
+            itemId: id,
+            originalFileName: '$id.png',
+            status: status,
+            expenseId: expenseId,
+          );
+      BulkUploadBatch b(String id, List<BulkUploadItem> items) =>
           BulkUploadBatch(
             batchId: id,
-            status: status,
+            status: items.any((i) => i.status == 'Queued')
+                ? 'Submitted'
+                : 'Completed',
             submittedAt: DateTime.utc(2026, 9, 27),
-            totalCount: 3,
-            createdCount: created,
-            unreadableCount: 3 - created,
-            pendingCount: status == 'Completed' ? 0 : 3,
+            totalCount: items.length,
+            createdCount: items.where((i) => i.status == 'Created').length,
+            unreadableCount: 0,
+            pendingCount: items.where((i) => i.status == 'Queued').length,
+            items: items,
           );
 
-      final processing = [b('a', 'Submitted', 0)];
-      expect(hasNewlyFiledExpenses(null, [b('a', 'Completed', 2)]), isFalse,
-          reason: 'first load: the list loads fresh anyway');
-      expect(hasNewlyFiledExpenses(processing, [b('a', 'Completed', 2)]),
-          isTrue);
-      expect(hasNewlyFiledExpenses(processing, [b('a', 'Completed', 0)]),
-          isFalse, reason: 'nothing was filed');
-      expect(hasNewlyFiledExpenses([b('a', 'Completed', 2)],
-          [b('a', 'Completed', 2)]), isFalse, reason: 'already known');
-      expect(hasNewlyFiledExpenses(const [], [b('z', 'Completed', 1)]), isTrue,
-          reason: 'finished between two fetches');
+      final start = [b('a', [item('1', 'Queued'), item('2', 'Queued')])];
+      final oneDone = [
+        b('a', [item('1', 'Created', 'e1'), item('2', 'Queued')]),
+      ];
+      final bothDone = [
+        b('a', [item('1', 'Created', 'e1'), item('2', 'Created', 'e2')]),
+      ];
+
+      expect(newlyCreatedExpenseIds(null, oneDone), isEmpty,
+          reason: 'first load: nothing on it is "new"');
+      expect(newlyCreatedExpenseIds(start, oneDone), {'e1'},
+          reason: 'the list grows while the batch is still running');
+      expect(newlyCreatedExpenseIds(oneDone, bothDone), {'e2'},
+          reason: 'only the file that just landed');
+      expect(newlyCreatedExpenseIds(bothDone, bothDone), isEmpty,
+          reason: 'already known');
+      expect(
+          newlyCreatedExpenseIds(start, [
+            b('a', [item('1', 'Unreadable'), item('2', 'Queued')]),
+          ]),
+          isEmpty,
+          reason: 'an unreadable file files nothing');
     });
 
     group('processing progress', () {
@@ -270,6 +290,55 @@ void main() {
         expect(merged.first.batchId, 'newest');
         expect(merged.any((x) => x.batchId == 'b0'), isFalse,
             reason: 'the oldest drops off');
+      });
+    });
+
+    group('creeping progress', () {
+      const perFile = Duration(seconds: 40);
+      double at(int done, int total, int seconds) => creepingProgress(
+            done: done,
+            total: total,
+            sinceLastProgress: Duration(seconds: seconds),
+            perFile: perFile,
+          );
+
+      test('starts at the real value right after an update', () {
+        expect(at(3, 10, 0), closeTo(0.3, 1e-9));
+      });
+
+      test('creeps inside the current slot and slows as it goes', () {
+        final early = at(3, 10, 10) - at(3, 10, 0);
+        final late = at(3, 10, 40) - at(3, 10, 30);
+        expect(at(3, 10, 20), greaterThan(0.3));
+        expect(early, greaterThan(late), reason: 'eases out');
+      });
+
+      test('holds just short of the next file past the expected time', () {
+        expect(at(3, 10, 40), closeTo(0.39, 1e-9));
+        expect(at(3, 10, 400), closeTo(0.39, 1e-9),
+            reason: 'never reaches a file that is not done');
+      });
+
+      test('never behind the real value, never beyond the next one', () {
+        for (var s = 0; s <= 120; s += 5) {
+          final v = at(3, 10, s);
+          expect(v, greaterThanOrEqualTo(0.3));
+          expect(v, lessThan(0.4));
+        }
+      });
+
+      test('a finished run is full, an empty one is empty', () {
+        expect(at(10, 10, 5), 1);
+        expect(at(0, 0, 5), 0);
+      });
+
+      test('the slot is a fixed 40 s by default', () {
+        expect(kBulkUploadSlotPerFile, const Duration(seconds: 40));
+        expect(
+          creepingProgress(
+              done: 3, total: 10, sinceLastProgress: const Duration(seconds: 40)),
+          closeTo(0.39, 1e-9),
+        );
       });
     });
 

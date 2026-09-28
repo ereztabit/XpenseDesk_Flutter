@@ -56,6 +56,9 @@ contract: API guide §9.
   `GET /api/bulk-uploads`. Reconnects with backoff 1/2/5/10/30 s.
 - `batchUpdated` pushes go through `mergeBatch` (replace/insert by id, never
   step a batch backwards, cap 10) into `BulkUploadBatchesNotifier.applyPush`.
+- Every push that turns a file into an expense refetches the sheet, so My
+  expenses grows file by file; each added row/card plays a one-time entrance
+  (`NewExpenseHighlight`, driven by `recentlyFiledExpensesProvider`).
 - Panel and progress strip lose their Refresh buttons. The panel still loads
   once on open (fallback if the socket is down) and marks what arrives while
   open as seen.

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/expense_summary.dart';
 import '../expenses/mobile_expense_card.dart';
 import '../expenses/swipeable_expense_card.dart';
+import 'new_expense_highlight.dart';
 
 /// Mobile card view — vertically stacked full-width cards (one per expense).
 ///
@@ -64,25 +65,33 @@ class _MobileSheetExpenseCarouselState
     return Column(
       children: List.generate(widget.expenses.length, (index) {
         final expense = widget.expenses[index];
-        if (widget.enableSwipeToDelete) {
-          return SwipeableExpenseCard(
-            expense: expense,
-            openCardNotifier: _openCardNotifier,
-            autoPeek: false,
-            warnBeforeDelete: widget.warnOnResolveLastDeclined &&
-                expense.expenseStatusId == 3,
-            onEdit:
-                widget.onEdit != null ? () => widget.onEdit!(expense) : null,
-            onRefresh: widget.onRefresh,
-            onResubmitted: widget.onResubmitted,
-          );
-        }
-        return MobileExpenseCard(
-          expense: expense,
-          onEdit:
-              widget.onEdit != null ? () => widget.onEdit!(expense) : null,
-          onView:
-              widget.onView != null ? () => widget.onView!(expense) : null,
+        final Widget card = widget.enableSwipeToDelete
+            ? SwipeableExpenseCard(
+                expense: expense,
+                openCardNotifier: _openCardNotifier,
+                autoPeek: false,
+                warnBeforeDelete: widget.warnOnResolveLastDeclined &&
+                    expense.expenseStatusId == 3,
+                onEdit: widget.onEdit != null
+                    ? () => widget.onEdit!(expense)
+                    : null,
+                onRefresh: widget.onRefresh,
+                onResubmitted: widget.onResubmitted,
+              )
+            : MobileExpenseCard(
+                expense: expense,
+                onEdit: widget.onEdit != null
+                    ? () => widget.onEdit!(expense)
+                    : null,
+                onView: widget.onView != null
+                    ? () => widget.onView!(expense)
+                    : null,
+              );
+        // Keyed by id so a card a bulk batch just added animates in.
+        return NewExpenseHighlight(
+          key: ValueKey(expense.expenseId),
+          expenseId: expense.expenseId,
+          child: card,
         );
       }),
     );

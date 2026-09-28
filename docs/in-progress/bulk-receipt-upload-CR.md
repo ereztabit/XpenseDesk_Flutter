@@ -211,6 +211,31 @@ the client retried with backoff and reconnected by itself. Backend: 396/396
 tests (5 new live scenarios, push payload deep-equal to the batch list).
 Flutter: 89/89.
 
+## 15. List grows live, new rows animate (2026-09-28)
+
+| Change | Detail |
+|---|---|
+| Per-file refresh | `newlyCreatedExpenseIds(before, after)` replaces the per-batch `hasNewlyFiledExpenses`: every push that turns a file into an expense refetches the sheet, so the list grows while the batch runs (tested) |
+| "Just added" set | `recentlyFiledExpensesProvider`: those expense ids, each dropped after 8 s |
+| Entrance | `NewExpenseHighlight` wraps each desktop row, mobile row and mobile card, keyed by expense id: grows in + fades up (first 18 % of 2.6 s), then a primary tint fades out. Tree identical at rest and while playing, child passed through — safe inside `SelectableScope` |
+
+Verified in the browser: a 3-receipt batch at "2 of 3" already showed 2 new
+rows, the newest tinted; all 3 landed with no interaction; no selection
+assertions in the console. Analyze clean (deprecated `axisAlignment`
+replaced), 89/89 tests.
+
+## 16. Progress bar keeps moving (2026-09-28)
+
+| Change | Detail |
+|---|---|
+| `CreepingProgressBar` | Used by the My expenses strip and the notifications card. Between real updates the bar eases through the current file's slot and holds at 90% of it (`kBulkUploadCreepCap`) until the real update — it can't pass real progress, so it never steps back. The "X of N" text stays real |
+| Pace | **Fixed 40 s per file** (`kBulkUploadSlotPerFile`). A learned average was tried first and dropped after QA: files that fail fast skewed it. A faster file just jumps the bar forward; a slower one holds at the cap. Client clock only |
+| Ticker | 250 ms `Timer.periodic` while running; stops when done |
+
+Tests: 6 pure (`creepingProgress`, fixed slot) + a widget test on an
+injected clock (creep → hold → snap → a fast-failing file leaves the pace
+unchanged → done). 96/96.
+
 ## Security review
 
 Scope: the client diff only (no backend change in this pass).

@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/bulk_upload_copy_utils.dart';
 import '../../utils/bulk_upload_utils.dart';
 import '../../utils/format_utils.dart';
+import '../bulk_upload/creeping_progress_bar.dart';
 import 'notification_kind_icon.dart';
 
 /// One batch in the notifications panel (UI/UX guide §6.4): icon, title,
@@ -74,16 +75,9 @@ class NotificationBatchCard extends StatelessWidget {
                   ],
                   if (isProcessing) ...[
                     const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
-                        value: batch.totalCount == 0
-                            ? 0
-                            : batch.doneCount / batch.totalCount,
-                        minHeight: 6,
-                        color: AppTheme.primary,
-                        backgroundColor: AppTheme.muted,
-                      ),
+                    CreepingProgressBar(
+                      done: batch.doneCount,
+                      total: batch.totalCount,
                     ),
                     const SizedBox(height: 4),
                     Text(

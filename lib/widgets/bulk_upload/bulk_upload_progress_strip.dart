@@ -7,6 +7,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/bulk_upload_copy_utils.dart';
 import '../../utils/bulk_upload_utils.dart';
 import '../notifications/notifications_processing_badge.dart';
+import 'creeping_progress_bar.dart';
 
 /// My expenses "receipts are being processed" strip, under the drop zone:
 /// the AI badge, "Processing 7 receipts" and a bar with "3 of 7", summed over
@@ -60,14 +61,10 @@ class BulkUploadProgressStrip extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: LinearProgressIndicator(
-                    value: progress.done / progress.total,
-                    minHeight: 6,
-                    color: AppTheme.primary,
-                    backgroundColor: AppTheme.card,
-                  ),
+                CreepingProgressBar(
+                  done: progress.done,
+                  total: progress.total,
+                  backgroundColor: AppTheme.card,
                 ),
               ],
             ),

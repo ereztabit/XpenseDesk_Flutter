@@ -157,24 +157,65 @@ int unreadBatchCount(List<BulkUploadBatch> batches, DateTime? lastSeen) =>
   return total == 0 ? null : (done: done, total: total);
 }
 
+/// The fixed time the bar gives each file (production reads a receipt in
+/// about 40 s). Fixed on purpose: a learned average was skewed by files that
+/// fail fast (QA 2026-09-28). A faster file just makes the bar jump forward;
+/// a slower one holds at [kBulkUploadCreepCap].
+const Duration kBulkUploadSlotPerFile = Duration(seconds: 40);
+
+/// How far into the current file's slot the bar may creep before it holds
+/// and waits for the real update. Below 1, so the bar never reaches a file
+/// that isn't done — and so it never has to jump backwards.
+const double kBulkUploadCreepCap = 0.9;
+
+/// The bar's value between two real updates: `done` whole files plus an
+/// eased share of the current file's slot, growing with the time since the
+/// last real change and holding at [kBulkUploadCreepCap] of the slot once it
+/// runs past [perFile]. The "X of N" text is never estimated — only the bar.
+double creepingProgress({
+  required int done,
+  required int total,
+  required Duration sinceLastProgress,
+  Duration perFile = kBulkUploadSlotPerFile,
+}) {
+  if (total <= 0) return 0;
+  if (done >= total) return 1;
+  final x = (sinceLastProgress.inMilliseconds / perFile.inMilliseconds)
+      .clamp(0.0, 1.0);
+  final slot = kBulkUploadCreepCap * (1 - (1 - x) * (1 - x)); // ease-out
+  return (done + slot) / total;
+}
+
 /// The bell's processing badge: any batch still processing in the last fetch.
 bool hasProcessingBatch(List<BulkUploadBatch> batches) =>
     batches.any((b) => !b.isCompleted);
 
-/// True when [after] shows a batch that filed expenses since [before] was
-/// fetched — it finished in between, or appeared already finished. The
-/// expense list is then stale and must be refetched. The first load
-/// ([before] null) never counts: the list loads fresh on its own.
-bool hasNewlyFiledExpenses(
+/// Expense ids that [after] shows as filed but [before] did not — one entry
+/// per file that became an expense since the last look. Non-empty means the
+/// expense list is stale (the worker adds lines behind the app's back), and
+/// these are exactly the rows to highlight as "just added".
+///
+/// Per file, not per batch: the list grows while a batch is still running.
+/// The first load ([before] null) never counts — the list loads fresh on its
+/// own and nothing in it is "new".
+Set<String> newlyCreatedExpenseIds(
   List<BulkUploadBatch>? before,
   List<BulkUploadBatch> after,
 ) {
-  if (before == null) return false;
-  final wasDone = {
-    for (final b in before) b.batchId: b.isCompleted,
+  if (before == null) return const {};
+  final known = <String>{
+    for (final b in before)
+      for (final item in b.items)
+        if (item.status == 'Created' && item.expenseId != null) item.expenseId!,
   };
-  return after.any((b) =>
-      b.isCompleted && b.createdCount > 0 && wasDone[b.batchId] != true);
+  return {
+    for (final b in after)
+      for (final item in b.items)
+        if (item.status == 'Created' &&
+            item.expenseId != null &&
+            !known.contains(item.expenseId))
+          item.expenseId!,
+  };
 }
 
 /// Applies one live `batchUpdated` push (S1.01) to the batch list: replaces
