@@ -3,13 +3,12 @@
 Mission FS-1005. The contract the admin panel's "Destroy company" action is built
 against.
 
-> **Status:** in development on `feature/fs-1005-destroy-company` (both repos).
-> Not on dev `develop`, not in production.
+> **Status:** live in production since 2026-09-26 (backend a873610, app v1.34).
 
 Related: [platform-admin-api-guide.md](platform-admin-api-guide.md) (who a
 platform admin is, how the admin session works) - backend story
-`docs/backlog/destroy-company-story.md` - schema script
-`docs/backlog/fs-1005-destroy-company-schema.sql`.
+`docs/done/destroy-company-story.md` (backend repo). The schema script was applied
+to prod and removed; see the backend's git history.
 
 ---
 

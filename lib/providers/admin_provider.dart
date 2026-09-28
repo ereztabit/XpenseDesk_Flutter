@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart'; // ProviderOrFamily
 import '../models/admin_companies_sort.dart';
+import '../models/admin_company_configuration.dart';
 import '../models/admin_company_row.dart';
 import '../models/admin_company_user_row.dart';
 import '../services/admin_service.dart';
@@ -179,6 +180,14 @@ final adminCompanyUserSearchProvider =
 // each by name. Re-sorting client-side would be a second, drifting definition of
 // an order the server is responsible for.
 
+/// One company's feature flags for the Configuration tab (FS-1007).
+/// autoDispose: re-read every time the tab is opened, since another admin may
+/// have flipped a switch meanwhile.
+final adminCompanyConfigurationProvider = FutureProvider.autoDispose
+    .family<AdminCompanyConfiguration, String>((ref, companyId) {
+  return ref.read(adminServiceProvider).getCompanyConfiguration(companyId);
+});
+
 /// Every admin-shell provider holding state from the current session — cached
 /// server data and the view state over it. Disconnect invalidates all of them
 /// so nothing survives into the next login (see
@@ -192,4 +201,5 @@ final List<ProviderOrFamily> adminCachedProviders = [
   adminCompanyUsersProvider,
   adminShowInactiveUsersProvider,
   adminCompanyUserSearchProvider,
+  adminCompanyConfigurationProvider,
 ];

@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [Business][P2] **FS-1005** Destroy company from the admin panel - banked on develop as v1.34 (2026-09-26), awaiting ship-feature. Backend half banked too; **ship is blocked until the backend's fs-1005-destroy-company-schema.sql is applied to PROD** (applied on dev only). see docs/in-progress/destroy-company-spec.md
+- [Business][P2] **FS-1007** Bulk receipt upload S1 + S1.01 - banked on develop as v1.35 (2026-09-28), awaiting ship-feature. Needs before ship: backend banked + prod migration applied + App Service WebSockets on. see docs/in-progress/bulk-receipt-upload-spec.md
 
 ## Tags
 

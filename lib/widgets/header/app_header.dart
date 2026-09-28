@@ -15,6 +15,7 @@ import 'billing_alert_banner.dart';
 import 'impersonation_banner.dart';
 import '../pwa/pwa_install_auto_prompt.dart';
 import '../pwa/pwa_install_launcher.dart';
+import '../notifications/notifications_bell.dart';
 
 /// AppHeader - Sticky top bar with logo and user menu
 ///
@@ -372,6 +373,11 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                     ),
                   ),
                 const SizedBox(width: 12),
+
+                // FS-1007: alerts center. Beside the avatar on desktop and the
+                // menu button on mobile; renders nothing when bulk upload is
+                // off for the company.
+                const NotificationsBell(),
 
                 // FS-1001: support-session marker, in the bar rather than a
                 // banner below it — a full-width banner pushes every screen down

@@ -5,6 +5,7 @@ import '../../theme/app_theme.dart';
 import '../selectable_scope.dart';
 import 'desktop_sheet_table_header.dart';
 import 'desktop_sheet_table_row.dart';
+import 'new_expense_highlight.dart';
 
 /// Desktop sheet view — card-wrapped table composed of [DesktopSheetTableHeader]
 /// + a sequence of [DesktopSheetTableRow]s.
@@ -47,13 +48,19 @@ class DesktopSheetExpenseTable extends StatelessWidget {
                   SelectableScope(
                     child: Column(
                       children: List.generate(expenses.length, (index) {
-                        return DesktopSheetTableRow(
-                          rowNumber: index + 1,
-                          expense: expenses[index],
-                          companyLocale: companyLocale,
-                          onView: onView,
-                          onEdit: onEdit,
-                          onDelete: onDelete,
+                        // Keyed by id so a row a bulk batch just added gets
+                        // its own element (and its entrance animation).
+                        return NewExpenseHighlight(
+                          key: ValueKey(expenses[index].expenseId),
+                          expenseId: expenses[index].expenseId,
+                          child: DesktopSheetTableRow(
+                            rowNumber: index + 1,
+                            expense: expenses[index],
+                            companyLocale: companyLocale,
+                            onView: onView,
+                            onEdit: onEdit,
+                            onDelete: onDelete,
+                          ),
                         );
                       }),
                     ),

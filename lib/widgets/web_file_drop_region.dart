@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:js_interop';
 
 import 'package:flutter/widgets.dart';
 import 'package:web/web.dart' as web;
+
+import '../utils/document_drag_listener.dart';
 
 /// Swallows file drags anywhere in the document while it is mounted.
 ///
@@ -20,12 +21,12 @@ class WebFileDropGuard extends StatefulWidget {
 }
 
 class _WebFileDropGuardState extends State<WebFileDropGuard> {
-  late final _DocumentDragListener _listener;
+  late final DocumentDragListener _listener;
 
   @override
   void initState() {
     super.initState();
-    _listener = _DocumentDragListener(onOver: (_) {}, onDrop: (_) {})..attach();
+    _listener = DocumentDragListener(onOver: (_) {}, onDrop: (_) {})..attach();
   }
 
   @override
@@ -38,7 +39,7 @@ class _WebFileDropGuardState extends State<WebFileDropGuard> {
   Widget build(BuildContext context) => widget.child;
 }
 
-/// A drop target for a single receipt file on Flutter web.
+/// A drop target for receipt files on Flutter web.
 ///
 /// Flutter paints to a canvas, so there is no DOM node to hang drag handlers
 /// on: the events are taken from the document and hit-tested against this
@@ -47,22 +48,36 @@ class _WebFileDropGuardState extends State<WebFileDropGuard> {
 ///
 /// Drops are always prevented from reaching the browser (see
 /// [WebFileDropGuard]); only a drop that lands inside the box is delivered to
-/// [onFile].
+/// [onFile] (single-file mode) or [onFiles] (multi-file mode). A region whose
+/// route is covered — e.g. by a dialog that has its own drop zone — ignores
+/// drops, since hit-testing the box alone cannot see what is painted above it.
 class WebFileDropRegion extends StatefulWidget {
   const WebFileDropRegion({
     super.key,
     required this.allowedExtensions,
-    required this.onFile,
+    this.onFile,
+    this.onFiles,
     required this.builder,
     this.onUnsupportedType,
     this.onMultipleFiles,
-  });
+    this.enabled = true,
+  }) : assert((onFile == null) != (onFiles == null),
+            'Pass exactly one of onFile / onFiles');
 
   /// Lower-case extensions with the dot, e.g. `['.jpg', '.png', '.pdf']`.
+  /// Only enforced in single-file mode.
   final List<String> allowedExtensions;
 
-  /// Called with the dropped file once it passes the extension check.
-  final ValueChanged<web.File> onFile;
+  /// Single-file mode: called with the dropped file once it passes the
+  /// extension check.
+  final ValueChanged<web.File>? onFile;
+
+  /// Multi-file mode (FS-1007 bulk upload): called with every dropped file,
+  /// unfiltered — the caller reports unsupported types itself.
+  final ValueChanged<List<web.File>>? onFiles;
+
+  /// When false the box neither highlights nor accepts drops.
+  final bool enabled;
 
   /// Called instead of [onFile] when the dropped file is not an allowed type.
   final VoidCallback? onUnsupportedType;
@@ -79,7 +94,7 @@ class WebFileDropRegion extends StatefulWidget {
 
 class _WebFileDropRegionState extends State<WebFileDropRegion> {
   final GlobalKey _boxKey = GlobalKey();
-  late final _DocumentDragListener _listener;
+  late final DocumentDragListener _listener;
 
   bool _isDragOver = false;
 
@@ -91,7 +106,7 @@ class _WebFileDropRegionState extends State<WebFileDropRegion> {
   @override
   void initState() {
     super.initState();
-    _listener = _DocumentDragListener(onOver: _handleOver, onDrop: _handleDrop)
+    _listener = DocumentDragListener(onOver: _handleOver, onDrop: _handleDrop)
       ..attach();
   }
 
@@ -106,6 +121,8 @@ class _WebFileDropRegionState extends State<WebFileDropRegion> {
   /// The app fills the browser window, so Flutter's global logical pixels and
   /// the event's CSS client pixels share an origin.
   bool _isInsideBox(num clientX, num clientY) {
+    if (!widget.enabled) return false;
+    if (ModalRoute.of(context)?.isCurrent == false) return false;
     final renderObject = _boxKey.currentContext?.findRenderObject();
     if (renderObject is! RenderBox || !renderObject.hasSize) return false;
     final origin = renderObject.localToGlobal(Offset.zero);
@@ -134,6 +151,16 @@ class _WebFileDropRegionState extends State<WebFileDropRegion> {
 
     final files = event.dataTransfer?.files;
     if (files == null || files.length == 0) return;
+
+    final onFiles = widget.onFiles;
+    if (onFiles != null) {
+      onFiles([
+        for (var i = 0; i < files.length; i++)
+          if (files.item(i) != null) files.item(i)!,
+      ]);
+      return;
+    }
+
     if (files.length > 1) {
       widget.onMultipleFiles?.call();
       return;
@@ -147,7 +174,7 @@ class _WebFileDropRegionState extends State<WebFileDropRegion> {
       widget.onUnsupportedType?.call();
       return;
     }
-    widget.onFile(file);
+    widget.onFile!(file);
   }
 
   @override
@@ -156,35 +183,5 @@ class _WebFileDropRegionState extends State<WebFileDropRegion> {
       key: _boxKey,
       child: widget.builder(context, _isDragOver),
     );
-  }
-}
-
-/// Document-level `dragover`/`drop` plumbing shared by the guard and the
-/// region. Both always call `preventDefault()`: on `dragover` so the drop is
-/// allowed at all, and on `drop` so the browser never opens the file itself.
-class _DocumentDragListener {
-  _DocumentDragListener({required this.onOver, required this.onDrop});
-
-  final ValueChanged<web.DragEvent> onOver;
-  final ValueChanged<web.DragEvent> onDrop;
-
-  late final JSFunction _overCallback = ((web.Event event) {
-    event.preventDefault();
-    if (event.isA<web.DragEvent>()) onOver(event as web.DragEvent);
-  }).toJS;
-
-  late final JSFunction _dropCallback = ((web.Event event) {
-    event.preventDefault();
-    if (event.isA<web.DragEvent>()) onDrop(event as web.DragEvent);
-  }).toJS;
-
-  void attach() {
-    web.document.addEventListener('dragover', _overCallback);
-    web.document.addEventListener('drop', _dropCallback);
-  }
-
-  void detach() {
-    web.document.removeEventListener('dragover', _overCallback);
-    web.document.removeEventListener('drop', _dropCallback);
   }
 }

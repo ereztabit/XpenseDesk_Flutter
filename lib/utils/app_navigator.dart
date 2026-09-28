@@ -39,6 +39,9 @@ class AppRoutes {
 
   static const String adminCompanyTabUsers = 'users';
 
+  /// FS-1007: the per-company feature flags.
+  static const String adminCompanyTabConfiguration = 'configuration';
+
   /// Parses `/admin/companies/{guid}[/{tab}]`, or null when [path] is not a
   /// company-module route. Returns the tab segment verbatim; an unknown tab is
   /// the caller's problem to default.

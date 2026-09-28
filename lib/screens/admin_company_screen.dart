@@ -1,6 +1,7 @@
 import 'screen_imports.dart';
 import '../utils/app_navigator.dart';
 import '../providers/admin_provider.dart';
+import '../widgets/admin/admin_company_configuration_body.dart';
 import '../widgets/admin/admin_company_users_body.dart';
 import '../widgets/admin/admin_destroy_company_button.dart';
 import '../widgets/admin/admin_header.dart';
@@ -45,7 +46,10 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
     with FormBehaviorMixin, SingleTickerProviderStateMixin {
   /// Tab order is the URL contract — a tab's index is what its path segment
   /// resolves to, so new tabs are appended, never inserted.
-  static const List<String> _tabs = [AppRoutes.adminCompanyTabUsers];
+  static const List<String> _tabs = [
+    AppRoutes.adminCompanyTabUsers,
+    AppRoutes.adminCompanyTabConfiguration,
+  ];
 
   late final TabController _tabController;
 
@@ -157,7 +161,10 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
                       AnimatedBuilder(
                         animation: _tabController,
                         builder: (context, _) => ModuleTabBar(
-                          labels: [l10n.adminCompanyTabUsers],
+                          labels: [
+                            l10n.adminCompanyTabUsers,
+                            l10n.adminCompanyTabConfiguration,
+                          ],
                           activeIndex: _tabController.index,
                           onTap: _tabController.animateTo,
                         ),
@@ -168,6 +175,10 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
                           controller: _tabController,
                           children: [
                             AdminCompanyUsersBody(companyId: widget.companyId),
+                            AdminCompanyConfigurationBody(
+                              companyId: widget.companyId,
+                              companyName: companyName,
+                            ),
                           ],
                         ),
                       ),

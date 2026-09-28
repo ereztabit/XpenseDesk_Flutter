@@ -1,0 +1,350 @@
+// Bulk upload (FS-1007): the list math that gates "Process receipts" and the
+// notifications badge. A wrong count here either lets a half-uploaded batch be
+// sent or hides a finished one, so it is pinned by tests.
+import 'dart:typed_data';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:xpensedesk_flutter/models/bulk_upload_batch.dart';
+import 'package:xpensedesk_flutter/models/bulk_upload_file_entry.dart';
+import 'package:xpensedesk_flutter/models/bulk_upload_state.dart';
+import 'package:xpensedesk_flutter/utils/bulk_upload_utils.dart';
+
+BulkUploadFileEntry _file(int id, BulkUploadFileState state) =>
+    BulkUploadFileEntry(
+      localId: id,
+      fileName: 'r$id.jpg',
+      sizeBytes: 1,
+      isPdf: false,
+      bytes: Uint8List(1),
+      contentHash: 'h$id',
+      state: state,
+    );
+
+BulkUploadBatch _batch({
+  String status = 'Completed',
+  int total = 3,
+  int created = 3,
+  int unreadable = 0,
+  int pending = 0,
+  DateTime? completedAt,
+}) =>
+    BulkUploadBatch(
+      batchId: 'b',
+      status: status,
+      submittedAt: DateTime.utc(2026, 9, 27, 10),
+      completedAt: completedAt,
+      totalCount: total,
+      createdCount: created,
+      unreadableCount: unreadable,
+      pendingCount: pending,
+    );
+
+void main() {
+  group('BulkUploadCounts', () {
+    test('rejected files never count as valid and never block sending', () {
+      final c = BulkUploadCounts.of([
+        _file(1, BulkUploadFileState.uploaded),
+        _file(2, BulkUploadFileState.rejected),
+      ]);
+      expect(c.total, 2);
+      expect(c.valid, 1);
+      expect(c.rejected, 1);
+      expect(c.canSend, isTrue);
+      expect(footerHelpFor(c), BulkUploadFooterHelp.none);
+    });
+
+    test('waiting or uploading blocks sending with the pending help', () {
+      for (final s in [
+        BulkUploadFileState.waiting,
+        BulkUploadFileState.uploading,
+      ]) {
+        final c = BulkUploadCounts.of(
+            [_file(1, BulkUploadFileState.uploaded), _file(2, s)]);
+        expect(c.canSend, isFalse, reason: '$s must block');
+        expect(footerHelpFor(c), BulkUploadFooterHelp.pending);
+      }
+    });
+
+    test('a failed upload blocks sending with the failed help', () {
+      final c = BulkUploadCounts.of([
+        _file(1, BulkUploadFileState.uploaded),
+        _file(2, BulkUploadFileState.failed),
+      ]);
+      expect(c.canSend, isFalse);
+      expect(c.failed, 1);
+      expect(footerHelpFor(c), BulkUploadFooterHelp.failed);
+    });
+
+    test('pending wins over failed for the helper text', () {
+      final c = BulkUploadCounts.of([
+        _file(1, BulkUploadFileState.waiting),
+        _file(2, BulkUploadFileState.failed),
+      ]);
+      expect(footerHelpFor(c), BulkUploadFooterHelp.pending);
+    });
+
+    test('an all-rejected or empty list cannot be sent', () {
+      final rejected =
+          BulkUploadCounts.of([_file(1, BulkUploadFileState.rejected)]);
+      expect(rejected.canSend, isFalse);
+      expect(rejected.allRejected, isTrue);
+
+      final empty = BulkUploadCounts.of(const []);
+      expect(empty.canSend, isFalse);
+      expect(empty.allRejected, isFalse);
+    });
+  });
+
+  group('sendErrorFromCode', () {
+    test('maps every documented send code', () {
+      expect(sendErrorFromCode('BulkUploadNotEnabled'),
+          BulkUploadSendError.notEnabled);
+      expect(sendErrorFromCode('BulkUploadBatchEmpty'),
+          BulkUploadSendError.batchEmpty);
+      expect(sendErrorFromCode('BulkUploadBatchFull'),
+          BulkUploadSendError.batchFull);
+      expect(sendErrorFromCode('BulkUploadDuplicateFile'),
+          BulkUploadSendError.duplicateFile);
+      expect(sendErrorFromCode('BulkUploadFileNotFound'),
+          BulkUploadSendError.fileNotFound);
+    });
+
+    test('unknown or missing codes fall back to generic', () {
+      expect(sendErrorFromCode(null), BulkUploadSendError.generic);
+      expect(sendErrorFromCode('Something'), BulkUploadSendError.generic);
+    });
+  });
+
+  test('formatFileSize uses KB below 1 MB and MB above', () {
+    expect(formatFileSize(271770), '265.4 KB');
+    expect(formatFileSize(1258291), '1.2 MB');
+  });
+
+  group('notification helpers', () {
+    test('card kind follows status and counts', () {
+      expect(batchCardKind(_batch(status: 'Submitted', pending: 2)),
+          BatchCardKind.processing);
+      expect(batchCardKind(_batch()), BatchCardKind.allCreated);
+      expect(batchCardKind(_batch(created: 2, unreadable: 1)),
+          BatchCardKind.mixed);
+      expect(batchCardKind(_batch(created: 0, unreadable: 3)),
+          BatchCardKind.noneCreated);
+    });
+
+    test('doneCount is total minus pending', () {
+      expect(_batch(status: 'Submitted', total: 10, pending: 7).doneCount, 3);
+    });
+
+    test('unread counts only completed batches newer than last seen', () {
+      final seen = DateTime.utc(2026, 9, 27, 12);
+      final batches = [
+        _batch(completedAt: DateTime.utc(2026, 9, 27, 13)), // new
+        _batch(completedAt: DateTime.utc(2026, 9, 27, 11)), // seen
+        _batch(status: 'Submitted', pending: 1), // not completed
+      ];
+      expect(unreadBatchCount(batches, seen), 1);
+      expect(unreadBatchCount(batches, null), 2);
+      expect(hasProcessingBatch(batches), isTrue);
+    });
+
+    test('newly filed expenses are found per file, not per batch', () {
+      BulkUploadItem item(String id, String status, [String? expenseId]) =>
+          BulkUploadItem(
+            itemId: id,
+            originalFileName: '$id.png',
+            status: status,
+            expenseId: expenseId,
+          );
+      BulkUploadBatch b(String id, List<BulkUploadItem> items) =>
+          BulkUploadBatch(
+            batchId: id,
+            status: items.any((i) => i.status == 'Queued')
+                ? 'Submitted'
+                : 'Completed',
+            submittedAt: DateTime.utc(2026, 9, 27),
+            totalCount: items.length,
+            createdCount: items.where((i) => i.status == 'Created').length,
+            unreadableCount: 0,
+            pendingCount: items.where((i) => i.status == 'Queued').length,
+            items: items,
+          );
+
+      final start = [b('a', [item('1', 'Queued'), item('2', 'Queued')])];
+      final oneDone = [
+        b('a', [item('1', 'Created', 'e1'), item('2', 'Queued')]),
+      ];
+      final bothDone = [
+        b('a', [item('1', 'Created', 'e1'), item('2', 'Created', 'e2')]),
+      ];
+
+      expect(newlyCreatedExpenseIds(null, oneDone), isEmpty,
+          reason: 'first load: nothing on it is "new"');
+      expect(newlyCreatedExpenseIds(start, oneDone), {'e1'},
+          reason: 'the list grows while the batch is still running');
+      expect(newlyCreatedExpenseIds(oneDone, bothDone), {'e2'},
+          reason: 'only the file that just landed');
+      expect(newlyCreatedExpenseIds(bothDone, bothDone), isEmpty,
+          reason: 'already known');
+      expect(
+          newlyCreatedExpenseIds(start, [
+            b('a', [item('1', 'Unreadable'), item('2', 'Queued')]),
+          ]),
+          isEmpty,
+          reason: 'an unreadable file files nothing');
+    });
+
+    group('processing progress', () {
+      final t0 = DateTime.utc(2026, 9, 28, 12);
+      BulkUploadBatch run(String id, int total, int pending,
+              {required int sentMin, int? doneMin}) =>
+          BulkUploadBatch(
+            batchId: id,
+            status: doneMin == null ? 'Submitted' : 'Completed',
+            submittedAt: t0.add(Duration(minutes: sentMin)),
+            completedAt:
+                doneMin == null ? null : t0.add(Duration(minutes: doneMin)),
+            totalCount: total,
+            createdCount: total - pending,
+            unreadableCount: 0,
+            pendingCount: pending,
+          );
+
+      test('nothing processing → no strip', () {
+        expect(processingProgress([run('a', 3, 0, sentMin: 0, doneMin: 1)]),
+            isNull);
+      });
+
+      test('7 then 4: the total stays 11 while both run', () {
+        final p = processingProgress([
+          run('a', 7, 5, sentMin: 0),
+          run('b', 4, 4, sentMin: 1),
+        ])!;
+        expect((p.done, p.total), (2, 11));
+      });
+
+      test('7 then 4: the first finishing reads 7 of 11, not 0 of 4', () {
+        final p = processingProgress([
+          run('a', 7, 0, sentMin: 0, doneMin: 3),
+          run('b', 4, 4, sentMin: 1),
+        ])!;
+        expect((p.done, p.total), (7, 11));
+      });
+
+      test('a batch that finished before this run began is left out', () {
+        final p = processingProgress([
+          run('old', 5, 0, sentMin: 0, doneMin: 2),
+          run('new', 4, 3, sentMin: 10),
+        ])!;
+        expect((p.done, p.total), (1, 4));
+      });
+
+      test('a chain of overlapping batches stays one run', () {
+        // a overlaps b, b overlaps c; a finished before c was sent.
+        final p = processingProgress([
+          run('a', 3, 0, sentMin: 0, doneMin: 5),
+          run('b', 3, 0, sentMin: 4, doneMin: 9),
+          run('c', 3, 3, sentMin: 8),
+        ])!;
+        expect((p.done, p.total), (6, 9));
+      });
+    });
+
+    group('mergeBatch (live pushes)', () {
+      BulkUploadBatch b(String id, int minute,
+              {String status = 'Submitted', int pending = 2}) =>
+          BulkUploadBatch(
+            batchId: id,
+            status: status,
+            submittedAt: DateTime.utc(2026, 9, 28, 12, minute),
+            totalCount: 3,
+            createdCount: 3 - pending,
+            unreadableCount: 0,
+            pendingCount: pending,
+          );
+
+      test('a new batch is inserted newest first', () {
+        final merged = mergeBatch([b('old', 1)], b('new', 5));
+        expect(merged.map((x) => x.batchId), ['new', 'old']);
+      });
+
+      test('a known batch is replaced in place', () {
+        final merged =
+            mergeBatch([b('a', 5, pending: 2), b('z', 1)], b('a', 5, pending: 1));
+        expect(merged.map((x) => x.batchId), ['a', 'z']);
+        expect(merged.first.pendingCount, 1);
+      });
+
+      test('a push that would step a batch backwards is ignored', () {
+        final list = [b('a', 5, pending: 1)];
+        expect(identical(mergeBatch(list, b('a', 5, pending: 2)), list), isTrue,
+            reason: 'more pending than already shown');
+        final done = [b('a', 5, status: 'Completed', pending: 0)];
+        expect(identical(mergeBatch(done, b('a', 5, pending: 0)), done), isTrue,
+            reason: 'Completed never goes back to Submitted');
+      });
+
+      test('the list stays capped at the 10 the API returns', () {
+        final ten = [for (var i = 0; i < 10; i++) b('b$i', i)];
+        final merged = mergeBatch(ten, b('newest', 30));
+        expect(merged.length, 10);
+        expect(merged.first.batchId, 'newest');
+        expect(merged.any((x) => x.batchId == 'b0'), isFalse,
+            reason: 'the oldest drops off');
+      });
+    });
+
+    group('creeping progress', () {
+      const perFile = Duration(seconds: 40);
+      double at(int done, int total, int seconds) => creepingProgress(
+            done: done,
+            total: total,
+            sinceLastProgress: Duration(seconds: seconds),
+            perFile: perFile,
+          );
+
+      test('starts at the real value right after an update', () {
+        expect(at(3, 10, 0), closeTo(0.3, 1e-9));
+      });
+
+      test('creeps inside the current slot and slows as it goes', () {
+        final early = at(3, 10, 10) - at(3, 10, 0);
+        final late = at(3, 10, 40) - at(3, 10, 30);
+        expect(at(3, 10, 20), greaterThan(0.3));
+        expect(early, greaterThan(late), reason: 'eases out');
+      });
+
+      test('holds just short of the next file past the expected time', () {
+        expect(at(3, 10, 40), closeTo(0.39, 1e-9));
+        expect(at(3, 10, 400), closeTo(0.39, 1e-9),
+            reason: 'never reaches a file that is not done');
+      });
+
+      test('never behind the real value, never beyond the next one', () {
+        for (var s = 0; s <= 120; s += 5) {
+          final v = at(3, 10, s);
+          expect(v, greaterThanOrEqualTo(0.3));
+          expect(v, lessThan(0.4));
+        }
+      });
+
+      test('a finished run is full, an empty one is empty', () {
+        expect(at(10, 10, 5), 1);
+        expect(at(0, 0, 5), 0);
+      });
+
+      test('the slot is a fixed 40 s by default', () {
+        expect(kBulkUploadSlotPerFile, const Duration(seconds: 40));
+        expect(
+          creepingProgress(
+              done: 3, total: 10, sinceLastProgress: const Duration(seconds: 40)),
+          closeTo(0.39, 1e-9),
+        );
+      });
+    });
+
+    test('badge caps at 9+', () {
+      expect(unreadBadgeLabel(9), '9');
+      expect(unreadBadgeLabel(10), '9+');
+    });
+  });
+}
