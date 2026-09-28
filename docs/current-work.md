@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [Business][P2] **FS-1007** Bulk receipt upload (S1) -- up to 20 receipts in one batch behind a per-company flag: client validation, parallel upload, send, and a minimal notifications widget with Refresh. Backend built; Flutter S1 built on feature/bulk-receipt-upload (uncommitted), CR done, awaiting manual QA. see docs/in-progress/bulk-receipt-upload-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

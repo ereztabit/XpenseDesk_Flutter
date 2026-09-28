@@ -43,6 +43,7 @@ transformation.
 - [Expense API Guide](api-guides/expense-api-guide.md)
 - [Users API Documentation](api-guides/users_api_documentation.md)
 - [Expenses Analysis API Guide](api-guides/expenses-analysis-api-guide.md)
+- [Bulk Receipt Upload API Guide](api-guides/bulk-upload-api-guide.md) (FS-1007)
 
 ## Completed
 - [Login Flow](completed/login.md)

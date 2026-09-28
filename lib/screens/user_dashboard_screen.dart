@@ -5,7 +5,8 @@ import '../providers/expense_sheet_provider.dart';
 import '../utils/ref_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../widgets/employee_dashboard/employee_dashboard_body.dart';
-import '../widgets/employee_dashboard/page_header_row.dart';
+import '../utils/new_expense_launcher.dart';
+import '../widgets/employee_dashboard/my_expenses_header.dart';
 import '../widgets/dashboard_greeting.dart';
 import '../widgets/employee_dashboard/sheet_expense_empty_state.dart';
 import '../widgets/manager/manager_view_switcher.dart';
@@ -128,11 +129,9 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeaderRow(
+          MyExpensesHeader(
             newExpenseEnabled: true,
-            onNewExpense: () => Navigator.of(context)
-                .pushNamed('/employee/new-expense')
-                .then((_) => ref.invalidate(mySheetsProvider)),
+            onSingleDone: () => ref.invalidate(mySheetsProvider),
           ),
           const SizedBox(height: 24),
           ConstrainedBox(
@@ -148,9 +147,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                   title: l10n.employeeEmptyStateTitle,
                   description: l10n.employeeEmptyStateDesc,
                   actionLabel: l10n.newExpense,
-                  onAction: () => Navigator.of(context)
-                      .pushNamed('/employee/new-expense')
-                      .then((_) => ref.invalidate(mySheetsProvider)),
+                  onAction: () => startNewExpense(context, ref,
+                      onSingleDone: () => ref.invalidate(mySheetsProvider)),
                 ),
               ),
             ),
@@ -170,14 +168,12 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageHeaderRow(
+        MyExpensesHeader(
           newExpenseEnabled: isCurrentDraft,
-          onNewExpense: () => Navigator.of(context)
-              .pushNamed('/employee/new-expense')
-              .then((_) {
+          onSingleDone: () {
             ref.invalidate(mySheetsProvider);
             ref.invalidate(sheetDetailProvider(selectedSheet.expenseSheetId));
-          }),
+          },
         ),
         const SizedBox(height: 24),
         EmployeeDashboardBody(

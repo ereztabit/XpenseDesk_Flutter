@@ -1,5 +1,6 @@
 import 'api_service.dart';
 import 'auth_service.dart';
+import '../models/admin_company_configuration.dart';
 import '../models/admin_company_row.dart';
 import '../models/admin_company_user_row.dart';
 
@@ -159,5 +160,49 @@ class AdminService {
     );
 
     _validateResponse(response, 'Failed to destroy company');
+  }
+
+  /// GET /api/admin/companies/{companyId}/configuration — the company's
+  /// feature flags (FS-1007). `AdminCompanyNotFound` when the company is gone.
+  Future<AdminCompanyConfiguration> getCompanyConfiguration(
+    String companyId,
+  ) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/admin/companies/$companyId/configuration',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load company configuration');
+    return _configurationFrom(response);
+  }
+
+  /// PUT /api/admin/companies/{companyId}/configuration — switches a flag and
+  /// returns the stored configuration with its new `updatedAt`.
+  Future<AdminCompanyConfiguration> updateCompanyConfiguration({
+    required String companyId,
+    required bool isBulkUploadEnabled,
+  }) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.put(
+      '/api/admin/companies/$companyId/configuration',
+      {'isBulkUploadEnabled': isBulkUploadEnabled},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to save company configuration');
+    return _configurationFrom(response);
+  }
+
+  AdminCompanyConfiguration _configurationFrom(Map<String, dynamic> response) {
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AdminException('Invalid response from server');
+    }
+    return AdminCompanyConfiguration.fromJson(data);
   }
 }

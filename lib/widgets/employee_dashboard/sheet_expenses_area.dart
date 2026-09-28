@@ -6,6 +6,7 @@ import '../../models/dashboard_ui_state.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/employee_dashboard_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/new_expense_launcher.dart';
 import '../../utils/responsive_utils.dart';
 import '../expenses/delete_expense_dialog.dart';
 import '../last_action_confirm_dialog.dart';
@@ -104,9 +105,7 @@ class SheetExpensesArea extends ConsumerWidget {
               description: emptyDesc,
               actionLabel: isDraft ? l10n.newExpense : null,
               onAction: isDraft
-                  ? () => Navigator.of(context)
-                      .pushNamed('/employee/new-expense')
-                      .then((_) => onRefresh())
+                  ? () => startNewExpense(context, ref, onSingleDone: onRefresh)
                   : null,
             ),
           ),
