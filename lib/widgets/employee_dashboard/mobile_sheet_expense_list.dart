@@ -4,6 +4,7 @@ import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
 import '../selectable_scope.dart';
 import 'mobile_sheet_expense_row.dart';
+import 'new_expense_highlight.dart';
 
 /// Mobile compact list view — vertically stacked, divider-separated rows.
 /// Each row is a [MobileSheetExpenseRow].
@@ -34,14 +35,18 @@ class MobileSheetExpenseList extends StatelessWidget {
       child: SelectableScope(
         child: Column(
           children: List.generate(expenses.length, (index) {
-            return MobileSheetExpenseRow(
-              rowNumber: index + 1,
-              expense: expenses[index],
-              companyLocale: companyLocale,
-              isLast: index == expenses.length - 1,
-              onView: onView,
-              onEdit: onEdit,
-              onDelete: onDelete,
+            return NewExpenseHighlight(
+              key: ValueKey(expenses[index].expenseId),
+              expenseId: expenses[index].expenseId,
+              child: MobileSheetExpenseRow(
+                rowNumber: index + 1,
+                expense: expenses[index],
+                companyLocale: companyLocale,
+                isLast: index == expenses.length - 1,
+                onView: onView,
+                onEdit: onEdit,
+                onDelete: onDelete,
+              ),
             );
           }),
         ),

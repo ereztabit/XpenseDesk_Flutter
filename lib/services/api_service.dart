@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:web/web.dart' as web;
 import '../config/app_config.dart';
 
 /// Thrown when the server responds with HTTP 401 Unauthorized.
@@ -17,6 +20,25 @@ class NetworkException implements Exception {
   const NetworkException();
   @override
   String toString() => 'Unable to connect. Please check your internet connection.';
+}
+
+/// Thrown by [UploadTask.result] when the upload was cancelled with
+/// [UploadTask.abort] — the caller asked for it, so it is not a failure.
+class UploadCancelledException implements Exception {
+  const UploadCancelledException();
+}
+
+/// A single-file upload in flight, from [ApiService.uploadFileWithProgress].
+class UploadTask {
+  UploadTask._(this.result, this._abort);
+
+  /// Completes with the HTTP status and the decoded envelope (empty when the
+  /// body was not JSON, e.g. a proxy's 413 page). Errors with
+  /// [UnauthorizedException], [NetworkException] or [UploadCancelledException].
+  final Future<({int statusCode, Map<String, dynamic> body})> result;
+  final void Function() _abort;
+
+  void abort() => _abort();
 }
 
 /// Simple API service for HTTP requests
@@ -197,6 +219,70 @@ class ApiService {
         final response = await http.Response.fromStream(streamed);
         return _decode(response);
       });
+
+  /// Multipart POST of one file that reports upload progress and can be
+  /// cancelled. Web-only: `package:http` exposes no upload progress in the
+  /// browser, so this drives an `XMLHttpRequest` directly (FS-1007 bulk upload
+  /// shows a per-file percentage).
+  ///
+  /// [onProgress] receives 0.0–1.0 as the request body is sent.
+  UploadTask uploadFileWithProgress(
+    String endpoint, {
+    required String fieldName,
+    required Uint8List bytes,
+    required String filename,
+    String? authToken,
+    void Function(double fraction)? onProgress,
+  }) {
+    final completer =
+        Completer<({int statusCode, Map<String, dynamic> body})>();
+    final xhr = web.XMLHttpRequest();
+    xhr.open('POST', '$baseUrl$endpoint');
+    if (authToken != null) {
+      xhr.setRequestHeader('Authorization', 'Bearer $authToken');
+    }
+
+    xhr.upload.onprogress = ((web.ProgressEvent event) {
+      if (event.lengthComputable && event.total > 0) {
+        onProgress?.call(event.loaded / event.total);
+      }
+    }).toJS;
+
+    xhr.onload = ((web.Event _) {
+      if (completer.isCompleted) return;
+      final status = xhr.status;
+      if (status == 401) {
+        onUnauthorized?.call();
+        completer.completeError(const UnauthorizedException());
+        return;
+      }
+      Map<String, dynamic> body;
+      try {
+        body = jsonDecode(xhr.responseText) as Map<String, dynamic>;
+      } catch (_) {
+        body = const {};
+      }
+      completer.complete((statusCode: status, body: body));
+    }).toJS;
+
+    xhr.onerror = ((web.Event _) {
+      if (!completer.isCompleted) {
+        completer.completeError(const NetworkException());
+      }
+    }).toJS;
+
+    xhr.onabort = ((web.Event _) {
+      if (!completer.isCompleted) {
+        completer.completeError(const UploadCancelledException());
+      }
+    }).toJS;
+
+    final form = web.FormData()
+      ..append(fieldName, web.Blob([bytes.toJS].toJS), filename);
+    xhr.send(form);
+
+    return UploadTask._(completer.future, () => xhr.abort());
+  }
 
   /// Make a POST request and return the raw response bytes.
   /// Use this for binary responses such as Excel file downloads.

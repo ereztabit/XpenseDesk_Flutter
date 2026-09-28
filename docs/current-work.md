@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [Business][P2] **FS-1007** Bulk receipt upload S1 + S1.01 - banked on develop as v1.35 (2026-09-28), awaiting ship-feature. Needs before ship: backend banked + prod migration applied + App Service WebSockets on. see docs/in-progress/bulk-receipt-upload-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

@@ -32,6 +32,16 @@ extension CompanyDateFormat on DateTime {
     }
     return DateFormat.yMMMMd(companyLocale).format(d);
   }
+
+  /// Fixed `dd/MM · HH:mm` in local time — the notifications card's exact
+  /// stamp (bulk upload UI/UX guide §6.4). Locale-independent on purpose: it
+  /// is rendered as an LTR island in both languages.
+  String toDayMonthTime() =>
+      DateFormat('dd/MM · HH:mm', 'en').format(toLocal());
+
+  /// Fixed `dd/MM/yyyy HH:mm` in local time.
+  String toDateTimeStamp() =>
+      DateFormat('dd/MM/yyyy HH:mm', 'en').format(toLocal());
 }
 
 /// English ordinal suffix for a day-of-month (1 → "st", 2 → "nd", 11 → "th").

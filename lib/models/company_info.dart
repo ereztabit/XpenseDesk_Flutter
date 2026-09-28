@@ -1,4 +1,5 @@
 import 'billing_plan.dart';
+import 'company_configuration.dart';
 import 'payments_summary.dart';
 import 'tracked_currency.dart';
 
@@ -48,6 +49,9 @@ class CompanyInfo {
   /// Null when the caller is not a manager — the dashboard card must not
   /// render in that case.
   final PaymentsSummary? paymentsSummary;
+
+  /// Per-company feature flags (FS-1007). All off when the payload lacks them.
+  final CompanyConfiguration configuration;
 
   /// The single-month plan, if present.
   BillingPlan? get monthlyPlan =>
@@ -100,6 +104,7 @@ class CompanyInfo {
     this.trackedCurrencies = const [],
     this.plans = const [],
     this.paymentsSummary,
+    this.configuration = CompanyConfiguration.defaults,
   });
 
   /// Returns a copy with a fresh [PaymentsSummary] — used to update the
@@ -131,6 +136,7 @@ class CompanyInfo {
       trackedCurrencies: trackedCurrencies,
       plans: plans,
       paymentsSummary: summary,
+      configuration: configuration,
     );
   }
 
@@ -171,6 +177,10 @@ class CompanyInfo {
           ? PaymentsSummary.fromJson(
               json['paymentsSummary'] as Map<String, dynamic>)
           : null,
+      configuration: json['configuration'] != null
+          ? CompanyConfiguration.fromJson(
+              json['configuration'] as Map<String, dynamic>)
+          : CompanyConfiguration.defaults,
     );
   }
 }
