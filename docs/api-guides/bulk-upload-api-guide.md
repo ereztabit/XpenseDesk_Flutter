@@ -224,7 +224,7 @@ it raw. The server never returns English text for an item.
 
 | `failureCode` | Meaning |
 |---|---|
-| `BulkUploadReceiptNotReadable` | Nothing could be read from the receipt. In S1 it also covered a partial read; from S2 that is `ActionRequired` |
+| `BulkUploadReceiptNotReadable` | The file itself could not be read. In S1 it also covered a partial read and a scan that recognised nothing; from S2 both are `ActionRequired` (nothing recognised is filed empty) |
 | `BulkUploadFileNotAvailable` | The uploaded file was gone (e.g. the same file sent in two batches at once) |
 | `BulkUploadProcessingFailed` | Still failing after every retry |
 | `BulkUploadNoOpenCycle` | The company has no open expense cycle to file into |
@@ -242,8 +242,8 @@ unknown code as `BulkUploadReceiptNotReadable`.
 | Outcome | When |
 |---|---|
 | `Created` | The scan read an amount, a date inside the expense window (not in the future, not more than 12 months old) and a currency, with amount and date at high confidence, and the expense rules accept them. The filed expense has `isAiData = true`, category Other, and the read merchant / receipt number / amount / currency / date, exactly as if the user had scanned and saved it by hand |
-| `ActionRequired` (S2) | The scan recognised the receipt but fell short of the above, or its date is outside the window. The expense is filed anyway, flagged, holding what was read (§10) |
-| `Unreadable` | Nothing was recognised, the file was bad or gone, processing kept failing, or an expense rule refused a fully read receipt (e.g. no exchange rate). No expense |
+| `ActionRequired` (S2) | Anything short of the above on a file that opened: a partial read, a date outside the window, or nothing recognised at all (filed empty, `isAiData = false`). The expense is filed anyway, flagged, holding what was read and its image (§10) |
+| `Unreadable` | The file was bad or gone, processing kept failing, no open cycle, or an expense rule refused a fully read receipt (e.g. no exchange rate). No expense; the client names the file |
 
 Models:
 
@@ -313,7 +313,7 @@ already in use elsewhere, so reuse their keys if the app has them.
 | `BulkUploadBatchFull` | send | At most 20 files per batch |
 | `BulkUploadDuplicateFile` | send | The same file is in the batch twice |
 | `BulkUploadFileNotFound` | send | A file needs to be uploaded again |
-| `BulkUploadReceiptNotReadable` | item | Nothing could be read from this receipt |
+| `BulkUploadReceiptNotReadable` | item | This file could not be read |
 | `BulkUploadFileNotAvailable` | item | The file was no longer available - upload it again |
 | `BulkUploadProcessingFailed` | item | Something went wrong reading this receipt |
 | `BulkUploadNoOpenCycle` | item | There's no open expense period to file into |
@@ -387,8 +387,10 @@ A receipt that is recognised but not read in full is **no longer Unreadable**:
 an amount, date or currency is missing, or the amount or date is uncertain. It
 becomes a normal Pending expense on the user's Draft sheet, flagged
 `isActionRequired: true`. Its batch item is `ActionRequired`, with the
-`expenseId`. Only a receipt with nothing recognised, or a bad file, is still
-`Unreadable`.
+`expenseId`. A receipt the scan recognised **nothing** on is filed the same
+way, empty (no date, amount 0, no currency, `isAiData: false`), with its
+image. Only a file that can't be opened or is gone, repeated failure, no open
+cycle, or a rule refusal (e.g. no exchange rate) is still `Unreadable`.
 
 What the flagged expense holds:
 
@@ -455,3 +457,4 @@ only flagged expenses is not submitted.
 | 2026-09-28 | S1.01: live updates (§9) — connection ticket, `/hubs/notifications`, `batchUpdated`. Polling (§1 "Progress") is replaced. |
 | 2026-09-29 | S2 (§10): item status `ActionRequired`, batch `actionRequiredCount`, expense `isActionRequired` + nullable `expenseDate`, Draft sheet counts and totals leave flagged lines out. `BulkUploadReceiptNotReadable` now means nothing was read. |
 | 2026-09-29 | S2: a receipt dated outside the expense window (more than 12 months old, or in the future) is `ActionRequired` with its date kept (was `Unreadable` / date dropped). The client shows the policy; the save still refuses the date. |
+| 2026-09-29 | S2: a receipt the scan recognised nothing on is `ActionRequired`, filed empty with its image and `isAiData: false` (was `Unreadable`). `BulkUploadReceiptNotReadable` now means the file itself could not be read. |

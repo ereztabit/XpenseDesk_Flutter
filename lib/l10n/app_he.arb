@@ -902,6 +902,7 @@
   "notifAddedWord": "נוספו",
   "notifFailedWord": "נכשלו",
   "notifNeedActionWord": "דורשות פעולה",
+  "notifFailedFilesPrefix": "לא הצלחנו לקרוא:",
   "actionRequiredTitle": "הוצאות לא תקינות - דרושה עריכה ידנית",
   "actionRequiredExplanation": "הוצאות אלו הועלו, אבל לא הצלחנו להבין אותן עד הסוף - הן לא יישלחו לאישור וימשיכו להופיע כאן עד שיתוקנו.",
   "actionRequiredBanner": "לא הצלחנו לקרוא את הקבלה במלואה, יש להשלים את הפרטים החסרים ולוודא את הפרטים שמולאו.",

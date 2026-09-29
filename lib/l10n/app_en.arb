@@ -902,6 +902,7 @@
   "notifAddedWord": "added",
   "notifFailedWord": "failed",
   "notifNeedActionWord": "need action",
+  "notifFailedFilesPrefix": "Couldn't read:",
   "actionRequiredTitle": "Incomplete expenses - manual editing needed",
   "actionRequiredExplanation": "These expenses were uploaded, but we couldn't fully read them - they won't go for approval and will stay here until they're fixed.",
   "actionRequiredBanner": "We couldn't fully read this receipt. Please fill in the missing details and check the ones already filled in.",

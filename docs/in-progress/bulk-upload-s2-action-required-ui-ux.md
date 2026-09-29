@@ -169,10 +169,15 @@ showing only the non-zero parts, joined by " · ", in this order:
 | Part | Copy | Counts |
 |---|---|---|
 | added | "{n} added" | Receipts filed as normal expenses |
-| need action | "{n} need action" | Receipts filed as Action Required (new) |
-| failed | "{n} failed" | Receipts that couldn't be read at all (no expense) |
+| need action | "{n} need action" | Receipts filed as Action Required (new), including one the AI read nothing on — filed empty with its image, all three required fields highlighted, no AI badge |
+| failed | "{n} failed" | Only files that couldn't be opened at all, or were gone (no expense) |
 
 Example: "7 added · 2 need action · 1 failed".
+
+**The failed files are named** on one more line under the body (12, muted):
+"Couldn't read: scan.pdf, חניון.jpg" / "לא הצלחנו לקרוא: …". Each name is a
+bidi isolate, so Hebrew and Latin names keep their own direction. The names
+come from the batch items whose status is `Unreadable`.
 
 | Result | Icon |
 |---|---|
@@ -215,6 +220,7 @@ For alignment only; the contract is api-guide §10.
 | receiptTooOldPolicy | This receipt doesn't meet the policy: it's more than 12 months old. Please check the date or remove the receipt. | קבלה זו אינה עומדת במדיניות: קבלה ישנה מעל 12 חודשים. יש לוודא את התאריך או להסיר את הקבלה. |
 | receiptFutureDatePolicy | This receipt doesn't meet the policy: its date is in the future. Please check the date or remove the receipt. | קבלה זו אינה עומדת במדיניות: תאריך הקבלה עתידי. יש לוודא את התאריך או להסיר את הקבלה. |
 | notifNeedActionShort | {count} need action | {count} דורשות פעולה |
+| notifFailedFilesPrefix | Couldn't read: | לא הצלחנו לקרוא: |
 
 Reused as they are: "{count} added" / "{count} failed" in the done card, the
 edit screen's labels and buttons, the delete confirmation (now also used by

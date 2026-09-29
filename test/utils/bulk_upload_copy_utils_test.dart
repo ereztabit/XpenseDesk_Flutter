@@ -95,6 +95,38 @@ void main() {
     expect(batchBodyText(en, done(4, 0, 0)), '4 added');
   });
 
+  test('S2: the files that could not be read are named, only once done', () {
+    BulkUploadBatch batch(String status) => BulkUploadBatch(
+          batchId: 'b',
+          status: status,
+          submittedAt: DateTime.utc(2026, 9, 29),
+          totalCount: 3,
+          createdCount: 1,
+          actionRequiredCount: 0,
+          unreadableCount: 2,
+          pendingCount: 0,
+          items: const [
+            BulkUploadItem(itemId: '1', originalFileName: 'ok.jpg', status: 'Created', expenseId: 'e1'),
+            BulkUploadItem(itemId: '2', originalFileName: 'broken.pdf', status: 'Unreadable'),
+            BulkUploadItem(itemId: '3', originalFileName: 'חניון.jpg', status: 'Unreadable'),
+          ],
+        );
+    final fsi = String.fromCharCode(0x2068);
+    final pdi = String.fromCharCode(0x2069);
+    // Every name is wrapped in a bidi isolate; strip exactly those two marks.
+    String strip(String? s) {
+      expect(s, contains(fsi), reason: 'each name is isolated');
+      return s!.replaceAll(fsi, '').replaceAll(pdi, '');
+    }
+
+    expect(strip(batchFailedFilesText(en, batch('Completed'))),
+        "Couldn't read: broken.pdf, חניון.jpg");
+    expect(strip(batchFailedFilesText(he, batch('Completed'))),
+        'לא הצלחנו לקרוא: broken.pdf, חניון.jpg');
+    expect(batchFailedFilesText(en, batch('Submitted')), isNull);
+    expect(batchFailedFilesText(en, _batch('Completed', 3, 0, 0)), isNull);
+  });
+
   test('relative time: English suffix, Hebrew prefix, singulars', () {
     final now = DateTime.utc(2026, 9, 27, 12);
     Duration ago(int m) => Duration(minutes: m);
