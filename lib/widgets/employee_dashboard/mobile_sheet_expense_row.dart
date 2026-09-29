@@ -119,7 +119,7 @@ class MobileSheetExpenseRow extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (expense.isAiData) ...[
+                    if (showsAiBadge(expense)) ...[
                       const SizedBox(width: 6),
                       const AiBadge(),
                     ],

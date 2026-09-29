@@ -110,7 +110,7 @@ class MobileExpenseCard extends ConsumerWidget {
                 if (!hideStatusBadge)
                   ExpenseStatusBadge(
                     expenseStatusId: expense.expenseStatusId,
-                    isAiData: expense.isAiData,
+                    isAiData: showsAiBadge(expense),
                   ),
               ],
             ),

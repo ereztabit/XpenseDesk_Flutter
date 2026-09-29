@@ -53,6 +53,44 @@ void main() {
     expect([filled.amount, filled.currency, filled.date], [false, false, false]);
   });
 
+  test('AI badge: a flagged line keeps it only when every value was read', () {
+    ExpenseSummary line(
+            {required bool ai,
+            bool flagged = false,
+            DateTime? date,
+            double? amount = 10}) =>
+        ExpenseSummary(
+          expenseId: 'x',
+          companyId: 'c',
+          createdByUserId: 'u',
+          createdByName: 'Employee',
+          createdAt: DateTime(2026, 9, 29),
+          expenseDate: date,
+          categoryId: 5,
+          categoryName: 'Other',
+          amount: amount,
+          expenseStatusId: 1,
+          statusAlias: 'Pending',
+          isAiData: ai,
+          isActionRequired: flagged,
+        );
+    final recent = DateTime.now().subtract(const Duration(days: 3));
+    final old = DateTime.now().subtract(const Duration(days: 800));
+
+    expect(showsAiBadge(line(ai: true, date: recent)), isTrue);
+    expect(showsAiBadge(line(ai: false, date: recent)), isFalse);
+    expect(showsAiBadge(line(ai: true, flagged: true, date: recent)), isTrue,
+        reason: 'all values read (flagged as uncertain): keeps the badge');
+    expect(showsAiBadge(line(ai: true, flagged: true, date: old)), isTrue,
+        reason: 'all values read (flagged by the date policy): keeps the badge');
+    expect(showsAiBadge(line(ai: true, flagged: true)), isFalse,
+        reason: 'no date: loses the badge');
+    expect(
+        showsAiBadge(line(ai: true, flagged: true, date: recent, amount: 0)),
+        isFalse,
+        reason: 'no amount (or no currency, which clears it): loses the badge');
+  });
+
   test('flagged lines split out of the regular list, order kept', () {
     final split = SheetExpenseBuckets.splitActionRequired([
       _expense('1'),

@@ -131,3 +131,7 @@ flagged with its date kept (server), policy message on the date (client).
 | Verification | Analyzer clean · 110 tests pass · backend 410/411 (the one failure is the filed day-29 billing test bug) · a real receipt dated next week came back `ActionRequired` with its date (2026-10-06) kept |
 
 **Follow-up (same day):** the policy text moved from under the date field to the top banner, as a second line after the "couldn't fully read" text. The date field keeps the amber highlight with no hint. `MissingFieldHint` is back to one fixed text. Analyzer clean · 110 tests pass.
+
+**Follow-up (same day) - AI badge:** `showsAiBadge()` in `expense_display_utils.dart` hides the badge on a flagged line unless its date breaks the policy; used by the desktop row, the mobile row and the mobile card. Saving a flagged line sends `isAiData: false`. Test added. Analyzer clean · 111 tests pass.
+
+**Follow-up (same day) - AI badge rule, final:** a flagged line loses the badge when a value is missing (no date, or amount 0) and keeps it when every value was read. On save, a flagged expense that had missing values when opened is sent as `isAiData: false`; one read in full keeps its flag. Analyzer clean · 111 tests pass.

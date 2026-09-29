@@ -101,6 +101,11 @@ class _EmployeeExpenseDetailScreenState
   String? _initialCurrencyCode;
   bool _initialIsAiData = false;
 
+  /// An Action Required expense the AI left values missing on. Completing it
+  /// is the user's work, so it is saved as manual data (no AI badge). One the
+  /// AI read in full (uncertain, or the date policy) keeps its AI flag.
+  bool _aiMissedValues = false;
+
   /// True when the parent sheet is finalised (Approved) — locked for everyone,
   /// including the manager escape hatch.
   bool get _isSheetApproved =>
@@ -271,6 +276,13 @@ class _EmployeeExpenseDetailScreenState
     _initialCategoryId = expense.categoryId;
     _initialCurrencyCode = _selectedCurrencyCode;
     _initialIsAiData = expense.isAiData;
+    final missedOnLoad = missingRequiredFields(
+      amountText: _amountController.text,
+      currencyCode: expense.currencyCode,
+      date: expense.expenseDate,
+    );
+    _aiMissedValues = expense.isActionRequired &&
+        (missedOnLoad.amount || missedOnLoad.currency || missedOnLoad.date);
 
     // Fields are set above in amount-then-currency/date order, so the amount
     // listener fired with stale currency/date — re-evaluate with final values.
@@ -396,7 +408,7 @@ class _EmployeeExpenseDetailScreenState
           currencyCode: _selectedCurrencyCode,
           receiptRef: _receiptRefController.text.trim().isEmpty
               ? null : _receiptRefController.text.trim(),
-          isAiData: _isAiData,
+          isAiData: _aiMissedValues ? false : _isAiData,
         ),
       );
       if (!mounted) return;

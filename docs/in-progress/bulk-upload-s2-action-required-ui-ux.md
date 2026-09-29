@@ -81,6 +81,13 @@ Radius 10 on every amber box. Icons: warning `warning_amber_rounded`, edit
   - Mobile: the same cards/list as the regular list.
   - No new row design, no status chip, no "Complete" button, no "Missing:"
     line.
+- **AI badge** (decided 2026-09-29): a flagged line with any **missing value**
+  (no date, or amount 0 — a missing currency clears the amount too) loses it;
+  one where every value was read keeps it. Saving a flagged line that had
+  missing values sends `isAiData: false`, so it shows no AI badge in the
+  regular list afterwards; one read in full keeps its flag. Limit: the list
+  has only the base amount, so an unconverted foreign line (base 0, amount
+  read in its own currency) shows no badge until it is completed.
 - Flagged lines **never appear in the regular list**, and are **left out of the
   sheet's total and item count** everywhere they show (the sheet picker and its
   options).

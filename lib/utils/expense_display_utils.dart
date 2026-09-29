@@ -6,6 +6,17 @@ import 'format_utils.dart';
 /// "Invalid Date" or "0.00".
 const String kMissingValue = '—';
 
+/// Whether a list line shows the AI badge. An Action Required line keeps it
+/// only when the AI read every required value (it is flagged for an
+/// uncertain value or the date policy); a line missing any loses it. A
+/// missing currency comes back as amount 0, so date + amount cover all three.
+bool showsAiBadge(ExpenseSummary expense) {
+  if (!expense.isAiData) return false;
+  if (!expense.isActionRequired) return true;
+  final amount = expense.amount;
+  return expense.expenseDate != null && amount != null && amount > 0;
+}
+
 /// Short company-locale date, or [kMissingValue] when there is none.
 String expenseDateText(DateTime? date, String companyLocale) =>
     date?.toCompanyDate(companyLocale) ?? kMissingValue;
