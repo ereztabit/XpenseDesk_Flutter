@@ -73,6 +73,28 @@ void main() {
     expect(batchBodyText(en, _batch('Completed', 0, 3, 0)), '3 failed');
   });
 
+  test('S2: "need action" sits between added and failed, in both languages',
+      () {
+    BulkUploadBatch done(int created, int needAction, int unreadable) =>
+        BulkUploadBatch(
+          batchId: 'b',
+          status: 'Completed',
+          submittedAt: DateTime.utc(2026, 9, 29),
+          totalCount: created + needAction + unreadable,
+          createdCount: created,
+          actionRequiredCount: needAction,
+          unreadableCount: unreadable,
+          pendingCount: 0,
+        );
+
+    expect(batchBodyText(en, done(7, 2, 1)),
+        '7 added · 2 need action · 1 failed');
+    expect(batchBodyText(he, done(7, 2, 1)),
+        '7 נוספו · 2 דורשות פעולה · 1 נכשלו');
+    expect(batchBodyText(en, done(0, 3, 0)), '3 need action');
+    expect(batchBodyText(en, done(4, 0, 0)), '4 added');
+  });
+
   test('relative time: English suffix, Hebrew prefix, singulars', () {
     final now = DateTime.utc(2026, 9, 27, 12);
     Duration ago(int m) => Duration(minutes: m);

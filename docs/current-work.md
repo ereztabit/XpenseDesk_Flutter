@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- IN PROGRESS [Business][P1] **FS-1007 S2** Bulk upload: Action Required expenses — amber "Needs action" section above the My expenses list (flagged lines out of the regular list and the sheet total), edit screen with missing required fields highlighted and Update without a change, Discard asks first, "need action" in the done notification. On `feature/bulk-upload-s2-action-required` (full-stack mission, backend half built); **the S2 API must not reach prod before this half** (a `null` expense date breaks today's sheet load). see docs/in-progress/bulk-upload-s2-action-required-ui-ux.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

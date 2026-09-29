@@ -7,7 +7,8 @@ class ExpenseSummary {
   final String createdByUserId;
   final String createdByName;
   final DateTime createdAt;
-  final DateTime expenseDate;
+  /// Null only on an Action Required expense whose date wasn't read.
+  final DateTime? expenseDate;
   final String? merchantName;
   final int categoryId;
   final String categoryName;
@@ -24,6 +25,10 @@ class ExpenseSummary {
   final DateTime? reviewedAt;
   final bool isAiData;
 
+  /// A partly read bulk-upload receipt (S2), held on the owner's Draft sheet
+  /// until completed. Decide from this flag, never from the values.
+  final bool isActionRequired;
+
   /// Parent sheet linkage (nullable for older payloads + compact nested
   /// projections inside `ExpenseSheetDetail.expenses[]`). On the post-sheets
   /// API, top-level `/api/expenses/search` rows always populate these.
@@ -37,7 +42,7 @@ class ExpenseSummary {
     required this.createdByUserId,
     required this.createdByName,
     required this.createdAt,
-    required this.expenseDate,
+    this.expenseDate,
     this.merchantName,
     required this.categoryId,
     required this.categoryName,
@@ -50,6 +55,7 @@ class ExpenseSummary {
     this.reviewedBy,
     this.reviewedAt,
     this.isAiData = false,
+    this.isActionRequired = false,
     this.expenseSheetId,
     this.expenseSheetStatusId,
     this.expenseSheetStatusAlias,
@@ -62,7 +68,9 @@ class ExpenseSummary {
       createdByUserId: json['createdByUserId'] as String,
       createdByName: json['createdByName'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      expenseDate: DateTime.parse(json['expenseDate'] as String),
+      expenseDate: json['expenseDate'] != null
+          ? DateTime.parse(json['expenseDate'] as String)
+          : null,
       merchantName: json['merchantName'] as String?,
       categoryId: json['categoryId'] as int,
       categoryName: json['categoryName'] as String,
@@ -77,6 +85,7 @@ class ExpenseSummary {
           ? DateTime.parse(json['reviewedAt'] as String)
           : null,
       isAiData: json['isAiData'] as bool? ?? false,
+      isActionRequired: json['isActionRequired'] as bool? ?? false,
       expenseSheetId: json['expenseSheetId'] as String?,
       expenseSheetStatusId: (json['expenseSheetStatusId'] as num?)?.toInt(),
       expenseSheetStatusAlias: json['expenseSheetStatusAlias'] as String?,

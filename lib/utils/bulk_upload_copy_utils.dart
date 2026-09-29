@@ -116,13 +116,16 @@ String batchTitleText(AppLocalizations l10n, BulkUploadBatch batch) {
   return processingTitleText(l10n, batch.totalCount);
 }
 
-/// Card body for a completed batch: only the non-zero parts, "7 added ·
-/// 3 failed". Null while processing (the progress bar stands in for it).
+/// Card body for a completed batch: only the non-zero parts, in this order,
+/// "7 added · 2 need action · 1 failed". Null while processing (the progress
+/// bar stands in for it).
 String? batchBodyText(AppLocalizations l10n, BulkUploadBatch batch) {
   if (!batch.isCompleted) return null;
   final parts = [
     if (batch.createdCount > 0)
       joinWords(['${batch.createdCount}', l10n.notifAddedWord]),
+    if (batch.actionRequiredCount > 0)
+      joinWords(['${batch.actionRequiredCount}', l10n.notifNeedActionWord]),
     if (batch.unreadableCount > 0)
       joinWords(['${batch.unreadableCount}', l10n.notifFailedWord]),
   ];
