@@ -2,9 +2,10 @@
 
 > Mission: FS-1007 (backend: BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md)
 
-**Status:** S1 client built on `feature/bulk-receipt-upload` (uncommitted),
-CR + security review done — see
-[bulk-receipt-upload-CR.md](bulk-receipt-upload-CR.md). Awaiting manual QA.
+**Status:** S1 + S1.01 shipped in v1.35 (2026-09-28), dark behind the
+per-company flag. CR + security review:
+[bulk-receipt-upload-CR.md](bulk-receipt-upload-CR.md). Later steps (S2–S5)
+are specced in the backend's `docs/bulk-upload/`.
 Design: [bulk-receipt-upload-ui-ux-guide.md](bulk-receipt-upload-ui-ux-guide.md).
 API contract copy: [../api-guides/bulk-upload-api-guide.md](../api-guides/bulk-upload-api-guide.md).
 
@@ -20,7 +21,7 @@ The backend leads this mission. The rest lives in the backend repo,
 | Doc | Use it for |
 |---|---|
 | [`api-guide.md`](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md) | The API contract: flag, stage, send, poll, admin switch, every error code to translate, Dart models |
-| `ui-ux-guide-later.md` | The approved design for S2–S4. Not for building yet |
+| `ui-ux-design-guide.md` | The one design guide for every step (S1–S4). Each later step gets a Flutter extract; S2: [../in-progress/bulk-upload-s2-action-required-ui-ux.md](../in-progress/bulk-upload-s2-action-required-ui-ux.md) |
 | `01-s1-skeleton.md` | What S1 includes and excludes (section 7: target client behavior) |
 | `00-plan.md` | Product decisions and the later steps (S2-S5) |
 | `lovable-ui-prompt.md` | The prompt behind the Lovable prototype |

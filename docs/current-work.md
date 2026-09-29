@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [Business][P2] **FS-1007** Bulk receipt upload S1 + S1.01 - banked on develop as v1.35 (2026-09-28), awaiting ship-feature. Needs before ship: backend banked + prod migration applied + App Service WebSockets on. see docs/in-progress/bulk-receipt-upload-spec.md
+- [Business][P1] **FS-1007 S2** Bulk upload: Action Required - banked on develop as v1.36 (2026-09-29), awaiting ship-feature. Ships together with the backend S2 half, only after `s2-migration.sql` is applied to production. see docs/in-progress/bulk-upload-s2-action-required-ui-ux.md
 
 ## Tags
 

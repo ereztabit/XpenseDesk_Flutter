@@ -7,7 +7,8 @@ class ExpenseDetail {
   final String createdByName;
   final String createdByEmail;
   final DateTime createdAt;
-  final DateTime expenseDate;
+  /// Null only on an Action Required expense whose date wasn't read.
+  final DateTime? expenseDate;
   final String? merchantName;
   final int categoryId;
   final String categoryName;
@@ -45,6 +46,10 @@ class ExpenseDetail {
   final DateTime? reviewedAt;
   final bool isAiData;
 
+  /// A partly read bulk-upload receipt (S2), held on the owner's Draft sheet
+  /// until completed. Decide from this flag, never from the values.
+  final bool isActionRequired;
+
   /// Parent sheet linkage (nullable for older payloads). On the post-sheets
   /// API, `/api/expenses/{id}` always populates these.
   final String? expenseSheetId;
@@ -58,7 +63,7 @@ class ExpenseDetail {
     required this.createdByName,
     required this.createdByEmail,
     required this.createdAt,
-    required this.expenseDate,
+    this.expenseDate,
     this.merchantName,
     required this.categoryId,
     required this.categoryName,
@@ -78,6 +83,7 @@ class ExpenseDetail {
     this.reviewedByName,
     this.reviewedAt,
     this.isAiData = false,
+    this.isActionRequired = false,
     this.expenseSheetId,
     this.expenseSheetStatusId,
     this.expenseSheetStatusAlias,
@@ -93,7 +99,9 @@ class ExpenseDetail {
       createdByName: json['createdByName'] as String,
       createdByEmail: json['createdByEmail'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      expenseDate: DateTime.parse(json['expenseDate'] as String),
+      expenseDate: json['expenseDate'] != null
+          ? DateTime.parse(json['expenseDate'] as String)
+          : null,
       merchantName: json['merchantName'] as String?,
       categoryId: json['categoryId'] as int,
       categoryName: json['categoryName'] as String,
@@ -117,6 +125,7 @@ class ExpenseDetail {
           ? DateTime.parse(json['reviewedAt'] as String)
           : null,
       isAiData: json['isAiData'] as bool? ?? false,
+      isActionRequired: json['isActionRequired'] as bool? ?? false,
       expenseSheetId: json['expenseSheetId'] as String?,
       expenseSheetStatusId: (json['expenseSheetStatusId'] as num?)?.toInt(),
       expenseSheetStatusAlias: json['expenseSheetStatusAlias'] as String?,

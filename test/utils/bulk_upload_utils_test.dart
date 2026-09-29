@@ -24,6 +24,7 @@ BulkUploadBatch _batch({
   String status = 'Completed',
   int total = 3,
   int created = 3,
+  int actionRequired = 0,
   int unreadable = 0,
   int pending = 0,
   DateTime? completedAt,
@@ -35,6 +36,7 @@ BulkUploadBatch _batch({
       completedAt: completedAt,
       totalCount: total,
       createdCount: created,
+      actionRequiredCount: actionRequired,
       unreadableCount: unreadable,
       pendingCount: pending,
     );
@@ -131,6 +133,17 @@ void main() {
           BatchCardKind.noneCreated);
     });
 
+    test('S2: files needing action make a batch mixed, never all-created', () {
+      expect(batchCardKind(_batch(created: 2, actionRequired: 1)),
+          BatchCardKind.mixed);
+      expect(
+          batchCardKind(_batch(created: 1, actionRequired: 1, unreadable: 1)),
+          BatchCardKind.mixed);
+      expect(batchCardKind(_batch(created: 0, actionRequired: 3)),
+          BatchCardKind.noneCreated,
+          reason: 'nothing added as a normal expense');
+    });
+
     test('doneCount is total minus pending', () {
       expect(_batch(status: 'Submitted', total: 10, pending: 7).doneCount, 3);
     });
@@ -191,6 +204,12 @@ void main() {
           ]),
           isEmpty,
           reason: 'an unreadable file files nothing');
+      expect(
+          newlyCreatedExpenseIds(start, [
+            b('a', [item('1', 'ActionRequired', 'e1'), item('2', 'Queued')]),
+          ]),
+          {'e1'},
+          reason: 'S2: an Action Required file is filed too');
     });
 
     group('processing progress', () {

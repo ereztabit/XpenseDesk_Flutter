@@ -25,6 +25,9 @@ AI-powered expense approval tool for small businesses.
 A spec moves `backlog/` → `in-progress/` when work starts, → `completed/` when it
 ships, or back to `backlog/` if the work is paused or dropped.
 
+## In progress
+- [Bulk Upload S2 — Action Required UI/UX](in-progress/bulk-upload-s2-action-required-ui-ux.md) (FS-1007) — the Flutter half of S2; the backend half is built
+
 ## Backlog specs (open, not started)
 - [Multi-Currency Expenses](backlog/multi-currency-expenses.md) — core + follow-up 1 shipped and verified; follow-up 2 (AI scan of foreign currency) open
 - [Spend Overview Spec](backlog/spend-overview-spec.md) — manager card live; employee side + the approvals-screen slot are still placeholders

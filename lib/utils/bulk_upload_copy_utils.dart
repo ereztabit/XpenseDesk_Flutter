@@ -116,17 +116,38 @@ String batchTitleText(AppLocalizations l10n, BulkUploadBatch batch) {
   return processingTitleText(l10n, batch.totalCount);
 }
 
-/// Card body for a completed batch: only the non-zero parts, "7 added ·
-/// 3 failed". Null while processing (the progress bar stands in for it).
+/// Card body for a completed batch: only the non-zero parts, in this order,
+/// "7 added · 2 need action · 1 failed". Null while processing (the progress
+/// bar stands in for it).
 String? batchBodyText(AppLocalizations l10n, BulkUploadBatch batch) {
   if (!batch.isCompleted) return null;
   final parts = [
     if (batch.createdCount > 0)
       joinWords(['${batch.createdCount}', l10n.notifAddedWord]),
+    if (batch.actionRequiredCount > 0)
+      joinWords(['${batch.actionRequiredCount}', l10n.notifNeedActionWord]),
     if (batch.unreadableCount > 0)
       joinWords(['${batch.unreadableCount}', l10n.notifFailedWord]),
   ];
   return parts.isEmpty ? null : parts.join(' · ');
+}
+
+/// The files of a completed batch that could not be read at all, by name:
+/// "Couldn't read: scan.pdf, חניון.jpg" (S2 — every other receipt is filed,
+/// at worst as Action Required). Null when there are none. Each name is a
+/// bidi isolate, so a Hebrew or Latin name keeps its own direction.
+String? batchFailedFilesText(AppLocalizations l10n, BulkUploadBatch batch) {
+  if (!batch.isCompleted) return null;
+  // First-strong isolate ... pop directional isolate.
+  final fsi = String.fromCharCode(0x2068);
+  final pdi = String.fromCharCode(0x2069);
+  final names = [
+    for (final item in batch.items)
+      if (item.status == 'Unreadable' && item.originalFileName.isNotEmpty)
+        '$fsi${item.originalFileName}$pdi',
+  ];
+  if (names.isEmpty) return null;
+  return joinWords([l10n.notifFailedFilesPrefix, names.join(', ')]);
 }
 
 /// Progress label under the bar: "3 of 10".

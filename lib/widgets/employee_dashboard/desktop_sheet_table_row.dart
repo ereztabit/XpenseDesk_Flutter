@@ -6,7 +6,7 @@ import '../../models/expense_category.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/format_utils.dart';
+import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
 
@@ -38,9 +38,7 @@ class DesktopSheetTableRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
-    final amountText = expense.amount != null
-        ? expense.amount!.toCurrency(companyLocale, baseCurrency)
-        : '—';
+    final amountText = expenseAmountText(expense, companyLocale, baseCurrency);
     final uiLocale = Localizations.localeOf(context);
     final categoryText =
         ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
@@ -77,7 +75,7 @@ class DesktopSheetTableRow extends ConsumerWidget {
           Expanded(
             flex: 18,
             child: Text(
-              expense.expenseDate.toCompanyDate(companyLocale),
+              expenseDateText(expense.expenseDate, companyLocale),
               style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
             ),
           ),
@@ -106,7 +104,7 @@ class DesktopSheetTableRow extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (expense.isAiData) ...[
+                if (showsAiBadge(expense)) ...[
                   const SizedBox(width: 6),
                   const AiBadge(),
                 ],

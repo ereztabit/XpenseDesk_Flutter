@@ -14,6 +14,8 @@ import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../services/excel_export_service.dart';
 import '../services/expense_service.dart';
+import '../utils/expense_display_utils.dart';
+import '../utils/expense_policy_utils.dart';
 import '../utils/format_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../utils/responsive_utils.dart';
@@ -23,6 +25,8 @@ import '../widgets/expenses/conversion_preview_label.dart';
 import '../widgets/expenses/delete_expense_dialog.dart';
 import '../widgets/expenses/dev_scan_record_button.dart';
 import '../widgets/expenses/expense_modify_image_panel.dart';
+import '../widgets/expenses/missing_field_hint.dart';
+import '../widgets/bulk_upload/bulk_upload_amber_notice.dart';
 import '../widgets/last_action_confirm_dialog.dart';
 import '../widgets/shake_on_demand.dart';
 
@@ -97,6 +101,11 @@ class _EmployeeExpenseDetailScreenState
   String? _initialCurrencyCode;
   bool _initialIsAiData = false;
 
+  /// An Action Required expense the AI left values missing on. Completing it
+  /// is the user's work, so it is saved as manual data (no AI badge). One the
+  /// AI read in full (uncertain, or the date policy) keeps its AI flag.
+  bool _aiMissedValues = false;
+
   /// True when the parent sheet is finalised (Approved) — locked for everyone,
   /// including the manager escape hatch.
   bool get _isSheetApproved =>
@@ -118,6 +127,39 @@ class _EmployeeExpenseDetailScreenState
       isManager: false,
     );
   }
+
+  /// A partly read bulk-upload receipt (S2) the owner has to complete: always
+  /// the full form, its empty required fields highlighted, and Update doesn't
+  /// wait for a change (design guide §8.4).
+  bool get _isActionRequired =>
+      !widget.isManagerMode && (_expense?.isActionRequired ?? false);
+
+  bool get _useFullForm => !_isAiData || _isActionRequired;
+
+  // The required fields left empty on an Action Required expense. Recomputed
+  // every build, so a highlight clears the moment its field is filled.
+  ({bool amount, bool currency, bool date}) get _missing => _isActionRequired
+      ? missingRequiredFields(
+          amountText: _amountController.text,
+          currencyCode: _selectedCurrencyCode,
+          date: _selectedDate,
+        )
+      : (amount: false, currency: false, date: false);
+
+  // A receipt dated outside the policy window (more than 12 months old, or in
+  // the future) keeps its date — it is almost always a misread — and is
+  // highlighted with the policy message until it is fixed. Client-side for
+  // now; the server's save refuses it anyway.
+  DatePolicyViolation? get _dateViolation =>
+      _isActionRequired && _selectedDate != null
+          ? ExpensePolicy.dateViolation(_selectedDate!)
+          : null;
+
+  bool get _hasMissingRequired =>
+      _missing.amount ||
+      _missing.currency ||
+      _missing.date ||
+      _dateViolation != null;
 
   /// Amount and date are the only mandatory fields — merchant, category, note
   /// and receipt # are optional (an unset category saves as "Other").
@@ -206,7 +248,10 @@ class _EmployeeExpenseDetailScreenState
     // The editable amount is what the user actually entered, in their currency
     // (dynamicAmount) — NOT the server-booked base-currency value (amount).
     final editableAmount = expense.dynamicAmount ?? expense.amount;
-    _amountController.text = editableAmount != null
+    // An Action Required amount that wasn't read comes back as 0: show the
+    // field empty (and highlighted), never "0".
+    final amountUnread = expense.isActionRequired && (editableAmount ?? 0) == 0;
+    _amountController.text = editableAmount != null && !amountUnread
         ? NumberFormat('#,##0.##', 'en').format(editableAmount)
         : '';
     _merchantController.text = expense.merchantName ?? '';
@@ -214,8 +259,11 @@ class _EmployeeExpenseDetailScreenState
     _receiptRefController.text = expense.receiptRef ?? '';
     _selectedDate = expense.expenseDate;
     _selectedCategoryId = expense.categoryId;
-    _selectedCurrencyCode =
-        expense.currencyCode ?? expense.baseCurrencyCode ?? 'ILS';
+    // A currency the scan didn't read stays unset on an Action Required
+    // expense, so the user picks it instead of inheriting a guess.
+    _selectedCurrencyCode = expense.isActionRequired
+        ? expense.currencyCode
+        : expense.currencyCode ?? expense.baseCurrencyCode ?? 'ILS';
     _isAiData = expense.isAiData;
     _isModifying = false;
 
@@ -228,6 +276,13 @@ class _EmployeeExpenseDetailScreenState
     _initialCategoryId = expense.categoryId;
     _initialCurrencyCode = _selectedCurrencyCode;
     _initialIsAiData = expense.isAiData;
+    final missedOnLoad = missingRequiredFields(
+      amountText: _amountController.text,
+      currencyCode: expense.currencyCode,
+      date: expense.expenseDate,
+    );
+    _aiMissedValues = expense.isActionRequired &&
+        (missedOnLoad.amount || missedOnLoad.currency || missedOnLoad.date);
 
     // Fields are set above in amount-then-currency/date order, so the amount
     // listener fired with stale currency/date — re-evaluate with final values.
@@ -353,7 +408,7 @@ class _EmployeeExpenseDetailScreenState
           currencyCode: _selectedCurrencyCode,
           receiptRef: _receiptRefController.text.trim().isEmpty
               ? null : _receiptRefController.text.trim(),
-          isAiData: _isAiData,
+          isAiData: _aiMissedValues ? false : _isAiData,
         ),
       );
       if (!mounted) return;
@@ -494,9 +549,9 @@ class _EmployeeExpenseDetailScreenState
     }
   }
 
-  /// Manager delete (escape hatch). Confirms via the shared dialog; on success
-  /// the expense is gone, so leave the detail screen — the sheet review
-  /// refreshes on return.
+  /// Manager delete (escape hatch), and the employee's Discard on an Action
+  /// Required expense. Confirms via the shared dialog; on success the expense
+  /// is gone, so leave the detail screen — the list refreshes on return.
   Future<void> _delete() async {
     final deleted = await DeleteExpenseDialog.show(context, widget.expenseId);
     if (deleted && mounted) {
@@ -530,6 +585,7 @@ class _EmployeeExpenseDetailScreenState
     List<TextInputFormatter>? inputFormatters,
     TextInputType? keyboardType,
     String? errorText,
+    bool missing = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -550,20 +606,34 @@ class _EmployeeExpenseDetailScreenState
             color: enabled ? AppTheme.foreground : AppTheme.mutedForeground,
           ),
           decoration: InputDecoration(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: missing
+                ? MissingFieldHint.border()
+                : OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            enabledBorder: missing ? MissingFieldHint.border() : null,
+            focusedBorder: missing ? MissingFieldHint.border() : null,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            filled: !enabled,
-            fillColor: enabled ? null : AppTheme.muted.withAlpha(77),
+            filled: !enabled || missing,
+            fillColor: missing
+                ? MissingFieldHint.fillColor
+                : (enabled ? null : AppTheme.muted.withAlpha(77)),
             errorText: errorText,
           ),
         ),
+        if (missing && errorText == null) const MissingFieldHint(),
       ],
     );
   }
 
   Widget _buildDateField(String label, String companyLocale,
-      {bool required = false, bool enabled = true, String? errorText}) {
+      {bool required = false,
+      bool enabled = true,
+      String? errorText,
+      bool missing = false,
+      bool policyBreach = false}) {
+    // Missing and policy-breaching dates share the amber highlight; only a
+    // missing one gets the hint below — the policy text is in the top banner.
+    final highlighted = missing || policyBreach;
     // Hand-rolled field (it opens a picker rather than taking keystrokes), so
     // the error border and message that InputDecoration would give us for free
     // are built here.
@@ -577,11 +647,16 @@ class _EmployeeExpenseDetailScreenState
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
-              border: Border.all(
-                color: errorText != null ? AppTheme.destructive : AppTheme.border,
-              ),
+              border: errorText != null
+                  ? Border.all(color: AppTheme.destructive)
+                  : highlighted
+                      ? Border.fromBorderSide(
+                          MissingFieldHint.border().borderSide)
+                      : Border.all(color: AppTheme.border),
               borderRadius: BorderRadius.circular(8),
-              color: enabled ? null : AppTheme.muted.withAlpha(77),
+              color: highlighted
+                  ? MissingFieldHint.fillColor
+                  : (enabled ? null : AppTheme.muted.withAlpha(77)),
             ),
             child: Row(
               children: [
@@ -609,7 +684,9 @@ class _EmployeeExpenseDetailScreenState
               style: const TextStyle(
                   fontSize: 12, color: AppTheme.destructive),
             ),
-          ),
+          )
+        else if (missing)
+          const MissingFieldHint(),
       ],
     );
   }
@@ -646,6 +723,7 @@ class _EmployeeExpenseDetailScreenState
   }
 
   Widget _buildCurrencyDropdown(AppLocalizations l10n, {bool enabled = true}) {
+    final missing = _missing.currency;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -656,11 +734,17 @@ class _EmployeeExpenseDetailScreenState
           expandedInsets: EdgeInsets.zero,
           hintText: l10n.currencyPlaceholder,
           inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: missing
+                ? MissingFieldHint.border()
+                : OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            enabledBorder: missing ? MissingFieldHint.border() : null,
+            focusedBorder: missing ? MissingFieldHint.border() : null,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            filled: !enabled,
-            fillColor: !enabled ? AppTheme.muted.withAlpha(77) : null,
+            filled: !enabled || missing,
+            fillColor: missing
+                ? MissingFieldHint.fillColor
+                : (!enabled ? AppTheme.muted.withAlpha(77) : null),
           ),
           dropdownMenuEntries: ref
               .watch(trackedCurrenciesProvider)
@@ -674,6 +758,7 @@ class _EmployeeExpenseDetailScreenState
                 }
               : null,
         ),
+        if (missing) const MissingFieldHint(),
       ],
     );
   }
@@ -695,6 +780,7 @@ class _EmployeeExpenseDetailScreenState
           errorText: _hasAttemptedSave && _amountController.text.trim().isEmpty
               ? l10n.amountRequired
               : null,
+          missing: _missing.amount,
         ),
       ),
     );
@@ -711,6 +797,8 @@ class _EmployeeExpenseDetailScreenState
           errorText: _hasAttemptedSave && _selectedDate == null
               ? l10n.expenseDateRequired
               : null,
+          missing: _missing.date,
+          policyBreach: _dateViolation != null,
         ),
       ),
     );
@@ -825,7 +913,7 @@ class _EmployeeExpenseDetailScreenState
                 ],
                 _SummaryTile(
                     label: l10n.expenseDate,
-                    value: _expense!.expenseDate.toCompanyDate(companyLocale)),
+                    value: expenseDateText(_expense!.expenseDate, companyLocale)),
                 if (_expense!.merchantName != null)
                   _SummaryTile(
                       label: l10n.merchantLabel,
@@ -1057,17 +1145,27 @@ class _EmployeeExpenseDetailScreenState
           )
         : null;
 
+    // An Action Required expense is saved once nothing required is empty —
+    // even unchanged, so an uncertain but correct read can be confirmed as is.
+    final canPressSave = _isActionRequired ? !_hasMissingRequired : _isDirty;
     final saveBtn = AppButton(
       label: l10n.updateExpenseDetails,
       variant: AppButtonVariant.primary,
       icon: Icons.save_outlined,
       isLoading: _isSaving,
-      onPressed: _isDirty && !_isSaving && _conversion.canSave ? _save : null,
+      onPressed:
+          canPressSave && !_isSaving && _conversion.canSave ? _save : null,
     );
+    // Discarding an Action Required expense deletes it, so it asks first
+    // with the normal delete confirmation.
     final discardBtn = AppButton(
       label: l10n.discard,
       variant: AppButtonVariant.normal,
-      onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
+      onPressed: _isSaving
+          ? null
+          : _isActionRequired
+              ? _delete
+              : () => Navigator.of(context).pop(),
     );
 
     return Column(
@@ -1174,6 +1272,24 @@ class _EmployeeExpenseDetailScreenState
                     const SizedBox(height: 12),
                     const Divider(),
                     const SizedBox(height: 16),
+                    if (_isActionRequired) ...[
+                      // A date-policy breach is added to the banner as a
+                      // second line; the date field itself is highlighted.
+                      BulkUploadAmberNotice(
+                        message: [
+                          l10n.actionRequiredBanner,
+                          ?switch (_dateViolation) {
+                            DatePolicyViolation.tooOld =>
+                              l10n.receiptTooOldPolicy,
+                            DatePolicyViolation.inFuture =>
+                              l10n.receiptFutureDatePolicy,
+                            null => null,
+                          },
+                        ].join('\n'),
+                        showIcon: true,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (context.isDesktop)
                       _buildDesktopLayout(l10n, companyLocale, uiLocale)
                     else
@@ -1217,7 +1333,7 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildDesktopLayout(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {
-    final form = !_isAiData
+    final form = _useFullForm
         ? _buildFullForm(l10n, companyLocale, uiLocale)
         : _buildFastTrackForm(l10n, companyLocale, uiLocale);
 
@@ -1274,7 +1390,7 @@ class _EmployeeExpenseDetailScreenState
 
   Widget _buildMobileLayout(
       AppLocalizations l10n, String companyLocale, Locale uiLocale) {
-    final form = !_isAiData
+    final form = _useFullForm
         ? _buildFullForm(l10n, companyLocale, uiLocale)
         : _buildFastTrackForm(l10n, companyLocale, uiLocale);
 

@@ -34,6 +34,7 @@ class NotificationBatchCard extends StatelessWidget {
 
     final title = batchTitleText(l10n, batch);
     final body = batchBodyText(l10n, batch);
+    final failedFiles = batchFailedFilesText(l10n, batch);
     final at = batch.lastEventAt;
     const muted = TextStyle(fontSize: 12, color: AppTheme.mutedForeground);
 
@@ -72,6 +73,10 @@ class NotificationBatchCard extends StatelessWidget {
                   if (body != null) ...[
                     const SizedBox(height: 2),
                     Text(body, style: const TextStyle(fontSize: 13)),
+                  ],
+                  if (failedFiles != null) ...[
+                    const SizedBox(height: 2),
+                    Text(failedFiles, style: muted),
                   ],
                   if (isProcessing) ...[
                     const SizedBox(height: 6),
