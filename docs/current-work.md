@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- IN PROGRESS [Business][P1] **FS-1007 S2** Bulk upload: Action Required expenses — amber "Needs action" section above the My expenses list (flagged lines out of the regular list and the sheet total), edit screen with missing required fields highlighted and Update without a change, Discard asks first, "need action" in the done notification. On `feature/bulk-upload-s2-action-required` (full-stack mission, backend half built); **the S2 API must not reach prod before this half** (a `null` expense date breaks today's sheet load). see docs/in-progress/bulk-upload-s2-action-required-ui-ux.md
+- [Business][P1] **FS-1007 S2** Bulk upload: Action Required - banked on develop as v1.36 (2026-09-29), awaiting ship-feature. Ships together with the backend S2 half, only after `s2-migration.sql` is applied to production. see docs/in-progress/bulk-upload-s2-action-required-ui-ux.md
 
 ## Tags
 
