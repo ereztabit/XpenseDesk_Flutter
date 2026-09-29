@@ -12,7 +12,7 @@ server reads each one in the background and files one expense per receipt.
 > guide wins (the S1 differences are listed in the Flutter repo's S1 guide
 > §9, `docs/completed/bulk-receipt-upload-ui-ux-guide.md`).
 
-Mission FS-1007. Copy of the backend guide (`BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md`), which stays the source of truth. S2 UI/UX for this repo: [../in-progress/bulk-upload-s2-action-required-ui-ux.md](../in-progress/bulk-upload-s2-action-required-ui-ux.md).
+Mission FS-1007. Copy of the backend guide (`BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md`), which stays the source of truth. S2 UI/UX for this repo: [../completed/bulk-upload-s2-action-required-ui-ux.md](../completed/bulk-upload-s2-action-required-ui-ux.md).
 
 Related: product plan [00-plan.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md), S1 scope
 [01-s1-skeleton.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/01-s1-skeleton.md), S2 scope

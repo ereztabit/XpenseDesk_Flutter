@@ -21,7 +21,7 @@ The backend leads this mission. The rest lives in the backend repo,
 | Doc | Use it for |
 |---|---|
 | [`api-guide.md`](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md) | The API contract: flag, stage, send, poll, admin switch, every error code to translate, Dart models |
-| `ui-ux-design-guide.md` | The one design guide for every step (S1–S4). Each later step gets a Flutter extract; S2: [../in-progress/bulk-upload-s2-action-required-ui-ux.md](../in-progress/bulk-upload-s2-action-required-ui-ux.md) |
+| `ui-ux-design-guide.md` | The one design guide for every step (S1–S4). Each later step gets a Flutter extract; S2: [bulk-upload-s2-action-required-ui-ux.md](bulk-upload-s2-action-required-ui-ux.md) |
 | `01-s1-skeleton.md` | What S1 includes and excludes (section 7: target client behavior) |
 | `00-plan.md` | Product decisions and the later steps (S2-S5) |
 | `lovable-ui-prompt.md` | The prompt behind the Lovable prototype |

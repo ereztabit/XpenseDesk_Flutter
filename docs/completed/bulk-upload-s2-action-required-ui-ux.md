@@ -11,7 +11,7 @@ both halves ship together. It describes what the user sees, not code.
 | Full design guide | Backend [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md) §8. It wins if this extract ever disagrees |
 | API contract | Backend [api-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md) §10 |
 | Server status | Built on `feature/bulk-upload-s2-action-required`, pending the prod migration. **The S2 API must not reach prod before this half** (a `null` date breaks today's sheet load) |
-| Builds on | S1 + S1.01, shipped: [../completed/bulk-receipt-upload-ui-ux-guide.md](../completed/bulk-receipt-upload-ui-ux-guide.md) |
+| Builds on | S1 + S1.01, shipped: [bulk-receipt-upload-ui-ux-guide.md](bulk-receipt-upload-ui-ux-guide.md) |
 | Not in S2 | The cycle reminder (S4), free receipts (S3), server read state (S4). No Action Required status chip anywhere (dropped 2026-09-29) |
 
 ---
