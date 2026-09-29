@@ -4,8 +4,7 @@ The contract the Flutter bulk-upload flow and the notifications widget are built
 against. An employee (or manager) uploads up to 20 receipts in one go; the
 server reads each one in the background and files one expense per receipt.
 
-> **Status:** mission FS-1007. S2 (§10) is built on
-> `feature/bulk-upload-s2-action-required`, not deployed yet. S1 + S1.01 **in production since 2026-09-28**
+> **Status:** mission FS-1007. S2 (§10) **in production since 2026-09-29**. S1 + S1.01 **in production since 2026-09-28**
 > (schema applied and verified on prod, App Service WebSockets on), dark
 > behind the per-company flag. UI/UX reference: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md),
 > one guide for every step. Where it and this guide differ on UX, the design
