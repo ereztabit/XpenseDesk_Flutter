@@ -5,8 +5,10 @@ class BulkUploadItem {
   final String itemId;
   final String originalFileName;
 
-  /// `Queued` | `Processing` | `Created` | `Unreadable`.
+  /// `Queued` | `Processing` | `Created` | `ActionRequired` | `Unreadable`.
   final String status;
+
+  /// Set once the file became an expense: Created or ActionRequired.
   final String? expenseId;
 
   /// A flat `ApiErrorCodes` name for an Unreadable item — never display text.
@@ -29,6 +31,11 @@ class BulkUploadItem {
       failureCode: json['failureCode'] as String?,
     );
   }
+
+  /// The file is now an expense on My expenses — a normal one, or (S2) one
+  /// flagged Action Required.
+  bool get isFiled =>
+      (status == 'Created' || status == 'ActionRequired') && expenseId != null;
 }
 
 /// A sent batch as the notifications panel reads it (api-guide §6).
@@ -41,6 +48,9 @@ class BulkUploadBatch {
   final DateTime? completedAt;
   final int totalCount;
   final int createdCount;
+
+  /// Files filed as Action Required expenses (S2).
+  final int actionRequiredCount;
   final int unreadableCount;
   final int pendingCount;
   final List<BulkUploadItem> items;
@@ -52,6 +62,7 @@ class BulkUploadBatch {
     this.completedAt,
     required this.totalCount,
     required this.createdCount,
+    this.actionRequiredCount = 0,
     required this.unreadableCount,
     required this.pendingCount,
     this.items = const [],
@@ -75,6 +86,8 @@ class BulkUploadBatch {
       completedAt: parseApiUtc(json['completedAt'] as String?),
       totalCount: (json['totalCount'] as num?)?.toInt() ?? 0,
       createdCount: (json['createdCount'] as num?)?.toInt() ?? 0,
+      actionRequiredCount:
+          (json['actionRequiredCount'] as num?)?.toInt() ?? 0,
       unreadableCount: (json['unreadableCount'] as num?)?.toInt() ?? 0,
       pendingCount: (json['pendingCount'] as num?)?.toInt() ?? 0,
       items: (json['items'] as List<dynamic>?)

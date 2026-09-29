@@ -7,6 +7,7 @@ import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/expense_display_utils.dart';
 import 'expense_status_badge.dart';
 
 /// Spec-aligned mobile expense card used in the 3-tab mobile layout.
@@ -43,7 +44,7 @@ class MobileExpenseCard extends ConsumerWidget {
     final amountText = expense.amount != null
         ? expense.amount!.toCurrency(locale, baseCurrency)
         : '-';
-    final dateText = expense.expenseDate.toCompanyDate(locale);
+    final dateText = expenseDateText(expense.expenseDate, locale);
     final reviewedText = _hasReviewedInfo
         ? '${expense.reviewedBy} - ${expense.reviewedAt!.toCompanyDate(locale)}'
         : null;
@@ -109,7 +110,7 @@ class MobileExpenseCard extends ConsumerWidget {
                 if (!hideStatusBadge)
                   ExpenseStatusBadge(
                     expenseStatusId: expense.expenseStatusId,
-                    isAiData: expense.isAiData,
+                    isAiData: showsAiBadge(expense),
                   ),
               ],
             ),

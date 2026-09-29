@@ -9,7 +9,8 @@ describes behavior, not code.
 |---|---|
 | Design source | Lovable app mock "Expense Desk" (`0c5b063f-74a7-4490-b75e-746f4a712bde`), My expenses screen. See root `LOVABLE.md` Part B. Extracted 2026-09-28 (mock commit `3de9ae66`) |
 | API contract | Backend repo `BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md` ([link](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md)). Section refs like "api-guide §4" point there. This guide wins on UX, the API guide on the contract. Differences: §9 |
-| Not in S1 | Action Required, free receipts, live updates, emails: backend `docs/bulk-upload/ui-ux-guide-later.md` ([link](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-guide-later.md)) |
+| Superseded by | The one design guide for every step: backend `docs/bulk-upload/ui-ux-design-guide.md` ([link](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md)). This file stays as the record of what S1 shipped |
+| Not in S1 | Action Required (S2 extract: [../in-progress/bulk-upload-s2-action-required-ui-ux.md](../in-progress/bulk-upload-s2-action-required-ui-ux.md)), free receipts, emails: the design guide above |
 | Not designed in Lovable | The platform admin switch (§7). It follows the existing Flutter admin module instead |
 
 The mock is simulated and has dev panels. **None of the dev panels ship.**
@@ -523,3 +524,4 @@ panel.
 | 2026-09-28 | Scoped to S1 (the built API): later steps moved to the backend `ui-ux-guide-later.md`. Added the platform admin switch (§7) and the S1 polling panel (§6). |
 | 2026-09-28 | Moved from the backend repo into the Flutter repo (`docs/in-progress/`). The S1 decisions not taken from Lovable (device-local unread badge, fetch points, the admin Configuration tab, confirming the switch both ways) are approved. |
 | 2026-09-28 | QA changes and S1.01: equal-height cards, tinted rejected files with Remove, "Process N receipts", AI processing badge, My expenses progress strip, live updates replacing both Refresh buttons (§6). |
+| 2026-09-29 | Superseded by the backend `ui-ux-design-guide.md` (all steps). Kept as the S1 record; later steps come as per-step extracts, S2 first. |

@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-09-29 | v1.36 | Bulk upload S2: Action Required (FS-1007) | Partly read, unread and out-of-policy receipts land in an amber section on My expenses; the edit screen highlights what to fix; the done card counts "need action" and names failed files. |
 | 2026-09-28 | v1.35 | Bulk receipt upload S1 + S1.01 (FS-1007) | Upload up to 20 receipts at once behind a per-company flag: client checks, parallel upload, send, and a live notifications bell + progress strip updated over WebSockets. |
 | 2026-09-26 | v1.34 | Destroy company from the admin panel (FS-1005) | Company module gains "Destroy company": red warning plus typing the exact company name before a platform admin can permanently delete a company and all its data. |
 | 2026-09-26 | v1.33 | Login link always wins over an old session | A /login?token= link opened in a browser holding an older session no longer races it: startup session restore is skipped on a link load, so the new sign-in can't be wiped or show the wrong account. |

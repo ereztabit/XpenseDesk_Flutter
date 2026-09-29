@@ -102,10 +102,14 @@ String formatFileSize(int bytes) {
 /// The four card looks in the notifications panel (§6.4).
 enum BatchCardKind { processing, allCreated, mixed, noneCreated }
 
+/// "Created" means filed as a normal expense: a batch where some files need
+/// action (S2) or failed is mixed, and one with none added is red.
 BatchCardKind batchCardKind(BulkUploadBatch batch) {
   if (!batch.isCompleted) return BatchCardKind.processing;
   if (batch.createdCount == 0) return BatchCardKind.noneCreated;
-  if (batch.unreadableCount == 0) return BatchCardKind.allCreated;
+  if (batch.unreadableCount == 0 && batch.actionRequiredCount == 0) {
+    return BatchCardKind.allCreated;
+  }
   return BatchCardKind.mixed;
 }
 
@@ -206,15 +210,12 @@ Set<String> newlyCreatedExpenseIds(
   final known = <String>{
     for (final b in before)
       for (final item in b.items)
-        if (item.status == 'Created' && item.expenseId != null) item.expenseId!,
+        if (item.isFiled) item.expenseId!,
   };
   return {
     for (final b in after)
       for (final item in b.items)
-        if (item.status == 'Created' &&
-            item.expenseId != null &&
-            !known.contains(item.expenseId))
-          item.expenseId!,
+        if (item.isFiled && !known.contains(item.expenseId)) item.expenseId!,
   };
 }
 

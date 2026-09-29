@@ -1,20 +1,22 @@
-# XpenseDesk API - Bulk Receipt Upload (S1)
+# XpenseDesk API - Bulk Receipt Upload (S1, S1.01, S2)
 
 The contract the Flutter bulk-upload flow and the notifications widget are built
 against. An employee (or manager) uploads up to 20 receipts in one go; the
 server reads each one in the background and files one expense per receipt.
 
-> **Status:** mission FS-1007. S1 + S1.01 **in production since 2026-09-28**
+> **Status:** mission FS-1007. S2 (§10) is built on
+> `feature/bulk-upload-s2-action-required`, not deployed yet. S1 + S1.01 **in production since 2026-09-28**
 > (schema applied and verified on prod, App Service WebSockets on), dark
-> behind the per-company flag. UI/UX reference: the S1 guide in the Flutter repo,
-> `FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-receipt-upload-ui-ux-guide.md`,
-> extracted from the approved Lovable prototype. Its §9 lists where it
-> overrides this guide on UX.
+> behind the per-company flag. UI/UX reference: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md),
+> one guide for every step. Where it and this guide differ on UX, the design
+> guide wins (the S1 differences are listed in the Flutter repo's S1 guide
+> §9, `docs/completed/bulk-receipt-upload-ui-ux-guide.md`).
 
-Mission FS-1007. Copy of the backend guide (`BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md`), which stays the source of truth.
+Mission FS-1007. Copy of the backend guide (`BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md`), which stays the source of truth. S2 UI/UX for this repo: [../in-progress/bulk-upload-s2-action-required-ui-ux.md](../in-progress/bulk-upload-s2-action-required-ui-ux.md).
 
 Related: product plan [00-plan.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md), S1 scope
-[01-s1-skeleton.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/01-s1-skeleton.md).
+[01-s1-skeleton.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/01-s1-skeleton.md), S2 scope
+[02-s2-action-required.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/02-s2-action-required.md).
 
 ---
 
@@ -26,7 +28,7 @@ Related: product plan [00-plan.md](../../../../../BackEnd/XpenseDeskServer/docs/
 | Stage files one by one, in parallel | Yes | - |
 | Send up to 20 files as one batch | Yes | - |
 | Background reading, one expense per receipt | Yes | - |
-| Outcomes | **Created** or **Unreadable** | S2 adds **Action Required** |
+| Outcomes | **Created** or **Unreadable** | S2 adds **ActionRequired** (§10) |
 | Progress | Live push over SignalR (§9), S1.01 | - |
 | Emails (batch summary, reminder) | No | S4 |
 | AI credits / limits | No | S3 |
@@ -74,7 +76,8 @@ class CompanyConfiguration {
 6. POST /api/bulk-uploads         { files: [ { stagedFileId, originalFileName } ] }
                                   -> batchId
 7. "Thanks, we'll notify you"    user is free
-8. GET /api/bulk-uploads          on bell open / Refresh -> batches + outcomes
+8. GET /api/bulk-uploads          on app load and every live (re)connect -> batches + outcomes;
+                                  batchUpdated pushes keep them current (section 9)
 ```
 
 Nothing is written to the database until step 6. There is no "create batch"
@@ -186,12 +189,15 @@ shell loads and on every live-connection (re)connect (§9); after that the
     "submittedAt": "2026-09-27T20:17:16.441",
     "completedAt": "2026-09-27T20:19:02.120",
     "totalCount": 3,
-    "createdCount": 2,
+    "createdCount": 1,
+    "actionRequiredCount": 1,
     "unreadableCount": 1,
     "pendingCount": 0,
     "items": [
       { "itemId": "...", "originalFileName": "a.jpg", "status": "Created",
         "expenseId": "4c0e...", "failureCode": null },
+      { "itemId": "...", "originalFileName": "c.jpg", "status": "ActionRequired",
+        "expenseId": "9d21...", "failureCode": null },
       { "itemId": "...", "originalFileName": "b.png", "status": "Unreadable",
         "expenseId": null, "failureCode": "BulkUploadReceiptNotReadable" }
     ]
@@ -204,12 +210,13 @@ Dates are UTC.
 | Batch `status` | Widget shows |
 |---|---|
 | `Submitted` | "Processing N receipts", progress = `(totalCount - pendingCount) / totalCount` |
-| `Completed` | Summary: `createdCount` created, `unreadableCount` could not be read |
+| `Completed` | Summary: `createdCount` created, `actionRequiredCount` need action (S2), `unreadableCount` could not be read |
 
 | Item `status` | Meaning | Widget |
 |---|---|---|
 | `Queued` / `Processing` | Not done yet | counts toward `pendingCount` |
 | `Created` | One expense filed on the user's sheet for the open cycle | link to that expense (`GET /api/expenses/{expenseId}`) |
+| `ActionRequired` (S2) | One expense filed there too, flagged Action Required: the user must complete it (§10) | link to that expense, as "needs action" |
 | `Unreadable` | No expense | file name + the translated `failureCode` (no link) |
 
 `failureCode` is a flat `ApiErrorCodes` name - map it to an ARB key, never show
@@ -217,24 +224,26 @@ it raw. The server never returns English text for an item.
 
 | `failureCode` | Meaning |
 |---|---|
-| `BulkUploadReceiptNotReadable` | The receipt could not be read fully (missing / uncertain amount, date or currency) |
+| `BulkUploadReceiptNotReadable` | The file itself could not be read. In S1 it also covered a partial read and a scan that recognised nothing; from S2 both are `ActionRequired` (nothing recognised is filed empty) |
 | `BulkUploadFileNotAvailable` | The uploaded file was gone (e.g. the same file sent in two batches at once) |
 | `BulkUploadProcessingFailed` | Still failing after every retry |
 | `BulkUploadNoOpenCycle` | The company has no open expense cycle to file into |
-| `ExpenseDateTooOld` | Existing code: the receipt date is more than 12 months old |
+| `ExpenseDateTooOld` | Existing code: the receipt date is more than 12 months old. S1 only: from S2 such a receipt is `ActionRequired` (§10) |
 | `ExchangeRateUnavailable` | Existing code: no exchange rate for the receipt's currency and date |
-| `MandatoryFieldsMissing` | Existing code: an expense rule refused the values (e.g. a future date) |
+| `MandatoryFieldsMissing` | Existing code: an expense rule refused the values. S1: a future date; from S2 such a receipt is `ActionRequired` (§10) |
 | `MultiPageReceiptNotSupported` | Existing code: the PDF turned out to have several pages |
 
 An expense rule's refusal passes its existing code through unchanged, so the
 client can reuse the ARB strings it already has for those codes. Treat an
 unknown code as `BulkUploadReceiptNotReadable`.
 
-**What becomes Created:** the scan read an amount, a date and a currency, with
-amount and date at high confidence. Anything less is Unreadable in S1 (S2 turns
-most of those into Action Required). The filed expense has `isAiData = true`,
-category Other, and the read merchant / receipt number / amount / currency /
-date - exactly as if the user had scanned and saved it by hand.
+**Which outcome a receipt gets:**
+
+| Outcome | When |
+|---|---|
+| `Created` | The scan read an amount, a date inside the expense window (not in the future, not more than 12 months old) and a currency, with amount and date at high confidence, and the expense rules accept them. The filed expense has `isAiData = true`, category Other, and the read merchant / receipt number / amount / currency / date, exactly as if the user had scanned and saved it by hand |
+| `ActionRequired` (S2) | Anything short of the above on a file that opened: a partial read, a date outside the window, or nothing recognised at all (filed empty, `isAiData = false`). The expense is filed anyway, flagged, holding what was read and its image (§10) |
+| `Unreadable` | The file was bad or gone, processing kept failing, no open cycle, or an expense rule refused a fully read receipt (e.g. no exchange rate). No expense; the client names the file |
 
 Models:
 
@@ -244,7 +253,7 @@ class BulkUploadBatch {
   final String status;            // Submitted | Completed
   final DateTime submittedAt;
   final DateTime? completedAt;
-  final int totalCount, createdCount, unreadableCount, pendingCount;
+  final int totalCount, createdCount, actionRequiredCount, unreadableCount, pendingCount;
   final List<BulkUploadItem> items;
   bool get isCompleted => status == 'Completed';
 }
@@ -252,8 +261,8 @@ class BulkUploadBatch {
 class BulkUploadItem {
   final String itemId;
   final String originalFileName;
-  final String status;            // Queued | Processing | Created | Unreadable
-  final String? expenseId;
+  final String status;            // Queued | Processing | Created | ActionRequired | Unreadable
+  final String? expenseId;        // Created and ActionRequired
   final String? failureCode;      // ApiErrorCodes name, translate via ARB
 }
 
@@ -304,7 +313,7 @@ already in use elsewhere, so reuse their keys if the app has them.
 | `BulkUploadBatchFull` | send | At most 20 files per batch |
 | `BulkUploadDuplicateFile` | send | The same file is in the batch twice |
 | `BulkUploadFileNotFound` | send | A file needs to be uploaded again |
-| `BulkUploadReceiptNotReadable` | item | The receipt couldn't be read fully |
+| `BulkUploadReceiptNotReadable` | item | This file could not be read |
 | `BulkUploadFileNotAvailable` | item | The file was no longer available - upload it again |
 | `BulkUploadProcessingFailed` | item | Something went wrong reading this receipt |
 | `BulkUploadNoOpenCycle` | item | There's no open expense period to file into |
@@ -367,6 +376,76 @@ Client rules:
   deltas, and anything sent while disconnected is only recovered that way.
 - Never show a Refresh button for batches; the connection keeps them current.
 
+## 10. Action Required (S2)
+
+Design and rationale: [02-s2-action-required.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/02-s2-action-required.md).
+UX: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md) §8.
+
+### 10.1 What changes for a partial read
+
+A receipt that is recognised but not read in full is **no longer Unreadable**:
+an amount, date or currency is missing, or the amount or date is uncertain. It
+becomes a normal Pending expense on the user's Draft sheet, flagged
+`isActionRequired: true`. Its batch item is `ActionRequired`, with the
+`expenseId`. A receipt the scan recognised **nothing** on is filed the same
+way, empty (no date, amount 0, no currency, `isAiData: false`), with its
+image. Only a file that can't be opened or is gone, repeated failure, no open
+cycle, or a rule refusal (e.g. no exchange rate) is still `Unreadable`.
+
+What the flagged expense holds:
+
+| Field | Value |
+|---|---|
+| `expenseDate` | The read date, or **`null`** when it was not read. **A date outside the expense window is kept** (more than 12 months old, or in the future): the client shows the policy on it, and the save refuses it (`ExpenseDateTooOld`, or `MandatoryFieldsMissing` for a future date) until it is changed |
+| `dynamicAmount` | The read amount, or **`0`** when it was not read |
+| `currencyCode` | The read currency, or `null` |
+| `categoryId` | Other (5) |
+| `merchantName`, `receiptRef`, `imageUrl`, `isAiData` | As read |
+| Foreign currency with no date | `isForeign: true`, `dynamicAmount` = the foreign amount, `amount` (base) = `0`, `rateUsed` / `rateDate` = `null`. Converted when the user saves it with a date |
+
+A low-confidence value is stored as read, so a flagged expense can look
+complete. Decide from `isActionRequired`, never from the values.
+
+### 10.2 Expense responses
+
+| Endpoint | Change |
+|---|---|
+| `GET /api/expenses/{id}` | New `isActionRequired` (bool). `expenseDate` may be `null` |
+| `GET /api/expenses/search`, `GET /api/expenses/{userId}/search` | Each item: new `isActionRequired`; `expenseDate` may be `null` |
+| `GET /api/expense-sheets/{id}` | Each of `expenses[]`: the same two changes |
+| `GET /api/expense-sheets/me` | `expenseCount` and `totalAmount` leave flagged lines out |
+| `POST /api/expenses` | May return **409 `ExpenseCycleChanged`** (new flat code; needs an ARB key). Very rare: cycle close ran mid-create and nothing was saved. Send the same request again |
+
+`expenseDate` is `null` **only** when `isActionRequired` is true. A flagged
+expense only ever sits on its owner's own **Draft** sheet. It is never on a
+submitted, approved, declined or paid sheet, never in a report or payment, and
+never in an email.
+
+```dart
+// ExpenseSummary / ExpenseDetail
+final DateTime? expenseDate;      // null only when isActionRequired
+final bool isActionRequired;
+```
+
+### 10.3 Completing it
+
+The endpoints and their rules are unchanged:
+
+- **Save:** `PUT /api/expenses/{id}` with the full body. The normal rules
+  apply: date required and in range, `dynamicAmount > 0`, a rate lookup for a
+  foreign currency. Success clears the flag. The expense is then normal and
+  counts toward its sheet.
+- **Discard:** `DELETE /api/expenses/{id}`, the normal delete.
+
+There is no separate "resolve" call, and nothing else clears the flag.
+
+### 10.4 Cycle day
+
+A flagged expense is never submitted. At cycle close it moves to its owner's
+Draft sheet on the new cycle (new `expenseSheetId`, same `expenseId`). That
+repeats every cycle until it is completed or discarded. A Draft sheet holding
+only flagged expenses is not submitted.
+
 ## Changelog
 
 | Date | Change |
@@ -376,3 +455,6 @@ Client rules:
 | 2026-09-28 | Flat error codes: `BulkUploadInvalidFile` + `data.reason` replaced by one dedicated code per rule; items return `failureCode` instead of an English `failureReason`. |
 | 2026-09-28 | `GET /api/bulk-uploads` is no longer blocked when the flag is off. |
 | 2026-09-28 | S1.01: live updates (§9) — connection ticket, `/hubs/notifications`, `batchUpdated`. Polling (§1 "Progress") is replaced. |
+| 2026-09-29 | S2 (§10): item status `ActionRequired`, batch `actionRequiredCount`, expense `isActionRequired` + nullable `expenseDate`, Draft sheet counts and totals leave flagged lines out. `BulkUploadReceiptNotReadable` now means nothing was read. |
+| 2026-09-29 | S2: a receipt dated outside the expense window (more than 12 months old, or in the future) is `ActionRequired` with its date kept (was `Unreadable` / date dropped). The client shows the policy; the save still refuses the date. |
+| 2026-09-29 | S2: a receipt the scan recognised nothing on is `ActionRequired`, filed empty with its image and `isAiData: false` (was `Unreadable`). `BulkUploadReceiptNotReadable` now means the file itself could not be read. |

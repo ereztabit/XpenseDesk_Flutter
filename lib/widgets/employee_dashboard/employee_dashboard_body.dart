@@ -14,6 +14,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/responsive_utils.dart';
 import '../../utils/sheet_utils.dart';
 import 'declined_sheet_banner.dart';
+import 'draft_sheet_expenses.dart';
 import 'returned_sheets_global_alert.dart';
 import '../sheet_review/sheet_review_filter_tabs.dart';
 import 'sheet_expenses_area.dart';
@@ -112,11 +113,9 @@ class EmployeeDashboardBody extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _viewToggle(context, hasRecords: detail.expenses.isNotEmpty),
-                SheetExpensesArea(
+                DraftSheetExpenses(
                   expenses: detail.expenses,
                   companyLocale: companyLocale,
-                  canEdit: _isDraft,
-                  canDelete: _isDraft,
                   isDraft: _isDraft,
                   isReadOnly: _isSubmitted,
                   onRefresh: () => _refreshAll(ref),

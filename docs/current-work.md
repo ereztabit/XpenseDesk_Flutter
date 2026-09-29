@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [Business][P1] **FS-1007 S2** Bulk upload: Action Required - banked on develop as v1.36 (2026-09-29), awaiting ship-feature. Ships together with the backend S2 half, only after `s2-migration.sql` is applied to production. see docs/in-progress/bulk-upload-s2-action-required-ui-ux.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

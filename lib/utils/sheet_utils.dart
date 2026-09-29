@@ -118,6 +118,19 @@ class SheetExpenseBuckets {
         .toList(growable: false);
   }
 
+  /// A Draft sheet's lines split into the Needs action section (flagged
+  /// Action Required, bulk upload S2) and the regular list. The flagged ones
+  /// never appear in the regular list.
+  static ({List<ExpenseSummary> needsAction, List<ExpenseSummary> regular})
+      splitActionRequired(List<ExpenseSummary> all) {
+    final needsAction = <ExpenseSummary>[];
+    final regular = <ExpenseSummary>[];
+    for (final e in all) {
+      (e.isActionRequired ? needsAction : regular).add(e);
+    }
+    return (needsAction: needsAction, regular: regular);
+  }
+
   /// Map of `FilterTab → expense count`, computed in one pass.
   static Map<FilterTab, int> countsPerTab(List<ExpenseSummary> all) {
     var rejected = 0, pending = 0, approved = 0;

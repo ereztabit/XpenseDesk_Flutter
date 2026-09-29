@@ -4,7 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/format_utils.dart';
+import '../../utils/expense_display_utils.dart';
 
 /// A single row card showing a summary of one expense.
 /// Tapping navigates to the expense detail screen (via [onTap]).
@@ -42,16 +42,14 @@ class ExpenseCard extends ConsumerWidget {
     final statusColor = _statusColor();
     final locale = ref.watch(companyLocaleProvider);
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
-    final dateFormatted = expense.expenseDate.toCompanyDate(locale);
+    final dateFormatted = expenseDateText(expense.expenseDate, locale);
 
     final title =
         expense.merchantName?.isNotEmpty == true
             ? expense.merchantName!
             : expense.categoryName;
 
-    final amountText = expense.amount != null
-        ? expense.amount!.toCurrency(locale, baseCurrency)
-        : '—';
+    final amountText = expenseAmountText(expense, locale, baseCurrency);
 
     return Card(
       margin: margin,

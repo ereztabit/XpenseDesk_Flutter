@@ -4,7 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_category.dart';
 import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/format_utils.dart';
+import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
 import '../expenses/expense_status_badge.dart';
@@ -42,9 +42,7 @@ TableRow buildSheetReviewRow(
 }) {
   final l10n = AppLocalizations.of(context)!;
   final uiLocale = Localizations.localeOf(context);
-  final amountText = expense.amount != null
-      ? expense.amount!.toCurrency(companyLocale, baseCurrency)
-      : '—';
+  final amountText = expenseAmountText(expense, companyLocale, baseCurrency);
   final categoryText =
       ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
       expense.categoryName;
@@ -58,7 +56,7 @@ TableRow buildSheetReviewRow(
       _tapCell(
         onTap,
         Text(
-          expense.expenseDate.toLongDate(companyLocale),
+          expenseLongDateText(expense.expenseDate, companyLocale),
           style: _cellTextStyle,
         ),
       ),
