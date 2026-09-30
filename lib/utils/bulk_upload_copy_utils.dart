@@ -38,6 +38,12 @@ String sendErrorText(AppLocalizations l10n, BulkUploadSendError error) {
       return l10n.bulkUploadErrDuplicateFile;
     case BulkUploadSendError.fileNotFound:
       return l10n.bulkUploadErrFileNotFound;
+    case BulkUploadSendError.freeReceiptsNotEnough:
+      return l10n.freeReceiptsNotEnough;
+    // Never shown: the body answers this refusal with the used-up callout
+    // (FreeReceiptsCallout), which needs the user's role and allowance.
+    case BulkUploadSendError.freeReceiptsUsedUp:
+      return l10n.bulkUploadSendFailed;
     case BulkUploadSendError.generic:
       return l10n.bulkUploadSendFailed;
   }

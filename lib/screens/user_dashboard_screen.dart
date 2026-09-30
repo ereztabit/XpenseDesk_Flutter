@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../models/expense_sheet_list_item.dart';
 import '../providers/employee_dashboard_provider.dart';
 import '../providers/expense_sheet_provider.dart';
+import '../providers/free_receipts_provider.dart';
 import '../utils/ref_utils.dart';
 import '../utils/sheet_utils.dart';
 import '../widgets/employee_dashboard/employee_dashboard_body.dart';
@@ -126,6 +127,8 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     _ensureSelection(visible, selectedId);
 
     if (visible.isEmpty) {
+      // S3: no way in once the free receipts are used up (the header shows why).
+      final usedUp = ref.watch(currentFreeReceiptsProvider).isUsedUp;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -146,9 +149,11 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                 child: SheetExpenseEmptyState(
                   title: l10n.employeeEmptyStateTitle,
                   description: l10n.employeeEmptyStateDesc,
-                  actionLabel: l10n.newExpense,
-                  onAction: () => startNewExpense(context, ref,
-                      onSingleDone: () => ref.invalidate(mySheetsProvider)),
+                  actionLabel: usedUp ? null : l10n.newExpense,
+                  onAction: usedUp
+                      ? null
+                      : () => startNewExpense(context, ref,
+                          onSingleDone: () => ref.invalidate(mySheetsProvider)),
                 ),
               ),
             ),

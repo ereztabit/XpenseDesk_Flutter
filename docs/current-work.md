@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [ ] [Business][P2] **FS-1007** Bulk receipt upload S3 free receipts - banked on develop as v1.37 (2026-09-30), awaiting ship-feature. Then **S4** server read state + "Mark all as read", first-use auto-open, cycle reminder card. S1 + S1.01 (v1.35) and S2 (v1.36) are shipped, dark behind the per-company flag; S5 was server-only. Design: backend `docs/bulk-upload/ui-ux-design-guide.md` §9 (S3), §7.5-§7.6 and §8.6 (S4); S3 extract: docs/in-progress/bulk-upload-s3-free-receipts-ui-ux.md; S3 manual QA: docs/in-progress/bulk-upload-s3-manual-qa/. Plan + backend half: `BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md`
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -42,7 +46,6 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
-- [ ] [Business][P2] **FS-1007** Bulk receipt upload, client steps still to build -- S1 + S1.01 (v1.35) and S2 (v1.36) are shipped, dark behind the per-company flag; S5 was server-only. Remaining, in order: **S3** free receipts on trial (meter, batch cap = free receipts left, used-up callout with "Upgrade now") -> **S4** server read state + "Mark all as read", first-use auto-open, cycle reminder card. Design: backend `docs/bulk-upload/ui-ux-design-guide.md` §9 (S3), §7.5-§7.6 and §8.6 (S4); each step gets its own extract here when it starts. Plan + backend half: `BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md`
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
 - [ ] [Business][P1] **FS-1003** Add expenses to a non-approved sheet + explicit resubmit — a declined employee cannot supply the missing receipt: "+ New expense" is gated to the current-cycle Draft (`isCurrentCycleDraft`, `lib/utils/sheet_utils.dart:54`), and the Declined banner is button-free by design. Needs the sheet id threaded through the create flow, a "Submit for approval" CTA on the banner (one tap resubmits the whole sheet — the banner's current "fix every line and we'll resend it" copy has to go with it), and — required — a "returned earlier" marker on re-submitted lines (Pending + non-null `reviewedAt`), since a whole-sheet resubmit now un-declines lines the manager had refused. The manager "Add expense" half was extracted to **FS-1004** (2026-09-05). **Blocked on the backend half** (no `expenseSheetId` on create, no submit endpoint). see docs/backlog/add-expenses-to-non-approved-sheet-spec.md
 - [ ] [Technical][P2] Nothing runs `flutter test` — the suite added in v1.26 (`test/utils/pdf_utils_test.dart`, 6 tests over PDF page counting) only protects when someone runs it by hand, so it will rot silently. Add it to the `finish-feature` checks, and to CI alongside the web build
@@ -65,6 +68,8 @@ so in its spec rather than double-tagging here.
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
+- [ ] [Technical][P3] AppHeader calls setState in dispose -- navigating away with the avatar menu open throws a debug-only framework assertion (no user effect). Found in FS-1007 S3 -- see docs/bugs/app-header-setstate-in-dispose.md
+- [ ] [Business][P3] "Replace receipt" on the edit expense screen does nothing (wired to an empty callback; no image field on update). Found in FS-1007 S3 -- see docs/bugs/edit-expense-replace-receipt-does-nothing.md
 - [ ] [LookAndFeel][P3] Dates and amounts follow the UI language, not the company locale -- an Israeli company read in English shows 7/24/2026 instead of 24.7.2026. Root cause is one provider, blast radius is every screen with a date or amount -- see docs/bugs/dates-and-amounts-follow-ui-language-not-company-locale.md
 - [ ] [LookAndFeel][P3] "Add employee" multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] [LookAndFeel][P3] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md

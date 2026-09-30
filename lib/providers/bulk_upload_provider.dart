@@ -9,6 +9,7 @@ import '../utils/bulk_upload_utils.dart';
 import 'auth_provider.dart';
 import 'company_provider.dart';
 import 'expense_sheet_provider.dart';
+import 'free_receipts_provider.dart';
 
 final bulkUploadServiceProvider = Provider<BulkUploadService>((ref) {
   return BulkUploadService();
@@ -49,7 +50,10 @@ class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
     if (!ref.mounted) return;
     state = next;
     final after = next.asData?.value;
-    if (after != null) _refreshSheetsIfFiled(before, after);
+    if (after != null) {
+      _refreshSheetsIfFiled(before, after);
+      _refreshFreeReceiptsIfCompleted(before, after);
+    }
   }
 
   /// Applies one live `batchUpdated` push. Ignored until the first load has
@@ -61,6 +65,19 @@ class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
     if (identical(after, before)) return;
     state = AsyncData(after);
     _refreshSheetsIfFiled(before, after);
+    _refreshFreeReceiptsIfCompleted(before, after);
+  }
+
+  /// S3: a batch's files count from the moment it is sent; one that ends
+  /// Unreadable (no expense) stops counting, so the count is only final once
+  /// its batch completes — reload it then (api-guide §11.1). Nothing to do on
+  /// the first load.
+  void _refreshFreeReceiptsIfCompleted(
+    List<BulkUploadBatch>? before,
+    List<BulkUploadBatch> after,
+  ) {
+    if (before == null || !hasNewlyCompletedBatch(before, after)) return;
+    ref.read(freeReceiptsProvider.notifier).refresh();
   }
 
   /// Files that became expenses since [before] mean My expenses is showing a

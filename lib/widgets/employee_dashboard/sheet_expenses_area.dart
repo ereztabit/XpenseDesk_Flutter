@@ -5,6 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/dashboard_ui_state.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/employee_dashboard_provider.dart';
+import '../../providers/free_receipts_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/new_expense_launcher.dart';
 import '../../utils/responsive_utils.dart';
@@ -91,6 +92,9 @@ class SheetExpensesArea extends ConsumerWidget {
       final emptyTitle = l10n.employeeEmptyStateTitle;
       final emptyDesc =
           isDraft ? l10n.employeeEmptyStateDesc : l10n.noExpensesPendingDesc;
+      // S3: no way in once the free receipts are used up (the header shows why).
+      final canAdd =
+          isDraft && !ref.watch(currentFreeReceiptsProvider).isUsedUp;
       return ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 280),
         child: Card(
@@ -103,8 +107,8 @@ class SheetExpensesArea extends ConsumerWidget {
             child: SheetExpenseEmptyState(
               title: emptyTitle,
               description: emptyDesc,
-              actionLabel: isDraft ? l10n.newExpense : null,
-              onAction: isDraft
+              actionLabel: canAdd ? l10n.newExpense : null,
+              onAction: canAdd
                   ? () => startNewExpense(context, ref, onSingleDone: onRefresh)
                   : null,
             ),

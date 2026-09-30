@@ -931,5 +931,19 @@
   "adminConfigTurnOff": "כיבוי",
   "adminConfigSaved": "נשמר",
   "adminConfigSaveError": "השמירה נכשלה. יש לנסות שוב.",
-  "adminConfigLoadError": "לא הצלחנו לטעון את ההגדרות."
+  "adminConfigLoadError": "לא הצלחנו לטעון את ההגדרות.",
+  "freeReceiptsLeftPrefix": "נותרו",
+  "freeReceiptsLeftOf": "מתוך",
+  "freeReceiptsLeftSuffix": "קבלות חינם",
+  "freeReceiptsBatchUsePrefix": "השליחה תנצל",
+  "freeReceiptsBatchUseSuffix": "",
+  "freeReceiptsOnlyLeftPrefix": "ניתן להעלות",
+  "freeReceiptsOnlyLeftSuffix": "קבלות אחרונות בחינם",
+  "freeReceiptsOnlyOneLeft": "ניתן להעלות רק קבלה אחרונה אחת",
+  "freeReceiptsLimitPrefix": "חשבונך מוגבל ל-",
+  "freeReceiptsLimitSuffix": "קבלות בלבד",
+  "freeReceiptsUsedUpRest": ". בתוכנית בתשלום אפשר לסרוק קבלות ללא הגבלה.",
+  "freeReceiptsUsedUpEmployeeRest": ", מנהל/ת המערכת יכול/ה לשדרג לתוכנית בתשלום שמאפשרת סריקת קבלות ללא הגבלה.",
+  "freeReceiptsUpgrade": "שדרוג עכשיו",
+  "freeReceiptsNotEnough": "לא נותרו מספיק קבלות חינם לשליחה הזו. אפשר להסיר חלק מהקבלות ולנסות שוב."
 }
