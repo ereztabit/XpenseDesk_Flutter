@@ -86,6 +86,10 @@ BulkUploadSendError sendErrorFromCode(String? errorCode) {
       return BulkUploadSendError.duplicateFile;
     case 'BulkUploadFileNotFound':
       return BulkUploadSendError.fileNotFound;
+    case 'FreeReceiptsNotEnough':
+      return BulkUploadSendError.freeReceiptsNotEnough;
+    case 'FreeReceiptsUsedUp':
+      return BulkUploadSendError.freeReceiptsUsedUp;
     default:
       return BulkUploadSendError.generic;
   }
@@ -217,6 +221,19 @@ Set<String> newlyCreatedExpenseIds(
       for (final item in b.items)
         if (item.isFiled && !known.contains(item.expenseId)) item.expenseId!,
   };
+}
+
+/// True when a batch in [after] completed since [before] — the moment a batch's
+/// free receipts are final (S3: a file that ended Unreadable stops counting).
+bool hasNewlyCompletedBatch(
+  List<BulkUploadBatch> before,
+  List<BulkUploadBatch> after,
+) {
+  final completedBefore = {
+    for (final b in before)
+      if (b.isCompleted) b.batchId,
+  };
+  return after.any((b) => b.isCompleted && !completedBefore.contains(b.batchId));
 }
 
 /// Applies one live `batchUpdated` push (S1.01) to the batch list: replaces

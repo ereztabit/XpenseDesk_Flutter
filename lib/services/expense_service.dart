@@ -83,6 +83,13 @@ class SubscriptionRequiredException implements Exception {
   const SubscriptionRequiredException();
 }
 
+/// Thrown by a receipt scan or a new expense when a user on trial has no free
+/// receipts left (server errorCode `FreeReceiptsUsedUp`, HTTP 403 — FS-1007
+/// S3). No AI ran and nothing was filed.
+class FreeReceiptsUsedUpException implements Exception {
+  const FreeReceiptsUsedUpException();
+}
+
 /// Service for the XpenseDesk Expense API.
 class ExpenseService {
   final ApiService _apiService;
@@ -105,6 +112,9 @@ class ExpenseService {
       }
       if (errorCode == 'ExchangeRateUnavailable') {
         throw const ExchangeRateUnavailableException();
+      }
+      if (errorCode == 'FreeReceiptsUsedUp') {
+        throw const FreeReceiptsUsedUpException();
       }
       throw ExpenseException(message, errorCode: errorCode);
     }

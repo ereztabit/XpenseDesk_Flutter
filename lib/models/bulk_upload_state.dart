@@ -8,6 +8,10 @@ enum BulkUploadSendError {
   batchFull,
   duplicateFile,
   fileNotFound,
+  // S3 (api-guide §11.2): the batch has more files than the free receipts
+  // left, or none are left.
+  freeReceiptsNotEnough,
+  freeReceiptsUsedUp,
   generic,
 }
 
@@ -23,7 +27,8 @@ class BulkUploadState {
   /// fade timer restarts even when the names are identical.
   final int unsupportedNoticeId;
 
-  /// True when the latest add hit the 20-file cap.
+  /// True when the latest add hit the cap: 20 files, or the free receipts
+  /// left on trial (S3).
   final bool limitReached;
 
   final bool isSending;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../app_button.dart';
+import '../free_receipts/free_receipts_meter.dart';
 import 'new_expense_choice_card.dart';
 
 /// What the mobile "New expense" sheet resolved to.
@@ -51,6 +52,8 @@ class NewExpenseChoiceSheet extends StatelessWidget {
             onTap: () =>
                 Navigator.of(context).pop(NewExpenseChoice.severalReceipts),
           ),
+          // FS-1007 S3: free receipts on trial, full width (UI/UX guide §3.2)
+          const FreeReceiptsMeter(padding: EdgeInsets.only(top: 12)),
           const SizedBox(height: 8),
           AppButton(
             label: l10n.cancel,

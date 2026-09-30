@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/bulk_upload_provider.dart';
+import '../providers/free_receipts_provider.dart';
 import '../widgets/bulk_upload/bulk_upload_dialog.dart';
 import '../widgets/bulk_upload/new_expense_choice_sheet.dart';
 import 'app_navigator.dart';
@@ -19,6 +20,9 @@ Future<void> startNewExpense(
   WidgetRef ref, {
   required VoidCallback onSingleDone,
 }) async {
+  // S3 backstop: every entry point is disabled once the free receipts are
+  // used up (UI/UX guide §9.4); a stale button must not open either flow.
+  if (ref.read(currentFreeReceiptsProvider).isUsedUp) return;
   if (context.isMobile && ref.read(isBulkUploadEnabledProvider)) {
     final choice = await NewExpenseChoiceSheet.show(context);
     if (!context.mounted || choice == null) return;

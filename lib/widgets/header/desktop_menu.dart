@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_theme.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/menu_items.dart';
+import '../free_receipts/free_receipts_meter.dart';
 import 'menu_version_label.dart';
 
 /// Desktop menu overlay - Jira-style popover
@@ -207,6 +208,9 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
           ),
+
+          // FS-1007 S3: free receipts on trial, full width (UI/UX guide §9.2)
+          const FreeReceiptsMeter(padding: EdgeInsets.only(top: 8)),
         ],
       ),
     );

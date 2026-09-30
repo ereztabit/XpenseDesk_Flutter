@@ -12,7 +12,7 @@ class ExpenseCreateImagePanel extends StatelessWidget {
   final bool aiFailed;
   final VoidCallback? onExpand; // null hides the expand button
   final VoidCallback onDownload;
-  final VoidCallback onReplace;
+  final VoidCallback? onReplace; // null disables it (S3: no free receipts left)
   final bool hideAiBadge;
   final double imageHeight;
 
@@ -247,8 +247,11 @@ class ExpenseCreateImagePanel extends StatelessWidget {
   }
 
   Widget _buildReplaceButton(BuildContext context, AppLocalizations l10n) {
+    final enabled = onReplace != null;
+    final color =
+        enabled ? AppTheme.foreground : AppTheme.mutedForeground.withAlpha(128);
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
         onTap: onReplace,
         child: ClipRRect(
@@ -271,15 +274,15 @@ class ExpenseCreateImagePanel extends StatelessWidget {
                         ? Icons.arrow_circle_right_outlined
                         : Icons.arrow_circle_left_outlined,
                     size: 14,
-                    color: AppTheme.foreground,
+                    color: color,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     l10n.newExpenseReplaceReceipt,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppTheme.foreground,
+                      color: color,
                     ),
                   ),
                 ],

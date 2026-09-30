@@ -931,5 +931,19 @@
   "adminConfigTurnOff": "Turn off",
   "adminConfigSaved": "Saved",
   "adminConfigSaveError": "Couldn't save. Please try again.",
-  "adminConfigLoadError": "Couldn't load the configuration."
+  "adminConfigLoadError": "Couldn't load the configuration.",
+  "freeReceiptsLeftPrefix": "",
+  "freeReceiptsLeftOf": "of",
+  "freeReceiptsLeftSuffix": "free receipts left",
+  "freeReceiptsBatchUsePrefix": "This batch will use",
+  "freeReceiptsBatchUseSuffix": "",
+  "freeReceiptsOnlyLeftPrefix": "Only",
+  "freeReceiptsOnlyLeftSuffix": "free receipts left",
+  "freeReceiptsOnlyOneLeft": "Only 1 free receipt left",
+  "freeReceiptsLimitPrefix": "Your account is limited to",
+  "freeReceiptsLimitSuffix": "free receipts",
+  "freeReceiptsUsedUpRest": ". Upgrade to a paid plan to scan receipts with no limit.",
+  "freeReceiptsUsedUpEmployeeRest": ". Your company's manager can upgrade to a paid plan to scan receipts with no limit.",
+  "freeReceiptsUpgrade": "Upgrade now",
+  "freeReceiptsNotEnough": "There aren't enough free receipts left for this batch. Remove some receipts and try again."
 }
