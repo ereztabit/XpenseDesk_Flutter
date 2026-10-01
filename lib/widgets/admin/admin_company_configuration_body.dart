@@ -13,10 +13,12 @@ import '../app_button.dart';
 import '../bulk_upload/confirm_choice_dialog.dart';
 import '../profile/profile_section_card.dart';
 import 'admin_feature_toggle_row.dart';
+import 'admin_free_plan_card.dart';
 
 /// The admin company page's Configuration tab (FS-1007, bulk upload UI/UX
 /// guide §7): a "Features" card with one row per company setting. Flipping a
-/// switch changes what a real customer sees, so it always asks first.
+/// switch changes what a real customer sees, so it always asks first. Below it,
+/// the "Billing" card with the free plan (FS-1008, [AdminFreePlanCard]).
 class AdminCompanyConfigurationBody extends ConsumerStatefulWidget {
   const AdminCompanyConfigurationBody({
     super.key,
@@ -152,10 +154,20 @@ class _AdminCompanyConfigurationBodyState
         alignment: AlignmentDirectional.topStart,
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
-          child: ProfileSectionCard(
-            icon: Icons.tune,
-            title: l10n.adminConfigFeaturesTitle,
-            children: [row],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ProfileSectionCard(
+                icon: Icons.tune,
+                title: l10n.adminConfigFeaturesTitle,
+                children: [row],
+              ),
+              const SizedBox(height: 16),
+              AdminFreePlanCard(
+                companyId: widget.companyId,
+                companyName: widget.companyName,
+              ),
+            ],
           ),
         ),
       ),

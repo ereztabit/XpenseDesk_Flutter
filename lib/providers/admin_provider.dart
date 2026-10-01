@@ -31,6 +31,16 @@ class AdminCompaniesNotifier extends AsyncNotifier<List<AdminCompanyRow>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(_fetch);
   }
+
+  /// Re-fetches without dropping to a loading state, for a change made from a
+  /// company's own page (FS-1008 free plan) — the page title reads the company
+  /// name from this list and would blank out meanwhile. A failed reload keeps
+  /// the rows already shown.
+  Future<void> refreshQuietly() async {
+    final next = await AsyncValue.guard(_fetch);
+    if (!ref.mounted) return;
+    if (next.hasValue) state = next;
+  }
 }
 
 final adminCompaniesProvider =

@@ -27,10 +27,11 @@ enum AdminCompanySortColumn {
 extension AdminCompanyDisplayStatusOrder on AdminCompanyDisplayStatus {
   int get sortRank => switch (this) {
         AdminCompanyDisplayStatus.active => 0,
-        AdminCompanyDisplayStatus.pendingPayment => 1,
-        AdminCompanyDisplayStatus.inactive => 2,
-        AdminCompanyDisplayStatus.deactivated => 3,
-        AdminCompanyDisplayStatus.unknown => 4,
+        AdminCompanyDisplayStatus.freePlan => 1,
+        AdminCompanyDisplayStatus.pendingPayment => 2,
+        AdminCompanyDisplayStatus.inactive => 3,
+        AdminCompanyDisplayStatus.deactivated => 4,
+        AdminCompanyDisplayStatus.unknown => 5,
       };
 }
 

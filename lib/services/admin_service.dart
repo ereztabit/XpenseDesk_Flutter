@@ -3,6 +3,7 @@ import 'auth_service.dart';
 import '../models/admin_company_configuration.dart';
 import '../models/admin_company_row.dart';
 import '../models/admin_company_user_row.dart';
+import '../models/admin_free_plan.dart';
 
 /// Exception thrown when a platform-admin operation fails.
 class AdminException implements Exception {
@@ -196,6 +197,49 @@ class AdminService {
 
     _validateResponse(response, 'Failed to save company configuration');
     return _configurationFrom(response);
+  }
+
+  /// POST /api/admin/companies/{companyId}/free-plan — FS-1008. Puts the
+  /// company on the free plan (paid in full, no card, to 1 January 2099).
+  /// Refusals arrive as [AdminException] with the server's `errorCode`:
+  /// `AdminFreePlanCompanyPays`, `AdminFreePlanAlreadySet`,
+  /// `AdminCompanyNotFound`.
+  Future<AdminFreePlan> setFreePlan(String companyId) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/admin/companies/$companyId/free-plan',
+      const <String, dynamic>{},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to set the free plan');
+    return _freePlanFrom(response);
+  }
+
+  /// DELETE /api/admin/companies/{companyId}/free-plan — FS-1008. Takes the
+  /// company off the free plan, back to its normal limits. Refusals:
+  /// `AdminFreePlanNotSet`, `AdminCompanyNotFound`.
+  Future<AdminFreePlan> clearFreePlan(String companyId) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.delete(
+      '/api/admin/companies/$companyId/free-plan',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to clear the free plan');
+    return _freePlanFrom(response);
+  }
+
+  AdminFreePlan _freePlanFrom(Map<String, dynamic> response) {
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AdminException('Invalid response from server');
+    }
+    return AdminFreePlan.fromJson(data);
   }
 
   AdminCompanyConfiguration _configurationFrom(Map<String, dynamic> response) {
