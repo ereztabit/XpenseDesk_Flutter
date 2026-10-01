@@ -37,6 +37,11 @@ class CompanyInfo {
   final bool isInTrial;
   final bool hasCardOnFile;
 
+  /// FS-1008: on the free plan a support agent gave (design partner). Reads as
+  /// paid everywhere, but no card or payment-provider plan backs it — so no
+  /// payment banner, and no card / cancel controls. [isInTrial] is unchanged by it.
+  final bool isFreePlan;
+
   /// Currencies the company can file expenses in (base first). Drives the
   /// expense currency picker — empty for older payloads.
   final List<TrackedCurrency> trackedCurrencies;
@@ -101,6 +106,7 @@ class CompanyInfo {
     this.trialEndDate,
     this.isInTrial = false,
     this.hasCardOnFile = false,
+    this.isFreePlan = false,
     this.trackedCurrencies = const [],
     this.plans = const [],
     this.paymentsSummary,
@@ -133,6 +139,7 @@ class CompanyInfo {
       trialEndDate: trialEndDate,
       isInTrial: isInTrial,
       hasCardOnFile: hasCardOnFile,
+      isFreePlan: isFreePlan,
       trackedCurrencies: trackedCurrencies,
       plans: plans,
       paymentsSummary: summary,
@@ -165,6 +172,7 @@ class CompanyInfo {
           : null,
       isInTrial: json['isInTrial'] as bool? ?? false,
       hasCardOnFile: json['hasCardOnFile'] as bool? ?? false,
+      isFreePlan: json['isFreePlan'] as bool? ?? false,
       trackedCurrencies: (json['trackedCurrencies'] as List<dynamic>?)
               ?.map((e) => TrackedCurrency.fromJson(e as Map<String, dynamic>))
               .toList() ??

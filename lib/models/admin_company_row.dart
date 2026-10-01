@@ -5,6 +5,7 @@ enum AdminCompanyDisplayStatus {
   deactivated,
   pendingPayment,
   active,
+  freePlan,
   inactive,
   unknown,
 }
@@ -33,6 +34,10 @@ class AdminCompanyRow {
   /// Company lifecycle status (e.g. `Active`). Not surfaced in the V1 table.
   final String companyStatus;
 
+  /// FS-1008: on the free plan a support agent gave. Such a company reports
+  /// [paymentStatus] `Active` like a paying one; this tells them apart.
+  final bool isFreePlan;
+
   final int userCount;
   final int expenseCount;
 
@@ -43,6 +48,7 @@ class AdminCompanyRow {
     required this.paymentStatus,
     required this.isActive,
     required this.companyStatus,
+    this.isFreePlan = false,
     required this.userCount,
     required this.expenseCount,
   });
@@ -56,6 +62,7 @@ class AdminCompanyRow {
   /// than as merely unpaid.
   AdminCompanyDisplayStatus get displayStatus {
     if (!isActive) return AdminCompanyDisplayStatus.deactivated;
+    if (isFreePlan) return AdminCompanyDisplayStatus.freePlan;
     switch (paymentStatus) {
       case 'PendingPayment':
         return AdminCompanyDisplayStatus.pendingPayment;
@@ -78,6 +85,7 @@ class AdminCompanyRow {
       paymentStatus: json['paymentStatus'] as String? ?? '',
       isActive: json['isActive'] as bool? ?? false,
       companyStatus: json['companyStatus'] as String? ?? '',
+      isFreePlan: json['isFreePlan'] as bool? ?? false,
       userCount: (json['userCount'] as num?)?.toInt() ?? 0,
       expenseCount: (json['expenseCount'] as num?)?.toInt() ?? 0,
     );

@@ -31,6 +31,10 @@ class AdminCompanyStatusBadge extends StatelessWidget {
           l10n.adminPaymentStatusActive,
           AppTheme.success,
         ),
+      AdminCompanyDisplayStatus.freePlan => (
+          l10n.adminPaymentStatusFreePlan,
+          AppTheme.teal,
+        ),
       AdminCompanyDisplayStatus.inactive => (
           l10n.adminPaymentStatusInactive,
           AppTheme.mutedForeground,

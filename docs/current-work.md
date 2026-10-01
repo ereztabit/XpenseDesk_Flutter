@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [Business][P2] **FS-1007** Bulk upload on by default - banked on develop as v1.38 (2026-10-01), awaiting ship-feature.
+- [ ] [Business][P1] **FS-1008** Admin free plan for design partners - banked on develop as v1.39 (2026-10-01), awaiting ship-feature. see docs/in-progress/admin-free-plan-spec.md
 
 ## Tags
 

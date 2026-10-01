@@ -1,21 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/company_billing.dart';
 import '../../models/company_info.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/billing_provider.dart';
 import '../../providers/company_provider.dart';
-
-/// The type of billing alert banner to display.
-enum BillingBannerType {
-  trialActive,
-  trialExpired,
-  subscriptionExpired,
-  cardDeclined,
-  cardExpired,
-  cardExpiringSoon,
-}
+import '../../utils/billing_banner_utils.dart';
 
 /// Full-width alert banner rendered below the AppHeader.
 ///
@@ -49,7 +39,7 @@ class BillingAlertBanner extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
       data: (company) {
         final billing = billingAsync.whenOrNull(data: (b) => b);
-        final type = _resolveBannerType(company, billing);
+        final type = resolveBillingBannerType(company, billing);
         if (type == null) return const SizedBox.shrink();
         if (dismissed.contains(type.name)) return const SizedBox.shrink();
 
@@ -64,47 +54,6 @@ class BillingAlertBanner extends ConsumerWidget {
         );
       },
     );
-  }
-
-  static BillingBannerType? _resolveBannerType(
-    CompanyInfo company,
-    CompanyBilling? billing,
-  ) {
-    // Active subscription with healthy card — no banner needed.
-    if (company.subscriptionStatus == 'Active' && company.hasCardOnFile) {
-      // Still check card-level issues before exiting.
-      final pm = billing?.paymentMethod;
-      if (pm == null || pm.isActive) return null;
-      if (pm.isDeclined) return BillingBannerType.cardDeclined;
-      if (pm.isExpired) return BillingBannerType.cardExpired;
-      if (pm.isExpiringSoon) return BillingBannerType.cardExpiringSoon;
-      return null;
-    }
-
-    // Trial / pending-payment banners (only when no card on file yet)
-    if (company.isInTrial || company.subscriptionStatus == 'PendingPayment') {
-      if (company.trialEndDate != null &&
-          company.trialEndDate!.isAfter(DateTime.now())) {
-        return BillingBannerType.trialActive;
-      }
-      return BillingBannerType.trialExpired;
-    }
-
-    // Subscription expired / inactive
-    if (company.subscriptionStatus == 'Expired' ||
-        company.subscriptionStatus == 'Inactive') {
-      return BillingBannerType.subscriptionExpired;
-    }
-
-    // Card-level banners (only when has card on file)
-    final pm = billing?.paymentMethod;
-    if (pm != null) {
-      if (pm.isDeclined) return BillingBannerType.cardDeclined;
-      if (pm.isExpired) return BillingBannerType.cardExpired;
-      if (pm.isExpiringSoon) return BillingBannerType.cardExpiringSoon;
-    }
-
-    return null;
   }
 
   static bool _isDismissible(BillingBannerType type) =>

@@ -12,6 +12,7 @@ import '../widgets/company_config/billing_current_plan_card.dart';
 import '../widgets/company_config/billing_payment_method_card.dart';
 import '../widgets/company_config/billing_information_card.dart';
 import '../widgets/company_config/billing_danger_zone_card.dart';
+import '../widgets/company_config/billing_free_plan_card.dart';
 // Billing History tab hidden and deferred to v2 — restore this import and the
 // tab wiring below to bring it back. See docs/bugs/completed.
 // import '../widgets/company_config/billing_history_tab.dart';
@@ -613,6 +614,9 @@ class _BillingTabContent extends ConsumerWidget {
       data: (billing) {
         final sub = billing.subscription;
         final company = ref.watch(companyProvider).asData?.value;
+        // FS-1008: nothing at the payment provider backs the free plan, so it
+        // gets its own plan card and no card or cancel controls.
+        final isFreePlan = company?.isFreePlan ?? false;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -629,10 +633,13 @@ class _BillingTabContent extends ConsumerWidget {
             const SizedBox(height: 8),
 
             // Current Plan card
-            BillingCurrentPlanCard(billing: billing),
+            if (isFreePlan)
+              const BillingFreePlanCard()
+            else
+              BillingCurrentPlanCard(billing: billing),
 
             // Payment Method card — only when a subscription exists
-            if (sub != null)
+            if (sub != null && !isFreePlan)
               Padding(
                 padding: const EdgeInsets.only(top: 24),
                 child: BillingPaymentMethodCard(
@@ -653,7 +660,7 @@ class _BillingTabContent extends ConsumerWidget {
             // Access ends at the trial-end date while still in trial (the
             // upcoming paid period never starts on cancel), else subscription
             // end date. See bug #4.
-            if (sub != null && sub.isActive)
+            if (sub != null && sub.isActive && !isFreePlan)
               Padding(
                 padding: const EdgeInsets.only(top: 24),
                 child: BillingDangerZoneCard(
