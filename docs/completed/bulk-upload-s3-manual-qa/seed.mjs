@@ -1,6 +1,6 @@
 // FS-1007 S3 manual QA: creates fresh test users U1-U6 on the dev API and
 // prints their emails. From the repo root:
-//   node docs/in-progress/bulk-upload-s3-manual-qa/seed.mjs
+//   node docs/completed/bulk-upload-s3-manual-qa/seed.mjs
 import { call, signIn, fileExpenses, makePaid } from './lib.mjs';
 
 const tag = Math.random().toString(16).slice(2, 6);
