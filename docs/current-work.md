@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [Business][P1] **FS-1007 S2** Bulk upload: Action Required - banked on develop as v1.36 (2026-09-29), awaiting ship-feature. Ships together with the backend S2 half, only after `s2-migration.sql` is applied to production. see docs/in-progress/bulk-upload-s2-action-required-ui-ux.md
+- [ ] [Business][P2] **FS-1007** Bulk receipt upload S3 free receipts - banked on develop as v1.37 (2026-09-30), awaiting ship-feature. Then **S4** server read state + "Mark all as read", first-use auto-open, cycle reminder card. S1 + S1.01 (v1.35) and S2 (v1.36) are shipped, dark behind the per-company flag; S5 was server-only. Design: backend `docs/bulk-upload/ui-ux-design-guide.md` §9 (S3), §7.5-§7.6 and §8.6 (S4); S3 extract: docs/in-progress/bulk-upload-s3-free-receipts-ui-ux.md; S3 manual QA: docs/in-progress/bulk-upload-s3-manual-qa/. Plan + backend half: `BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md`
 
 ## Tags
 
@@ -68,6 +68,8 @@ so in its spec rather than double-tagging here.
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
+- [ ] [Technical][P3] AppHeader calls setState in dispose -- navigating away with the avatar menu open throws a debug-only framework assertion (no user effect). Found in FS-1007 S3 -- see docs/bugs/app-header-setstate-in-dispose.md
+- [ ] [Business][P3] "Replace receipt" on the edit expense screen does nothing (wired to an empty callback; no image field on update). Found in FS-1007 S3 -- see docs/bugs/edit-expense-replace-receipt-does-nothing.md
 - [ ] [LookAndFeel][P3] Dates and amounts follow the UI language, not the company locale -- an Israeli company read in English shows 7/24/2026 instead of 24.7.2026. Root cause is one provider, blast radius is every screen with a date or amount -- see docs/bugs/dates-and-amounts-follow-ui-language-not-company-locale.md
 - [ ] [LookAndFeel][P3] "Add employee" multi-add affordance is invisible -- see docs/bugs/add-employee-multi-add-affordance-invisible.md
 - [ ] [LookAndFeel][P3] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md

@@ -10,15 +10,18 @@ import '../web_file_drop_region.dart';
 /// Desktop "My expenses" drop strip (UI/UX guide §2.1): drag files onto it to
 /// open the bulk dialog with them already added, or click / Enter / Space to
 /// open it empty. Disabled — no highlight, no reaction — when the current
-/// sheet can't take new expenses.
+/// sheet can't take new expenses. [trailing] sits at the end side, clear of
+/// the label (the free-receipts meter on trial, §3.1).
 class BulkUploadDropStrip extends StatelessWidget {
   const BulkUploadDropStrip({
     super.key,
     required this.enabled,
     required this.onOpen,
+    this.trailing,
   });
 
   final bool enabled;
+  final Widget? trailing;
 
   /// Receives the dropped files, or an empty list for a click.
   final ValueChanged<List<web.File>> onOpen;
@@ -58,17 +61,27 @@ class BulkUploadDropStrip extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.upload_file, size: 20, color: color),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      l10n.bulkUploadPageDrop,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 14, color: color),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.upload_file, size: 20, color: color),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            l10n.bulkUploadPageDrop,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 14, color: color),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  if (trailing != null) ...[
+                    const SizedBox(width: 16),
+                    trailing!,
+                  ],
                 ],
               ),
             ),

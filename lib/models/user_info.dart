@@ -5,6 +5,9 @@ class UserInfo {
   /// calling it "Admin"), 2 = Employee.
   static const int platformAdminRoleId = 3;
 
+  /// A company manager (role 1): the only role that can pay for the plan.
+  static const int managerRoleId = 1;
+
   final String email;
   final String fullName;
   final int roleId;
@@ -44,6 +47,8 @@ class UserInfo {
     this.govId,
     this.impersonatorName,
   });
+
+  bool get isManager => roleId == managerRoleId;
 
   /// True when this session is a support agent connected as this user.
   bool get isImpersonated =>

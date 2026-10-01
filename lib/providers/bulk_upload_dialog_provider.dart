@@ -10,8 +10,10 @@ import '../services/bulk_upload_service.dart';
 import '../utils/bulk_upload_utils.dart';
 import '../utils/bulk_upload_validation_utils.dart';
 import '../utils/file_hash_utils.dart';
+import '../utils/free_receipts_utils.dart';
 import '../utils/web_file_picker.dart';
 import 'bulk_upload_provider.dart';
+import 'free_receipts_provider.dart';
 
 /// One open bulk-upload dialog: its file list, the upload queue (at most 3 at
 /// a time) and the send (UI/UX guide §3–§5, api-guide §4–§5).
@@ -71,8 +73,9 @@ class BulkUploadNotifier extends Notifier<BulkUploadState> {
       );
       if (!ref.mounted) return;
 
-      if (entry.isValid &&
-          BulkUploadCounts.of(state.files).valid >= kBulkUploadMaxFiles) {
+      // 20, or fewer free receipts left on trial (S3, UI/UX guide §9.3).
+      final cap = bulkBatchCap(ref.read(currentFreeReceiptsProvider));
+      if (entry.isValid && BulkUploadCounts.of(state.files).valid >= cap) {
         state = state.copyWith(limitReached: true);
         continue;
       }
@@ -208,7 +211,13 @@ class BulkUploadNotifier extends Notifier<BulkUploadState> {
 
   /// Sends every uploaded file as one batch (api-guide §5).
   Future<void> send() async {
-    if (state.isSending || !BulkUploadCounts.of(state.files).canSend) return;
+    final counts = BulkUploadCounts.of(state.files);
+    final cap = bulkBatchCap(ref.read(currentFreeReceiptsProvider));
+    if (state.isSending || !bulkCanSendWithinCap(counts, cap)) return;
+    // The count changes whatever the outcome (sent: the files count at once;
+    // refused for free receipts: another device used them). Read up front, so
+    // it reloads even if the dialog closes mid-send (api-guide §11.1).
+    final freeReceipts = ref.read(freeReceiptsProvider.notifier);
     state = state.copyWith(isSending: true, clearSendError: true);
 
     final files = [
@@ -231,6 +240,8 @@ class BulkUploadNotifier extends Notifier<BulkUploadState> {
       if (!ref.mounted) return;
       state = state.copyWith(
           isSending: false, sendError: BulkUploadSendError.generic);
+    } finally {
+      unawaited(freeReceipts.refresh());
     }
   }
 

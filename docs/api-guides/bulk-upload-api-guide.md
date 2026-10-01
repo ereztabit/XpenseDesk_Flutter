@@ -1,22 +1,22 @@
-# XpenseDesk API - Bulk Receipt Upload (S1, S1.01, S2)
+# XpenseDesk API - Bulk Receipt Upload (S1, S1.01, S2, S3)
 
 The contract the Flutter bulk-upload flow and the notifications widget are built
 against. An employee (or manager) uploads up to 20 receipts in one go; the
 server reads each one in the background and files one expense per receipt.
 
-> **Status:** mission FS-1007. S2 (§10) is built on
-> `feature/bulk-upload-s2-action-required`, not deployed yet. S1 + S1.01 **in production since 2026-09-28**
+> **Status:** mission FS-1007. S2 (§10) and the S5 outcome changes **in production since 2026-09-29**. S1 + S1.01 **in production since 2026-09-28**
 > (schema applied and verified on prod, App Service WebSockets on), dark
 > behind the per-company flag. UI/UX reference: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md),
 > one guide for every step. Where it and this guide differ on UX, the design
 > guide wins (the S1 differences are listed in the Flutter repo's S1 guide
 > §9, `docs/completed/bulk-receipt-upload-ui-ux-guide.md`).
 
-Mission FS-1007. Copy of the backend guide (`BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md`), which stays the source of truth. S2 UI/UX for this repo: [../in-progress/bulk-upload-s2-action-required-ui-ux.md](../in-progress/bulk-upload-s2-action-required-ui-ux.md).
+Mission FS-1007. Copy of the backend guide (`BackEnd/XpenseDeskServer/docs/bulk-upload/api-guide.md`), which stays the source of truth. S2 UI/UX for this repo: [../completed/bulk-upload-s2-action-required-ui-ux.md](../completed/bulk-upload-s2-action-required-ui-ux.md).
 
 Related: product plan [00-plan.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md), S1 scope
 [01-s1-skeleton.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/01-s1-skeleton.md), S2 scope
-[02-s2-action-required.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/02-s2-action-required.md).
+[02-s2-action-required.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/02-s2-action-required.md), S3 scope
+[03-s3-free-receipts.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/03-s3-free-receipts.md) (§11, not yet shipped).
 
 ---
 
@@ -31,7 +31,7 @@ Related: product plan [00-plan.md](../../../../../BackEnd/XpenseDeskServer/docs/
 | Outcomes | **Created** or **Unreadable** | S2 adds **ActionRequired** (§10) |
 | Progress | Live push over SignalR (§9), S1.01 | - |
 | Emails (batch summary, reminder) | No | S4 |
-| AI credits / limits | No | S3 |
+| Free receipts (a per-user limit on trial) | No | S3 (§11) |
 
 All endpoints use the standard envelope `{ success, message, errorCode, data }`
 and the normal session token (`Authorization: Bearer <token>`).
@@ -226,10 +226,10 @@ it raw. The server never returns English text for an item.
 |---|---|
 | `BulkUploadReceiptNotReadable` | The file itself could not be read. In S1 it also covered a partial read and a scan that recognised nothing; from S2 both are `ActionRequired` (nothing recognised is filed empty) |
 | `BulkUploadFileNotAvailable` | The uploaded file was gone (e.g. the same file sent in two batches at once) |
-| `BulkUploadProcessingFailed` | Still failing after every retry |
+| `BulkUploadProcessingFailed` | Still failing after every retry, and the receipt's image could not be stored either. From S5 a receipt the AI keeps failing on is `ActionRequired`, filed empty, so this is rare |
 | `BulkUploadNoOpenCycle` | The company has no open expense cycle to file into |
 | `ExpenseDateTooOld` | Existing code: the receipt date is more than 12 months old. S1 only: from S2 such a receipt is `ActionRequired` (§10) |
-| `ExchangeRateUnavailable` | Existing code: no exchange rate for the receipt's currency and date |
+| `ExchangeRateUnavailable` | Existing code: no exchange rate for the receipt's currency and date. S1/S2 only: from S5 such a receipt is `ActionRequired`, kept in its own currency |
 | `MandatoryFieldsMissing` | Existing code: an expense rule refused the values. S1: a future date; from S2 such a receipt is `ActionRequired` (§10) |
 | `MultiPageReceiptNotSupported` | Existing code: the PDF turned out to have several pages |
 
@@ -242,8 +242,8 @@ unknown code as `BulkUploadReceiptNotReadable`.
 | Outcome | When |
 |---|---|
 | `Created` | The scan read an amount, a date inside the expense window (not in the future, not more than 12 months old) and a currency, with amount and date at high confidence, and the expense rules accept them. The filed expense has `isAiData = true`, category Other, and the read merchant / receipt number / amount / currency / date, exactly as if the user had scanned and saved it by hand |
-| `ActionRequired` (S2) | Anything short of the above on a file that opened: a partial read, a date outside the window, or nothing recognised at all (filed empty, `isAiData = false`). The expense is filed anyway, flagged, holding what was read and its image (§10) |
-| `Unreadable` | The file was bad or gone, processing kept failing, no open cycle, or an expense rule refused a fully read receipt (e.g. no exchange rate). No expense; the client names the file |
+| `ActionRequired` (S2) | Anything short of the above on a file that opened: a partial read, a date outside the window, or nothing recognised at all (filed empty, `isAiData = false`). From S5 also: the AI switched off, its quota used up, or failing on every attempt (filed empty), and no exchange rate (kept in its own currency). The expense is filed anyway, flagged, holding what was read and its image (§10) |
+| `Unreadable` | The file was bad or gone, a scan refusal (multi-page PDF), no open cycle, or an expense rule refused the line. No expense; the client names the file |
 
 Models:
 
@@ -321,6 +321,8 @@ already in use elsewhere, so reuse their keys if the app has them.
 | `ExchangeRateUnavailable` *existing* | item | No exchange rate for this currency and date |
 | `MandatoryFieldsMissing` *existing* | item, admin | The receipt's details were refused (e.g. a future date) |
 | `AdminCompanyNotFound` *existing* | admin | Company not found |
+| `FreeReceiptsUsedUp` (S3) | scan, send | All your free receipts are used - upgrade to keep scanning |
+| `FreeReceiptsNotEnough` (S3) | send | Only `data.freeReceiptsLeft` free receipts left |
 
 The English `message` on an error response is for logs only, and an item never
 carries text at all - the UI shows only translated codes.
@@ -389,8 +391,11 @@ becomes a normal Pending expense on the user's Draft sheet, flagged
 `isActionRequired: true`. Its batch item is `ActionRequired`, with the
 `expenseId`. A receipt the scan recognised **nothing** on is filed the same
 way, empty (no date, amount 0, no currency, `isAiData: false`), with its
-image. Only a file that can't be opened or is gone, repeated failure, no open
-cycle, or a rule refusal (e.g. no exchange rate) is still `Unreadable`.
+image. Only a file that can't be opened or is gone, no open cycle, or a rule
+refusal is still `Unreadable`. From S5 a receipt the AI could not be used on
+(switched off, quota used up, or failing on every attempt) is filed empty the same way, and
+a complete receipt with no exchange rate is filed flagged in its own currency
+([05-s5-protection.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/05-s5-protection.md) §3).
 
 What the flagged expense holds:
 
@@ -446,6 +451,66 @@ Draft sheet on the new cycle (new `expenseSheetId`, same `expenseId`). That
 repeats every cycle until it is completed or discarded. A Draft sheet holding
 only flagged expenses is not submitted.
 
+## 11. Free receipts (S3)
+
+Design and rationale: [03-s3-free-receipts.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/03-s3-free-receipts.md).
+UX: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md) §9. The user-facing name is
+"free receipts", never "credits".
+
+While the company has **no paid plan** - whether it uses bulk upload or not -
+every user, managers included, may have a number of expenses (20) for the
+whole trial: a safety guard for the normal user, not metering. **Every expense
+the user has counts**, however it was filed, plus the files of their batches
+still being read. A scan on its own counts nothing until its expense is saved,
+and deleting an expense gives its receipt back. With a paid plan there is no
+limit and the client shows none of this UI.
+
+### 11.1 The caller's free receipts
+
+    GET /api/users/me/free-receipts
+
+`200`:
+
+```json
+{ "isLimited": true, "allowance": 20, "used": 8, "left": 12 }
+```
+
+| Field | Meaning |
+|---|---|
+| `isLimited` | `true`: show the meter, cap batches at `left`, and at `0` show the used-up callout. `false`: no limit - hide everything below |
+| `allowance` | The user's free receipts for the whole trial (the same for everyone) |
+| `used` | The user's expenses, plus the files of their batches still being processed |
+| `left` | `max(0, allowance - used)` |
+
+The caller's own numbers only. A platform-admin session gets `403`.
+
+**When to load it:** when the app shell loads, and again after saving or
+deleting an expense, after sending a batch (the files count at once), and when
+a batch completes (a file that ended Unreadable stops counting). It does not
+change otherwise.
+
+### 11.2 Refusals
+
+| Endpoint | Status | `errorCode` | `data` | Client should |
+|---|---|---|---|---|
+| `POST /api/expenses/analyze-receipt` | 403 | `FreeReceiptsUsedUp` | `{ freeReceiptsLeft: 0 }` | Show the used-up message. Reload §11.1. No AI ran |
+| `POST /api/expenses` | 403 | `FreeReceiptsUsedUp` | `{ freeReceiptsLeft: 0 }` | As above; nothing was filed. Checked against the caller, also when a manager files onto an employee's sheet. Editing an existing expense is never refused |
+| `POST /api/bulk-uploads` | 403 | `FreeReceiptsUsedUp` | `{ freeReceiptsLeft: 0 }` | As above; nothing was sent |
+| `POST /api/bulk-uploads` | 403 | `FreeReceiptsNotEnough` | `{ freeReceiptsLeft: n }` | The batch has more files than `n`. Nothing was sent - the batch is refused whole. Reload §11.1 and cap the list at `n` |
+
+The client caps first (the dialog's limit is the smaller of 20 and `left`), so
+these are backstops for a second tab or device using the same receipts.
+
+Model:
+
+```dart
+class FreeReceipts {
+  final bool isLimited;
+  final int allowance, used, left;
+  bool get isUsedUp => isLimited && left <= 0;
+}
+```
+
 ## Changelog
 
 | Date | Change |
@@ -458,3 +523,6 @@ only flagged expenses is not submitted.
 | 2026-09-29 | S2 (§10): item status `ActionRequired`, batch `actionRequiredCount`, expense `isActionRequired` + nullable `expenseDate`, Draft sheet counts and totals leave flagged lines out. `BulkUploadReceiptNotReadable` now means nothing was read. |
 | 2026-09-29 | S2: a receipt dated outside the expense window (more than 12 months old, or in the future) is `ActionRequired` with its date kept (was `Unreadable` / date dropped). The client shows the policy; the save still refuses the date. |
 | 2026-09-29 | S2: a receipt the scan recognised nothing on is `ActionRequired`, filed empty with its image and `isAiData: false` (was `Unreadable`). `BulkUploadReceiptNotReadable` now means the file itself could not be read. |
+| 2026-09-29 | S5: a receipt the AI could not be used on (switched off, quota used up, or failing on every attempt) is `ActionRequired`, filed empty with its image (was `Unreadable` `BulkUploadProcessingFailed`). A complete receipt with no exchange rate is `ActionRequired` in its own currency (was `Unreadable` `ExchangeRateUnavailable`). `analyze-receipt` moves to its own rate limit (30/min/IP). |
+| 2026-09-30 | S3 (§11): free receipts - a guard counting the user's expenses. New `GET /api/users/me/free-receipts`; `analyze-receipt` and the batch send may return `403 FreeReceiptsUsedUp`, the send also `403 FreeReceiptsNotEnough` (both with `data.freeReceiptsLeft`). `analyze-receipt` errors now carry `data` when the server sets it. |
+| 2026-09-30 | S3: `POST /api/expenses` is refused too (`403 FreeReceiptsUsedUp`) when the caller has none left. |

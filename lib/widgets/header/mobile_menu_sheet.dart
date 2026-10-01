@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
 import '../../utils/responsive_utils.dart';
+import '../free_receipts/free_receipts_meter.dart';
 import '../language_switcher.dart';
 import '../pwa/pwa_install_launcher.dart';
 import 'menu_version_label.dart';
@@ -313,6 +314,9 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
                               ),
                             ],
                           ),
+                          // FS-1007 S3: free receipts on trial, full width
+                          const FreeReceiptsMeter(
+                              padding: EdgeInsets.only(top: 8)),
                           const SizedBox(height: 12),
                           const LanguageSwitcher(),
                         ],

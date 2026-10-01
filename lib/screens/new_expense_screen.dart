@@ -26,7 +26,11 @@ import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/expense_category.dart';
 import '../providers/company_provider.dart';
+import '../providers/free_receipts_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
+import '../utils/free_receipts_utils.dart';
+import '../widgets/free_receipts/free_receipts_callout.dart';
+import '../widgets/free_receipts/free_receipts_meter.dart';
 
 class NewExpenseScreen extends ConsumerStatefulWidget {
   /// FS-1004. When set, this is a manager filing a line onto someone else's
@@ -87,6 +91,16 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   String? _uploadError;
   ReceiptAnalysisResult? _analysisResult;
   bool _aiFailed = false;
+
+  /// FS-1007 S3: the server refused a scan because this user on trial has no
+  /// free receipts left — kept locally too, so the callout shows even if the
+  /// free-receipts reload fails.
+  bool _freeReceiptsRefused = false;
+
+  /// No free receipts left (S3): no new scan, so Continue and Replace are off
+  /// and the used-up callout stands in for the meter (UI/UX guide §9.4).
+  bool get _freeReceiptsUsedUp =>
+      _freeReceiptsRefused || ref.watch(currentFreeReceiptsProvider).isUsedUp;
 
   // Rotating reassurance copy shown while the scan runs (~5s per line, loops).
   Timer? _scanMessageTimer;
@@ -510,6 +524,19 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       });
       _syncCategoryController(result.categoryId);
       _evaluateConversion();
+    } on FreeReceiptsUsedUpException {
+      // S3: refused before any AI ran. Stay on the upload step, where the
+      // used-up callout explains why (not the manual form - that needs a scan).
+      if (!mounted) return;
+      _scanController.stop();
+      _pulseController.stop();
+      _stopScanMessages();
+      setState(() {
+        _isAnalyzing = false;
+        _freeReceiptsRefused = true;
+      });
+      // Another tab or device used them meanwhile: show what is really left.
+      unawaited(ref.read(freeReceiptsProvider.notifier).refresh());
     } catch (_) {
       if (!mounted) return;
       _scanController.stop();
@@ -582,6 +609,9 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _isSubmitting = true;
       _submitError = null;
     });
+    // FS-1007 S3: every saved expense uses a free receipt. Read before the
+    // await - the screen closes on success.
+    final freeReceipts = ref.read(freeReceiptsProvider.notifier);
 
     try {
       final expenseService = ref.read(expenseServiceProvider);
@@ -597,6 +627,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         isAiData: _isAiData,
         expenseSheetId: widget.targetSheetId,
       );
+      unawaited(freeReceipts.refresh());
       if (!mounted) return;
       // Refresh the cycle view AND the dashboard's sheet list + per-sheet
       // expense cards (the new expense lands in the current draft sheet).
@@ -628,6 +659,20 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       setState(() {
         _isSubmitting = false;
         _submitError = l10n.expenseExchangeRateUnavailable;
+      });
+    } on FreeReceiptsUsedUpException {
+      // S3: the last free receipt went elsewhere meanwhile (another tab or
+      // device). Nothing was filed. Reload first: the sentence names the
+      // allowance, which is unknown if the first load failed.
+      await freeReceipts.refresh();
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
+      final isManager = ref.read(userInfoProvider)?.isManager ?? false;
+      final allowance = ref.read(currentFreeReceiptsProvider).allowance;
+      setState(() {
+        _isSubmitting = false;
+        _submitError = freeReceiptsUsedUpText(l10n,
+            isManager: isManager, allowance: allowance);
       });
     } on ExpenseException catch (e) {
       if (!mounted) return;
@@ -1731,7 +1776,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           ),
           const SizedBox(width: 4),
           OutlinedButton(
-            onPressed: _resetToUpload,
+            // A replacement needs a new scan (FS-1007 S3)
+            onPressed: _freeReceiptsUsedUp ? null : _resetToUpload,
             style: OutlinedButton.styleFrom(
               shape: const StadiumBorder(),
               side: const BorderSide(color: AppTheme.border),
@@ -1780,6 +1826,13 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.watch(companyLocaleProvider);
+    // S3: a refused scan stays refused until a reload shows receipts again
+    // (a batch gave one back, or the company upgraded).
+    ref.listen(currentFreeReceiptsProvider, (_, next) {
+      if (_freeReceiptsRefused && !next.isUsedUp) {
+        setState(() => _freeReceiptsRefused = false);
+      }
+    });
     return buildWithNavigationGuard(
       // A file dropped anywhere on this screen must never navigate the tab away
       // and lose the half-filled wizard — the guard swallows stray drops, the
@@ -1875,6 +1928,13 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                 else
                                   _buildPreview(
                                       context, l10n, previewHeight),
+                                // S3: free receipts on trial (UI/UX guide §9.2, §9.4)
+                                if (_freeReceiptsUsedUp) ...[
+                                  const SizedBox(height: 16),
+                                  const FreeReceiptsCallout(),
+                                ] else
+                                  const FreeReceiptsMeter(
+                                      padding: EdgeInsets.only(top: 12)),
                                 if (!_isAnalyzing) ...[
                                   const SizedBox(height: 16),
                                   Align(
@@ -1883,7 +1943,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                     child: AppButton(
                                       label: l10n.continueButton,
                                       variant: AppButtonVariant.success,
-                                      onPressed: _fileBytes != null
+                                      onPressed: _fileBytes != null &&
+                                              !_freeReceiptsUsedUp
                                           ? _analyze
                                           : null,
                                     ),
@@ -1918,7 +1979,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                                                 : () => _showFullScreenImage(
                                                     context),
                                             onDownload: _downloadFile,
-                                            onReplace: _resetToUpload,
+                                            // A replacement needs a new scan (S3)
+                                            onReplace: _freeReceiptsUsedUp
+                                                ? null
+                                                : _resetToUpload,
                                           ),
                                           DevScanRecordButton(
                                               fileUrl: _aiImageUrl),

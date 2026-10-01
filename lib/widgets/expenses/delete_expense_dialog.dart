@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/expense_provider.dart';
+import '../../providers/free_receipts_provider.dart';
 import '../app_button.dart';
 import '../../services/expense_service.dart';
 import '../../theme/app_theme.dart';
@@ -71,6 +74,8 @@ class _DeleteExpenseDialogState extends ConsumerState<DeleteExpenseDialog> {
       final service = ref.read(expenseServiceProvider);
       await service.deleteExpense(widget.expenseId);
       ref.invalidate(expenseSearchProvider);
+      // FS-1007 S3: a deleted expense gives its free receipt back.
+      unawaited(ref.read(freeReceiptsProvider.notifier).refresh());
       if (mounted) Navigator.of(context).pop((deleted: true, error: null));
     } on ExpenseException catch (e) {
       if (mounted) {

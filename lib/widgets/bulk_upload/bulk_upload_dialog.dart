@@ -9,15 +9,15 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/bulk_upload_state.dart';
 import '../../providers/bulk_upload_dialog_provider.dart';
 import '../../providers/company_provider.dart';
+import '../../providers/free_receipts_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/bulk_upload_utils.dart';
 import '../../utils/bulk_upload_validation_utils.dart';
+import '../../utils/free_receipts_utils.dart';
 import '../../utils/responsive_utils.dart';
 import '../../utils/web_file_picker.dart';
 import '../app_button.dart';
-import 'bulk_upload_body.dart';
-import 'bulk_upload_footer.dart';
-import 'bulk_upload_header.dart';
+import 'bulk_upload_editor.dart';
 import 'bulk_upload_shell.dart';
 import 'bulk_upload_thanks.dart';
 import 'confirm_choice_dialog.dart';
@@ -97,7 +97,8 @@ class _BulkUploadDialogState extends ConsumerState<BulkUploadDialog> {
     Navigator.of(context).pop();
   }
 
-  Future<void> _requestClose() async {
+  /// True when the dialog closed, false when the user chose to stay.
+  Future<bool> _requestClose() async {
     if (_counts.hasPending) {
       final l10n = AppLocalizations.of(context)!;
       final leave = await ConfirmChoiceDialog.show(
@@ -107,9 +108,10 @@ class _BulkUploadDialogState extends ConsumerState<BulkUploadDialog> {
         confirmLabel: l10n.bulkUploadLeave,
         confirmVariant: AppButtonVariant.destructive,
       );
-      if (!leave) return;
+      if (!leave) return false;
     }
     _close();
+    return true;
   }
 
   Future<void> _confirmClearAll() async {
@@ -145,42 +147,24 @@ class _BulkUploadDialogState extends ConsumerState<BulkUploadDialog> {
     ref.listen(bulkUploadDialogProvider, _onStateChange);
     final state = ref.watch(bulkUploadDialogProvider);
     final counts = BulkUploadCounts.of(state.files);
+    final cap = bulkBatchCap(ref.watch(currentFreeReceiptsProvider));
     final isMobile = context.isMobile;
 
     final content = state.isSent
         ? BulkUploadThanks(onClose: _close)
-        : Column(
-            mainAxisSize: isMobile ? MainAxisSize.max : MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              BulkUploadHeader(
-                  validCount: counts.valid, onClose: _requestClose),
-              const SizedBox(height: 16),
-              Flexible(
-                fit: isMobile ? FlexFit.tight : FlexFit.loose,
-                child: SingleChildScrollView(
-                  child: BulkUploadBody(
-                    state: state,
-                    counts: counts,
-                    onPick: _pick,
-                    onDrop: _notifier.addFiles,
-                    onClearAll: _confirmClearAll,
-                    onRemove: _notifier.remove,
-                    onRetry: _notifier.retry,
-                    onUnsupportedExpired: _notifier.dismissUnsupportedNotice,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              BulkUploadFooter(
-                help: footerHelpFor(counts),
-                sendCount: counts.valid,
-                canSend: counts.canSend,
-                isSending: state.isSending,
-                onCancel: _requestClose,
-                onSend: _notifier.send,
-              ),
-            ],
+        : BulkUploadEditor(
+            state: state,
+            counts: counts,
+            cap: cap,
+            isMobile: isMobile,
+            onRequestClose: _requestClose,
+            onPick: _pick,
+            onDrop: _notifier.addFiles,
+            onClearAll: _confirmClearAll,
+            onRemove: _notifier.remove,
+            onRetry: _notifier.retry,
+            onUnsupportedExpired: _notifier.dismissUnsupportedNotice,
+            onSend: _notifier.send,
           );
 
     return PopScope(
