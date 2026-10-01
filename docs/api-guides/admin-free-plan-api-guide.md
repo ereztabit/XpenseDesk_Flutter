@@ -1,7 +1,7 @@
 # Admin free plan - API guide (FS-1008)
 
-> Mission: FS-1008. Backend story: `docs/admin-panel/admin-free-plan-story.md`.
-> Frontend spec: `FrontEnd/.../docs/in-progress/admin-free-plan-spec.md`.
+> Mission: FS-1008. Backend story: `BackEnd/XpenseDeskServer/docs/admin-panel/admin-free-plan-story.md`.
+> Frontend spec: [docs/completed/admin-free-plan-spec.md](../completed/admin-free-plan-spec.md).
 > The same guide is filed in the Flutter repo as `docs/api-guides/admin-free-plan-api-guide.md`.
 
 A support agent (platform admin, `roleId 3`) puts a company on the **free plan**
@@ -10,8 +10,9 @@ free-receipt limit, no payment banner - with no card and nothing at Tranzila.
 
 What a free plan is in the database: a `CompanySubscription` on the Free plan
 (`BillingPlanId 3`, 0.00), status Active, `EndDate` 2099-01-01, no future plan,
-on a company with no `CompanyPaymentMethod`. See
-`docs/admin-panel/fs-1008-free-plan-schema.sql`.
+on a company with no `CompanyPaymentMethod`. The rules live in the headers of
+`proc_Admin_SetFreePlan` / `proc_Admin_ClearFreePlan` (applied to dev and prod
+2026-10-01).
 
 ---
 

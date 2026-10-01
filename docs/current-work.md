@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [ ] [Business][P1] **FS-1008** Admin free plan for design partners - banked on develop as v1.39 (2026-10-01), awaiting ship-feature. see docs/in-progress/admin-free-plan-spec.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
