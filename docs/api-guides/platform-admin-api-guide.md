@@ -181,6 +181,7 @@ Authorization: Bearer <sessionToken>
       "paymentStatus": "Active",
       "isActive": true,
       "companyStatus": "Active",
+      "isFreePlan": false,
       "userCount": 2,
       "expenseCount": 0
     }
@@ -196,6 +197,7 @@ Authorization: Bearer <sessionToken>
 | `paymentStatus` | enum string | `PendingPayment` \| `Active` \| `Inactive`. Server-computed — see below. |
 | `isActive` | bool | Whether the company is live. **Read this together with `paymentStatus`** — see below. |
 | `companyStatus` | string | Company lifecycle status, e.g. `Active`. |
+| `isFreePlan` | bool | FS-1008. On the free plan a support agent gave — reads `paymentStatus` `Active` like a paying company; this tells them apart. See [admin-free-plan-api-guide.md](admin-free-plan-api-guide.md). |
 | `userCount` | int | All users in the company, active or not. |
 | `expenseCount` | int | All expenses in the company. |
 
@@ -222,7 +224,7 @@ paid. Use `isActive` to tell them apart:
 | `isActive` | `paymentStatus` | Read as |
 |---|---|---|
 | `true` | `PendingPayment` | New or unpaid — never subscribed |
-| `true` | `Active` | Paying customer |
+| `true` | `Active` | Paying customer — or, with `isFreePlan: true`, on the free plan (FS-1008) |
 | `true` | `Inactive` | Subscription lapsed or cancelled |
 | `false` | *(any)* | **Deactivated** — ignore `paymentStatus`, it is not meaningful |
 
