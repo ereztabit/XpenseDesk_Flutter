@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-10-01 | v1.38 | Bulk upload on by default (FS-1007) | Every company gets bulk upload (server default flips to on); the admin panel's toggle now says "On by default". |
 | 2026-09-30 | v1.37 | Bulk upload S3: free receipts (FS-1007) | On trial, a "free receipts left" meter (each expense uses one) at upload and in the user menu, a batch capped at what's left, and an "Upgrade now" callout when they run out. |
 | 2026-09-29 | v1.36 | Bulk upload S2: Action Required (FS-1007) | Partly read, unread and out-of-policy receipts land in an amber section on My expenses; the edit screen highlights what to fix; the done card counts "need action" and names failed files. |
 | 2026-09-28 | v1.35 | Bulk receipt upload S1 + S1.01 (FS-1007) | Upload up to 20 receipts at once behind a per-company flag: client checks, parallel upload, send, and a live notifications bell + progress strip updated over WebSockets. |

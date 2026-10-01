@@ -921,7 +921,7 @@
   "adminCompanyTabConfiguration": "Configuration",
   "adminConfigFeaturesTitle": "Features",
   "adminConfigBulkUploadTitle": "Bulk receipt upload",
-  "adminConfigBulkUploadDesc": "Lets this company's users upload up to 20 receipts at once and adds the notifications bell. Off by default.",
+  "adminConfigBulkUploadDesc": "Lets this company's users upload up to 20 receipts at once and adds the notifications bell. On by default.",
   "adminConfigLastChanged": "Last changed",
   "adminConfigNeverChanged": "Never changed",
   "adminConfigTurnOnConfirmPrefix": "Turn on bulk receipt upload for",
