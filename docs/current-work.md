@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [Business][P2] **FS-1007** Bulk upload on by default - banked on develop as v1.38 (2026-10-01), awaiting ship-feature.
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
