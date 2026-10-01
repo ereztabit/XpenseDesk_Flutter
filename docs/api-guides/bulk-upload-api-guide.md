@@ -5,8 +5,10 @@ against. An employee (or manager) uploads up to 20 receipts in one go; the
 server reads each one in the background and files one expense per receipt.
 
 > **Status:** mission FS-1007. S2 (§10) and the S5 outcome changes **in production since 2026-09-29**. S1 + S1.01 **in production since 2026-09-28**
-> (schema applied and verified on prod, App Service WebSockets on), dark
-> behind the per-company flag. UI/UX reference: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md),
+> (schema applied and verified on prod, App Service WebSockets on). S3 (§11)
+> **in production since 2026-10-01**. The per-company flag is **on by default
+> for every company** since 2026-10-01; a platform admin can switch a company
+> off. UI/UX reference: [ui-ux-design-guide.md](../../../../../BackEnd/XpenseDeskServer/docs/bulk-upload/ui-ux-design-guide.md),
 > one guide for every step. Where it and this guide differ on UX, the design
 > guide wins (the S1 differences are listed in the Flutter repo's S1 guide
 > §9, `docs/completed/bulk-receipt-upload-ui-ux-guide.md`).
@@ -526,3 +528,4 @@ class FreeReceipts {
 | 2026-09-29 | S5: a receipt the AI could not be used on (switched off, quota used up, or failing on every attempt) is `ActionRequired`, filed empty with its image (was `Unreadable` `BulkUploadProcessingFailed`). A complete receipt with no exchange rate is `ActionRequired` in its own currency (was `Unreadable` `ExchangeRateUnavailable`). `analyze-receipt` moves to its own rate limit (30/min/IP). |
 | 2026-09-30 | S3 (§11): free receipts - a guard counting the user's expenses. New `GET /api/users/me/free-receipts`; `analyze-receipt` and the batch send may return `403 FreeReceiptsUsedUp`, the send also `403 FreeReceiptsNotEnough` (both with `data.freeReceiptsLeft`). `analyze-receipt` errors now carry `data` when the server sets it. |
 | 2026-09-30 | S3: `POST /api/expenses` is refused too (`403 FreeReceiptsUsedUp`) when the caller has none left. |
+| 2026-10-01 | The per-company flag is on by default: a new company's `configuration.isBulkUploadEnabled` reads `true`, and existing companies were switched on. No contract change. |

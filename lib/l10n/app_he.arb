@@ -921,7 +921,7 @@
   "adminCompanyTabConfiguration": "הגדרות",
   "adminConfigFeaturesTitle": "יכולות",
   "adminConfigBulkUploadTitle": "העלאת כמה קבלות",
-  "adminConfigBulkUploadDesc": "מאפשר למשתמשי החברה להעלות עד 20 קבלות בבת אחת ומוסיף את פעמון ההתראות. כבוי כברירת מחדל.",
+  "adminConfigBulkUploadDesc": "מאפשר למשתמשי החברה להעלות עד 20 קבלות בבת אחת ומוסיף את פעמון ההתראות. פועל כברירת מחדל.",
   "adminConfigLastChanged": "שונה לאחרונה",
   "adminConfigNeverChanged": "לא שונה עדיין",
   "adminConfigTurnOnConfirmPrefix": "להפעיל העלאת כמה קבלות עבור",

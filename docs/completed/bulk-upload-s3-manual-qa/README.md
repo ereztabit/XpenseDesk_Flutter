@@ -13,7 +13,7 @@ test again with fresh users, run the seed, then replace `3f45` in this file with
 the tag it prints:
 
 ```bash
-node docs/in-progress/bulk-upload-s3-manual-qa/seed.mjs
+node docs/completed/bulk-upload-s3-manual-qa/seed.mjs
 ```
 
 ## How to
@@ -106,9 +106,9 @@ Result:
 ### 22. The bar grows, and turns orange for the last 2
 
 1. Stay logged in as `qa.trial.emp1.3f45@xpensedesk.com`
-2. Run this command (it prints "3 of 20 free receipts left"), then reload the page: `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-upload-s3-manual-qa/use.mjs" qa.trial.emp1.3f45@xpensedesk.com 15`
+2. Run this command (it prints "3 of 20 free receipts left"), then reload the page: `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-upload-s3-manual-qa/use.mjs" qa.trial.emp1.3f45@xpensedesk.com 15`
 3. Look at the meter in the drop area.
-4. Run this command (it prints "2 of 20 free receipts left"), then reload the page: `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-upload-s3-manual-qa/use.mjs" qa.trial.emp1.3f45@xpensedesk.com 1`
+4. Run this command (it prints "2 of 20 free receipts left"), then reload the page: `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-upload-s3-manual-qa/use.mjs" qa.trial.emp1.3f45@xpensedesk.com 1`
 5. **Expected:** at step 3 the meter reads "3 of 20", with the bar almost full and still purple. After step 4 it reads "2 of 20", and the bar and the text are **orange**.
 
 Result:
@@ -125,7 +125,7 @@ Result:
 ### 24. Hebrew "only 1 left"
 
 1. Stay logged in as `qa.trial.emp1.3f45@xpensedesk.com`, still in Hebrew.
-2. Run this command (it prints "1 of 20 free receipts left"), then reload the page: `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-upload-s3-manual-qa/use.mjs" qa.trial.emp1.3f45@xpensedesk.com 1`
+2. Run this command (it prints "1 of 20 free receipts left"), then reload the page: `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-upload-s3-manual-qa/use.mjs" qa.trial.emp1.3f45@xpensedesk.com 1`
 3. Click the drop area. Select `04_gbp_untracked.png` and `05_jpy_untracked.png` at once.
 4. **Expected:** only 1 file is listed, and the orange message reads "ניתן להעלות רק קבלה אחרונה אחת".
 5. Close the dialog without sending, and switch back to English.
@@ -147,7 +147,7 @@ Result:
 ### 10. The count drops while the dialog is open
 
 1. Stay logged in as `qa.trial.mgr.3f45@xpensedesk.com`, with the dialog still open.
-2. Run this command (it prints "3 of 20 free receipts left"): `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-upload-s3-manual-qa/use.mjs" qa.trial.mgr.3f45@xpensedesk.com 1`
+2. Run this command (it prints "3 of 20 free receipts left"): `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-upload-s3-manual-qa/use.mjs" qa.trial.mgr.3f45@xpensedesk.com 1`
 3. Click **Process receipts**.
 4. **Expected:** nothing is sent. The amber message changes to "Only 3 free receipts left", the counter reads `4 / 3`, and **Process receipts** is greyed out. There's no red error.
 
@@ -227,7 +227,7 @@ Result:
 No test card? Run this command instead of step 2, then reload the page and
 carry on from step 3. Note on the result that you used it, because then the
 no-reload part isn't tested:
-`node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-upload-s3-manual-qa/upgrade.mjs" qa.upgrade.mgr.3f45@xpensedesk.com`
+`node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-upload-s3-manual-qa/upgrade.mjs" qa.upgrade.mgr.3f45@xpensedesk.com`
 
 Result:
 
@@ -245,7 +245,7 @@ Result:
 
 1. Stay logged in as `qa.nobulk.emp.3f45@xpensedesk.com`, on the New Expense page.
 2. Upload `05_jpy_untracked.png`, click **Continue**, and fill in any empty required field. Don't click Finish yet.
-3. Run this command (it prints "0 of 20 free receipts left"): `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/in-progress/bulk-upload-s3-manual-qa/use.mjs" qa.nobulk.emp.3f45@xpensedesk.com 1`
+3. Run this command (it prints "0 of 20 free receipts left"): `node "C:/Projects/XpenseDesk/FrontEnd/xpensedesk_flutter/XpenseDesk_Flutter/docs/completed/bulk-upload-s3-manual-qa/use.mjs" qa.nobulk.emp.3f45@xpensedesk.com 1`
 4. Click **Finish**.
 5. Click **Back to dashboard**.
 6. **Expected:** after Finish, a red message above it reads "Your account is limited to 20 free receipts. Your company's manager can upgrade to a paid plan to scan receipts with no limit." You stay on the form, and **Replace Receipt** greys out. Back on My Expenses, the amber message is under the title, **New Expense** is greyed out, and the list has 20 expenses (not 21).
