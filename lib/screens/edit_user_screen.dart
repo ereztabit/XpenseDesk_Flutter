@@ -40,10 +40,13 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen>
     if (_dirty != dirty) setState(() => _dirty = dirty);
   }
 
+  // [phone] is always null here: the phone field is hidden when a manager
+  // edits someone else (only the user enters their own, FS-1009).
   Future<ProfileSaveOutcome> _save({
     required String fullName,
     required int languageId,
     required String govId,
+    String? phone,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     try {
@@ -57,15 +60,11 @@ class _EditUserScreenState extends ConsumerState<EditUserScreen>
       await ref.read(usersListProvider.notifier).refresh();
       return const ProfileSaveOutcome.success();
     } on UsersException catch (e) {
-      switch (e.errorCode) {
-        case 'UsersGovIdInvalidFormat':
-        case 'UsersGovIdAlreadyExists':
-          return ProfileSaveOutcome.govIdError(e.errorCode!);
-        case 'UsersUpdateTargetUserNotFoundInCompany':
-          return ProfileSaveOutcome.error(l10n.userNotFound);
-        default:
-          return ProfileSaveOutcome.error(e.message);
+      if (e.errorCode == 'UsersUpdateTargetUserNotFoundInCompany') {
+        return ProfileSaveOutcome.error(l10n.userNotFound);
       }
+      return ProfileSaveOutcome.forFieldError(e.errorCode) ??
+          ProfileSaveOutcome.error(e.message);
     } catch (_) {
       return ProfileSaveOutcome.error(l10n.anErrorOccurred);
     }

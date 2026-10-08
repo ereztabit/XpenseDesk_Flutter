@@ -6,6 +6,10 @@ import '../widgets/app_button.dart';
 import '../providers/locale_provider.dart';
 import '../services/auth_service.dart';
 import '../utils/gov_id_utils.dart';
+import '../utils/phone_utils.dart';
+import '../utils/profile_name_utils.dart';
+import '../widgets/phone_input_field.dart';
+import '../widgets/profile/profile_save_outcome.dart';
 import '../widgets/header/login_header.dart';
 
 class EmployeeOnboardingScreen extends ConsumerStatefulWidget {
@@ -21,6 +25,8 @@ class _EmployeeOnboardingScreenState
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
   final _govIdController = TextEditingController();
+  final _phoneController = TextEditingController();
+  PhoneCountry _phoneCountry = PhoneCountry.israel;
 
   int _selectedLanguageId = 1;
   bool _consentChecked = false;
@@ -31,6 +37,9 @@ class _EmployeeOnboardingScreenState
   /// Inline, field-level gov-ID error from the server (400 invalid / 409 taken).
   String? _govIdError;
 
+  /// Inline, field-level phone error from the server (FS-1009).
+  String? _phoneError;
+
   @override
   void initState() {
     super.initState();
@@ -40,6 +49,8 @@ class _EmployeeOnboardingScreenState
     if (userInfo != null) {
       _fullNameController.text = userInfo.fullName;
       _govIdController.text = userInfo.govId ?? '';
+      _phoneCountry = PhoneCountry.forDialCode(userInfo.dailingCode);
+      _phoneController.text = _phoneCountry.display(userInfo.phone);
       _selectedLanguageId = userInfo.languageId;
     }
   }
@@ -48,6 +59,7 @@ class _EmployeeOnboardingScreenState
   void dispose() {
     _fullNameController.dispose();
     _govIdController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -58,23 +70,8 @@ class _EmployeeOnboardingScreenState
     return true;
   }
 
-  String? _validateFullName(String? value) {
-    final l10n = AppLocalizations.of(context)!;
-    if (value == null || value.trim().isEmpty) {
-      return l10n.nameRequired;
-    }
-    if (value.trim().length > 50) {
-      return l10n.nameMaxLength;
-    }
-    final validNameRegex = RegExp(r'^[a-zA-Z\u0590-\u05FF\s-]+$');
-    if (!validNameRegex.hasMatch(value.trim())) {
-      if (RegExp(r'\d').hasMatch(value)) {
-        return l10n.nameNoNumbers;
-      }
-      return l10n.nameOnlyLetters;
-    }
-    return null;
-  }
+  String? _validateFullName(String? value) =>
+      ProfileNameValidator.validate(AppLocalizations.of(context)!, value);
 
   Future<void> _handleSubmit() async {
     setState(() => _attemptedSubmit = true);
@@ -86,6 +83,7 @@ class _EmployeeOnboardingScreenState
       _isSubmitting = true;
       _errorMessage = null;
       _govIdError = null;
+      _phoneError = null;
     });
 
     try {
@@ -94,6 +92,7 @@ class _EmployeeOnboardingScreenState
         fullName: _fullNameController.text.trim(),
         languageId: _selectedLanguageId,
         govId: _govIdController.text.trim(),
+        phone: _phoneCountry.toE164(_phoneController.text),
       );
 
       // Store updated user info (with termsConsentDate now set)
@@ -112,16 +111,12 @@ class _EmployeeOnboardingScreenState
         final l10n = AppLocalizations.of(context)!;
         setState(() {
           _isSubmitting = false;
-          // Surface gov-ID problems inline on the field; everything else in
-          // the generic error banner.
-          switch (e.errorCode) {
-            case 'UsersGovIdInvalidFormat':
-              _govIdError = l10n.govIdInvalidFormat;
-            case 'UsersGovIdAlreadyExists':
-              _govIdError = l10n.govIdAlreadyExists;
-            default:
-              _errorMessage = e.message;
-          }
+          // Gov-ID / phone problems inline on their field; everything else
+          // in the generic error banner.
+          final field = ProfileSaveOutcome.forFieldError(e.errorCode);
+          _govIdError = field?.govIdErrorText(l10n);
+          _phoneError = field?.phoneErrorText(l10n);
+          if (field == null) _errorMessage = e.message;
         });
       }
     } catch (_) {
@@ -318,6 +313,30 @@ class _EmployeeOnboardingScreenState
                                   return l10n.govIdInvalidFormat;
                                 }
                                 return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Mobile phone (optional) - the WhatsApp bot
+                            // recognises the employee by it (FS-1009).
+                            Text(
+                              l10n.phoneNumber,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.foreground,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            PhoneInputField(
+                              controller: _phoneController,
+                              country: _phoneCountry,
+                              helperText: l10n.phoneNumberHelp,
+                              errorText: _phoneError,
+                              onChanged: (_) {
+                                if (_phoneError != null) {
+                                  setState(() => _phoneError = null);
+                                }
                               },
                             ),
                             const SizedBox(height: 20),

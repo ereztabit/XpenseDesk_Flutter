@@ -517,6 +517,7 @@ CR rule, because all six of them only inspect the file you wrote.
 | `ActionIconButton` | `action_icon_button.dart` | 32×32 icon button in a table/list action column |
 | `SearchButton` | `search_button.dart` | 40px Search CTA matching the filter triggers |
 | `EmailInputField` | `email_input_field.dart` | Any email input |
+| `PhoneInputField` | `phone_input_field.dart` | Any mobile-phone input. Pass the country (`PhoneCountry.forDialCode(userInfo.dailingCode)`): masked national form, digits only, touched-on-blur validation; read the value with `country.toE164` |
 | `TagInput` | `tag_input.dart` | Multi-entry email/tag input |
 | `AppRadioGroup` | `app_radio_group.dart` | Radio group |
 | `DateRangeFilter` | `date_range_filter.dart` | from→to date-range filter |
