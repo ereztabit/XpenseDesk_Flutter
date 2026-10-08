@@ -715,6 +715,7 @@ class AuthService {
     String fullName,
     int languageId, {
     String? govId,
+    String? phone,
   }) async {
     final sessionToken = await getSessionToken();
     _validateSessionToken(sessionToken);
@@ -726,6 +727,8 @@ class AuthService {
         'languageId': languageId,
         // null = leave unchanged (omit); "" = clear; digits = set.
         'govId': ?govId,
+        // FS-1009, same three states: null = unchanged; "" = clear; E.164 = set.
+        'phone': ?phone,
       },
       authToken: sessionToken,
     );
@@ -741,6 +744,7 @@ class AuthService {
     required String fullName,
     required int languageId,
     String? govId,
+    String? phone,
   }) async {
     final sessionToken = await getSessionToken();
     _validateSessionToken(sessionToken);
@@ -752,6 +756,7 @@ class AuthService {
         'LanguageId': languageId,
         // Only sent when the employee typed one — optional at onboarding.
         if (govId != null && govId.isNotEmpty) 'govId': govId,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
       },
       authToken: sessionToken,
     );

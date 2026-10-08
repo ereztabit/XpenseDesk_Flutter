@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [ ] [Business][P1] **FS-1008** Admin free plan for design partners - banked on develop as v1.39 (2026-10-01), awaiting ship-feature. see docs/in-progress/admin-free-plan-spec.md
+- [ ] [Business][P2] **FS-1009** WhatsApp bot: user phone - banked on develop as v1.40 (2026-10-08), awaiting ship-feature. Ships with the backend half (prod schema script first). see docs/in-progress/whatsapp-bot-phone-spec.md
 
 ## Tags
 
