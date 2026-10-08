@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [ ] [Business][P2] **FS-1009** WhatsApp bot: user phone - banked on develop as v1.40 (2026-10-08), awaiting ship-feature. Ships with the backend half (prod schema script first). see docs/in-progress/whatsapp-bot-phone-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

@@ -1,6 +1,7 @@
 import 'screen_imports.dart';
 import '../services/auth_service.dart';
 import '../widgets/app_button.dart';
+import '../utils/phone_utils.dart';
 import '../widgets/profile/profile_editor.dart';
 
 /// Self-service profile screen. Orchestrator only: owns the scaffold + back
@@ -30,6 +31,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     required String fullName,
     required int languageId,
     required String govId,
+    String? phone,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     try {
@@ -37,16 +39,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             fullName,
             languageId,
             govId: govId,
+            phone: phone,
           );
       // Updates the session; locale is applied automatically by updateProfile.
       ref.read(userInfoProvider.notifier).updateProfile(updated);
       return const ProfileSaveOutcome.success();
     } on AuthException catch (e) {
-      if (e.errorCode == 'UsersGovIdInvalidFormat' ||
-          e.errorCode == 'UsersGovIdAlreadyExists') {
-        return ProfileSaveOutcome.govIdError(e.errorCode!);
-      }
-      return ProfileSaveOutcome.error(e.message);
+      return ProfileSaveOutcome.forFieldError(e.errorCode) ??
+          ProfileSaveOutcome.error(e.message);
     } catch (_) {
       return ProfileSaveOutcome.error(l10n.failedToUpdateProfile);
     }
@@ -101,6 +101,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         initialEmail: userInfo.email,
                         initialLanguageId: userInfo.languageId,
                         initialGovId: userInfo.govId ?? '',
+                        initialPhone: userInfo.phone ?? '',
+                        phoneCountry:
+                            PhoneCountry.forDialCode(userInfo.dailingCode),
                         onDirtyChanged: _onDirtyChanged,
                         onSave: _save,
                       ),

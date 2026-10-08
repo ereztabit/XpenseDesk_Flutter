@@ -5,11 +5,14 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/gov_id_utils.dart';
 import '../form_behavior_mixin.dart' show FieldLabel;
+import '../../utils/phone_utils.dart';
+import '../phone_input_field.dart';
 import 'profile_section_card.dart';
 
 /// Identity section of the profile form: name (required), email (read-only),
-/// and government ID (optional, digits only). State lives in the parent
-/// `ProfileEditor`; this widget only renders + reports edits.
+/// government ID (optional, digits only) and — on the user's own profile only —
+/// mobile phone (optional, FS-1009). State lives in the parent `ProfileEditor`;
+/// this widget only renders + reports edits.
 class ProfileIdentityCard extends StatelessWidget {
   const ProfileIdentityCard({
     super.key,
@@ -22,6 +25,10 @@ class ProfileIdentityCard extends StatelessWidget {
     required this.validateName,
     required this.onNameChanged,
     required this.onGovIdChanged,
+    this.phoneController,
+    this.phoneCountry = PhoneCountry.israel,
+    this.phoneError,
+    this.onPhoneChanged,
   });
 
   final TextEditingController nameController;
@@ -33,6 +40,12 @@ class ProfileIdentityCard extends StatelessWidget {
   final FormFieldValidator<String> validateName;
   final VoidCallback onNameChanged;
   final VoidCallback onGovIdChanged;
+
+  /// Null hides the phone field (a manager editing someone else).
+  final TextEditingController? phoneController;
+  final PhoneCountry phoneCountry;
+  final String? phoneError;
+  final VoidCallback? onPhoneChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +109,24 @@ class ProfileIdentityCard extends StatelessWidget {
           validator: (value) =>
               GovIdValidator.isValid(value) ? null : l10n.govIdInvalidFormat,
         ),
+
+        if (phoneController != null) ...[
+          const SizedBox(height: 24),
+          Text(
+            l10n.phoneNumber,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          PhoneInputField(
+            controller: phoneController!,
+            country: phoneCountry,
+            decoration: profileFieldDecoration(),
+            helperText: l10n.phoneNumberHelp,
+            errorText: phoneError,
+            enabled: enabled,
+            onChanged: (_) => onPhoneChanged?.call(),
+          ),
+        ],
       ],
     );
   }

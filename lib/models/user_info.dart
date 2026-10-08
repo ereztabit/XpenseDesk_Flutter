@@ -24,6 +24,10 @@ class UserInfo {
   /// Nullable: a user without a gov ID is valid.
   final String? govId;
 
+  /// FS-1009. The user's phone in E.164 (`+972502760106`) — the WhatsApp bot
+  /// knows the user by it. Null until the user enters one.
+  final String? phone;
+
   /// FS-1001. Null on every ordinary session; the support agent's name while a
   /// platform admin is connected as this user.
   ///
@@ -45,6 +49,7 @@ class UserInfo {
     this.dailingCode,
     this.termsConsentDate,
     this.govId,
+    this.phone,
     this.impersonatorName,
   });
 
@@ -69,6 +74,7 @@ class UserInfo {
           ? DateTime.tryParse(json['termsConsentDate'] as String)
           : null,
       govId: json['govId'] as String?,
+      phone: json['phone'] as String?,
       impersonatorName: json['impersonatorName'] as String?,
     );
   }
