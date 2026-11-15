@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/expense_category.dart';
+import '../../providers/company_modules_provider.dart';
+import '../../utils/category_utils.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
@@ -41,9 +42,12 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
     final uiLocale = Localizations.localeOf(context);
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final amountText = expenseAmountText(expense, companyLocale, baseCurrency);
-    final categoryText =
-        ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
-            expense.categoryName;
+    final categoryText = expenseCategoryLabel(
+      ref.watch(companyCategoriesProvider),
+      expense.categoryId,
+      uiLocale.languageCode,
+      fallback: expense.categoryName,
+    );
     final merchant = expense.merchantName?.trim();
     final showApprove = onApprove != null && expense.expenseStatusId != 2;
     final showDecline = onDecline != null && expense.expenseStatusId != 3;

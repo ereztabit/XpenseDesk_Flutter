@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/company_modules_provider.dart';
 import '../../theme/app_theme.dart';
 import 'desktop_sheet_review_row.dart';
 
@@ -49,6 +50,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
+    final categories = ref.watch(companyCategoriesProvider);
     return Card(
       elevation: 0,
       clipBehavior: Clip.antiAlias,
@@ -74,6 +76,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
             (e) => buildSheetReviewRow(
               context,
               expense: e,
+              categories: categories,
               companyLocale: companyLocale,
               baseCurrency: baseCurrency,
               onTap: () => onTapLine(e),

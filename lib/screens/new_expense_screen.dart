@@ -25,9 +25,11 @@ import '../providers/expense_sheet_provider.dart';
 import '../services/expense_service.dart';
 import '../models/receipt_analysis_result.dart';
 import '../models/expense_category.dart';
+import '../providers/company_modules_provider.dart';
 import '../providers/company_provider.dart';
 import '../providers/free_receipts_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
+import '../utils/category_utils.dart';
 import '../utils/free_receipts_utils.dart';
 import '../widgets/free_receipts/free_receipts_callout.dart';
 import '../widgets/free_receipts/free_receipts_meter.dart';
@@ -223,9 +225,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       setState(() => _selectedCategoryId = null);
       return;
     }
-    final locale = Localizations.localeOf(context);
-    final matchesAny = ExpenseCategory.orderedValues
-        .any((c) => c.labelForLocale(locale) == text);
+    final lang = Localizations.localeOf(context).languageCode;
+    final matchesAny = expenseCategoryChoices(
+            ref.read(companyCategoriesProvider), lang)
+        .any((c) => c.displayName(lang) == text);
     if (!matchesAny) {
       setState(() => _selectedCategoryId = null);
     }
@@ -238,11 +241,12 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       _categoryController.text = '';
       return;
     }
-    final locale = Localizations.localeOf(context);
-    final cat = ExpenseCategory.orderedValues
-        .where((c) => c.id == categoryId)
+    final lang = Localizations.localeOf(context).languageCode;
+    final cat = ref
+        .read(companyCategoriesProvider)
+        .where((c) => c.categoryId == categoryId)
         .firstOrNull;
-    _categoryController.text = cat?.labelForLocale(locale) ?? '';
+    _categoryController.text = cat?.displayName(lang) ?? '';
   }
 
   @override
@@ -499,7 +503,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _currentStep = 1;
         _isModifying = needsInput;
         _hasAttemptedSubmit = needsInput;
-        _selectedCategoryId = result.categoryId;
+        _selectedCategoryId = resolveScannedCategoryId(
+            ref.read(companyCategoriesProvider), result.categoryId);
         _selectedCurrencyCode =
             result.currencyCode ?? ref.read(companyBaseCurrencyProvider);
         _selectedDate = result.expenseDate != null
@@ -592,7 +597,9 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
     final amount = double.tryParse(_amountController.text.trim().replaceAll(',', ''));
     // Category is optional: an expense left uncategorized files under "Other".
-    final categoryId = _selectedCategoryId ?? ExpenseCategory.other.id;
+    final categoryId = _selectedCategoryId ??
+        fallbackCategoryId(ref.read(companyCategoriesProvider)) ??
+        ExpenseCategory.other.id;
     final merchant = _merchantController.text.trim();
     final currency = _selectedCurrencyCode;
     final date = _selectedDate ?? DateTime.now();
@@ -678,7 +685,9 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
-        _submitError = e.message;
+        _submitError = e.errorCode == 'ExpenseCategoryNotAvailable'
+            ? AppLocalizations.of(context)!.expenseCategoryNotAvailable
+            : e.message;
       });
     } catch (e) {
       if (!mounted) return;
@@ -1449,10 +1458,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           expandedInsets: EdgeInsets.zero,
           hintText: l10n.selectCategory,
           inputDecorationTheme: _dropdownTheme(),
-          dropdownMenuEntries: ExpenseCategory.orderedValues
+          dropdownMenuEntries: expenseCategoryChoices(
+                  ref.watch(companyCategoriesProvider), uiLocale.languageCode)
               .map((c) => DropdownMenuEntry<int>(
-                    value: c.id,
-                    label: c.labelForLocale(uiLocale),
+                    value: c.categoryId,
+                    label: c.displayName(uiLocale.languageCode),
                   ))
               .toList(),
           onSelected: (v) => setState(() => _selectedCategoryId = v),

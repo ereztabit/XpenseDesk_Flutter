@@ -7,6 +7,7 @@ import '../models/expense_summary.dart';
 import '../widgets/ai_badge.dart';
 import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
+import '../providers/company_modules_provider.dart';
 import '../providers/company_provider.dart';
 import '../models/update_expense_request.dart';
 import '../providers/employee_dashboard_provider.dart';
@@ -14,6 +15,7 @@ import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../services/excel_export_service.dart';
 import '../services/expense_service.dart';
+import '../utils/category_utils.dart';
 import '../utils/expense_display_utils.dart';
 import '../utils/expense_policy_utils.dart';
 import '../utils/format_utils.dart';
@@ -183,6 +185,17 @@ class _EmployeeExpenseDetailScreenState
         _selectedCurrencyCode != _initialCurrencyCode ||
         _isAiData != _initialIsAiData;
   }
+
+  /// The company's Monthly fallback ("Other"); the legacy id only until the
+  /// company has loaded (the server still maps it to the company's own copy).
+  int get _fallbackCategoryId =>
+      fallbackCategoryId(ref.read(companyCategoriesProvider)) ??
+      ExpenseCategory.other.id;
+
+  String _expenseErrorText(ExpenseException e) =>
+      e.errorCode == 'ExpenseCategoryNotAvailable'
+          ? AppLocalizations.of(context)!.expenseCategoryNotAvailable
+          : e.message;
 
   @override
   bool get hasUnsavedChanges => false;
@@ -398,7 +411,7 @@ class _EmployeeExpenseDetailScreenState
         widget.expenseId,
         UpdateExpenseRequest(
           expenseDate: _selectedDate!.toIso8601String().split('T').first,
-          categoryId: _selectedCategoryId ?? ExpenseCategory.other.id,
+          categoryId: _selectedCategoryId ?? _fallbackCategoryId,
           merchantName: _merchantController.text.trim().isEmpty
               ? null : _merchantController.text.trim(),
           note: _noteController.text.trim().isEmpty
@@ -437,7 +450,7 @@ class _EmployeeExpenseDetailScreenState
         _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
       });
     } on ExpenseException catch (e) {
-      if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
+      if (mounted) setState(() { _isSaving = false; _saveError = _expenseErrorText(e); });
     } catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.toString(); });
     }
@@ -489,7 +502,7 @@ class _EmployeeExpenseDetailScreenState
           widget.expenseId,
           UpdateExpenseRequest(
             expenseDate: _selectedDate!.toIso8601String().split('T').first,
-            categoryId: _selectedCategoryId ?? ExpenseCategory.other.id,
+            categoryId: _selectedCategoryId ?? _fallbackCategoryId,
             merchantName: _merchantController.text.trim().isEmpty
                 ? null : _merchantController.text.trim(),
             note: _noteController.text.trim().isEmpty
@@ -516,7 +529,7 @@ class _EmployeeExpenseDetailScreenState
         _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
       });
     } on ExpenseException catch (e) {
-      if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
+      if (mounted) setState(() { _isSaving = false; _saveError = _expenseErrorText(e); });
     } catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.toString(); });
     }
@@ -543,7 +556,7 @@ class _EmployeeExpenseDetailScreenState
         _saveError = AppLocalizations.of(context)!.expenseExchangeRateUnavailable;
       });
     } on ExpenseException catch (e) {
-      if (mounted) setState(() { _isSaving = false; _saveError = e.message; });
+      if (mounted) setState(() { _isSaving = false; _saveError = _expenseErrorText(e); });
     } catch (e) {
       if (mounted) setState(() { _isSaving = false; _saveError = e.toString(); });
     }
@@ -692,11 +705,23 @@ class _EmployeeExpenseDetailScreenState
   }
 
   Widget _buildCategoryDropdown(AppLocalizations l10n, Locale uiLocale, {bool enabled = true}) {
+    final lang = uiLocale.languageCode;
+    // Active Monthly categories, plus the expense's saved one even if it was
+    // deactivated since (the server lets an edit keep it).
+    final choices = expenseCategoryChoices(
+      ref.watch(companyCategoriesProvider),
+      lang,
+      keepCategoryId: _initialCategoryId,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildLabel(l10n.categoryLabel),
         DropdownMenu<int>(
+          // DropdownMenu resolves the selected label only on its first build.
+          // Re-key on language and on the list arriving (a direct URL load
+          // builds before GET /api/company lands) so the label is never stale.
+          key: ValueKey('category-$lang-${choices.length}'),
           initialSelection: _selectedCategoryId,
           enabled: enabled,
           expandedInsets: EdgeInsets.zero,
@@ -708,10 +733,10 @@ class _EmployeeExpenseDetailScreenState
             filled: !enabled,
             fillColor: !enabled ? AppTheme.muted.withAlpha(77) : null,
           ),
-          dropdownMenuEntries: ExpenseCategory.orderedValues
+          dropdownMenuEntries: choices
               .map((cat) => DropdownMenuEntry<int>(
-                    value: cat.id,
-                    label: cat.labelForLocale(uiLocale),
+                    value: cat.categoryId,
+                    label: cat.displayName(lang),
                   ))
               .toList(),
           onSelected: enabled

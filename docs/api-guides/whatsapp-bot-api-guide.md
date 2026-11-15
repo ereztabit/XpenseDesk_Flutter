@@ -1,7 +1,7 @@
 # WhatsApp bot - API guide (FS-1009)
 
-> Mission: FS-1009. Backend story: `BackEnd/XpenseDeskServer/docs/backlog/whatsapp-bot-story.md`.
-> Frontend spec: [docs/in-progress/whatsapp-bot-phone-spec.md](../in-progress/whatsapp-bot-phone-spec.md).
+> Mission: FS-1009. Backend story: `BackEnd/XpenseDeskServer/docs/done/whatsapp-bot-story.md`.
+> Frontend spec: [docs/completed/whatsapp-bot-phone-spec.md](../completed/whatsapp-bot-phone-spec.md).
 > The same guide is filed in the Flutter repo as `docs/api-guides/whatsapp-bot-api-guide.md`.
 
 An employee sends receipts to the XpenseDesk WhatsApp number instead of opening the

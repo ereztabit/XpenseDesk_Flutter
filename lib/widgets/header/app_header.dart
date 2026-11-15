@@ -255,8 +255,13 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
 
   @override
   void dispose() {
-    _closeMenu();
-    _closeCyclePopover();
+    // Remove the overlays only. _closeMenu / _closeCyclePopover call setState,
+    // and `mounted` is still true inside dispose, so they would mark a defunct
+    // element dirty — a debug assertion that blanks the next screen.
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    _cycleOverlayEntry?.remove();
+    _cycleOverlayEntry = null;
     super.dispose();
   }
 

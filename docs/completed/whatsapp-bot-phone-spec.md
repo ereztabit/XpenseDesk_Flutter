@@ -1,6 +1,6 @@
 # WhatsApp bot: the user's phone number
 
-> Mission: FS-1009 (backend: BackEnd/XpenseDeskServer/docs/backlog/whatsapp-bot-story.md)
+> Mission: FS-1009 (backend: BackEnd/XpenseDeskServer/docs/done/whatsapp-bot-story.md)
 
 Filed 2026-10-08.
 
@@ -26,7 +26,7 @@ Flutter half.
 - Optional at first sign-in and in the profile (decided with the backend
   contract: existing users have none). Shown on the user's own profile only -
   hidden when a manager edits someone else.
-- Built 2026-10-08: `ProfilePhoneField` (profile + first sign-in),
+- Shipped 2026-10-08 in v1.40: `ProfilePhoneField` (profile + first sign-in),
   `PhoneNumberUtils` (mirrors the server's rules), contract in
   [whatsapp-bot-api-guide.md](../api-guides/whatsapp-bot-api-guide.md).
 - No verification in this feature: SMS OTP is the next feature. Do not add a
