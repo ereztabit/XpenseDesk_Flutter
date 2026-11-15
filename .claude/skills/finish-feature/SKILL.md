@@ -42,6 +42,16 @@ performs, and for the feature-branch merge-back in step 9.
    `security-review` skill on the diff (`git diff origin/main` - covers
    committed-on-develop + working-tree changes). Report findings. A real blocking
    issue (correctness bug / security vuln) -> **STOP** and surface it.
+   - **Manual QA record.** Check the feature's md file (the spec in
+     `docs/in-progress/`, or the bug doc) for a `## Manual QA` section with at
+     least one run:
+     - **No record:** say so, and suggest running `/manual-qa` before banking.
+       Ask whether to run it now or continue without it. Do not run it unasked,
+       and do not treat a missing record as a failure.
+     - **Record with Blocker/Major rows still `Open`:** list them, and ask
+       whether to bank anyway.
+     - **App code changed after the last run:** mention it, as a suggestion,
+       not a stop.
 4. **Checks green.** Run `flutter analyze` (must be clean) and
    `flutter build web --release --dart-define=ENV=prod` (must compile). If a `test/`
    suite exists, run `flutter test` too. **Any failure -> STOP.**
