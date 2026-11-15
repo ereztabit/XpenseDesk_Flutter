@@ -14,7 +14,7 @@ call on mobile looks broken.
 Ordinary (non-support) sessions are not affected - the support chip is what
 tips the row over.
 
-Found in FS-1010 manual QA, 2026-11-15 (spec docs/in-progress/company-modules-and-categories-spec.md, Manual QA run 1, finding 5).
+Found in FS-1010 manual QA, 2026-11-15 (spec docs/completed/company-modules-and-categories-spec.md, Manual QA run 1, finding 5).
 
 ## Reproduce Steps
 

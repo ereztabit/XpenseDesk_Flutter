@@ -43,4 +43,4 @@ time of closing.
 - Verified in the browser (debug build, employee e@xpensedesk.com): browser
   Back, "Back to dashboard" and save-and-return all land on the dashboard, with
   zero new `defunct` assertions.
-- Commit: to be added when FS-1010 is banked (finish-feature).
+- Commit: b8b01a8 (banked), released in v1.41 (983fa2c).

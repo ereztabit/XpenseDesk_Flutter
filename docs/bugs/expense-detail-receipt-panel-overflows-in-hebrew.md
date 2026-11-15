@@ -9,7 +9,7 @@ Hebrew makes the receipt panel column 2px too tall for its box. A thin
 yellow-and-black overflow stripe appears under the receipt image. Visual
 polish only - nothing is hidden that matters, and English is not affected.
 
-Found in FS-1010 manual QA, 2026-11-15 (spec docs/in-progress/company-modules-and-categories-spec.md, Manual QA run 1, finding 6).
+Found in FS-1010 manual QA, 2026-11-15 (spec docs/completed/company-modules-and-categories-spec.md, Manual QA run 1, finding 6).
 
 ## Reproduce Steps
 

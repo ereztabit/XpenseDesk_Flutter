@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [ ] [Business][P2] **FS-1010** Company modules + per-module categories - banked on develop as v1.41 (2026-11-15), awaiting ship-feature. Ships after the backend half and the prod schema script (CompanyModule is missing on prod); the new-expense picker still needs a manual check. see docs/in-progress/company-modules-and-categories-spec.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
