@@ -1,6 +1,6 @@
 # Bug: AppHeader calls setState while it is being disposed
 
-> **Status: new**
+> **Status: done**
 
 ## Problem
 
@@ -28,3 +28,19 @@ When the header is being disposed, remove the overlay entries without calling
 `setState`. `_closeMenu` and `_closeCyclePopover` guard on `mounted`, which is
 still true inside `dispose`, so give `dispose` its own teardown that only
 removes the overlays.
+
+## Resolution
+
+Fixed 2026-11-15 on `feature/company-modules` (FS-1010 QA), uncommitted at the
+time of closing.
+
+- Worse than first written: in a debug build the assertion blanks the next
+  screen (white page after Back, or after saving an expense), not only console
+  noise. It was hit repeatedly during FS-1010 browser QA.
+- `lib/widgets/header/app_header.dart` - `dispose` now removes `_overlayEntry`
+  and `_cycleOverlayEntry` directly instead of calling `_closeMenu` /
+  `_closeCyclePopover`, which call `setState`.
+- Verified in the browser (debug build, employee e@xpensedesk.com): browser
+  Back, "Back to dashboard" and save-and-return all land on the dashboard, with
+  zero new `defunct` assertions.
+- Commit: to be added when FS-1010 is banked (finish-feature).

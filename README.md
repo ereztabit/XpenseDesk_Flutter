@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-11-15 | v1.41 | Company modules + categories (FS-1010) | Modules tab (Monthly locked, Petty Cash, Travel) with per-module HE/EN categories; expense picker uses the company's own Monthly list. Fixes the AppHeader white screen. |
 | 2026-10-08 | v1.40 | WhatsApp bot: user phone (FS-1009) | Masked mobile field (PhoneInputField, real-number check) at employee first sign-in and in the profile, stored E.164 and unique, so the WhatsApp bot recognizes the sender. |
 | 2026-10-01 | v1.39 | Admin free plan (FS-1008) | Set / Clear free plan buttons on the admin company page; a Free plan pill in the companies table; on the free plan the customer sees no payment banner and no card or cancel controls. |
 | 2026-10-01 | v1.38 | Bulk upload on by default (FS-1007) | Every company gets bulk upload (server default flips to on); the admin panel's toggle now says "On by default". |

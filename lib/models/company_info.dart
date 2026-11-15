@@ -1,4 +1,6 @@
 import 'billing_plan.dart';
+import 'company_category.dart';
+import 'company_module.dart';
 import 'company_configuration.dart';
 import 'payments_summary.dart';
 import 'tracked_currency.dart';
@@ -58,6 +60,13 @@ class CompanyInfo {
   /// Per-company feature flags (FS-1007). All off when the payload lacks them.
   final CompanyConfiguration configuration;
 
+  /// FS-1010: the company's modules in display order. Empty for older payloads.
+  final List<CompanyModule> modules;
+
+  /// FS-1010: every module's categories, inactive included. Pickers show the
+  /// active ones; existing expenses resolve their `categoryId` here.
+  final List<CompanyCategory> categories;
+
   /// The single-month plan, if present.
   BillingPlan? get monthlyPlan =>
       plans.where((p) => p.isMonthly).firstOrNull;
@@ -111,12 +120,45 @@ class CompanyInfo {
     this.plans = const [],
     this.paymentsSummary,
     this.configuration = CompanyConfiguration.defaults,
+    this.modules = const [],
+    this.categories = const [],
   });
 
   /// Returns a copy with a fresh [PaymentsSummary] — used to update the
   /// dashboard card in place from payment write responses (the freshness
   /// rule: never refetch /api/company after a payment action).
-  CompanyInfo withPaymentsSummary(PaymentsSummary summary) {
+  CompanyInfo withPaymentsSummary(PaymentsSummary summary) =>
+      _copy(paymentsSummary: summary);
+
+  /// FS-1010: patch one module in place from a module write response.
+  CompanyInfo withModule(CompanyModule module) => _copy(
+        modules: [for (final m in modules) m.key == module.key ? module : m],
+      );
+
+  /// FS-1010: insert or replace one category from a category write response.
+  CompanyInfo withCategory(CompanyCategory category) {
+    final exists = categories.any((c) => c.categoryId == category.categoryId);
+    return _copy(
+      categories: exists
+          ? [
+              for (final c in categories)
+                c.categoryId == category.categoryId ? category : c,
+            ]
+          : [...categories, category],
+    );
+  }
+
+  /// FS-1010: drop a hard-deleted category.
+  CompanyInfo withoutCategory(int categoryId) => _copy(
+        categories:
+            categories.where((c) => c.categoryId != categoryId).toList(),
+      );
+
+  CompanyInfo _copy({
+    PaymentsSummary? paymentsSummary,
+    List<CompanyModule>? modules,
+    List<CompanyCategory>? categories,
+  }) {
     return CompanyInfo(
       companyId: companyId,
       companyName: companyName,
@@ -142,8 +184,10 @@ class CompanyInfo {
       isFreePlan: isFreePlan,
       trackedCurrencies: trackedCurrencies,
       plans: plans,
-      paymentsSummary: summary,
+      paymentsSummary: paymentsSummary ?? this.paymentsSummary,
       configuration: configuration,
+      modules: modules ?? this.modules,
+      categories: categories ?? this.categories,
     );
   }
 
@@ -189,6 +233,17 @@ class CompanyInfo {
           ? CompanyConfiguration.fromJson(
               json['configuration'] as Map<String, dynamic>)
           : CompanyConfiguration.defaults,
+      modules: (json['modules'] as List<dynamic>?)
+              ?.map((e) => CompanyModule.tryFromJson(e as Map<String, dynamic>))
+              .whereType<CompanyModule>()
+              .toList() ??
+          const [],
+      categories: (json['categories'] as List<dynamic>?)
+              ?.map((e) =>
+                  CompanyCategory.tryFromJson(e as Map<String, dynamic>))
+              .whereType<CompanyCategory>()
+              .toList() ??
+          const [],
     );
   }
 }

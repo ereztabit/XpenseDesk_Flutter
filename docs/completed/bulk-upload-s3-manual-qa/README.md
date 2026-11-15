@@ -266,6 +266,6 @@ Result:
   [edit-expense-replace-receipt-does-nothing.md](../../bugs/edit-expense-replace-receipt-does-nothing.md)).
 - Leaving a page with the avatar menu open logs an error in the debug console.
   Nothing shows on screen (filed:
-  [app-header-setstate-in-dispose.md](../../bugs/app-header-setstate-in-dispose.md)).
+  [app-header-setstate-in-dispose.md](../../bugs/completed/app-header-setstate-in-dispose.md)).
 - Scans use the real AI and can come back partly empty. Just fill in what's
   missing.

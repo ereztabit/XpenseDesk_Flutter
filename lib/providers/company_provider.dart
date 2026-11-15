@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/company_category.dart';
 import '../models/company_info.dart';
+import '../models/company_module.dart';
 import '../models/payments_summary.dart';
 import '../models/tracked_currency.dart';
 import 'auth_provider.dart';
@@ -68,5 +70,21 @@ class CompanyNotifier extends AsyncNotifier<CompanyInfo> {
     final current = state.asData?.value;
     if (current == null) return;
     state = AsyncData(current.withPaymentsSummary(summary));
+  }
+
+  /// FS-1010: patch state in place from a module / category write response —
+  /// a full refetch would flash the loading state under the open editor.
+  void applyModule(CompanyModule module) => _patch((c) => c.withModule(module));
+
+  void applyCategory(CompanyCategory category) =>
+      _patch((c) => c.withCategory(category));
+
+  void removeCategory(int categoryId) =>
+      _patch((c) => c.withoutCategory(categoryId));
+
+  void _patch(CompanyInfo Function(CompanyInfo) change) {
+    final current = state.asData?.value;
+    if (current == null) return;
+    state = AsyncData(change(current));
   }
 }

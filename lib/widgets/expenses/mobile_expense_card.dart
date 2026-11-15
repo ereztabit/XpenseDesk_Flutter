@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/expense_category.dart';
+import '../../providers/company_modules_provider.dart';
+import '../../utils/category_utils.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
@@ -127,9 +128,11 @@ class MobileExpenseCard extends ConsumerWidget {
                 children: [
                   _DetailRow(
                     label: l10n.category,
-                    value: ExpenseCategory.fromId(expense.categoryId)
-                            ?.labelForLocale(uiLocale) ??
-                        expense.categoryName,
+                    value: expenseCategoryLabel(
+                        ref.watch(companyCategoriesProvider),
+                        expense.categoryId,
+                        uiLocale.languageCode,
+                        fallback: expense.categoryName),
                   ),
                   if (merchantText != null && merchantText.isNotEmpty) ...[
                     const SizedBox(height: 6),
