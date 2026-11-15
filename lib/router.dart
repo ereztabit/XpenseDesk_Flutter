@@ -166,7 +166,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       final tab = uri.queryParameters['tab'];
       // 'history' (Billing History) is hidden/deferred to v2 — a stale or direct
       // ?tab=history URL falls back to General (0). See docs/bugs/completed.
-      final initialTab = tab == 'billing' ? 1 : 0;
+      final initialTab = switch (tab) {
+        'billing' => 1,
+        'modules' => 2,
+        _ => 0,
+      };
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => AuthGate(

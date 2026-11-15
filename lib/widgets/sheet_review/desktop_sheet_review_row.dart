@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/expense_category.dart';
+import '../../models/company_category.dart';
+import '../../utils/category_utils.dart';
 import '../../models/expense_summary.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/expense_display_utils.dart';
@@ -32,6 +33,7 @@ const TextStyle _cellTextStyle = TextStyle(
 TableRow buildSheetReviewRow(
   BuildContext context, {
   required ExpenseSummary expense,
+  required List<CompanyCategory> categories,
   required String companyLocale,
   required String baseCurrency,
   required VoidCallback onTap,
@@ -43,9 +45,12 @@ TableRow buildSheetReviewRow(
   final l10n = AppLocalizations.of(context)!;
   final uiLocale = Localizations.localeOf(context);
   final amountText = expenseAmountText(expense, companyLocale, baseCurrency);
-  final categoryText =
-      ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
-      expense.categoryName;
+  final categoryText = expenseCategoryLabel(
+    categories,
+    expense.categoryId,
+    uiLocale.languageCode,
+    fallback: expense.categoryName,
+  );
   final merchant = expense.merchantName?.trim();
   final showApprove = onApprove != null && expense.expenseStatusId != 2;
   final showDecline = onDecline != null && expense.expenseStatusId != 3;

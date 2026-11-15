@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/expense_category.dart';
+import '../../providers/company_modules_provider.dart';
+import '../../utils/category_utils.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
@@ -40,9 +41,12 @@ class DesktopSheetTableRow extends ConsumerWidget {
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
     final amountText = expenseAmountText(expense, companyLocale, baseCurrency);
     final uiLocale = Localizations.localeOf(context);
-    final categoryText =
-        ExpenseCategory.fromId(expense.categoryId)?.labelForLocale(uiLocale) ??
-            expense.categoryName;
+    final categoryText = expenseCategoryLabel(
+      ref.watch(companyCategoriesProvider),
+      expense.categoryId,
+      uiLocale.languageCode,
+      fallback: expense.categoryName,
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

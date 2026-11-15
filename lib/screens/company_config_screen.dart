@@ -18,6 +18,7 @@ import '../widgets/company_config/billing_free_plan_card.dart';
 // import '../widgets/company_config/billing_history_tab.dart';
 import '../widgets/app_button.dart';
 import '../widgets/module_tab_bar.dart';
+import '../widgets/company_modules/modules_tab.dart';
 
 class CompanyConfigScreen extends ConsumerStatefulWidget {
   const CompanyConfigScreen({super.key, this.initialTab = 0});
@@ -84,9 +85,9 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
     _tabController = TabController(
       // Billing History (tab 3) is hidden and deferred to v2 — see
       // docs/bugs/completed/hide-transaction-history-defer-v2.md
-      length: 2,
+      length: 3,
       vsync: this,
-      initialIndex: widget.initialTab.clamp(0, 1),
+      initialIndex: widget.initialTab.clamp(0, 2),
     );
     _companyNameFocusNode.addListener(() {
       if (!_companyNameFocusNode.hasFocus) _formKey.currentState?.validate();
@@ -277,6 +278,7 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                           final tabs = [
                             l10n.companyConfigTabGeneral,
                             l10n.companyConfigTabBilling,
+                            l10n.companyConfigTabModules,
                             // companyConfigTabHistory — Billing History hidden
                             // and deferred to v2.
                           ];
@@ -328,7 +330,13 @@ class _CompanyConfigScreenState extends ConsumerState<CompanyConfigScreen>
                       ),
                     ),
 
-                    // Tab 3: Billing History — hidden, deferred to v2.
+                    // Tab 3: Modules (FS-1010)
+                    const RefreshableScrollView(
+                      padding: EdgeInsets.only(top: 16, bottom: 24),
+                      child: ConstrainedContent(child: ModulesTab()),
+                    ),
+
+                    // Billing History — hidden, deferred to v2.
                     // Kept here (commented) alongside its widget/provider so it
                     // can be restored quickly. See bug doc in docs/bugs/completed.
                   ],
