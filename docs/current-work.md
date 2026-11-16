@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [LookAndFeel][P3] Admin Configuration tab: an "on" feature switch loses its thumb on hover (thumb turns blue into the track); also the other switches look live but ignore clicks while one saves - banked on develop as v1.43 (2026-11-16), awaiting ship-feature. Needs your verification to close -- see docs/bugs/admin-feature-switch-thumb-turns-blue-on-hover.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

@@ -1,6 +1,6 @@
 # Bug: Admin feature switch thumb turns blue on hover
 
-> **Status: in progress**
+> **Status: done**
 
 ## Problem
 
@@ -57,3 +57,11 @@ to them, so `ModuleSwitch` shows them disabled.
 | - | Admin, desktop + mobile | EN/HE | Configuration | - | Hover keeps the white thumb; during a save the saving row spins and the other two show disabled and ignore clicks | Pass |
 
 Result: 0 findings.
+
+## Resolution
+
+Shipped in v1.43 (2026-11-16): fix commit 1b16af0, merged to develop as
+fc4ca79, released to main as 65c1ed4. `lib/widgets/admin/admin_feature_toggle_row.dart`
+renders `ModuleSwitch`; `lib/widgets/admin/admin_company_configuration_body.dart`
+passes `onChanged: null` to the other switches while one saves. Verified by the
+user after manual QA run 1.
