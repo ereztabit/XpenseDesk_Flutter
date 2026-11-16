@@ -41,6 +41,7 @@ String companyModulesErrorText(AppLocalizations l10n, String? errorCode) =>
     switch (errorCode) {
       'CompanyModulesManagerOnly' => l10n.modulesErrorManagerOnly,
       'CompanyModuleNotFound' => l10n.modulesErrorModuleNotFound,
+      'CompanyModuleNotAvailable' => l10n.modulesErrorModuleNotAvailable,
       'CompanyModuleLocked' => l10n.modulesErrorModuleLocked,
       'CompanyModuleLastEnabled' => l10n.modulesErrorLastEnabled,
       'CompanyModuleSettingNotApplicable' =>

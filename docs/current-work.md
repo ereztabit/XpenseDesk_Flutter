@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [ ] [Technical][P1] **FS-1011** PC-0 module flags (built + QA passed, PENDING RELEASE; branch feature/pc-0-module-flags, prod schema script first) -- platform admin turns Petty Cash + Travel on per company, off by default; hidden modules disappear from company settings. see docs/in-progress/pc-0-module-flags-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -44,13 +48,13 @@ so in its spec rather than double-tagging here.
 
 **Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 ship. All UI is designed in the Lovable app mock first.
 
-- [ ] [Technical][P1] **FS-1011** PC-0 dark-launch flags -- hide Petty Cash + Travel per company until built (prod shows the toggles today). **First.** see docs/backlog/petty-cash/pc-0-module-flags-spec.md
 - [ ] [Business][P2] **FS-1012** PC-1 budget sheet end to end -- manager Petty Cash module, holder ledger + "where am I" sheet cards, submit / approve / return. see docs/backlog/petty-cash/pc-1-budget-sheet-spec.md
 - [ ] [Business][P2] **FS-1013** PC-2 manager control -- edit, change holder, submit for holder, line review, soft delete, history timeline. see docs/backlog/petty-cash/pc-2-manager-control-spec.md
 - [ ] [Business][P2] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P2] **FS-1015** PC-4 unified manager dashboard -- NOT DESIGNED. see docs/backlog/petty-cash/pc-4-unified-dashboard-spec.md
 - [ ] [Business][P2] **FS-1016** PC-5 Petty Cash summary report -- NOT DESIGNED. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
+- [ ] [Technical][P3] **FS-1018** PC-7 remove the dark-launch flags -- Petty Cash, Travel (if Travel is done) and the stale bulk upload flag, with their admin switches. Only after Petty Cash is done. see docs/backlog/petty-cash/pc-7-remove-flags-spec.md
 
 - [ ] [Business][P2] **FS-1007** Bulk receipt upload S4 -- server read state + "Mark all as read", first-use auto-open, cycle reminder card. S1 + S1.01 (v1.35) and S2 (v1.36) are shipped dark behind the per-company flag; S3 free receipts (v1.37) is live for every trial company; S5 was server-only. Design: backend `docs/bulk-upload/ui-ux-design-guide.md` §7.5-§7.6 and §8.6. Plan + backend half: `BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md`
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
@@ -76,6 +80,7 @@ so in its spec rather than double-tagging here.
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
+- [ ] [LookAndFeel][P3] Admin Configuration tab: an "on" feature switch loses its thumb on hover (thumb turns blue into the track) -- fix by reusing ModuleSwitch. Found in FS-1011 QA -- see docs/bugs/admin-feature-switch-thumb-turns-blue-on-hover.md
 - [ ] [LookAndFeel][P3] Edit expense: receipt panel overflows by 2px in Hebrew (IntrinsicHeight + Expanded) -- debug overflow stripe under the receipt. Found in FS-1010 QA -- see docs/bugs/expense-detail-receipt-panel-overflows-in-hebrew.md
 - [ ] [Business][P3] "Replace receipt" on the edit expense screen does nothing (wired to an empty callback; no image field on update). Found in FS-1007 S3 -- see docs/bugs/edit-expense-replace-receipt-does-nothing.md
 - [ ] [LookAndFeel][P3] Dates and amounts follow the UI language, not the company locale -- an Israeli company read in English shows 7/24/2026 instead of 24.7.2026. Root cause is one provider, blast radius is every screen with a date or amount -- see docs/bugs/dates-and-amounts-follow-ui-language-not-company-locale.md

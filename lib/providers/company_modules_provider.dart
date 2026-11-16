@@ -34,60 +34,70 @@ class CompanyModulesActions {
       _ref.read(companyModulesServiceProvider);
   CompanyNotifier get _company => _ref.read(companyProvider.notifier);
 
-  Future<void> setModuleEnabled(CompanyModuleKey module, bool isEnabled) async {
-    _company.applyModule(await _service.setModuleEnabled(module, isEnabled));
+  /// FS-1011: a platform admin can hide a module while this page shows it. The
+  /// server then refuses with `CompanyModuleNotAvailable`; reload the company
+  /// so the stale module and its categories disappear, then rethrow for the UI
+  /// to show the message.
+  Future<T> _guard<T>(Future<T> Function() write) async {
+    try {
+      return await write();
+    } on CompanyModulesException catch (e) {
+      if (e.errorCode == 'CompanyModuleNotAvailable') await _company.refresh();
+      rethrow;
+    }
   }
 
-  Future<void> setAllowNegativeBalance(bool allow) async {
-    _company.applyModule(await _service.setAllowNegativeBalance(allow));
-  }
+  Future<void> setModuleEnabled(CompanyModuleKey module, bool isEnabled) =>
+      _guard(() async => _company
+          .applyModule(await _service.setModuleEnabled(module, isEnabled)));
+
+  Future<void> setAllowNegativeBalance(bool allow) => _guard(() async =>
+      _company.applyModule(await _service.setAllowNegativeBalance(allow)));
 
   Future<void> addCategory({
     required CompanyModuleKey module,
     String? nameEn,
     String? nameHe,
     TravelTaxKey? taxKey,
-  }) async {
-    _company.applyCategory(
-      await _service.addCategory(
-        module: module,
-        nameEn: nameEn,
-        nameHe: nameHe,
-        taxKey: taxKey,
-      ),
-    );
-  }
+  }) =>
+      _guard(() async => _company.applyCategory(
+            await _service.addCategory(
+              module: module,
+              nameEn: nameEn,
+              nameHe: nameHe,
+              taxKey: taxKey,
+            ),
+          ));
 
   Future<void> updateCategory(
     int categoryId, {
     String? nameEn,
     String? nameHe,
     TravelTaxKey? taxKey,
-  }) async {
-    _company.applyCategory(
-      await _service.updateCategory(
-        categoryId,
-        nameEn: nameEn,
-        nameHe: nameHe,
-        taxKey: taxKey,
-      ),
-    );
-  }
+  }) =>
+      _guard(() async => _company.applyCategory(
+            await _service.updateCategory(
+              categoryId,
+              nameEn: nameEn,
+              nameHe: nameHe,
+              taxKey: taxKey,
+            ),
+          ));
 
-  Future<CategoryDeleteOutcome> deleteCategory(int categoryId) async {
-    final result = await _service.deleteCategory(categoryId);
-    final category = result.category;
-    if (result.outcome == CategoryDeleteOutcome.deleted) {
-      _company.removeCategory(categoryId);
-    } else if (category != null) {
-      _company.applyCategory(category);
-    } else {
-      await _company.refresh();
-    }
-    return result.outcome;
-  }
+  Future<CategoryDeleteOutcome> deleteCategory(int categoryId) =>
+      _guard(() async {
+        final result = await _service.deleteCategory(categoryId);
+        final category = result.category;
+        if (result.outcome == CategoryDeleteOutcome.deleted) {
+          _company.removeCategory(categoryId);
+        } else if (category != null) {
+          _company.applyCategory(category);
+        } else {
+          await _company.refresh();
+        }
+        return result.outcome;
+      });
 
-  Future<void> reactivateCategory(int categoryId) async {
-    _company.applyCategory(await _service.reactivateCategory(categoryId));
-  }
+  Future<void> reactivateCategory(int categoryId) => _guard(() async =>
+      _company.applyCategory(await _service.reactivateCategory(categoryId)));
 }
