@@ -120,8 +120,10 @@ class _AdminCompanyConfigurationBodyState
           description: flag.description(l10n),
           value: config?.valueOf(flag) ?? false,
           busy: config == null || _saving == flag,
+          // null while another flag saves: the switch shows disabled
+          // instead of looking live and ignoring the click
           onChanged: _saving != null || config == null
-              ? (_) {}
+              ? null
               : (on) => _toggle(flag, on),
         );
 
