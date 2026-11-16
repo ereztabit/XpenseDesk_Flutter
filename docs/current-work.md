@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [ ] [Technical][P1] **FS-1011** PC-0 module flags (built + QA passed, PENDING RELEASE; branch feature/pc-0-module-flags, prod schema script first) -- platform admin turns Petty Cash + Travel on per company, off by default; hidden modules disappear from company settings. see docs/in-progress/pc-0-module-flags-spec.md
+- [ ] [Technical][P1] **FS-1011** PC-0 module flags - banked on develop as v1.42 (2026-11-16), awaiting ship-feature. Prod schema script (backend docs/petty-cash/fs-1011-module-flags-schema.sql) must be applied before release. see docs/in-progress/pc-0-module-flags-spec.md
 
 ## Tags
 
