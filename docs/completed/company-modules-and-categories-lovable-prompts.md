@@ -1,6 +1,6 @@
 # FS-1010 - Lovable mock prompts
 
-> Mission: FS-1010. Spec: ../in-progress/company-modules-and-categories-spec.md.
+> Mission: FS-1010. Spec: company-modules-and-categories-spec.md (same folder).
 > Target: app mock "Expense Desk" `0c5b063f-74a7-4490-b75e-746f4a712bde` - never the marketing project.
 
 Small parts, one per Lovable round (LOVABLE.md §B4). Plan mode first for each.

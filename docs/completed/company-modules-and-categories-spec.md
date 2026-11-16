@@ -2,8 +2,7 @@
 
 > Mission: FS-1010 (backend: BackEnd/XpenseDeskServer/docs/backlog/company-modules-and-categories-story.md)
 
-Status: IN PROGRESS 2026-11-15 - Flutter half built on `feature/company-modules`
-(uncommitted). **Designed in the Lovable app mock first**
+Status: SHIPPED 2026-11-15 in v1.41 (Flutter half). **Designed in the Lovable app mock first**
 (project 0c5b063f..., see root LOVABLE.md Part B) - the Flutter build follows the
 agreed mock.
 

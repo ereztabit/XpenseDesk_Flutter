@@ -180,18 +180,20 @@ class AdminService {
     return _configurationFrom(response);
   }
 
-  /// PUT /api/admin/companies/{companyId}/configuration — switches a flag and
-  /// returns the stored configuration with its new `updatedAt`.
+  /// PUT /api/admin/companies/{companyId}/configuration — switches one flag
+  /// (the others are left as they are) and returns the stored configuration
+  /// with its new `updatedAt`.
   Future<AdminCompanyConfiguration> updateCompanyConfiguration({
     required String companyId,
-    required bool isBulkUploadEnabled,
+    required AdminFeatureFlag flag,
+    required bool enabled,
   }) async {
     final sessionToken = await _authService.getAdminSessionToken();
     _validateSessionToken(sessionToken);
 
     final response = await _apiService.put(
       '/api/admin/companies/$companyId/configuration',
-      {'isBulkUploadEnabled': isBulkUploadEnabled},
+      {flag.apiKey: enabled},
       authToken: sessionToken,
     );
 

@@ -6,6 +6,7 @@ import '../../models/admin_company_configuration.dart';
 import '../../providers/admin_provider.dart';
 import '../../services/admin_service.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/admin_feature_flag_utils.dart';
 import '../../utils/admin_format_utils.dart';
 import '../../utils/app_navigator.dart';
 import '../../utils/format_utils.dart';
@@ -38,17 +39,18 @@ class _AdminCompanyConfigurationBodyState
     extends ConsumerState<AdminCompanyConfigurationBody> {
   /// The PUT response, which is newer than the loaded value once it exists.
   AdminCompanyConfiguration? _saved;
-  bool _saving = false;
 
-  Future<void> _toggle(bool enable) async {
+  /// The switch being saved; every switch is locked while one saves, so two
+  /// PUTs never race on the same row.
+  AdminFeatureFlag? _saving;
+
+  Future<void> _toggle(AdminFeatureFlag flag, bool enable) async {
     final l10n = AppLocalizations.of(context)!;
-    final prefix = enable
-        ? l10n.adminConfigTurnOnConfirmPrefix
-        : l10n.adminConfigTurnOffConfirmPrefix;
+    final prefix = flag.confirmPrefix(l10n, enable: enable);
     final confirmed = await ConfirmChoiceDialog.show(
       context,
       title: '$prefix ${widget.companyName}?',
-      body: enable ? null : l10n.adminConfigTurnOffConfirmNote,
+      body: enable ? null : flag.turnOffNote(l10n),
       cancelLabel: l10n.cancel,
       confirmLabel: enable ? l10n.adminConfigTurnOn : l10n.adminConfigTurnOff,
       confirmVariant:
@@ -56,22 +58,22 @@ class _AdminCompanyConfigurationBodyState
     );
     if (!confirmed || !mounted) return;
 
-    setState(() => _saving = true);
+    setState(() => _saving = flag);
     final messenger = ScaffoldMessenger.of(context);
     try {
       final saved = await ref
           .read(adminServiceProvider)
           .updateCompanyConfiguration(
-              companyId: widget.companyId, isBulkUploadEnabled: enable);
+              companyId: widget.companyId, flag: flag, enabled: enable);
       if (!mounted) return;
       setState(() {
         _saved = saved;
-        _saving = false;
+        _saving = null;
       });
       messenger.showSnackBar(SnackBar(content: Text(l10n.adminConfigSaved)));
     } on AdminException catch (e) {
       if (!mounted) return;
-      setState(() => _saving = false);
+      setState(() => _saving = null);
       if (e.errorCode == 'AdminCompanyNotFound') {
         _backToCompanies();
         return;
@@ -80,7 +82,7 @@ class _AdminCompanyConfigurationBodyState
           .showSnackBar(SnackBar(content: Text(l10n.adminConfigSaveError)));
     } catch (_) {
       if (!mounted) return;
-      setState(() => _saving = false);
+      setState(() => _saving = null);
       messenger
           .showSnackBar(SnackBar(content: Text(l10n.adminConfigSaveError)));
     }
@@ -112,41 +114,52 @@ class _AdminCompanyConfigurationBodyState
       }
     });
 
-    final Widget row = async.when(
-      loading: () => AdminFeatureToggleRow(
-        title: l10n.adminConfigBulkUploadTitle,
-        description: l10n.adminConfigBulkUploadDesc,
-        statusLine: '',
-        value: false,
-        busy: true,
-        onChanged: (_) {},
-      ),
-      error: (_, _) => Row(
-        children: [
-          Expanded(
-            child: Text(l10n.adminConfigLoadError,
-                style: const TextStyle(color: AppTheme.destructive)),
-          ),
-          AppButton(
-            label: l10n.retry,
-            variant: AppButtonVariant.normal,
-            dense: true,
-            onPressed: () => ref.invalidate(
-                adminCompanyConfigurationProvider(widget.companyId)),
-          ),
-        ],
-      ),
-      data: (loaded) {
-        final config = _saved ?? loaded;
-        return AdminFeatureToggleRow(
-          title: l10n.adminConfigBulkUploadTitle,
-          description: l10n.adminConfigBulkUploadDesc,
-          statusLine: _statusLine(l10n, config),
-          value: config.isBulkUploadEnabled,
-          busy: _saving,
-          onChanged: _toggle,
+    Widget rowFor(AdminFeatureFlag flag, AdminCompanyConfiguration? config) =>
+        AdminFeatureToggleRow(
+          title: flag.title(l10n),
+          description: flag.description(l10n),
+          value: config?.valueOf(flag) ?? false,
+          busy: config == null || _saving == flag,
+          onChanged: _saving != null || config == null
+              ? (_) {}
+              : (on) => _toggle(flag, on),
         );
-      },
+
+    // The server stamps one updatedAt for the whole configuration row, so the
+    // "Last changed" line is shown once, under all the switches.
+    List<Widget> rows(AdminCompanyConfiguration? config) => [
+          for (final (i, flag) in AdminFeatureFlag.values.indexed) ...[
+            if (i > 0) const Divider(height: 32, color: AppTheme.border),
+            rowFor(flag, config),
+          ],
+          if (config != null) ...[
+            const SizedBox(height: 16),
+            Text(_statusLine(l10n, config),
+                style: const TextStyle(
+                    fontSize: 12, color: AppTheme.mutedForeground)),
+          ],
+        ];
+
+    final List<Widget> content = async.when(
+      loading: () => rows(null),
+      error: (_, _) => [
+        Row(
+          children: [
+            Expanded(
+              child: Text(l10n.adminConfigLoadError,
+                  style: const TextStyle(color: AppTheme.destructive)),
+            ),
+            AppButton(
+              label: l10n.retry,
+              variant: AppButtonVariant.normal,
+              dense: true,
+              onPressed: () => ref.invalidate(
+                  adminCompanyConfigurationProvider(widget.companyId)),
+            ),
+          ],
+        ),
+      ],
+      data: (loaded) => rows(_saved ?? loaded),
     );
 
     return SingleChildScrollView(
@@ -160,7 +173,7 @@ class _AdminCompanyConfigurationBodyState
               ProfileSectionCard(
                 icon: Icons.tune,
                 title: l10n.adminConfigFeaturesTitle,
-                children: [row],
+                children: content,
               ),
               const SizedBox(height: 16),
               AdminFreePlanCard(

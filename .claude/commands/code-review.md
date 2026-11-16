@@ -144,3 +144,8 @@ Layout/RTL bugs this codebase has repeatedly hit — check each on any new layou
    - `## 7. Recommended fix plan` — sequenced steps, each independently shippable
 5. Present findings to the user. Recommend an option. **Wait for explicit go-ahead** before applying fixes.
 6. After applying fixes, re-run the audits and confirm zero findings — including Rule 7 if the fix changed which widgets exist.
+7. **Offer a manual QA session.** Once the CR is closed (fixes applied, audits clean),
+   ask the user (`AskUserQuestion`) whether to run the `manual-qa` skill now. That skill
+   runs four browser lanes (manager/employee x desktop/mobile) and records the result
+   under `## Manual QA` in the feature md. Run it only on a yes. Never start it
+   unasked, and never skip asking.
