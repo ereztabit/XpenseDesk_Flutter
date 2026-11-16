@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import '../company_modules/module_switch.dart';
 
 /// One company setting in the admin Configuration tab's "Features" card
 /// (bulk upload UI/UX guide §7.2): title, description, an optional status
-/// line, and the switch at the row's end. [busy] shows a spinner and locks
-/// the switch.
+/// line, and the switch at the row's end. [busy] shows a spinner; a null
+/// [onChanged] shows the switch disabled (another flag is saving). The switch
+/// is [ModuleSwitch], so hover and disabled states match the Modules tab.
 class AdminFeatureToggleRow extends StatelessWidget {
   const AdminFeatureToggleRow({
     super.key,
@@ -22,7 +24,7 @@ class AdminFeatureToggleRow extends StatelessWidget {
   final String? statusLine;
   final bool value;
   final bool busy;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -50,21 +52,11 @@ class AdminFeatureToggleRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        SizedBox(
-          width: 64,
-          child: busy
-              ? const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : Switch(
-                  value: value,
-                  activeTrackColor: AppTheme.primary,
-                  onChanged: onChanged,
-                ),
+        ModuleSwitch(
+          value: value,
+          busy: busy,
+          onChanged: onChanged,
+          semanticLabel: title,
         ),
       ],
     );
