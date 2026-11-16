@@ -42,6 +42,16 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
+**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 ship. All UI is designed in the Lovable app mock first.
+
+- [ ] [Technical][P1] **FS-1011** PC-0 dark-launch flags -- hide Petty Cash + Travel per company until built (prod shows the toggles today). **First.** see docs/backlog/petty-cash/pc-0-module-flags-spec.md
+- [ ] [Business][P2] **FS-1012** PC-1 budget sheet end to end -- manager Petty Cash module, holder ledger + "where am I" sheet cards, submit / approve / return. see docs/backlog/petty-cash/pc-1-budget-sheet-spec.md
+- [ ] [Business][P2] **FS-1013** PC-2 manager control -- edit, change holder, submit for holder, line review, soft delete, history timeline. see docs/backlog/petty-cash/pc-2-manager-control-spec.md
+- [ ] [Business][P2] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
+- [ ] [Business][P2] **FS-1015** PC-4 unified manager dashboard -- NOT DESIGNED. see docs/backlog/petty-cash/pc-4-unified-dashboard-spec.md
+- [ ] [Business][P2] **FS-1016** PC-5 Petty Cash summary report -- NOT DESIGNED. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
+- [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
+
 - [ ] [Business][P2] **FS-1007** Bulk receipt upload S4 -- server read state + "Mark all as read", first-use auto-open, cycle reminder card. S1 + S1.01 (v1.35) and S2 (v1.36) are shipped dark behind the per-company flag; S3 free receipts (v1.37) is live for every trial company; S5 was server-only. Design: backend `docs/bulk-upload/ui-ux-design-guide.md` §7.5-§7.6 and §8.6. Plan + backend half: `BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md`
 - [ ] [Business][P2] AI receipt scan — support foreign-currency receipts end to end (scan a USD/EUR invoice → foreign expense with base-currency conversion). Multi-currency itself is shipped and verified; this is the remaining AI-scan feature. Spec + open questions: docs/backlog/multi-currency-expenses.md (Follow-up 2). Test kit ready: 6 synthetic receipts + matrix in docs/test-receipts/
 - [ ] [Business][P1] **FS-1003** Add expenses to a non-approved sheet + explicit resubmit — a declined employee cannot supply the missing receipt: "+ New expense" is gated to the current-cycle Draft (`isCurrentCycleDraft`, `lib/utils/sheet_utils.dart:54`), and the Declined banner is button-free by design. Needs the sheet id threaded through the create flow, a "Submit for approval" CTA on the banner (one tap resubmits the whole sheet — the banner's current "fix every line and we'll resend it" copy has to go with it), and — required — a "returned earlier" marker on re-submitted lines (Pending + non-null `reviewedAt`), since a whole-sheet resubmit now un-declines lines the manager had refused. The manager "Add expense" half was extracted to **FS-1004** (2026-09-05). **Blocked on the backend half** (no `expenseSheetId` on create, no submit endpoint). see docs/backlog/add-expenses-to-non-approved-sheet-spec.md
@@ -93,10 +103,6 @@ so in its spec rather than double-tagging here.
 ## manager expenses report
 
 - [ ] [Business][P2] build the spend overview widget for manager and employee -- manager card is live; the employee side and the approvals-screen slot are still placeholders. See docs/backlog/spend-overview-spec.md
-
-## management screens
-
-- [ ] [Business][P2] we need to configure which categories are available
 
 ## processes & other stuff
 
