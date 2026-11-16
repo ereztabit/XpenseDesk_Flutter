@@ -1,10 +1,8 @@
 # PC-0 - Dark-launch flags for Petty Cash and Travel
 
-> Mission: FS-1011 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-0-module-flags.md). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
+> Mission: FS-1011 (backend: BackEnd/XpenseDeskServer/docs/done/pc-0-module-flags.md). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
 
-Status: **BUILT, PENDING RELEASE** (2026-11-16) on feature/pc-0-module-flags
-(both repos). Backend tests green, manual QA run 1 clean after fixes, owner's
-manual QA passed 2026-11-16. Release needs the prod schema script first.
+Status: **SHIPPED** 2026-11-16 as v1.42 (release 9f9eea1; backend c554099).
 
 ## Why
 
