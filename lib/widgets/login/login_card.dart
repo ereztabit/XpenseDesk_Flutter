@@ -59,6 +59,9 @@ class _LoginCardState extends ConsumerState<LoginCard> {
 
     final email = _emailController.text;
     if (email.trim().isEmpty) return;
+    // A malformed address is the field's message to show, inline and localized.
+    // Stopping here keeps it out of the ErrorAlert, which is for server answers.
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final authService = ref.read(authServiceProvider);
     final l10n = AppLocalizations.of(context)!;

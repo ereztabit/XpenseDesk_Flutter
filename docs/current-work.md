@@ -21,6 +21,8 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 ## Currently Working On
 
 - [LookAndFeel][P3] (in progress) Emails reordered in RTL (`info@x.com_` shows as `_info@x.com`) -- profile plus 7 other places, fixed with a shared `LtrText`. Branch `feature/email-ltr` -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
+- [LookAndFeel][P3] (in progress) Login shows "Please enter a valid email address" twice (second copy in English) -- Continue now stops on the field's own check. Branch `feature/email-ltr` -- see docs/bugs/login-invalid-email-message-shown-twice.md
+- [Technical][P3] (in progress) AuthService email validation uses regex instead of email_validator -- same branch -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 
 ## Tags
 
@@ -76,7 +78,6 @@ so in its spec rather than double-tagging here.
 - [ ] [Business][P2] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
 - [ ] [LookAndFeel][P2] App header overflows on mobile (375px) during a support session -- the support chip + days chip push the logo past the edge on every screen. Found in FS-1010 QA -- see docs/bugs/app-header-overflows-on-mobile-in-support-session.md
 - [ ] [LookAndFeel][P3] Sheet Approvals employee filter keeps its old-language label after a live language switch, and "All employees" is cut off at 160px on mobile -- see docs/bugs/employee-filter-label-stale-after-language-switch.md
-- [ ] [LookAndFeel][P3] Login screen shows "Please enter a valid email address" twice for a malformed address -- once inline under the field, once in the red alert; two independent validators (EmailInputField's, and a regex re-check in AuthService.tryToLogin) both fire. Found in FS-1002 QA -- see docs/bugs/login-invalid-email-message-shown-twice.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
@@ -87,7 +88,6 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
 - [ ] [LookAndFeel][P3] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
 - [ ] [LookAndFeel][P2] Profile "Name is required" stays in English after switching to Hebrew (validator text is not re-run on locale change) -- see docs/bugs/profile-name-error-stays-english-after-language-switch.md
-- [ ] [Technical][P3] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] [Technical][P3] flutter analyze reports 9 pre-existing info-level lints (4 dart:html deprecations also block wasm) -- see docs/bugs/flutter-analyze-info-lints-cleanup.md
 - [ ] [Technical][P3] Startup frame throws a RenderFlex overflow at a 1x1 viewport -- debug-only console noise on all 17 screens, no user impact; real fix is a shared AppScaffold -- see docs/bugs/startup-frame-renderflex-overflow-at-1x1-viewport.md
 - [ ] [Technical][P3] (deferred) Calendar widget is unstable and not cross-browser -- postponed, see docs/bugs/calendar-widget-unstable-cross-browser.md
