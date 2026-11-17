@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../ltr_text.dart';
 import '../microsoft_logo.dart';
 
 /// Verified-identity card shown on onboarding step 1 in Microsoft mode:
@@ -63,7 +64,7 @@ class MicrosoftIdentityCard extends StatelessWidget {
                     color: AppTheme.foreground,
                   ),
                 ),
-                Text(
+                LtrText(
                   email,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

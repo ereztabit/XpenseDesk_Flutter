@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../employee_dashboard/sheet_status_badge.dart';
+import '../ltr_text.dart';
 import '../selectable_scope.dart';
 
 /// Sheet Review header card — status badge, employee, cycle, timestamps,
@@ -83,7 +84,7 @@ class SheetReviewHeaderCard extends ConsumerWidget {
                 ),
               ),
               if ((sheet.createdByEmail ?? '').isNotEmpty)
-                Text(
+                LtrText(
                   sheet.createdByEmail!,
                   style: const TextStyle(
                     fontSize: 12,

@@ -1,6 +1,6 @@
 # Bug: AuthService.isValidEmail uses hand-rolled regex instead of email_validator
 
-> **Status: new**
+> **Status: in progress**
 
 ## Problem
 
@@ -38,3 +38,9 @@ In `lib/services/auth_service.dart`:
   `tryToLogin` path ~line 61 and the DEV-only `tryToLoginDev` path ~line 76).
 
 No call sites outside the file, so the rename is contained.
+
+## Fix (2026-11-17, branch feature/email-ltr)
+
+`isValidEmail` -> private `_isValidEmail`, delegating to
+`EmailValidator.validate`. Shipped with
+login-invalid-email-message-shown-twice.md; manual QA recorded there.

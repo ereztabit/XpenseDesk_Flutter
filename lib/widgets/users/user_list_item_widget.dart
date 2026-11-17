@@ -4,6 +4,7 @@ import '../../models/user_list_item.dart';
 import '../../theme/app_theme.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../utils/responsive_utils.dart';
+import '../ltr_text.dart';
 
 class UserListItemWidget extends StatelessWidget {
   final UserListItem user;
@@ -187,7 +188,7 @@ class UserListItemWidget extends StatelessWidget {
   }
 
   Widget _buildEmail() {
-    return Text(
+    return LtrText(
       user.email,
       style: const TextStyle(
         fontSize: 13,

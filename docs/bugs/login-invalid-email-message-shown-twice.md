@@ -1,6 +1,6 @@
 # Bug: "Please enter a valid email address" is shown twice on the login screen
 
-> **Status: new** — pre-existing on `develop`, found during FS-1002 QA
+> **Status: in progress** — pre-existing on `develop`, found during FS-1002 QA
 > (`completed/fs-1002-manual-qa.md`, check 12). Not caused by that mission.
 
 ## Problem
@@ -66,3 +66,15 @@ a service-layer guard and switch it from `isValidEmail`'s regex to
 Reject the reverse fix (removing the inline validator): the alert is further
 from the field, and `EmailInputField` is shared, so weakening it would
 degrade every other form that uses it.
+
+## Manual QA (2026-11-17, branch feature/email-ltr)
+
+Local dev, logged out, 467px. Fixed together with
+auth-service-email-regex-violates-validator-rule.md.
+
+| Check | Result |
+|-------|--------|
+| Hebrew, `dasdasdasd` + Continue | pass - one message, under the field, in Hebrew (before: a second copy in the red alert, in English) |
+| Hebrew, same value + Enter | pass - one message |
+| Switch to English, Continue | pass - one message, in English |
+| Valid known address `m@xpensedesk.com` | pass - magic link followed, lands on /dashboard |
