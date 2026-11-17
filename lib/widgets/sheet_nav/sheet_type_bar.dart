@@ -34,7 +34,10 @@ class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
     final sections = ref.watch(sheetNavProvider);
     if (sections == null) return const SizedBox.shrink();
 
-    final route = ModalRoute.of(context)?.settings.name ?? '';
+    final route = sheetNavActiveRoute(
+      sections,
+      ModalRoute.of(context)?.settings.name ?? '',
+    );
     final stacked = context.isMobile;
     final single = sections.length == 1;
     final current = sheetNavSectionFor(sections, route);
@@ -52,6 +55,7 @@ class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
             key: ValueKey(open.type),
             section: open,
             activeRoute: route,
+            currentPath: Uri.parse(ModalRoute.of(context)?.settings.name ?? '').path,
             stacked: stacked,
             onNavigate: (p) => _go(p.route),
             onBack: single ? null : () => setState(() => _showTypes = true),

@@ -21,14 +21,28 @@ class AppRoutes {
   static const String employeeNewExpense = '/employee/new-expense';
   static const String managerPayments = '/manager/payments';
 
-  // --- Budgets (FS-1012, placeholders until PC-1) ---
+  // --- Budgets (FS-1012) ---
+  /// Manager budgets dashboard (B1).
   static const String budgets = '/budgets';
+
+  /// Budget list (B2): `?focus=submitted|returned|draft&attention=1`.
+  static const String budgetsList = '/budgets/list';
   static String budgetPath(String id) => '$budgets/$id';
+
+  static String budgetsListPath({String? focus, bool attention = false}) {
+    final query = [
+      if (focus != null) 'focus=$focus',
+      if (attention) 'attention=1',
+    ].join('&');
+    return query.isEmpty ? budgetsList : '$budgetsList?$query';
+  }
 
   /// The budget id of a `/budgets/<id>` path, or null.
   static String? parseBudgetPath(String path) {
     final segments = Uri.parse(path).pathSegments;
-    return segments.length == 2 && segments.first == 'budgets'
+    return segments.length == 2 &&
+            segments.first == 'budgets' &&
+            segments.last != 'list'
         ? segments.last
         : null;
   }

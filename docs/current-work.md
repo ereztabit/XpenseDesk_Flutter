@@ -16,6 +16,10 @@ So: `docs/in-progress/` holds specs for what we are working on **right now** and
 is empty when we are not; `docs/backlog/` holds specs for open features we are not
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
+## Currently Working On
+
+- [Business][P2] **FS-1012** PC-1 Budgets end to end -- IN PROGRESS: S1 a budget exists (branch `feature/pc1-s1-budget-exists`); then S2 budget page (single + bulk), S3 submit / approve / return + activity. UX source: docs/in-progress/pc-1-budgets-ux-handoff.md. see docs/in-progress/pc-1-budget-sheet-spec.md
+
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
 ## Tags
@@ -44,7 +48,6 @@ so in its spec rather than double-tagging here.
 
 **Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 ship. All UI is designed in the Lovable app mock first.
 
-- [ ] [Business][P2] **FS-1012** PC-1 budget sheet end to end -- manager Petty Cash module, holder ledger + "where am I" sheet cards, submit / approve / return. see docs/backlog/petty-cash/pc-1-budget-sheet-spec.md
 - [ ] [Business][P2] **FS-1013** PC-2 manager control -- edit, change holder, submit for holder, line review, soft delete, history timeline. see docs/backlog/petty-cash/pc-2-manager-control-spec.md
 - [ ] [Business][P2] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P2] **FS-1015** PC-4 unified manager dashboard -- NOT DESIGNED. see docs/backlog/petty-cash/pc-4-unified-dashboard-spec.md

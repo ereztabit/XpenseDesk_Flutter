@@ -113,6 +113,18 @@ SheetNavPage? sheetNavPageFor(List<SheetNavSection>? sections, String route) {
   return null;
 }
 
+/// The tree route the current page belongs to: the route without its query;
+/// any Budgets page that is not one of the user's own budgets (the list,
+/// someone else's budget) keeps "All budgets" active (hand-off section 2.6).
+String sheetNavActiveRoute(List<SheetNavSection> sections, String route) {
+  final path = Uri.parse(route).path;
+  if (sheetNavPageFor(sections, path) != null) return path;
+  if (path == AppRoutes.budgets || path.startsWith('${AppRoutes.budgets}/')) {
+    return AppRoutes.budgets;
+  }
+  return path;
+}
+
 /// Number of budgets below zero, for the All budgets badge.
 int sheetNavBelowZero(Iterable<SheetNavMockBudget> budgets) =>
     budgets.where((b) => b.balance < 0).length;

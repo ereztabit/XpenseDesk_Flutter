@@ -28,10 +28,15 @@ class SheetNavLevelTwo extends ConsumerStatefulWidget {
     required this.onNavigate,
     required this.stacked,
     this.onBack,
+    this.currentPath,
   });
 
   final SheetNavSection section;
   final String activeRoute;
+
+  /// The page's own path when it differs from [activeRoute] (a Budgets page
+  /// that highlights "All budgets"); null = the same.
+  final String? currentPath;
   final ValueChanged<SheetNavPage> onNavigate;
   final bool stacked;
   final VoidCallback? onBack;
@@ -76,11 +81,13 @@ class _SheetNavLevelTwoState extends ConsumerState<SheetNavLevelTwo> {
           sublabel: p.balance == null
               ? null
               : SheetNavBalance(
-                  text: p.balance!.toCurrency(locale, currency),
+                  text: p.balance!.toWholeCurrency(locale, currency),
                   negative: p.isBelowZero,
                   stacked: stacked,
                 ),
-          onTap: p.route == widget.activeRoute
+          // Highlighted is not the same as "here": on the budget list or
+          // someone else's budget "All budgets" is active but still opens B1.
+          onTap: p.route == (widget.currentPath ?? widget.activeRoute)
               ? null
               : () => widget.onNavigate(p),
         ),

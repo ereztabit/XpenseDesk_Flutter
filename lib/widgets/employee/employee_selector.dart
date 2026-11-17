@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import 'employee_selector_trigger.dart';
 
 class EmployeeSelector extends StatelessWidget {
   /// Map of userId → displayName.
@@ -15,6 +16,14 @@ class EmployeeSelector extends StatelessWidget {
   /// When false (default): multi-select with Select All / Clear.
   final bool singleSelect;
 
+  /// Single-select only: the text shown while nothing is picked (a required
+  /// form field). Null keeps the filter behaviour ("All employees").
+  final String? placeholder;
+
+  /// Label in the form-field style of `DialogTextField` (New budget) instead
+  /// of the filter style (uppercase, muted).
+  final bool formLabel;
+
   const EmployeeSelector({
     super.key,
     required this.selectedIds,
@@ -24,6 +33,8 @@ class EmployeeSelector extends StatelessWidget {
     this.enabled = true,
     this.sectionLabel,
     this.singleSelect = false,
+    this.placeholder,
+    this.formLabel = false,
   });
 
   @override
@@ -35,13 +46,15 @@ class EmployeeSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          (sectionLabel ?? l10n.byEmployee).toUpperCase(),
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppTheme.mutedForeground,
-            letterSpacing: 0.8,
-            fontWeight: FontWeight.w500,
-          ),
+          formLabel ? (sectionLabel ?? l10n.byEmployee) : (sectionLabel ?? l10n.byEmployee).toUpperCase(),
+          style: formLabel
+              ? const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.foreground)
+              : const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.mutedForeground,
+                  letterSpacing: 0.8,
+                  fontWeight: FontWeight.w500,
+                ),
         ),
         const SizedBox(height: 6),
         SizedBox(
@@ -123,7 +136,7 @@ class EmployeeSelector extends StatelessWidget {
               ),
             ],
             builder: (context, controller, child) {
-              return _EmployeeTrigger(
+              return EmployeeSelectorTrigger(
                 width: width,
                 enabled: isEnabled,
                 label: _summaryLabel(l10n),
@@ -145,6 +158,13 @@ class EmployeeSelector extends StatelessWidget {
   }
 
   String _summaryLabel(AppLocalizations l10n) {
+    // A single-select form field (New budget) picks one person: nothing
+    // picked shows [placeholder], never "All employees".
+    if (singleSelect && placeholder != null) {
+      return selectedIds.isEmpty
+          ? placeholder!
+          : employees[selectedIds.first] ?? placeholder!;
+    }
     if (selectedIds.isEmpty || selectedIds.length == employees.length) {
       return l10n.allEmployees;
     }
@@ -166,75 +186,5 @@ class EmployeeSelector extends StatelessWidget {
       next.add(id);
     }
     return next;
-  }
-}
-
-class _EmployeeTrigger extends StatelessWidget {
-  final double width;
-  final bool enabled;
-  final String label;
-  final bool isOpen;
-  final VoidCallback onTap;
-
-  const _EmployeeTrigger({
-    required this.width,
-    required this.enabled,
-    required this.label,
-    required this.isOpen,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: enabled ? AppTheme.card : AppTheme.muted,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isOpen ? AppTheme.primary : AppTheme.borderMedium,
-              width: isOpen ? 2 : 1,
-            ),
-            boxShadow: enabled && !isOpen
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(18),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    )
-                  ]
-                : null,
-          ),
-          padding: EdgeInsetsDirectional.fromSTEB(12, 0, 8, 0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: enabled
-                        ? AppTheme.foreground
-                        : AppTheme.mutedForeground,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                size: 18,
-                color: AppTheme.mutedForeground,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

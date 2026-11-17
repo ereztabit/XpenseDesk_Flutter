@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/budget.dart';
 import '../models/company_module.dart';
 import '../models/sheet_nav.dart';
 import '../models/sheet_nav_dev_state.dart';
+import '../utils/budget_utils.dart';
 import '../utils/sheet_nav_utils.dart';
 import 'auth_provider.dart';
+import 'budgets_provider.dart';
 import 'company_modules_provider.dart';
 import 'expense_sheet_provider.dart';
 import 'manager_dashboard_provider.dart';
@@ -52,20 +55,31 @@ final sheetNavProvider = Provider<List<SheetNavSection>?>((ref) {
           .length ??
       0;
 
-  final myBudgets = dev.myBudgets;
+  // FS-1012: real budgets once the company can use them (flag + module); the
+  // dev preview keeps its mock budgets.
+  final budgetsReal = ref.watch(isPettyCashEnabledProvider);
+  final realBudgets = budgetsReal
+      ? ref.watch(budgetsProvider).asData?.value ?? const <Budget>[]
+      : const <Budget>[];
+  final myBudgets = dev.budgetsPreview
+      ? dev.myBudgets
+      : [
+          for (final b in ref.watch(myBudgetsProvider))
+            SheetNavMockBudget(b.budgetId, b.name, b.balance),
+        ];
   return buildSheetNavSections(
     SheetNavInput(
       isManager: isManager,
       monthlyOn: sheetNavResolve(monthlyServer, dev.monthly),
       budgetsOn: sheetNavResolve(budgetsServer, dev.budgets),
       travelOn: sheetNavResolve(travelServer, dev.travel),
-      budgetsBuilt: dev.budgetsPreview,
+      budgetsBuilt: dev.budgetsPreview || budgetsReal,
       myBudgets: myBudgets,
       teamWaiting: teamWaiting,
       myReturned: myReturned,
-      budgetsBelowZero: sheetNavBelowZero(
-        dev.budgetsPreview ? SheetNavDevState.seed : const [],
-      ),
+      budgetsBelowZero: dev.budgetsPreview
+          ? sheetNavBelowZero(SheetNavDevState.seed)
+          : budgetAttentionCounts(realBudgets, budgetToday()).needAttention,
     ),
   );
 });
