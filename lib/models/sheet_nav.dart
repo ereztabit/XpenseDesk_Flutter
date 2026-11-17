@@ -1,4 +1,4 @@
-/// The sheet-type navigation tree (docs/in-progress/sheet-type-nav-spec.md).
+/// The sheet-type navigation tree (docs/completed/sheet-type-nav-spec.md).
 ///
 /// Level 1 of the bar is a list of [SheetNavSection]s (one per sheet type),
 /// level 2 is the [SheetNavPage]s of one section.

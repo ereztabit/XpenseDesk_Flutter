@@ -6,12 +6,13 @@ import '../../models/sheet_nav.dart';
 import '../../providers/navigation_guard_provider.dart';
 import '../../providers/sheet_nav_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/instant_route.dart';
 import '../../utils/responsive_utils.dart';
 import '../../utils/sheet_nav_utils.dart';
 import 'sheet_nav_level_one.dart';
 import 'sheet_nav_level_two.dart';
 
-/// The sheet-type navigation bar (docs/in-progress/sheet-type-nav-spec.md).
+/// The sheet-type navigation bar (docs/completed/sheet-type-nav-spec.md).
 ///
 /// Placed by a screen directly under `AppHeader`, outside the scroll view, so it
 /// stays pinned. Opens at level 2 of the current page's type; Back shows level 1
@@ -116,11 +117,12 @@ class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
   }
 
   /// Same semantics as the old Team / My switcher: replace the page, through the
-  /// unsaved-changes guard.
+  /// unsaved-changes guard, with no page transition (the bar stays put; only its
+  /// marker animates).
   Future<void> _go(String route) async {
     final guard = ref.read(navigationGuardProvider);
     final canLeave = guard != null ? await guard() : true;
     if (!mounted || !canLeave) return;
-    Navigator.of(context).pushReplacementNamed(route);
+    Navigator.of(context).pushReplacement(instantRoute(route));
   }
 }

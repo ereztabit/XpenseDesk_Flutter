@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [Business][P2] **FS-1012 (nav slice)** Sheet-type navigation bar - banked on develop as v1.45 (2026-11-17), awaiting ship-feature. see docs/in-progress/sheet-type-nav-spec.md
+- [LookAndFeel][P2] Nav bar instant page switch - banked on develop as v1.46 (2026-11-17), awaiting ship-feature. iPhone check pending after deploy.
 
 ## Tags
 
