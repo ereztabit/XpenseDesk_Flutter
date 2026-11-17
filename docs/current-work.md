@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [LookAndFeel][P2] Nav bar instant page switch - banked on develop as v1.46 (2026-11-17), awaiting ship-feature. iPhone check pending after deploy.
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
