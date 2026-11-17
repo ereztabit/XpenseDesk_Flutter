@@ -69,6 +69,15 @@ class BudgetService {
     ),
   );
 
+  /// POST /api/budgets/{id}/submit (FS-1012 S3) - the holder sends the budget
+  /// for approval; a manager's own budget comes back already approved.
+  Future<Budget> submit(String budgetId) async => _budget(
+    _validateResponse(
+      await _apiService.post('/api/budgets/$budgetId/submit', const <String, dynamic>{},
+          authToken: await _token()),
+    ),
+  );
+
   /// POST /api/budgets
   Future<Budget> create({
     required String name,

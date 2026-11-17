@@ -10,9 +10,13 @@ import 'sheet_activity_timeline_entry.dart';
 /// The sheet's status-log audit trail, rendered as a vertical timeline.
 /// Hidden entirely when the log is empty.
 class SheetActivityTimeline extends ConsumerWidget {
-  const SheetActivityTimeline({super.key, required this.log});
+  const SheetActivityTimeline({super.key, required this.log, this.isBudget = false});
 
   final List<ExpenseSheetLogEntry> log;
+
+  /// FS-1012 S3: a budget's trail reads "Budget created / Submitted for
+  /// approval / Returned for changes / Approved".
+  final bool isBudget;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,6 +49,7 @@ class SheetActivityTimeline extends ConsumerWidget {
                 entry: log[index],
                 companyLocale: companyLocale,
                 isLast: index == log.length - 1,
+                isBudget: isBudget,
               );
             }),
           ],

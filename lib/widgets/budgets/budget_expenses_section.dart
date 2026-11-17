@@ -57,34 +57,40 @@ class _BudgetExpensesSectionState extends ConsumerState<BudgetExpensesSection> {
         style: const TextStyle(color: AppTheme.destructive),
       ),
       data: (sheet) {
+        // Search only pays off on a longer list (user decision 2026-11-17).
+        final searchable = budgetShowsSearch(sheet.expenses.length);
+        final query = searchable ? _query : '';
         final shown = sheet.expenses
-            .where(
-              (e) => budgetExpenseMatches(e.merchantName, e.amount, _query),
-            )
+            .where((e) => budgetExpenseMatches(e.merchantName, e.amount, query))
             .toList();
+        final toggle = context.isMobile && widget.editable;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (sheet.expenses.isNotEmpty) ...[
+            if (sheet.expenses.isNotEmpty && (searchable || toggle)) ...[
               Row(
                 children: [
                   Expanded(
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: context.isMobile ? double.infinity : 320,
-                        ),
-                        child: AdminSearchField(
-                          value: _query,
-                          hintText: l10n.budgetsSearchExpenses,
-                          clearTooltip: l10n.clear,
-                          onChanged: (q) => setState(() => _query = q),
-                        ),
-                      ),
-                    ),
+                    child: !searchable
+                        ? const SizedBox.shrink()
+                        : Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: context.isMobile
+                                    ? double.infinity
+                                    : 320,
+                              ),
+                              child: AdminSearchField(
+                                value: _query,
+                                hintText: l10n.budgetsSearchExpenses,
+                                clearTooltip: l10n.clear,
+                                onChanged: (q) => setState(() => _query = q),
+                              ),
+                            ),
+                          ),
                   ),
-                  if (context.isMobile && widget.editable) ...[
+                  if (toggle) ...[
                     const SizedBox(width: 8),
                     const ViewModeToggle(),
                   ],

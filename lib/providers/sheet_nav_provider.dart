@@ -65,7 +65,8 @@ final sheetNavProvider = Provider<List<SheetNavSection>?>((ref) {
       ? dev.myBudgets
       : [
           for (final b in ref.watch(myBudgetsProvider))
-            SheetNavMockBudget(b.budgetId, b.name, b.balance),
+            SheetNavMockBudget(b.budgetId, b.name, b.balance,
+                returned: b.statusId == BudgetSection.returned.statusId),
         ];
   return buildSheetNavSections(
     SheetNavInput(
@@ -80,6 +81,9 @@ final sheetNavProvider = Provider<List<SheetNavSection>?>((ref) {
       budgetsBelowZero: dev.budgetsPreview
           ? sheetNavBelowZero(SheetNavDevState.seed)
           : budgetAttentionCounts(realBudgets, budgetToday()).needAttention,
+      budgetsToReview: dev.budgetsPreview
+          ? sheetNavBelowZero(SheetNavDevState.seed)
+          : budgetsToReviewCount(realBudgets, budgetToday()),
     ),
   );
 });

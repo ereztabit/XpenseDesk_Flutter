@@ -83,6 +83,14 @@ BudgetAttentionCounts budgetAttentionCounts(Iterable<Budget> budgets, DateTime t
   return BudgetAttentionCounts(need, over, late);
 }
 
+/// FS-1012 S3: outstanding budgets a manager has to act on - awaiting approval,
+/// or over budget / overdue - each counted once (the nav badge).
+int budgetsToReviewCount(Iterable<Budget> budgets, DateTime today) => budgets
+    .where((b) =>
+        budgetIsOutstanding(b) &&
+        (b.statusId == BudgetSection.awaiting.statusId || budgetNeedsAttention(b, today)))
+    .length;
+
 int budgetCountIn(Iterable<Budget> budgets, BudgetSection section) =>
     budgets.where((b) => b.statusId == section.statusId).length;
 
@@ -167,6 +175,17 @@ bool budgetIsHeldBy(Budget b, String? email) =>
 /// the same rule).
 bool budgetExpensesEditable(Budget b, {required String? email, required bool isManager}) =>
     budgetIsOutstanding(b) && (isManager || budgetIsHeldBy(b, email));
+
+/// The budget page shows its Activity only once the budget has been sent for
+/// approval - a lone "Budget created" adds nothing (user decision 2026-11-17).
+bool budgetActivityVisible(Iterable<int> toStatusIds) =>
+    toStatusIds.any((s) => s != BudgetSection.open.statusId);
+
+/// The budget page shows its expense search from this many expenses on -
+/// searching three receipts is noise (user decision 2026-11-17: from the 5th).
+const int budgetSearchThreshold = 5;
+
+bool budgetShowsSearch(int expenseCount) => expenseCount >= budgetSearchThreshold;
 
 /// The list table's budget name: at most [max] characters, then "…" (the
 /// full name is in the cell's tooltip) - user decision 2026-11-17.

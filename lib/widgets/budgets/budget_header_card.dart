@@ -25,12 +25,16 @@ final String _pdi = String.fromCharCode(0x2069);
 /// The holder line and the currency symbol on the strip are user decisions
 /// (2026-11-17) on top of the mock.
 class BudgetHeaderCard extends ConsumerWidget {
-  const BudgetHeaderCard({super.key, required this.budget, this.trailing});
+  const BudgetHeaderCard({super.key, required this.budget, this.trailing, this.footer});
 
   final Budget budget;
 
   /// Desktop: the "+ New Expense" button, top-right as on My expenses.
   final Widget? trailing;
+
+  /// Desktop: the decision buttons (Submit, or Approve / Return), right under
+  /// the spend bar inside the card (user decision 2026-11-17).
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -156,6 +160,11 @@ class BudgetHeaderCard extends ConsumerWidget {
             height: 4,
             radius: 0,
           ),
+          if (footer != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: footer,
+            ),
         ],
       ),
     );

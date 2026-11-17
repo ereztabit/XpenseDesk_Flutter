@@ -190,6 +190,38 @@ Manual QA:
 - Manager approves -> Approved, read-only, gone from the dashboard and list.
 - A manager holding a budget submits -> approved on submit (Monthly rule).
 
+Built 2026-11-17 - decisions:
+- **Budgets are prepaid** (user decision 2026-11-17): an approved budget never
+  enters the payment lifecycle (no Awaiting payment, never in Payments).
+- A return keeps the budget's lines pending; the holder edits and resubmits.
+- Submit: the holder only; shown when the budget is Draft or Returned and has
+  expenses; refused while an expense needs action.
+- A manager's own budget: the "Approve N expenses of {amount}" CTA, not
+  Submit - it is approved on submit, no one else approves it (user decision
+  2026-11-17). Search: from the 5th expense on. Activity: only once the budget
+  has been sent for approval. Approved budgets leave the nav (history comes
+  later). Return / approve keep the Monthly wording (user decision).
+- Placement (user decision 2026-11-17): on desktop the decision buttons
+  (Submit, Approve / Return) sit inside the header card, right under the spend
+  bar; on mobile in the sticky bar. Nav: Budgets is badged with the budgets a
+  manager has to act on (awaiting, over budget, overdue) and, for a holder,
+  their returned budgets (user decision 2026-11-17).
+- **Manager Approve / Return sit on the budget page**, not the sheet review
+  screen: the page renders the review screen's own `SheetReviewActions` with
+  its `ApproveSheetConfirmDialog` / `DeclineSheetDialog`, calling the same
+  approve / decline endpoints. The review screen as it is today carries
+  per-line approve / decline, which is line review (PC-2, out of scope) - the
+  server refuses it on a budget.
+- Status strip: `BudgetStatusStrip` copies the `DeclinedSheetBanner` box; that
+  widget itself names the manager in its title and carries Monthly's
+  auto-resubmit explainer, so it does not fit.
+- Activity: `SheetActivityTimeline(isBudget: true)` - budget wording for
+  created / submitted / returned. Its title keeps the existing "Activity /
+  פעילות" key (the copy table's "פעולות" would make two Activity titles).
+- New captions, added in build and not yet reviewed: "Complete the expenses
+  that need action before submitting" / "יש להשלים את ההוצאות שדורשות טיפול
+  לפני ההגשה".
+
 ## Copy and formatting (reviewed 2026-11-17)
 
 Reviewed against the product context with fresh eyes. Changes from the mock
@@ -264,9 +296,9 @@ are marked **changed**; the reason is in the last column. ARB keys get a
 | Expense takes the balance below zero | This expense is more than what's left in the budget. Left: {balance} | ההוצאה גבוהה מהיתרה בתקציב. נותרו: {balance} |
 | Category not in the Budgets module | This category isn't available for budgets | הקטגוריה הזו אינה זמינה לתקציבים |
 | Budgets not enabled | Budgets aren't enabled for your company | תקציבים אינם פעילים בחברה שלך |
-| Manager files into a budget whose holder has no free receipts left (S2b; caption added in build, not yet reviewed) | The budget holder has no free receipts left. | לבעל/ת התקציב לא נותרו קבלות חינם. |
-| Manager's batch bigger than the holder's free receipts left (S2b; not yet reviewed) | The budget holder doesn't have enough free receipts left for this batch. Remove some receipts and try again. | לבעל/ת התקציב לא נותרו מספיק קבלות חינם לשליחה הזו. אפשר להסיר חלק מהקבלות ולנסות שוב. |
-| A batch receipt over the balance, in the notifications panel (S2b; not yet reviewed) | More than what's left in the budget | גבוה מהיתרה בתקציב |
+| Manager files into a budget whose holder has no free receipts left (S2b; reviewed 2026-11-17) | The budget holder has no free receipts left. | לבעל/ת התקציב לא נותרו קבלות חינם. |
+| Manager's batch bigger than the holder's free receipts left (S2b; reviewed 2026-11-17) | The budget holder doesn't have enough free receipts left for this batch. Remove some receipts and try again. | לבעל/ת התקציב לא נותרו מספיק קבלות חינם לשליחה הזו. אפשר להסיר חלק מהקבלות ולנסות שוב. |
+| A batch receipt over the balance, in the notifications panel (S2b; reviewed 2026-11-17) | More than what's left in the budget | גבוה מהיתרה בתקציב |
 | Submit not allowed in this status | This budget can't be submitted right now | אי אפשר להגיש את התקציב כרגע |
 | Return without a reason | Write why the budget is being returned | יש לכתוב למה התקציב מוחזר |
 | Not the holder / no access | You don't have access to this budget | אין לך גישה לתקציב הזה |
@@ -411,3 +443,52 @@ Result: 1 finding - fixed. Bulk into a budget files every receipt there, Spent
 | 2 | Manager mobile | EN | Budget page | Minor | A long amount with decimals would be cut with "…" in a quarter-width column | Fixed - the value shrinks to fit, no digit hidden |
 
 Result: 2 findings - 2 fixed.
+
+### Run 7 - 2026-11-17 (S3 - submit and review, end to end)
+- Branch / commit: feature/pc1-s1-budget-exists @ uncommitted
+- QA company: XpenseDesk Demo Company; manager m@xpensedesk.com; employee e@xpensedesk.com
+- Coverage: employee desktop EN (submit, awaiting strip, still editable,
+  Activity); manager desktop EN (nav badge, Monthly dashboard unchanged, return
+  dialog Cancel, return with a reason, approve dialog Cancel, approve,
+  read-only, gone from the list, not in Payments); employee 375px EN (returned
+  strip + reason, nav badge, delete a line, resubmit from the sticky bar);
+  manager's own budget submit = approved on submit; HE Activity.
+- Data: QA Events #1001 went Draft -> Awaiting -> Returned -> Awaiting ->
+  Approved (Cafe Lamed 38 deleted on the way). New "QA Own S3" #1003 (manager's
+  own, 45.50) approved on submit. QA Mine #1002 left untouched (holds the
+  user's own test expenses - approval would close it).
+- Not covered in the app: the awaiting / returned strips in HE (no budget left
+  in those states); `BudgetHasActionRequired` (needs a part-read bulk receipt) -
+  covered by the API code path only.
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Manager desktop | EN | Nav | Major | A budget awaiting approval put no badge on Budgets (user) | Fixed - Budgets badge = budgets to act on (awaiting, over budget, overdue), red only when over / overdue |
+| 2 | Manager desktop | EN | Budget page | Minor | Approve / Return floated between blocks (user) | Fixed - inside the header card, right under the spend bar (Submit too) |
+| 3 | Employee mobile | EN | Nav | Major | A returned budget put no badge on the holder's Budgets | Fixed - each returned budget counts, as Monthly's returned sheets do |
+| 4 | Manager both | EN | Budget page | Minor | Return / approve use Monthly wording ("Return this sheet to user to edit", "Decline sheet", "Approve sheet") | Won't fix - Monthly wording is fine (user decision 2026-11-17) |
+
+Result: 4 findings - 3 fixed, 1 kept as is (wording). Cancel paths leave the
+budget untouched (no request sent); every state change shows on the page, the
+nav, the dashboard and the Activity trail; no console errors.
+
+### Run 8 - 2026-11-17 (S3 - user review round)
+- Branch / commit: feature/pc1-s1-budget-exists @ uncommitted
+- Coverage: manager desktop EN, own budget QA Mine (not approved - it holds
+  the user's test expenses).
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Manager desktop | EN | Budget page | Minor | A manager's own budget read "Submit for approval" though it is approved on submit (user) | Fixed - the review screen's "Approve N expenses of {amount}"; same call, approved at once |
+| 2 | Both | EN | Budget page | Minor | Search shown for 3 expenses (user) | Fixed - search from the 5th expense (first built as "from the 6th", corrected; checked 4 -> hidden, 5 -> shown on desktop and 375px; a typed search clears when a delete drops below 5) |
+| 3 | Both | EN | Budget page | Minor | Activity showed a lone "Budget created" (user) | Fixed - Activity once the budget has been sent |
+
+Approved budgets already leave the nav (`/api/budgets/mine` lists outstanding
+budgets only) - confirmed, no change. Result: 3 findings - 3 fixed.
+
+Run 8 follow-up (same day): manager 375px + desktop on a test budget "QA Search
+S3" #1004 (manager's own, Draft, 5 expenses - left in place).
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 4 | Manager mobile | EN | Budget page | Minor | Empty band under the header card on a Draft budget (user) - the status strip's spacer stayed when the strip drew nothing | Fixed - the spacer only comes with the strip |

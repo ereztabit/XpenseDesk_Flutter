@@ -14,9 +14,12 @@ import '../widgets/budgets/budget_action_bar.dart';
 import '../widgets/budgets/budget_expenses_section.dart';
 import '../widgets/budgets/budget_header_card.dart';
 import '../widgets/budgets/budget_new_expense_button.dart';
+import '../widgets/budgets/budget_review_actions.dart';
+import '../widgets/budgets/budget_status_strip.dart';
 import '../widgets/budgets/budgets_gate.dart';
 import '../widgets/bulk_upload/bulk_upload_entry_area.dart';
 import '../widgets/sheet_nav/sheet_type_bar.dart';
+import '../widgets/sheet_review/sheet_activity_timeline.dart';
 
 /// B4 budget page (`/budgets/<id>`) - My expenses in budget mode: header card,
 /// the budget's expenses (search, list) and "+ New Expense" (header on
@@ -78,6 +81,13 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
     // "+ New Expense": top-right of the header card on desktop, sticky
     // bottom bar on mobile - as on My expenses (user decision 2026-11-17).
     final mobile = context.isMobile;
+    // S3: the sheet behind the budget - status strip, decision buttons, Activity.
+    final sheet = ref.watch(sheetDetailProvider(widget.budgetId)).asData?.value;
+    final user = ref.watch(userInfoProvider);
+    final hasActions = loaded != null &&
+        sheet != null &&
+        BudgetReviewActions.hasActions(loaded, sheet,
+            email: user?.email, isManager: user?.isManager ?? false);
 
     return buildWithNavigationGuard(
       child: Scaffold(
@@ -125,7 +135,14 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                                     onPressed: canAdd ? _addExpenses : null,
                                   )
                                 : null,
+                            footer: hasActions && !mobile
+                                ? BudgetReviewActions(budget: b, sheet: sheet!)
+                                : null,
                           ),
+                          if (sheet != null && BudgetStatusStrip.shows(sheet)) ...[
+                            const SizedBox(height: 16),
+                            BudgetStatusStrip(sheet: sheet),
+                          ],
                           // S2b: the My expenses drop strip / free-receipts
                           // callout / progress strip, sending into this budget.
                           if (editable)
@@ -135,6 +152,11 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                             budgetId: b.budgetId,
                             editable: _editable(b),
                           ),
+                          if (sheet != null &&
+                              budgetActivityVisible(sheet.log.map((l) => l.toStatusId))) ...[
+                            const SizedBox(height: 16),
+                            SheetActivityTimeline(log: sheet.log, isBudget: true),
+                          ],
                         ],
                       ),
                     ),
@@ -142,8 +164,14 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                 ),
               ),
             ),
-            if (editable && mobile)
-              BudgetActionBar(onNewExpense: canAdd ? _addExpenses : null),
+            if (mobile && (editable || hasActions))
+              BudgetActionBar(
+                showNewExpense: editable,
+                onNewExpense: canAdd ? _addExpenses : null,
+                actions: hasActions
+                    ? BudgetReviewActions(budget: loaded, sheet: sheet!)
+                    : null,
+              ),
             const AppFooter(),
           ],
         ),

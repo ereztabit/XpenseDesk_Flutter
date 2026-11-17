@@ -43,6 +43,9 @@ String budgetAttentionText(AppLocalizations l10n, BudgetAttentionCounts c) {
 /// (the caller shows its generic message).
 String? budgetErrorText(AppLocalizations l10n, String? code) => switch (code) {
   'BudgetsNotEnabled' => l10n.budgetsErrNotEnabled,
+  'BudgetSubmitNotAllowed' => l10n.budgetsErrSubmitNotAllowed,
+  'BudgetHasActionRequired' => l10n.budgetsErrActionRequired,
+  'BudgetApprovedClosed' => l10n.budgetsErrApproved,
   'BudgetAccessDenied' => l10n.budgetsErrAccess,
   'BudgetNotFound' => l10n.budgetsErrNotFound,
   'BudgetNameRequired' => l10n.budgetsErrNameMissing,

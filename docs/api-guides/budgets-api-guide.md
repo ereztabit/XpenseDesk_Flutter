@@ -165,3 +165,28 @@ holder is the caller the refusals are the usual `FreeReceiptsUsedUp` /
 Budget sheets have no cycle and never appear in any Monthly call (sheets,
 queue, dashboard counters, payments, reports, cycle close). Budget expenses
 have no cycle either and never appear in Monthly sheets, totals or reports.
+
+## S3 - submit and review
+
+| Call | Behaviour |
+|---|---|
+| `POST /api/budgets/{budgetId}/submit` | The **holder** sends a Draft or Returned budget for approval; returns the budget object. A manager's own budget comes back **Approved** (approved on submit, the Monthly rule). Editing stays open while Awaiting approval |
+| `POST /api/expense-sheets/{budgetId}/approve` | The existing sheet call. Approves the budget and its pending lines; Approved closes it. A budget is **prepaid**: it never enters the payment lifecycle (`paymentStatus` stays `null`) |
+| `POST /api/expense-sheets/{budgetId}/decline` | The existing sheet call, `{ "comment": "..." }` required. Returns the budget to its holder; **its lines stay Pending** (a Monthly decline still declines them) so the holder edits and resubmits |
+| `GET /api/expense-sheets/{budgetId}` | `log` is the Activity trail: to-status 1 = created (by the manager), 2 = submitted, 4 = returned (`comment` = the reason), 3 = approved. `latestDeclineComment`, `submittedAt`, `reviewedAt` feed the status strips |
+
+Line-level review is PC-2: `POST /api/expenses/{id}/approve` or `/decline` on
+a budget line is refused with 409 `BudgetLineReviewNotAvailable`.
+
+Budgets never appear in the Monthly queue, company sheet lists, counters,
+payments or payment reports (ModuleId = 1 guards).
+
+### S3 error codes
+
+| Code | Status | When |
+|---|---|---|
+| `BudgetAccessDenied` | 403 | Submit by anyone but the holder (a manager included) |
+| `BudgetSubmitNotAllowed` | 409 | The budget is not Draft or Returned (already submitted, or approved) |
+| `BudgetHasActionRequired` | 409 | An expense on it still needs action (a bulk receipt read only in part) |
+| `BudgetLineReviewNotAvailable` | 409 | Approving or declining one line of a budget |
+| `BudgetNotFound` / `BudgetsNotEnabled` | 404 / 403 | As in S1 |

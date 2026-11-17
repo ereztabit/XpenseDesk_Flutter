@@ -20,22 +20,26 @@ class SheetActivityTimelineEntry extends StatelessWidget {
     required this.entry,
     required this.companyLocale,
     required this.isLast,
+    this.isBudget = false,
   });
 
   final ExpenseSheetLogEntry entry;
   final String companyLocale;
   final bool isLast;
 
+  /// FS-1012 S3: budget wording for created / submitted / returned.
+  final bool isBudget;
+
   String _statusLabel(int statusId, AppLocalizations l10n) {
     switch (ExpenseSheetStatus.fromId(statusId)) {
       case ExpenseSheetStatus.draft:
-        return l10n.timelineStatusDraft;
+        return isBudget ? l10n.budgetsCreatedToast : l10n.timelineStatusDraft;
       case ExpenseSheetStatus.waitingForApproval:
-        return l10n.timelineStatusAwaiting;
+        return isBudget ? l10n.budgetsSubmittedToast : l10n.timelineStatusAwaiting;
       case ExpenseSheetStatus.approved:
         return l10n.timelineStatusApproved;
       case ExpenseSheetStatus.declined:
-        return l10n.timelineStatusDeclined;
+        return isBudget ? l10n.budgetsReturnedForChanges : l10n.timelineStatusDeclined;
       case null:
         return '';
     }

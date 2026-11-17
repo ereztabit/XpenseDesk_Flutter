@@ -168,4 +168,16 @@ void main() {
     expect(budgetShortName('a' * 41), '${'a' * 40}…');
     expect(budgetShortName('א' * 45), '${'א' * 40}…');
   });
+
+  test('search shows from the 5th expense', () {
+    expect(budgetShowsSearch(3), isFalse);
+    expect(budgetShowsSearch(4), isFalse);
+    expect(budgetShowsSearch(5), isTrue);
+  });
+
+  test('Activity shows once the budget was sent for approval', () {
+    expect(budgetActivityVisible([1]), isFalse, reason: 'created only');
+    expect(budgetActivityVisible([1, 2]), isTrue);
+    expect(budgetActivityVisible(const []), isFalse);
+  });
 }
