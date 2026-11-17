@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/admin_company_user_row.dart';
 import '../../theme/app_theme.dart';
 import '../action_icon_button.dart';
+import '../ltr_text.dart';
 import 'admin_company_users_table_header.dart';
 
 /// One person, with the Connect action.
@@ -122,7 +123,7 @@ class AdminCompanyUserTableRow extends StatelessWidget {
           ),
           _Cell(
             width: AdminCompanyUsersColumns.email,
-            child: Text(
+            child: LtrText(
               user.email,
               overflow: TextOverflow.ellipsis,
               style: _cellStyle,

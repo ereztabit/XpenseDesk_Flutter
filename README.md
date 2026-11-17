@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-11-17 | v1.47 | Email display and login validation fixes | Emails keep their real character order on Hebrew screens (shared LtrText); an invalid email on login shows one localized message instead of two. |
 | 2026-11-17 | v1.46 | Nav bar instant page switch | Switching pages from the sheet-type bar replaces the page instantly instead of playing the full-screen slide (seen on iPhone). |
 | 2026-11-17 | v1.45 | Sheet-type navigation bar (FS-1012 nav slice) | One sticky two-level bar under the header (Monthly / Budgets / Travel) replaces the Team / My expenses switcher; Budgets and Travel show as coming soon; "Petty Cash" is now "Budgets". |
 | 2026-11-17 | v1.44 | Sheet Review default tab fix | Sheet Review opens on Pending only while lines await a decision; a decided sheet opens on its first non-empty tab (Approved, then Declined). |

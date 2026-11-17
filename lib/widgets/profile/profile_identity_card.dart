@@ -5,6 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/gov_id_utils.dart';
 import '../form_behavior_mixin.dart' show FieldLabel;
+import '../ltr_text.dart';
 import '../../utils/phone_utils.dart';
 import '../phone_input_field.dart';
 import 'profile_section_card.dart';
@@ -79,8 +80,9 @@ class ProfileIdentityCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppTheme.border),
           ),
-          child: SelectableText(
+          child: LtrText(
             email,
+            selectable: true,
             style: const TextStyle(
               fontSize: 16,
               color: AppTheme.mutedForeground,

@@ -1,3 +1,4 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
 import 'impersonation_token_store.dart';
@@ -72,11 +73,9 @@ class AuthService {
     }
   }
 
-  /// Validates email format using regex
-  bool isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    return emailRegex.hasMatch(email);
-  }
+  /// Same verdict as [EmailInputField], so the field and the service never
+  /// disagree about what a valid address is.
+  bool _isValidEmail(String email) => EmailValidator.validate(email);
 
   /// Request a magic link.
   ///
@@ -93,7 +92,7 @@ class AuthService {
     final normalizedEmail = email.trim().toLowerCase();
 
     // Validate email format
-    if (!isValidEmail(normalizedEmail)) {
+    if (!_isValidEmail(normalizedEmail)) {
       throw const AuthException('Please enter a valid email address');
     }
 

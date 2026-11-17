@@ -5,6 +5,7 @@ import '../../theme/app_theme.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/menu_items.dart';
 import '../free_receipts/free_receipts_meter.dart';
+import '../ltr_text.dart';
 import 'menu_version_label.dart';
 
 /// Desktop menu overlay - Jira-style popover
@@ -198,7 +199,7 @@ class _DesktopMenuState extends ConsumerState<DesktopMenu>
           ),
           
           // Email - text-xs text-muted-foreground
-          Text(
+          LtrText(
             widget.userInfo.email,
             style: const TextStyle(
               fontSize: 12, // text-xs
