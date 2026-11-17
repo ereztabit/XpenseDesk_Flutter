@@ -20,9 +20,9 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [LookAndFeel][P3] (in progress) Emails reordered in RTL (`info@x.com_` shows as `_info@x.com`) -- profile plus 7 other places, fixed with a shared `LtrText`. Branch `feature/email-ltr` -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
-- [LookAndFeel][P3] (in progress) Login shows "Please enter a valid email address" twice (second copy in English) -- Continue now stops on the field's own check. Branch `feature/email-ltr` -- see docs/bugs/login-invalid-email-message-shown-twice.md
-- [Technical][P3] (in progress) AuthService email validation uses regex instead of email_validator -- same branch -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
+- [LookAndFeel][P3] Emails reordered in RTL - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
+- [LookAndFeel][P3] Login invalid-email message shown twice - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/login-invalid-email-message-shown-twice.md
+- [Technical][P3] AuthService email regex - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 
 ## Tags
 
