@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [LookAndFeel][P2] Sheet Review default tab fix - banked on develop as v1.44 (2026-11-17), awaiting ship-feature. -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -70,7 +74,6 @@ so in its spec rather than double-tagging here.
 - [ ] [Business][P2] Onboarding plan picker -- annual plan missing "2 months free (16% discount)" savings label -- see docs/bugs/onboarding-annual-plan-missing-savings-label.md
 - [ ] [LookAndFeel][P2] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] [Business][P2] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
-- [ ] [LookAndFeel][P2] Sheet Review of an approved sheet defaults to the empty Pending tab (should default to Approved) -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
 - [ ] [LookAndFeel][P2] App header overflows on mobile (375px) during a support session -- the support chip + days chip push the logo past the edge on every screen. Found in FS-1010 QA -- see docs/bugs/app-header-overflows-on-mobile-in-support-session.md
 - [ ] [LookAndFeel][P3] Login screen shows "Please enter a valid email address" twice for a malformed address -- once inline under the field, once in the red alert; two independent validators (EmailInputField's, and a regex re-check in AuthService.tryToLogin) both fire. Found in FS-1002 QA -- see docs/bugs/login-invalid-email-message-shown-twice.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md

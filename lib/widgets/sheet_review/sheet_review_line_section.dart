@@ -15,8 +15,10 @@ import 'sheet_review_line_list.dart';
 /// when the bucket has records) the card/list view toggle, then the responsive
 /// line list — or an empty message when the selected bucket has no lines.
 ///
-/// Owns the selected-tab state (default Pending). Mirrors the employee
-/// dashboard's tabs-over-list structure.
+/// Owns the selected-tab state: it opens on Pending while lines await a
+/// decision, otherwise on the first non-empty bucket
+/// ([SheetExpenseBuckets.initialTab]). Mirrors the employee dashboard's
+/// tabs-over-list structure.
 class SheetReviewLineSection extends ConsumerStatefulWidget {
   const SheetReviewLineSection({
     super.key,
@@ -29,7 +31,7 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
     this.focusTab,
   });
 
-  /// FS-1004. Set to move the selection off the default Pending bucket — used
+  /// FS-1004. Set to move the selection off the default bucket — used
   /// after a manager files a line, which is approved on entry and so lands in
   /// Approved. Each new non-null value switches the tab once; the user can
   /// still change tabs freely afterwards.
@@ -52,12 +54,14 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
 
 class _SheetReviewLineSectionState
     extends ConsumerState<SheetReviewLineSection> {
-  FilterTab _selectedTab = FilterTab.pending;
+  late FilterTab _selectedTab;
 
   @override
   void initState() {
     super.initState();
-    if (widget.focusTab != null) _selectedTab = widget.focusTab!;
+    _selectedTab = widget.focusTab ??
+        SheetExpenseBuckets.initialTab(
+            SheetExpenseBuckets.countsPerTab(widget.expenses));
   }
 
   @override
