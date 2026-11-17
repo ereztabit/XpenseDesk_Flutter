@@ -10,7 +10,8 @@ import '../utils/new_expense_launcher.dart';
 import '../widgets/employee_dashboard/my_expenses_header.dart';
 import '../widgets/dashboard_greeting.dart';
 import '../widgets/employee_dashboard/sheet_expense_empty_state.dart';
-import '../widgets/manager/manager_view_switcher.dart';
+import '../widgets/sheet_nav/sheet_nav_dev_button.dart';
+import '../widgets/sheet_nav/sheet_type_bar.dart';
 
 /// Sheet-centric employee dashboard.
 ///
@@ -74,9 +75,11 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
+        floatingActionButton: const SheetNavDevButton(),
         body: Column(
           children: [
             const AppHeader(),
+            const SheetTypeBar(),
             Expanded(
               child: RefreshableScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -84,7 +87,6 @@ class _UserDashboardScreenState extends ConsumerState<UserDashboardScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const ManagerViewSwitcher(),
                       const DashboardGreeting(),
                       const SizedBox(height: 24),
                       sheetsAsync.when(

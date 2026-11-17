@@ -20,7 +20,7 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [LookAndFeel][P2] Sheet Review default tab fix - banked on develop as v1.44 (2026-11-17), awaiting ship-feature. -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
+- [Business][P2] **FS-1012 (nav slice)** Sheet-type navigation bar - banked on develop as v1.45 (2026-11-17), awaiting ship-feature. see docs/in-progress/sheet-type-nav-spec.md
 
 ## Tags
 
@@ -75,6 +75,7 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P2] Billing -- billing screen doesn't refresh after renewing a subscription -- see docs/bugs/billing-no-refresh-after-renewing.md
 - [ ] [Business][P2] Manager Dashboard missing the top analysis widget -- see docs/bugs/manager-dashboard-missing-analysis-widget.md
 - [ ] [LookAndFeel][P2] App header overflows on mobile (375px) during a support session -- the support chip + days chip push the logo past the edge on every screen. Found in FS-1010 QA -- see docs/bugs/app-header-overflows-on-mobile-in-support-session.md
+- [ ] [LookAndFeel][P3] Sheet Approvals employee filter keeps its old-language label after a live language switch, and "All employees" is cut off at 160px on mobile -- see docs/bugs/employee-filter-label-stale-after-language-switch.md
 - [ ] [LookAndFeel][P3] Login screen shows "Please enter a valid email address" twice for a malformed address -- once inline under the field, once in the red alert; two independent validators (EmailInputField's, and a regex re-check in AuthService.tryToLogin) both fire. Found in FS-1002 QA -- see docs/bugs/login-invalid-email-message-shown-twice.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md

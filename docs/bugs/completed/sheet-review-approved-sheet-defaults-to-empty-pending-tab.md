@@ -1,6 +1,6 @@
 # Bug: Sheet Review of an approved sheet defaults to the empty Pending tab
 
-> **Status: in progress**
+> **Status: done**
 
 ## Problem
 
@@ -91,3 +91,11 @@ opening tab: Pending while it has lines, otherwise the first non-empty bucket
 `SheetReviewLineSection` uses it in `initState` unless `focusTab` is set; a tab
 the manager picks is never overridden afterwards. Unit tests:
 `test/utils/sheet_initial_tab_test.dart`.
+
+## Resolution
+
+Shipped in v1.44 (2026-11-17): fix commit 83bbf94, merged to develop as
+98974bd, released to main as 6cd8d86. `SheetExpenseBuckets.initialTab`
+(`lib/utils/sheet_utils.dart`) picks the opening tab and
+`SheetReviewLineSection` uses it unless `focusTab` is set. Verified by manual
+QA run 2.

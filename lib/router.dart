@@ -21,6 +21,7 @@ import 'screens/payments_report_screen.dart';
 import 'screens/admin_landing_screen.dart';
 import 'screens/admin_companies_screen.dart';
 import 'screens/admin_company_screen.dart';
+import 'screens/budgets_placeholder_screen.dart';
 import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
@@ -52,6 +53,19 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           companyId: companyRoute.companyId,
           initialTab: companyRoute.tab,
         ),
+      ),
+    );
+  }
+
+  // /budgets and /budgets/{id} — Budgets placeholders (FS-1012). The screen
+  // itself bounces when the page is not in the user's sheet-type tree.
+  final budgetId = AppRoutes.parseBudgetPath(uri.path);
+  if (uri.path == AppRoutes.budgets || budgetId != null) {
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) => AuthGate(
+        mode: AuthGateMode.selfExpenseAccess,
+        child: BudgetsPlaceholderScreen(budgetId: budgetId),
       ),
     );
   }

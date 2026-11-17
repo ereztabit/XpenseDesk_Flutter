@@ -21,6 +21,18 @@ class AppRoutes {
   static const String employeeNewExpense = '/employee/new-expense';
   static const String managerPayments = '/manager/payments';
 
+  // --- Budgets (FS-1012, placeholders until PC-1) ---
+  static const String budgets = '/budgets';
+  static String budgetPath(String id) => '$budgets/$id';
+
+  /// The budget id of a `/budgets/<id>` path, or null.
+  static String? parseBudgetPath(String path) {
+    final segments = Uri.parse(path).pathSegments;
+    return segments.length == 2 && segments.first == 'budgets'
+        ? segments.last
+        : null;
+  }
+
   // --- Platform admin shell (FS-1000) ---
   static const String adminLanding = '/admin';
   static const String adminCompanies = '/admin/companies';
