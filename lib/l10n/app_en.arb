@@ -901,6 +901,7 @@
   "bulkItemNoOpenCycle": "There's no open expense period to file into",
   "bulkItemExchangeRateUnavailable": "No exchange rate for this currency and date",
   "bulkItemDetailsRefused": "The receipt's details were refused (e.g. a future date)",
+  "bulkItemBudgetBalance": "More than what's left in the budget",
 
   "notifTitle": "Notifications",
   "notifEmpty": "No new notifications",
@@ -982,6 +983,8 @@
   "freeReceiptsUsedUpEmployeeRest": ". Your company's manager can upgrade to a paid plan to scan receipts with no limit.",
   "freeReceiptsUpgrade": "Upgrade now",
   "freeReceiptsNotEnough": "There aren't enough free receipts left for this batch. Remove some receipts and try again.",
+  "freeReceiptsHolderUsedUp": "The budget holder has no free receipts left.",
+  "freeReceiptsHolderNotEnough": "The budget holder doesn't have enough free receipts left for this batch. Remove some receipts and try again.",
   "companyConfigTabModules": "Modules",
   "modulesMonthly": "Monthly expenses",
   "modulesMonthlyDesc": "Monthly expense reports for every employee",

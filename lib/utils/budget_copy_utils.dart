@@ -57,8 +57,8 @@ String? budgetErrorText(AppLocalizations l10n, String? code) => switch (code) {
 };
 
 /// An expense save refused for a budget rule (FS-1012 S2a), or null for any
-/// other code. The balance refusal names what is left (data.balance), whole
-/// currency units like every Budgets amount.
+/// other code. The balance refusal names what is left (data.balance)
+/// with decimals, like the budget page header (user decision 2026-11-17).
 String? budgetExpenseErrorText(
   AppLocalizations l10n,
   String? code,
@@ -71,11 +71,14 @@ String? budgetExpenseErrorText(
       final balance = (data?['balance'] as num?)?.toDouble();
       return balance == null
           ? l10n.budgetsErrBalance
-          : '${l10n.budgetsErrBalance} ${balance.toWholeCurrency(locale, currency)}';
+          : '${l10n.budgetsErrBalance} ${balance.toCurrency(locale, currency)}';
     case 'BudgetApprovedClosed':
       return l10n.budgetsErrApproved;
     case 'BudgetExpenseCategoryNotAvailable':
       return l10n.budgetsErrCategory;
+    // FS-1012 S2b: a manager filing into a budget whose holder has none left.
+    case 'BudgetHolderFreeReceiptsUsedUp':
+      return l10n.freeReceiptsHolderUsedUp;
     default:
       return budgetErrorText(l10n, code);
   }

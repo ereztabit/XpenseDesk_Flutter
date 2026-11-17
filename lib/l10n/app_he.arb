@@ -901,6 +901,7 @@
   "bulkItemNoOpenCycle": "אין תקופת הוצאות פתוחה לתיוק הקבלה",
   "bulkItemExchangeRateUnavailable": "אין שער חליפין למטבע ולתאריך האלה",
   "bulkItemDetailsRefused": "פרטי הקבלה נדחו (למשל תאריך עתידי)",
+  "bulkItemBudgetBalance": "גבוה מהיתרה בתקציב",
 
   "notifTitle": "התראות",
   "notifEmpty": "אין התראות חדשות",
@@ -982,6 +983,8 @@
   "freeReceiptsUsedUpEmployeeRest": ", מנהל/ת המערכת יכול/ה לשדרג לתוכנית בתשלום שמאפשרת סריקת קבלות ללא הגבלה.",
   "freeReceiptsUpgrade": "שדרוג עכשיו",
   "freeReceiptsNotEnough": "לא נותרו מספיק קבלות חינם לשליחה הזו. אפשר להסיר חלק מהקבלות ולנסות שוב.",
+  "freeReceiptsHolderUsedUp": "לבעל/ת התקציב לא נותרו קבלות חינם.",
+  "freeReceiptsHolderNotEnough": "לבעל/ת התקציב לא נותרו מספיק קבלות חינם לשליחה הזו. אפשר להסיר חלק מהקבלות ולנסות שוב.",
   "companyConfigTabModules": "מודולים",
   "modulesMonthly": "הוצאות חודשיות",
   "modulesMonthlyDesc": "דוחות הוצאות חודשיים לכל העובדים",

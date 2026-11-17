@@ -56,14 +56,21 @@ class BudgetStatColumn extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 2),
-            Text(
-              value,
-              textDirection: valueDirection,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: context.screenWidth < 640 ? 14 : 15,
-                fontWeight: FontWeight.w600,
-                color: alert ? AppTheme.destructive : AppTheme.foreground,
+            // Amounts carry decimals (user decision 2026-11-17): a long one
+            // ("₪10,000.00" in a quarter of a phone) shrinks to fit rather
+            // than being cut, so no digit is ever hidden.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                value,
+                textDirection: valueDirection,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: context.screenWidth < 640 ? 14 : 15,
+                  fontWeight: FontWeight.w600,
+                  color: alert ? AppTheme.destructive : AppTheme.foreground,
+                ),
               ),
             ),
           ],

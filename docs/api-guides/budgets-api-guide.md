@@ -127,6 +127,39 @@ in the company currency. Lowering an amount is never refused.
 | `BudgetExpenseCategoryNotAvailable` | 400 | The category is not an active Budgets category |
 | `BudgetBalanceExceeded` | 409 | Below zero and not allowed; `data.balance` |
 
+## S2b - bulk upload into a budget, and free receipts
+
+**Bulk.** `POST /api/bulk-uploads` takes an optional `budgetId` next to
+`files`. Every receipt of the batch is filed into that budget instead of the
+sender's Monthly sheet, exactly as a single `POST /api/expenses` with
+`expenseSheetId` would. Staging (`POST /api/bulk-uploads/files`) and the batch
+list (`GET /api/bulk-uploads`) are unchanged; the batch belongs to its sender.
+
+```json
+{ "files": [ { "stagedFileId": "...", "originalFileName": "a.jpg" } ], "budgetId": "3f2a..." }
+```
+
+The batch is checked whole before anything is queued - refused, never cut
+short: Budgets usable (403 `BudgetsNotEnabled`), the budget exists (404
+`BudgetNotFound`), the holder or a manager (403 `BudgetAccessDenied`), not
+approved (409 `BudgetApprovedClosed`), then free receipts (below). Per receipt,
+a budget rule that refuses the line (balance, closed or deleted meanwhile) ends
+that file `Unreadable` with the budget code as its `failureCode` - e.g.
+`BudgetBalanceExceeded` - and no expense. A receipt read only in part is filed
+flagged Action Required on the budget, as on Monthly.
+
+**Free receipts.** A budget's expenses are owned by its holder, so they use the
+**holder's** free receipts, whoever files them - a single expense and a batch
+alike; the files of a batch still being read count against the holder too.
+`GET /api/users/me/free-receipts` is unchanged (the caller's own). When the
+holder is the caller the refusals are the usual `FreeReceiptsUsedUp` /
+`FreeReceiptsNotEnough`; when a manager files into someone else's budget:
+
+| Code | Status | When |
+|---|---|---|
+| `BudgetHolderFreeReceiptsUsedUp` | 403 | The holder has no free receipts left; `data.freeReceiptsLeft` = 0 |
+| `BudgetHolderFreeReceiptsNotEnough` | 403 | The batch has more files than the holder has left; `data.freeReceiptsLeft` = the holder's |
+
 ## Monthly is untouched
 
 Budget sheets have no cycle and never appear in any Monthly call (sheets,

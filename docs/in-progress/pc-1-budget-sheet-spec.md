@@ -111,8 +111,12 @@ User decisions during S1 build / QA (2026-11-17) - they override the mock:
 - Budget names are unique per company, any status (only a deleted budget
   frees a name); duplicate = its own error (`BudgetNameAlreadyExists`).
 - Open budget badge reads "Draft / טיוטה", same as Monthly.
-- No decimals anywhere in Budgets: every amount in whole currency units
-  (`toWholeCurrency`), list, table, section totals, reason line and nav too.
+- No decimals in the Budgets overviews: whole currency units
+  (`toWholeCurrency`) on the dashboard, list, table, section totals, reason
+  line and nav. **The budget page shows exact amounts** (user decision
+  2026-11-17, replaces "no decimals anywhere"): the header's Budget / Spent /
+  Left-or-Over and the balance refusal ("Left: ₪2,323.10") use `toCurrency`,
+  like the expense lines under them.
 - The budget page header strip shows the currency symbol, and the header shows
   the holder's name.
 - The "Needs attention" toggle is shown only when at least one budget needs
@@ -141,6 +145,18 @@ Two parts, each with its own CR + QA, on the S1 branch (user decision
   categories; back to budget; negative-balance refusal; employees see their
   own budgets in the nav.
 - **S2b - bulk upload:** bulk upload from the budget page lands in it.
+  Aligned with My expenses, nothing new (user decision 2026-11-17): mobile
+  "+ New Expense" -> the same choice sheet, "Several receipts" now live; desktop
+  gets the My expenses drop strip, free-receipts meter / used-up callout and
+  progress strip under the header card - the block is lifted out of
+  `MyExpensesHeader` into `BulkUploadEntryArea` and used by both pages. The
+  bulk dialog is reused as is, with the budget id passed to the send. Filed
+  receipts refresh the budget's list and Spent / Left like My expenses.
+  Free receipts: a budget's expenses use the holder's (single and bulk);
+  a manager refused for the holder sees "The budget holder has no free
+  receipts left" / "...doesn't have enough..." (new captions, below). A
+  receipt the budget refuses (over the balance) shows "More than what's left
+  in the budget" in the notifications panel.
 
 Nav (user decision 2026-11-17): the sheet-type nav opens on level 1 (the types
 row: Monthly expenses / Budgets) on every landing page; level 2 (a type's
@@ -228,7 +244,7 @@ are marked **changed**; the reason is in the last column. ARB keys get a
 | B4 search | Search merchant or amount | חיפוש לפי ספק או סכום | |
 | B4 view toggle | View | צפייה | existing key |
 | B4 empty list | No expenses in this budget yet / Add a receipt to start using the budget. | עדיין אין הוצאות בתקציב / אפשר להוסיף קבלה כדי להתחיל להשתמש בתקציב. | **changed** from "Welcome aboard! / Click…" - a first-login greeting and an imperative Hebrew sentence on a budget page |
-| B4 bar | New Expense · Submit {amount} for approval | הוצאה חדשה · הגשת {amount} לאישור | **changed** (user decision 2026-11-17): the My expenses "+ New Expense" button as is (primary, existing `newExpense` key) - top-right of the header card on desktop, sticky bar on mobile; on mobile it opens the same One receipt / Several receipts sheet, "Several receipts" dimmed as "Coming soon" until S2b |
+| B4 bar | New Expense · Submit {amount} for approval | הוצאה חדשה · הגשת {amount} לאישור | **changed** (user decision 2026-11-17): the My expenses "+ New Expense" button as is (primary, existing `newExpense` key) - top-right of the header card on desktop, sticky bar on mobile; on mobile it opens the same One receipt / Several receipts sheet (Several receipts live since S2b) |
 | B4 submit toast | Submitted for approval | הוגש לאישור | |
 | B4 Activity | Activity · Budget created · Submitted for approval · Returned for changes · Approved | פעולות · התקציב נוצר · הוגש לאישור · הוחזר לתיקונים · אושר | Top-up event comes with PC-2 |
 | Editor back | Back to budget | חזרה לתקציב | |
@@ -248,6 +264,9 @@ are marked **changed**; the reason is in the last column. ARB keys get a
 | Expense takes the balance below zero | This expense is more than what's left in the budget. Left: {balance} | ההוצאה גבוהה מהיתרה בתקציב. נותרו: {balance} |
 | Category not in the Budgets module | This category isn't available for budgets | הקטגוריה הזו אינה זמינה לתקציבים |
 | Budgets not enabled | Budgets aren't enabled for your company | תקציבים אינם פעילים בחברה שלך |
+| Manager files into a budget whose holder has no free receipts left (S2b; caption added in build, not yet reviewed) | The budget holder has no free receipts left. | לבעל/ת התקציב לא נותרו קבלות חינם. |
+| Manager's batch bigger than the holder's free receipts left (S2b; not yet reviewed) | The budget holder doesn't have enough free receipts left for this batch. Remove some receipts and try again. | לבעל/ת התקציב לא נותרו מספיק קבלות חינם לשליחה הזו. אפשר להסיר חלק מהקבלות ולנסות שוב. |
+| A batch receipt over the balance, in the notifications panel (S2b; not yet reviewed) | More than what's left in the budget | גבוה מהיתרה בתקציב |
 | Submit not allowed in this status | This budget can't be submitted right now | אי אפשר להגיש את התקציב כרגע |
 | Return without a reason | Write why the budget is being returned | יש לכתוב למה התקציב מוחזר |
 | Not the holder / no access | You don't have access to this budget | אין לך גישה לתקציב הזה |
@@ -355,3 +374,40 @@ RTL, desktop table.
 
 Result: 3 findings - 3 fixed. My expenses' sheet still offers Several receipts;
 no console errors.
+
+### Run 5 - 2026-11-17 (S2b - bulk upload into a budget)
+- Branch / commit: feature/pc1-s1-budget-exists @ uncommitted (S2b on top of a43c189)
+- QA company: XpenseDesk Demo Company; manager m@xpensedesk.com
+- Coverage: manager 375px EN (employee's budget QA Events: New Expense ->
+  Several receipts -> 2 receipts sent, filed live into the budget, owned by
+  the employee); manager desktop EN/HE (own budget QA Mine: drop strip ->
+  1 receipt over the balance refused, notifications panel); My expenses
+  desktop regression (drop strip unchanged).
+- Receipts: canvas-drawn, handed to the file picker (patched `click()`); the
+  real AI read them. The over-balance case switched "allow negative balance"
+  off for the test; it was on and is restored.
+- Data created: QA Events #1001 - Cafe Lamed 38, Office Depot IL 74.90 (bulk,
+  by the manager, owned by QA Employee).
+- Not covered in the app: the holder free-receipt refusals - the Demo company
+  is on a paid plan (no limit); covered by `BudgetFreeReceipts.feature` (11
+  scenarios). Employee lanes - same widgets and calls as the manager's own
+  budget.
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Manager desktop | EN/HE | Notifications | Major | A receipt the budget refused (over the balance) read "Couldn't read: heater_receipt.png" - the receipt was read fine | Fixed - listed under its reason: "More than what's left in the budget: heater_receipt.png" / "גבוה מהיתרה בתקציב: ..." |
+
+Result: 1 finding - fixed. Bulk into a budget files every receipt there, Spent
+/ Left and the list refresh live, no console errors.
+
+### Run 6 - 2026-11-17 (budget page amounts with decimals)
+- Branch / commit: feature/pc1-s1-budget-exists @ uncommitted
+- Coverage: manager 375px EN, budget page QA Events (real figures, then a
+  forced 5-digit response in memory: ₪12,345.67 / ₪10,176.90 / ₪2,168.77).
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Manager mobile | EN | Budget page | Major | Header rounded to whole shekels (₪177 spent of lines summing ₪176.90) (user) | Fixed - exact amounts, decimals shown |
+| 2 | Manager mobile | EN | Budget page | Minor | A long amount with decimals would be cut with "…" in a quarter-width column | Fixed - the value shrinks to fit, no digit hidden |
+
+Result: 2 findings - 2 fixed.

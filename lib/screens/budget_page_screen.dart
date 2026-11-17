@@ -15,6 +15,7 @@ import '../widgets/budgets/budget_expenses_section.dart';
 import '../widgets/budgets/budget_header_card.dart';
 import '../widgets/budgets/budget_new_expense_button.dart';
 import '../widgets/budgets/budgets_gate.dart';
+import '../widgets/bulk_upload/bulk_upload_entry_area.dart';
 import '../widgets/sheet_nav/sheet_type_bar.dart';
 
 /// B4 budget page (`/budgets/<id>`) - My expenses in budget mode: header card,
@@ -125,6 +126,10 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                                   )
                                 : null,
                           ),
+                          // S2b: the My expenses drop strip / free-receipts
+                          // callout / progress strip, sending into this budget.
+                          if (editable)
+                            BulkUploadEntryArea(enabled: canAdd, budgetId: b.budgetId),
                           const SizedBox(height: 16),
                           BudgetExpensesSection(
                             budgetId: b.budgetId,

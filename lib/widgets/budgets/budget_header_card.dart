@@ -20,7 +20,8 @@ final String _pdi = String.fromCharCode(0x2069);
 /// genuinely new card: `SheetReviewHeaderCard`'s card layout with
 /// `CounterCard`'s label / value typography. Name + #number; the holder; status
 /// badge + "Ends {date}"; Budget / Spent / Left-or-Over budget / Ends-or-Overdue
-/// in whole currency units; a 4px breach [UsageBar] flush on the bottom edge.
+// with decimals (user decision 2026-11-17: the budget page shows exact
+/// amounts); a 4px breach [UsageBar] flush on the bottom edge.
 /// The holder line and the currency symbol on the strip are user decisions
 /// (2026-11-17) on top of the mock.
 class BudgetHeaderCard extends ConsumerWidget {
@@ -127,16 +128,16 @@ class BudgetHeaderCard extends ConsumerWidget {
             children: [
               BudgetStatColumn(
                 label: l10n.budgetsColBudget,
-                value: b.budgetAmount.toWholeCurrency(locale, b.currencyCode),
+                value: b.budgetAmount.toCurrency(locale, b.currencyCode),
               ),
               BudgetStatColumn(
                 label: l10n.budgetsSpent,
-                value: b.spentAmount.toWholeCurrency(locale, b.currencyCode),
+                value: b.spentAmount.toCurrency(locale, b.currencyCode),
               ),
               BudgetStatColumn(
                 label: over ? l10n.budgetsOverBudget : l10n.budgetsLeft,
                 icon: over ? Icons.trending_down : null,
-                value: b.balance.abs().toWholeCurrency(locale, b.currencyCode),
+                value: b.balance.abs().toCurrency(locale, b.currencyCode),
                 alert: over,
               ),
               BudgetStatColumn(

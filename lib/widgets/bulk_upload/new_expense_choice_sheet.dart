@@ -12,21 +12,14 @@ enum NewExpenseChoice { oneReceipt, severalReceipts }
 /// Mobile "New expense" choice sheet (UI/UX guide §2.2): one receipt (today's
 /// flow) or several (the bulk sheet). Pops with the choice, or null on Cancel.
 class NewExpenseChoiceSheet extends StatelessWidget {
-  const NewExpenseChoiceSheet({super.key, this.severalEnabled = true});
+  const NewExpenseChoiceSheet({super.key});
 
-  /// FS-1012: false from a budget page - "Several receipts" shows, dimmed,
-  /// with "Coming soon" until bulk into a budget ships (S2b).
-  final bool severalEnabled;
-
-  static Future<NewExpenseChoice?> show(
-    BuildContext context, {
-    bool severalEnabled = true,
-  }) {
+  static Future<NewExpenseChoice?> show(BuildContext context) {
     return showModalBottomSheet<NewExpenseChoice>(
       context: context,
       useSafeArea: true,
       backgroundColor: AppTheme.card,
-      builder: (_) => NewExpenseChoiceSheet(severalEnabled: severalEnabled),
+      builder: (_) => const NewExpenseChoiceSheet(),
     );
   }
 
@@ -48,20 +41,16 @@ class NewExpenseChoiceSheet extends StatelessWidget {
             icon: Icons.receipt_long_outlined,
             title: l10n.bulkUploadOneReceipt,
             description: l10n.bulkUploadOneReceiptDesc,
-            onTap: () => Navigator.of(context).pop(NewExpenseChoice.oneReceipt),
+            onTap: () =>
+                Navigator.of(context).pop(NewExpenseChoice.oneReceipt),
           ),
           const SizedBox(height: 12),
           NewExpenseChoiceCard(
             icon: Icons.upload_file,
             title: l10n.bulkUploadSeveralReceipts,
-            description: severalEnabled
-                ? l10n.bulkUploadSeveralReceiptsDesc
-                : l10n.sheetNavComingSoon,
-            onTap: severalEnabled
-                ? () => Navigator.of(
-                    context,
-                  ).pop(NewExpenseChoice.severalReceipts)
-                : null,
+            description: l10n.bulkUploadSeveralReceiptsDesc,
+            onTap: () =>
+                Navigator.of(context).pop(NewExpenseChoice.severalReceipts),
           ),
           // FS-1007 S3: free receipts on trial, full width (UI/UX guide §3.2)
           const FreeReceiptsMeter(padding: EdgeInsets.only(top: 12)),

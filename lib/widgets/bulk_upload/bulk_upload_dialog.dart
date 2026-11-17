@@ -24,12 +24,15 @@ import 'confirm_choice_dialog.dart';
 
 /// Opens the bulk upload container — a centred dialog on desktop, a
 /// full-height bottom sheet on mobile (UI/UX guide §1.1, §3.1).
-/// [initialFiles] come from a drop on the page strip (§2.1).
+/// [initialFiles] come from a drop on the page strip (§2.1). [budgetId]
+/// (FS-1012 S2b) sends the batch into that budget instead of Monthly.
 Future<void> showBulkUploadDialog(
   BuildContext context, {
   List<web.File> initialFiles = const [],
+  String? budgetId,
 }) {
-  final dialog = BulkUploadDialog(initialFiles: initialFiles);
+  final dialog =
+      BulkUploadDialog(initialFiles: initialFiles, budgetId: budgetId);
   if (context.isMobile) {
     return showModalBottomSheet<void>(
       context: context,
@@ -47,9 +50,14 @@ Future<void> showBulkUploadDialog(
 /// the thanks auto-close and the flag-off close. State lives in
 /// [bulkUploadDialogProvider]; every section is its own widget.
 class BulkUploadDialog extends ConsumerStatefulWidget {
-  const BulkUploadDialog({super.key, this.initialFiles = const []});
+  const BulkUploadDialog({
+    super.key,
+    this.initialFiles = const [],
+    this.budgetId,
+  });
 
   final List<web.File> initialFiles;
+  final String? budgetId;
 
   @override
   ConsumerState<BulkUploadDialog> createState() => _BulkUploadDialogState();
@@ -77,6 +85,7 @@ class _BulkUploadDialogState extends ConsumerState<BulkUploadDialog> {
   void initState() {
     super.initState();
     web.window.addEventListener('beforeunload', _beforeUnload);
+    _notifier.setBudget(widget.budgetId);
     if (widget.initialFiles.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _notifier.addFiles(widget.initialFiles);
