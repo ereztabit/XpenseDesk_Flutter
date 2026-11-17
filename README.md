@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-11-17 | v1.45 | Sheet-type navigation bar (FS-1012 nav slice) | One sticky two-level bar under the header (Monthly / Budgets / Travel) replaces the Team / My expenses switcher; Budgets and Travel show as coming soon; "Petty Cash" is now "Budgets". |
 | 2026-11-17 | v1.44 | Sheet Review default tab fix | Sheet Review opens on Pending only while lines await a decision; a decided sheet opens on its first non-empty tab (Approved, then Declined). |
 | 2026-11-16 | v1.43 | Admin switch hover fix | Admin Configuration switches keep their thumb on hover and show disabled while another flag saves (reuses ModuleSwitch). |
 | 2026-11-16 | v1.42 | Module flags (FS-1011) | Platform admin turns the Petty Cash and Travel modules on per company (off by default); a hidden module and its categories disappear from company settings. |
