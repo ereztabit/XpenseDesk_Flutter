@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [LookAndFeel][P2] Sheet Review default tab fix - banked on develop as v1.44 (2026-11-17), awaiting ship-feature. -- see docs/bugs/sheet-review-approved-sheet-defaults-to-empty-pending-tab.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
