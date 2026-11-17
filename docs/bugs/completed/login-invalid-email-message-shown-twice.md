@@ -1,6 +1,6 @@
 # Bug: "Please enter a valid email address" is shown twice on the login screen
 
-> **Status: in progress** — pre-existing on `develop`, found during FS-1002 QA
+> **Status: done** — pre-existing on `develop`, found during FS-1002 QA
 > (`completed/fs-1002-manual-qa.md`, check 12). Not caused by that mission.
 
 ## Problem
@@ -78,3 +78,9 @@ auth-service-email-regex-violates-validator-rule.md.
 | Hebrew, same value + Enter | pass - one message |
 | Switch to English, Continue | pass - one message, in English |
 | Valid known address `m@xpensedesk.com` | pass - magic link followed, lands on /dashboard |
+
+## Resolution
+
+Shipped in v1.47 (release 8c39ad1, 2026-11-17). `login_card.dart` `_handleLogin`
+runs the form validator first and returns on failure, so the format error stays
+inline and localized; the ErrorAlert only carries server answers. Commit 7351cfc.

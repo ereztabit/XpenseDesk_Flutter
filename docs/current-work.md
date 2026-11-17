@@ -18,12 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [LookAndFeel][P3] Emails reordered in RTL - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
-- [LookAndFeel][P3] Login invalid-email message shown twice - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/login-invalid-email-message-shown-twice.md
-- [Technical][P3] AuthService email regex - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
