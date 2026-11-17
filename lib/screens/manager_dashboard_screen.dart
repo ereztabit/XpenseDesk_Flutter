@@ -9,7 +9,8 @@ import '../widgets/manager_dashboard/invite_block.dart';
 import '../widgets/manager_dashboard/sheet_counter_cards.dart';
 import '../widgets/manager_dashboard/spend_overview_card.dart';
 import '../widgets/manager_dashboard/teammates_strip.dart';
-import '../widgets/manager/manager_view_switcher.dart';
+import '../widgets/sheet_nav/sheet_nav_dev_button.dart';
+import '../widgets/sheet_nav/sheet_type_bar.dart';
 
 /// Manager Dashboard — the manager's post-login landing screen.
 ///
@@ -58,9 +59,11 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
     return buildWithNavigationGuard(
       child: Scaffold(
         backgroundColor: AppTheme.background,
+        floatingActionButton: const SheetNavDevButton(),
         body: Column(
           children: [
             const AppHeader(),
+            const SheetTypeBar(),
             Expanded(
               child: RefreshableScrollView(
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -68,7 +71,6 @@ class _ManagerDashboardScreenState extends ConsumerState<ManagerDashboardScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const ManagerViewSwitcher(),
                       const DashboardGreeting(),
                       const SizedBox(height: 24),
                       dashboardAsync.when(
