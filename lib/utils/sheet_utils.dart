@@ -151,6 +151,20 @@ class SheetExpenseBuckets {
     };
   }
 
+  /// The tab Sheet Review opens on: Pending while lines still await a
+  /// decision, otherwise the first non-empty bucket (Approved, then
+  /// Declined), so a decided sheet never opens on an empty list.
+  static FilterTab initialTab(Map<FilterTab, int> counts) {
+    for (final tab in const [
+      FilterTab.pending,
+      FilterTab.approved,
+      FilterTab.rejected,
+    ]) {
+      if ((counts[tab] ?? 0) > 0) return tab;
+    }
+    return FilterTab.pending;
+  }
+
   /// True when approving the expense identified by [targetExpenseId] would leave
   /// every expense on the sheet Approved — i.e. the backend will auto-finalize
   /// the sheet to Approved (`proc_EvaluateExpenseSheet`). Used to warn the
