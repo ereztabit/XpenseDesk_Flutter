@@ -1,6 +1,12 @@
 # Bug: Profile email is reordered in Hebrew (RTL)
 
-> **Status: new**
+> **Status: in progress**
+>
+> Scope widened 2026-11-17: the same reorder hits every place an email is shown
+> as text, so all 8 are fixed together through a shared `LtrText` widget:
+> profile field, mobile menu, desktop menu, User Management list, admin company
+> users table, Payments email column, Sheet Review header, onboarding Microsoft
+> identity card.
 
 Found in the manual QA dry run (2026-11-15, lane A - manager, desktop) on the
 XpenseDesk Demo Company.
@@ -31,3 +37,21 @@ In `lib/widgets/profile/profile_identity_card.dart`, give the email
 to the start, so it still sits on the right in RTL. Look for other places that
 render a raw email in RTL screens (users list, admin users list, payments) and
 fix them the same way.
+
+## Manual QA (2026-11-17, branch feature/email-ltr)
+
+Local dev, Hebrew UI, XpenseDesk Demo Company, user `info@bambayadigital.com_`
+(Admin User, connected from the admin panel; admin table as platform admin).
+
+| # | Place | Width | Result |
+|---|-------|-------|--------|
+| 1 | Profile email field | 646 | pass - `info@bambayadigital.com_`, right-aligned |
+| 2 | Mobile menu, under the name | 646 | pass |
+| 3 | Desktop user menu | 800 | pass - centred |
+| 4 | User Management list | 646 | pass |
+| 5 | Admin company users table | 467 | pass - aligned under the column header |
+| 6 | Payments email column | 800 | pass |
+| 7 | Sheet Review header | 800 | pass |
+| 8 | Onboarding Microsoft identity card | - | not reachable without a real Microsoft sign-in; covered by `test/widgets/ltr_text_test.dart` |
+
+Before the fix, 1 and 2 were reproduced showing `_info@bambayadigital.com`.

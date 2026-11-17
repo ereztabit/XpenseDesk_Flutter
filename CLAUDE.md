@@ -527,6 +527,7 @@ CR rule, because all six of them only inspect the file you wrote.
 | `RouteRedirector` | `route_redirector.dart` | Spinner + replace the route next frame |
 | `LastActionConfirmDialog` | `last_action_confirm_dialog.dart` | Confirm before an irreversible per-expense action |
 | `AiBadge` | `ai_badge.dart` | The `'AI'` initialism — never copy the literal |
+| `LtrText` | `ltr_text.dart` | Any email (phone, URL) shown as text — always left-to-right, aligned with the page. A plain `Text` reorders `a@b.com_` in Hebrew |
 
 **Reusing a shell means adopting its constraints on your content, not just its
 chrome.** Read the widget's doc comment for what it *requires*, not only what it

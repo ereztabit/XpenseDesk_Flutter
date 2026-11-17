@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../utils/pwa_utils.dart';
+import '../widgets/ltr_text.dart';
 import 'user_info.dart';
 
 /// Context buckets for the navigation menu. Items are ordered by group and the
@@ -159,7 +160,7 @@ class MenuItems {
         ),
         if (userInfo?.fullName != null) ...[
           const SizedBox(height: 4),
-          Text(
+          LtrText(
             email,
             style: TextStyle(
               fontSize: 14,

@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [LookAndFeel][P3] (in progress) Emails reordered in RTL (`info@x.com_` shows as `_info@x.com`) -- profile plus 7 other places, fixed with a shared `LtrText`. Branch `feature/email-ltr` -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -83,7 +87,6 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Users module back button looks different from the rest -- see docs/bugs/users-screen-back-button-inconsistent.md
 - [ ] [LookAndFeel][P3] Users module looks too dense on mobile -- see docs/bugs/users-screen-mobile-layout-too-dense.md
 - [ ] [LookAndFeel][P2] Profile "Name is required" stays in English after switching to Hebrew (validator text is not re-run on locale change) -- see docs/bugs/profile-name-error-stays-english-after-language-switch.md
-- [ ] [LookAndFeel][P3] Profile email reordered in RTL (`info@x.com_` shows as `_info@x.com`) -- email not forced LTR -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
 - [ ] [Technical][P3] AuthService email validation uses regex instead of email_validator package -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
 - [ ] [Technical][P3] flutter analyze reports 9 pre-existing info-level lints (4 dart:html deprecations also block wasm) -- see docs/bugs/flutter-analyze-info-lints-cleanup.md
 - [ ] [Technical][P3] Startup frame throws a RenderFlex overflow at a 1x1 viewport -- debug-only console noise on all 17 screens, no user impact; real fix is a shared AppScaffold -- see docs/bugs/startup-frame-renderflex-overflow-at-1x1-viewport.md

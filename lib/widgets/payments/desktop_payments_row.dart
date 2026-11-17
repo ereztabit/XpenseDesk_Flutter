@@ -5,6 +5,7 @@ import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../app_button.dart';
+import '../ltr_text.dart';
 import 'payment_status_badge.dart';
 import 'payments_table_columns.dart';
 
@@ -108,7 +109,7 @@ class DesktopPaymentsRow extends StatelessWidget {
               row.employeeEmail != null
                   ? Tooltip(
                       message: row.employeeEmail!,
-                      child: Text(row.employeeEmail!,
+                      child: LtrText(row.employeeEmail!,
                           style: _mutedCellStyle,
                           overflow: TextOverflow.ellipsis),
                     )
