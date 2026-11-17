@@ -1,7 +1,8 @@
 /// Request DTO for PUT /api/expenses/{expenseId}.
 class UpdateExpenseRequest {
   final String expenseDate;
-  final int categoryId;
+  /// Null = the server files it under the module's "Other" (FS-1012 budgets).
+  final int? categoryId;
   final String? receiptRef;
   final String? merchantName;
   final String? note;

@@ -15,7 +15,7 @@ Future<void> startNewBudget(BuildContext context, WidgetRef ref) async {
   final budget = await NewBudgetDialog.show(context);
   if (budget == null || !context.mounted) return;
 
-  ref.invalidate(budgetsProvider);
+  invalidateBudgetReads(ref);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(l10n.budgetsCreatedToast)),
   );

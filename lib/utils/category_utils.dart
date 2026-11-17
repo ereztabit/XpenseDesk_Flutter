@@ -36,16 +36,18 @@ List<CompanyCategory> categoriesOfModule(
   return own;
 }
 
-/// The expense-form picker list: active Monthly categories, plus the
+/// The expense-form picker list: active categories of [module] (Monthly by
+/// default; FS-1012 budgets pass PettyCash), plus the
 /// expense's current one ([keepCategoryId]) even if it was deactivated since.
 List<CompanyCategory> expenseCategoryChoices(
   List<CompanyCategory> categories,
   String lang, {
   int? keepCategoryId,
+  CompanyModuleKey module = CompanyModuleKey.monthly,
 }) {
   return categoriesOfModule(
     categories,
-    CompanyModuleKey.monthly,
+    module,
     lang,
   ).where((c) => c.isActive || c.categoryId == keepCategoryId).toList();
 }
@@ -69,18 +71,22 @@ String expenseCategoryLabel(
 }
 
 /// Maps a category id from the AI receipt scan (which may still be a legacy
-/// 1-6 id) to one of the company's active Monthly categories. The default
+/// 1-6 id) to one of the company's active categories of [module] (Monthly by
+/// default; a budget takes only a direct id match - legacy ids are Monthly). The default
 /// copies keep the legacy Hebrew/English names, so a renamed one is missed —
 /// null then, and the expense files under the fallback category.
 int? resolveScannedCategoryId(
   List<CompanyCategory> categories,
-  int? scannedId,
+  int? scannedId, {
+  CompanyModuleKey module = CompanyModuleKey.monthly,
+}
 ) {
   if (scannedId == null) return null;
   final active = categories
-      .where((c) => c.module == CompanyModuleKey.monthly && c.isActive)
+      .where((c) => c.module == module && c.isActive)
       .toList();
   if (active.any((c) => c.categoryId == scannedId)) return scannedId;
+  if (module != CompanyModuleKey.monthly) return null;
   final legacy = ExpenseCategory.fromId(scannedId);
   if (legacy == null) return null;
   for (final c in active) {
@@ -99,4 +105,14 @@ int? fallbackCategoryId(List<CompanyCategory> categories) {
     }
   }
   return null;
+}
+
+/// FS-1012: the module an existing expense's category belongs to - PettyCash
+/// for a budget line, Monthly otherwise (and for legacy / unknown ids). Lets
+/// the expense detail pick the right category list without knowing the sheet.
+CompanyModuleKey moduleOfCategory(List<CompanyCategory> categories, int categoryId) {
+  for (final c in categories) {
+    if (c.categoryId == categoryId) return c.module;
+  }
+  return CompanyModuleKey.monthly;
 }

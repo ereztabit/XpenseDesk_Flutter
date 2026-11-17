@@ -77,7 +77,7 @@ All paths under `lib/`.
 | B4 header card (stat strip) | **New** `BudgetHeaderCard` - copies `widgets/sheet_review/sheet_review_header_card.dart:SheetReviewHeaderCard` layout + `CounterCard` label/value typography | The one genuinely new card |
 | B4 status strip (Awaiting / Returned) | `DeclinedSheetBanner` (employee dashboard) | Add an awaiting (warning) variant; returned variant shows date + reason |
 | B4 search | `AdminSearchField` | Merchant-or-amount filter on the loaded list |
-| B4 bottom bar (+ Add expenses, green Submit) | `widgets/sheet_review/sheet_review_actions.dart:SheetReviewActions` + `SheetReviewStickyActionBar` (inline desktop, sticky mobile) | Budget actions: Add expenses (outline/normal) + Submit (success). Monthly has no submit button today (it resubmits automatically) |
+| B4 bottom bar (+ Add expenses, green Submit) | `widgets/sheet_review/sheet_review_actions.dart:SheetReviewActions` + `SheetReviewStickyActionBar` (inline desktop, sticky mobile) | Budget actions: the My expenses "+ New Expense" button (primary; header top-right on desktop, sticky bar on mobile) + Submit (success). Monthly has no submit button today (it resubmits automatically) |
 | B4 add expenses | `utils/new_expense_launcher.dart:startNewExpense`, `screens/new_expense_screen.dart(targetSheetId)`, `widgets/bulk_upload/bulk_upload_dialog.dart` | Target the budget sheet (single + bulk) |
 | B4 Activity card | `widgets/sheet_review/sheet_activity_timeline.dart:SheetActivityTimeline(log)` | none - it already hides while the log is empty |
 | Expense detail / new expense back | `screens/employee_expense_detail_screen.dart`, `new_expense_screen.dart`, `form_behavior_mixin.dart:handleBackNavigation` | A return-target parameter so budget expenses go back to `/budgets/<id>` (label "Back to budget"); nav bar hidden on editor screens |
@@ -129,9 +129,23 @@ User decisions during S1 build / QA (2026-11-17) - they override the mock:
 ### S2 - Spend from a budget (single + bulk)
 
 Builds: budget page = My expenses in budget mode (header card complete,
-search, expense list, bottom bar with "+ Add expenses"); new expense and bulk
+search, expense list, "+ New Expense"); new expense and bulk
 upload target the budget; back-to-budget from the editor; nav bar hidden in the
-editor; negative-balance refusal message; someone else's budget read-only.
+editor; negative-balance refusal message. A manager can add to any holder's
+budget (user decision 2026-11-17, replaces "someone else's budget read-only").
+
+Two parts, each with its own CR + QA, on the S1 branch (user decision
+2026-11-17):
+- **S2a - single expenses:** budget page with its expense list, search and
+  bottom bar; single new expense, edit and delete on a budget; Budgets-module
+  categories; back to budget; negative-balance refusal; employees see their
+  own budgets in the nav.
+- **S2b - bulk upload:** bulk upload from the budget page lands in it.
+
+Nav (user decision 2026-11-17): the sheet-type nav opens on level 1 (the types
+row: Monthly expenses / Budgets) on every landing page; level 2 (a type's
+pages) shows only after the user picks a type there, and "back" returns to
+level 1.
 
 Manual QA:
 - Add single and bulk expenses to a budget; balance, Spent, Left / Over budget
@@ -140,7 +154,9 @@ Manual QA:
   shown; editing an amount upward likewise.
 - Category picker shows only the Budgets module's active categories.
 - Back / save / delete from an expense returns to the budget.
-- Manager opens another holder's budget from the list: read-only, no bar.
+- Manager opens another holder's budget from the list: "Back" to the list, and
+  can add / edit / delete its expenses (user decision 2026-11-17). Another
+  employee cannot reach it.
 - Monthly: new expense and bulk upload from My expenses still land on Monthly.
 
 ### S3 - Submit and review
@@ -194,7 +210,7 @@ are marked **changed**; the reason is in the last column. ARB keys get a
 | B2 search | Search budget, #number or employee | חיפוש | **changed** "#ID" -> "#number"; Hebrew shortened to "חיפוש" (user decision 2026-11-17, the full hint was cut at 375px) |
 | B2 toggle | Needs attention | דורשים טיפול | |
 | B2 sections | Awaiting approval · Returned · Open | ממתינים לאישור · הוחזרו · פתוחים | |
-| B2 columns | # · Budget name · Employee · Status · Budget · Spent · Balance · Used % · End date | # · שם התקציב · עובד · סטטוס · תקציב · נוצל · יתרה · % ניצול · תאריך סיום | |
+| B2 columns | # · Budget name · Employee · Budget · Spent · Balance · End date | # · שם התקציב · עובד · תקציב · נוצל · יתרה · תאריך סיום | **changed** (user decision 2026-11-17): Used % rides in the Spent cell ("₪300  30%"), no column of its own; name cut at 40 characters + "…", full name in a tooltip; columns sized for amounts up to 10,000. Status column dropped (user decision 2026-11-17: each section names the status; the badge overflowed the card) |
 | B2 reason row | Overdue {n} days · Over by {amount} | באיחור {n} ימים · חריגה של {amount} | **changed** "{amount} over" -> "Over by {amount}" so both languages read value-last (no placeholders) |
 | B2 empty section | No budgets | אין תקציבים | |
 | B2 no match | No budgets match · Clear search and filter | לא נמצאו תקציבים תואמים · ניקוי חיפוש וסינון | |
@@ -212,7 +228,7 @@ are marked **changed**; the reason is in the last column. ARB keys get a
 | B4 search | Search merchant or amount | חיפוש לפי ספק או סכום | |
 | B4 view toggle | View | צפייה | existing key |
 | B4 empty list | No expenses in this budget yet / Add a receipt to start using the budget. | עדיין אין הוצאות בתקציב / אפשר להוסיף קבלה כדי להתחיל להשתמש בתקציב. | **changed** from "Welcome aboard! / Click…" - a first-login greeting and an imperative Hebrew sentence on a budget page |
-| B4 bar | Add expenses · Submit {amount} for approval | הוספת הוצאות · הגשת {amount} לאישור | |
+| B4 bar | New Expense · Submit {amount} for approval | הוצאה חדשה · הגשת {amount} לאישור | **changed** (user decision 2026-11-17): the My expenses "+ New Expense" button as is (primary, existing `newExpense` key) - top-right of the header card on desktop, sticky bar on mobile; on mobile it opens the same One receipt / Several receipts sheet, "Several receipts" dimmed as "Coming soon" until S2b |
 | B4 submit toast | Submitted for approval | הוגש לאישור | |
 | B4 Activity | Activity · Budget created · Submitted for approval · Returned for changes · Approved | פעולות · התקציב נוצר · הוגש לאישור · הוחזר לתיקונים · אושר | Top-up event comes with PC-2 |
 | Editor back | Back to budget | חזרה לתקציב | |
@@ -290,3 +306,52 @@ Result: 10 findings - 0 open, 10 fixed.
   over budget judged on the whole-unit balance, so "₪0" is never red).
 
 Result: clean.
+
+### Run 3 - 2026-11-17 (S2a - single expenses)
+- Branch / commit: feature/pc1-s1-budget-exists @ uncommitted (S2a on top of cddd532)
+- QA company: XpenseDesk Demo Company; manager m@xpensedesk.com; employee e@xpensedesk.com
+- Coverage: manager 375px EN (own budget: empty state, add, edit, over the
+  balance, delete, search; another holder's budget: add with no category);
+  employee 375px EN/HE (nav, own budget, someone else's budget refused,
+  Monthly new expense unchanged); desktop 1280 HE (budget page table + bar).
+- Receipts: drawn on a canvas in the page and handed to the app's file picker
+  (patched `click()` of the file input, in memory only) - the real AI scan ran
+  on them.
+- The over-balance refusal was tested by switching the company's "allow
+  negative balance" off for the test; it was on (since 15/11) and is restored.
+- Data created: QA Mine #1002 - Super Pharm 300 (Refreshments); QA Events #1001
+  - Cafe Aroma 64 (Budgets "Other", added by the manager); e@ Monthly
+  November - Monthly Taxi 42 (Travel).
+- Not covered: swipe-left delete on the mobile card - the browser tool's mouse
+  drag does not make a touch fling (the card only shifts); delete was tested
+  through the list's delete icon. The carousel swipe is the unchanged Monthly
+  widget.
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Employee mobile | EN | Nav | Major | A type with a single page (Monthly = My expenses) showed one lone item behind a back arrow (user) | Fixed - shows the types row (Monthly / Budgets) |
+| 2 | Employee mobile | EN | Budget page | Blocker | Someone else's budget by URL spun forever: Riverpod 3 retried the 403 in a loop | Fixed - flat-code refusals are not retried; "You don't have access to this budget" |
+| 3 | Manager mobile | EN | New expense | Minor | The balance refusal stays shown after lowering the amount, until the next save | Open - same as every save error on this screen (Monthly too) |
+
+Result: 3 findings - 1 open (minor), 2 fixed. Every S2a scenario passes:
+budget empty state, add (Budgets categories only, back to budget, header and
+nav refresh), edit, over-balance refusal with "Left: ₪700", delete, search
+(merchant / no match), manager adds to an employee's budget (default "Other"),
+employee nav + own budget, access refused, Monthly expense still Monthly, HE
+RTL, desktop table.
+
+### Run 4 - 2026-11-17 (S2a - user review round)
+- Branch / commit: feature/pc1-s1-budget-exists @ uncommitted
+- QA company: XpenseDesk Demo Company; manager m@xpensedesk.com
+- Coverage: manager desktop 1440 EN (landing nav, budget list table, budget
+  page); manager 375px EN/HE (budget page, choice sheet, My expenses sheet).
+- Not covered: employee lanes (no role-specific change this round).
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Manager desktop | EN | Landing nav | Major | Manager landing opened on Monthly's level 2 - no way to Budgets (user) | Fixed - every landing opens on level 1 |
+| 2 | Manager desktop | EN | Budget list | Minor | Table scrolled sideways inside the card; Used % took a column (user) | Fixed - Used % in the Spent cell, name 40 chars, Status column dropped, fits the card |
+| 3 | Manager both | EN/HE | Budget page | Major | "Add expenses" grey button, no choice sheet, at the bottom on desktop (user) | Fixed - My expenses "+ New Expense": header top-right on desktop, sticky bar + same choice sheet on mobile, "Several receipts" = Coming soon |
+
+Result: 3 findings - 3 fixed. My expenses' sheet still offers Several receipts;
+no console errors.

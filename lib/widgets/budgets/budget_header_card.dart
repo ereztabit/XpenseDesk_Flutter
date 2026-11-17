@@ -24,9 +24,12 @@ final String _pdi = String.fromCharCode(0x2069);
 /// The holder line and the currency symbol on the strip are user decisions
 /// (2026-11-17) on top of the mock.
 class BudgetHeaderCard extends ConsumerWidget {
-  const BudgetHeaderCard({super.key, required this.budget});
+  const BudgetHeaderCard({super.key, required this.budget, this.trailing});
 
   final Budget budget;
+
+  /// Desktop: the "+ New Expense" button, top-right as on My expenses.
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,35 +51,56 @@ class BudgetHeaderCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: b.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.foreground,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: b.name,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.foreground,
+                              ),
+                            ),
+                            const TextSpan(text: '  '),
+                            TextSpan(
+                              text: '$_lri#${b.number}$_pdi',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppTheme.mutedForeground,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const TextSpan(text: '  '),
-                      TextSpan(
-                        text: '$_lri#${b.number}$_pdi',
-                        style: const TextStyle(fontSize: 14, color: AppTheme.mutedForeground),
-                      ),
+                    ),
+                    if (trailing != null) ...[
+                      const SizedBox(width: 12),
+                      trailing!,
                     ],
-                  ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.person_outline, size: 15, color: AppTheme.mutedForeground),
+                    const Icon(
+                      Icons.person_outline,
+                      size: 15,
+                      color: AppTheme.mutedForeground,
+                    ),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         b.holderDisplayName,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 13, color: AppTheme.mutedForeground),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.mutedForeground,
+                        ),
                       ),
                     ),
                   ],
@@ -88,7 +112,10 @@ class BudgetHeaderCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Text(
                       '${l10n.budgetsEnds} $_lri${b.endDate.toCompanyDate(locale)}$_pdi',
-                      style: const TextStyle(fontSize: 11, color: AppTheme.mutedForeground),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.mutedForeground,
+                      ),
                     ),
                   ],
                 ),
@@ -122,7 +149,12 @@ class BudgetHeaderCard extends ConsumerWidget {
               ),
             ],
           ),
-          UsageBar(fraction: budgetUsedFraction(b), breach: true, height: 4, radius: 0),
+          UsageBar(
+            fraction: budgetUsedFraction(b),
+            breach: true,
+            height: 4,
+            radius: 0,
+          ),
         ],
       ),
     );

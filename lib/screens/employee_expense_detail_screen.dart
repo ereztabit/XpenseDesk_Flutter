@@ -15,6 +15,8 @@ import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../services/excel_export_service.dart';
 import '../services/expense_service.dart';
+import '../models/company_module.dart';
+import '../utils/budget_copy_utils.dart';
 import '../utils/category_utils.dart';
 import '../utils/expense_display_utils.dart';
 import '../utils/expense_policy_utils.dart';
@@ -188,14 +190,28 @@ class _EmployeeExpenseDetailScreenState
 
   /// The company's Monthly fallback ("Other"); the legacy id only until the
   /// company has loaded (the server still maps it to the company's own copy).
-  int get _fallbackCategoryId =>
-      fallbackCategoryId(ref.read(companyCategoriesProvider)) ??
-      ExpenseCategory.other.id;
+  int? get _fallbackCategoryId => _isBudgetLine
+      ? null // FS-1012: the server files it under the Budgets "Other".
+      : fallbackCategoryId(ref.read(companyCategoriesProvider)) ??
+          ExpenseCategory.other.id;
 
-  String _expenseErrorText(ExpenseException e) =>
-      e.errorCode == 'ExpenseCategoryNotAvailable'
-          ? AppLocalizations.of(context)!.expenseCategoryNotAvailable
-          : e.message;
+  /// FS-1012: a line on a budget - told by its saved category's module, so a
+  /// deep link knows it too. Picks the category list, the errors and "Back to
+  /// budget".
+  CompanyModuleKey get _categoryModule => _initialCategoryId == null
+      ? CompanyModuleKey.monthly
+      : moduleOfCategory(ref.read(companyCategoriesProvider), _initialCategoryId!);
+  bool get _isBudgetLine => _categoryModule == CompanyModuleKey.pettyCash;
+
+  String _expenseErrorText(ExpenseException e) {
+    final l10n = AppLocalizations.of(context)!;
+    return budgetExpenseErrorText(l10n, e.errorCode, e.data,
+            ref.read(companyLocaleProvider),
+            ref.read(userInfoProvider)?.currencyCode ?? 'ILS') ??
+        (e.errorCode == 'ExpenseCategoryNotAvailable'
+            ? l10n.expenseCategoryNotAvailable
+            : e.message);
+  }
 
   @override
   bool get hasUnsavedChanges => false;
@@ -712,6 +728,7 @@ class _EmployeeExpenseDetailScreenState
       ref.watch(companyCategoriesProvider),
       lang,
       keepCategoryId: _initialCategoryId,
+      module: _categoryModule,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1224,7 +1241,7 @@ class _EmployeeExpenseDetailScreenState
                   fontSize: 16, color: AppTheme.mutedForeground)),
           const SizedBox(height: 16),
           AppButton(
-            label: l10n.backToDashboard,
+            label: _isBudgetLine ? l10n.budgetsBackToBudget : l10n.backToDashboard,
             variant: AppButtonVariant.ghost,
             onPressed: () => Navigator.of(context).pop(),
           ),
@@ -1264,7 +1281,7 @@ class _EmployeeExpenseDetailScreenState
           children: [
             if (!widget.dialogMode)
               AppButton(
-                label: l10n.backToDashboard,
+                label: _isBudgetLine ? l10n.budgetsBackToBudget : l10n.backToDashboard,
                 variant: AppButtonVariant.ghost,
                 icon: Icons.arrow_back,
                 onPressed: () => Navigator.of(context).pop(),

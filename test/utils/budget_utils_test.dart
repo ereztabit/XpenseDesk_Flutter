@@ -120,6 +120,40 @@ void main() {
     expect(sorted.map((b) => b.number), [3, 2, 1]);
   });
 
+  group("who edits a budget's expenses", () {
+    test('the holder or any manager, until Approved', () {
+      final b = _b(holderId: 'u1');
+      expect(budgetExpensesEditable(b, email: 'U1@acme.test', isManager: false), isTrue);
+      expect(budgetExpensesEditable(b, email: 'u2@acme.test', isManager: false), isFalse);
+      expect(budgetExpensesEditable(b, email: 'u2@acme.test', isManager: true), isTrue);
+      expect(
+        budgetExpensesEditable(_b(holderId: 'u1', status: budgetApprovedStatusId),
+            email: 'u1@acme.test', isManager: true),
+        isFalse,
+      );
+      expect(budgetIsHeldBy(b, null), isFalse);
+    });
+  });
+
+  group('budget expense search', () {
+    test('matches the merchant, case-insensitive', () {
+      expect(budgetExpenseMatches('Super Pharm', 12.5, 'pharm'), isTrue);
+      expect(budgetExpenseMatches(null, 12.5, 'pharm'), isFalse);
+    });
+
+    test('matches the amount as typed', () {
+      expect(budgetExpenseMatches(null, 60, '60'), isTrue);
+      expect(budgetExpenseMatches(null, 60.5, '60'), isTrue);
+      expect(budgetExpenseMatches(null, 160, '60'), isTrue);
+      expect(budgetExpenseMatches(null, 75, '60'), isFalse);
+      expect(budgetExpenseMatches(null, 60.5, '60.50'), isTrue);
+    });
+
+    test('an empty query keeps everything', () {
+      expect(budgetExpenseMatches(null, null, '  '), isTrue);
+    });
+  });
+
   test('focus keys round-trip and the list path carries them', () {
     expect(BudgetSection.fromFocus('submitted'), BudgetSection.awaiting);
     expect(BudgetSection.fromFocus('nope'), isNull);
@@ -127,5 +161,11 @@ void main() {
         '/budgets/list?focus=draft&attention=1');
     expect(AppRoutes.parseBudgetPath('/budgets/list'), isNull);
     expect(AppRoutes.parseBudgetPath('/budgets/abc'), 'abc');
+  });
+
+  test('budgetShortName cuts at 40 characters with an ellipsis', () {
+    expect(budgetShortName('a' * 40), 'a' * 40);
+    expect(budgetShortName('a' * 41), '${'a' * 40}…');
+    expect(budgetShortName('א' * 45), '${'א' * 40}…');
   });
 }

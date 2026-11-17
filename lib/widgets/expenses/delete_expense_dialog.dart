@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/free_receipts_provider.dart';
+import '../../utils/budget_copy_utils.dart';
 import '../app_button.dart';
 import '../../services/expense_service.dart';
 import '../../theme/app_theme.dart';
@@ -80,11 +82,15 @@ class _DeleteExpenseDialogState extends ConsumerState<DeleteExpenseDialog> {
     } on ExpenseException catch (e) {
       if (mounted) {
         final l10n = AppLocalizations.of(context)!;
-        final msg = e.errorCode == 'ExpensesDeleteExpenseCannotBeDeleted'
-            ? l10n.deleteExpenseAlreadyAddressed
-            : e.message.isNotEmpty
-                ? e.message
-                : l10n.deleteExpenseFailed;
+        // FS-1012: a budget rule (approved, deleted, access) has its own text.
+        final msg = budgetExpenseErrorText(l10n, e.errorCode, e.data,
+                ref.read(companyLocaleProvider),
+                ref.read(userInfoProvider)?.currencyCode ?? 'ILS') ??
+            (e.errorCode == 'ExpensesDeleteExpenseCannotBeDeleted'
+                ? l10n.deleteExpenseAlreadyAddressed
+                : e.message.isNotEmpty
+                    ? e.message
+                    : l10n.deleteExpenseFailed);
         Navigator.of(context).pop((deleted: false, error: msg));
       }
     } catch (_) {

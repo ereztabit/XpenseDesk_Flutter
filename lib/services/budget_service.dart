@@ -53,6 +53,15 @@ class BudgetService {
     return data.cast<Map<String, dynamic>>().map(Budget.fromJson).toList();
   }
 
+  /// GET /api/budgets/mine - the caller's own outstanding budgets (any role).
+  Future<List<Budget>> listMine() async {
+    final data = _validateResponse(
+      await _apiService.get('/api/budgets/mine', authToken: await _token()),
+    );
+    if (data is! List) throw const BudgetException('Invalid response from server');
+    return data.cast<Map<String, dynamic>>().map(Budget.fromJson).toList();
+  }
+
   /// GET /api/budgets/{id}
   Future<Budget> get(String budgetId) async => _budget(
     _validateResponse(

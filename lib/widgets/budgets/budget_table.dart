@@ -5,7 +5,6 @@ import '../../models/budget.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/budget_utils.dart';
 import '../../utils/format_utils.dart';
-import '../employee_dashboard/sheet_status_badge.dart';
 import 'budget_reason_line.dart';
 import 'budget_table_cells.dart';
 
@@ -46,11 +45,10 @@ class BudgetTable extends StatelessWidget {
               const Text('#'),
               Text(l10n.budgetsColName),
               Text(l10n.budgetsColEmployee),
-              Text(l10n.budgetsColStatus),
               Text(l10n.budgetsColBudget),
+              // Used % rides with Spent (user decision) - one column less.
               Text(l10n.budgetsSpent),
               Text(l10n.budgetsBalance),
-              Text(l10n.budgetsColUsed),
               Text(l10n.budgetsColEndDate),
             ],
           ),
@@ -65,26 +63,42 @@ class BudgetTable extends StatelessWidget {
                 BudgetTableCells(
                   cells: [
                     Text('#${b.number}', textDirection: ltr),
-                    Tooltip(message: b.name, child: Text(b.name)),
-                    Text(b.holderDisplayName),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: SheetStatusBadge(statusId: b.statusId),
+                    Tooltip(
+                      message: b.name,
+                      child: Text(budgetShortName(b.name)),
                     ),
-                    Text(b.budgetAmount.toWholeCurrency(locale, b.currencyCode), textDirection: ltr),
-                    Text(b.spentAmount.toWholeCurrency(locale, b.currencyCode), textDirection: ltr),
+                    Text(b.holderDisplayName),
+                    Text(
+                      b.budgetAmount.toWholeCurrency(locale, b.currencyCode),
+                      textDirection: ltr,
+                    ),
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: b.spentAmount.toWholeCurrency(
+                              locale,
+                              b.currencyCode,
+                            ),
+                          ),
+                          TextSpan(
+                            text: '  ${budgetUsedPercent(b)}%',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: budgetUsedPercent(b) > 100
+                                  ? AppTheme.destructive
+                                  : AppTheme.mutedForeground,
+                            ),
+                          ),
+                        ],
+                      ),
+                      textDirection: ltr,
+                    ),
                     Text(
                       b.balance.toWholeCurrency(locale, b.currencyCode),
                       textDirection: ltr,
                       style: TextStyle(
-                        color: budgetIsOverBudget(b) ? AppTheme.destructive : AppTheme.foreground,
-                      ),
-                    ),
-                    Text(
-                      '${budgetUsedPercent(b)}%',
-                      textDirection: ltr,
-                      style: TextStyle(
-                        color: budgetUsedPercent(b) > 100
+                        color: budgetIsOverBudget(b)
                             ? AppTheme.destructive
                             : AppTheme.foreground,
                       ),
@@ -92,7 +106,8 @@ class BudgetTable extends StatelessWidget {
                     Text(b.endDate.toCompanyDate(locale), textDirection: ltr),
                   ],
                 ),
-                if (reasonOf(b).isNotEmpty) BudgetReasonLine(text: reasonOf(b), filled: true),
+                if (reasonOf(b).isNotEmpty)
+                  BudgetReasonLine(text: reasonOf(b), filled: true),
               ],
             ),
           ),

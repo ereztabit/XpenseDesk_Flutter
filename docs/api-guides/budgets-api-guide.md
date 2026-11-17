@@ -93,7 +93,42 @@ email. The client may also filter locally - the list is small.
 Validation order: name, holder, amount, end date, then holder active, end date not past, name free - the first failing check
 answers.
 
+## S2a - expenses on a budget
+
+No new expense endpoints: the existing expense calls take a budget as their
+sheet. `budgetId` **is** the sheet id.
+
+| Call | Budget behaviour |
+|---|---|
+| `GET /api/budgets/mine` | Any role. The caller's own outstanding budgets (same object, same order) - for the nav |
+| `GET /api/expense-sheets/{budgetId}` | The budget with its expenses - the same sheet-detail shape as Monthly. On a budget `moduleId` = 2 and the cycle fields (`expenseCycleId`, `cycleLabel`, `cycleStartAt`, `cycleEndAt`, `cycleStatus`) are `null`. Manager or the holder; others 404. A deleted budget is 404 |
+| `POST /api/expenses` | Send `expenseSheetId` = the budget id. The holder **or any manager** may add (else 403 `BudgetAccessDenied`). The line is owned by the holder and stays Pending (a budget is approved as a whole, S3). `categoryId` must be an active **PettyCash** category; `null` = the Budgets "Other" |
+| `PUT /api/expenses/{id}` | Same rules for a line on a budget. Editable until the budget is Approved (also while Awaiting approval) |
+| `DELETE /api/expenses/{id}` | Same rules. Deleting the last line never removes the budget |
+
+Every other field and rule of these calls (date, amount, currency
+conversion, receipt image, free-receipt limit) is unchanged. Without
+`expenseSheetId` a create still lands on the caller's Monthly sheet.
+
+**Balance.** When the company does not allow a negative balance (the PettyCash
+module setting `allowNegativeBalance` false or unset), a create or an amount
+raise that would take the balance below zero is refused with 409
+`BudgetBalanceExceeded` and `data: { "balance": 420.00 }` - what is left now,
+in the company currency. Lowering an amount is never refused.
+
+### S2a error codes
+
+| Code | Status | When |
+|---|---|---|
+| `BudgetsNotEnabled` | 403 | Budgets were switched off for the company (flag or module) |
+| `BudgetAccessDenied` | 403 | Not the holder and not a manager (checked before any status) |
+| `BudgetNotFound` | 404 | The budget was deleted |
+| `BudgetApprovedClosed` | 409 | The budget is approved - its expenses are frozen |
+| `BudgetExpenseCategoryNotAvailable` | 400 | The category is not an active Budgets category |
+| `BudgetBalanceExceeded` | 409 | Below zero and not allowed; `data.balance` |
+
 ## Monthly is untouched
 
 Budget sheets have no cycle and never appear in any Monthly call (sheets,
-queue, dashboard counters, payments, reports, cycle close).
+queue, dashboard counters, payments, reports, cycle close). Budget expenses
+have no cycle either and never appear in Monthly sheets, totals or reports.

@@ -83,3 +83,22 @@ final sheetNavProvider = Provider<List<SheetNavSection>?>((ref) {
     ),
   );
 });
+
+/// Whether the sheet-type bar shows the pages of the current type (level 2)
+/// or the types row (level 1). Starts false, so every landing (sign-in, a
+/// fresh load) opens at the types row and Budgets is one tap away; tapping a
+/// type turns it on, the bar's back arrow turns it off. Kept app-wide because
+/// every page change replaces the screen (and the bar with it).
+final sheetNavShowPagesProvider =
+    NotifierProvider<SheetNavShowPagesNotifier, bool>(SheetNavShowPagesNotifier.new);
+
+class SheetNavShowPagesNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    // A new sign-in starts again at the types row.
+    ref.watch(userInfoProvider.select((u) => u?.email));
+    return false;
+  }
+
+  void set(bool value) => state = value;
+}

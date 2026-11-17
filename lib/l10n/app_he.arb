@@ -1087,7 +1087,6 @@
   "budgetsClearFilters": "ניקוי חיפוש וסינון",
   "budgetsColName": "שם התקציב",
   "budgetsColEmployee": "עובד",
-  "budgetsColStatus": "סטטוס",
   "budgetsColBudget": "תקציב",
   "budgetsColUsed": "% ניצול",
   "budgetsColEndDate": "תאריך סיום",
@@ -1112,5 +1111,12 @@
   "budgetsErrEmployeeInactive": "העובד אינו פעיל בחברה",
   "budgetsErrNotFound": "התקציב הזה כבר לא קיים",
   "budgetsErrNotEnabled": "תקציבים אינם פעילים בחברה שלך",
-  "budgetsErrAccess": "אין לך גישה לתקציב הזה"
+  "budgetsErrAccess": "אין לך גישה לתקציב הזה",
+  "budgetsErrApproved": "התקציב אושר ונסגר",
+  "budgetsErrBalance": "ההוצאה גבוהה מהיתרה בתקציב. נותרו:",
+  "budgetsErrCategory": "הקטגוריה הזו אינה זמינה לתקציבים",
+  "budgetsBackToBudget": "חזרה לתקציב",
+  "budgetsSearchExpenses": "חיפוש לפי ספק או סכום",
+  "budgetsNoExpensesTitle": "עדיין אין הוצאות בתקציב",
+  "budgetsNoExpensesDesc": "אפשר להוסיף קבלה כדי להתחיל להשתמש בתקציב."
 }

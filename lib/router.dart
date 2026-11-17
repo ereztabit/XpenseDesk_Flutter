@@ -257,12 +257,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
+    // FS-1012: `?budgetId=` files onto that budget (holder or a manager - the
+    // server checks); in the URL so a refresh or deep link keeps the target.
+    // Without it, the ordinary Monthly flow.
     case '/employee/new-expense':
+      final targetBudgetId = uri.queryParameters['budgetId'];
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const AuthGate(
+        builder: (_) => AuthGate(
           mode: AuthGateMode.selfExpenseAccess,
-          child: NewExpenseScreen(),
+          child: NewExpenseScreen(
+            budgetId: (targetBudgetId?.isEmpty ?? true) ? null : targetBudgetId,
+          ),
         ),
       );
 

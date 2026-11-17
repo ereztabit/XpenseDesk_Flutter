@@ -26,8 +26,6 @@ class SheetTypeBar extends ConsumerStatefulWidget {
 }
 
 class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
-  bool _showTypes = false;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -41,7 +39,15 @@ class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
     final stacked = context.isMobile;
     final single = sections.length == 1;
     final current = sheetNavSectionFor(sections, route);
-    final open = single ? sections.single : (_showTypes ? null : current);
+    // A type with a single page (an employee's Monthly = My expenses, or one
+    // budget) has nothing to choose at level 2: show the types row with that
+    // type active instead of one lone item behind a back arrow.
+    // Level 2 only after the user picked a type (sheetNavShowPagesProvider):
+    // every landing opens at the types row.
+    final showPages = ref.watch(sheetNavShowPagesProvider);
+    final open = single
+        ? sections.single
+        : (!showPages || (current?.pages.length ?? 0) <= 1 ? null : current);
 
     final Widget level = open == null || open.isComingSoon
         ? SheetNavLevelOne(
@@ -58,7 +64,9 @@ class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
             currentPath: Uri.parse(ModalRoute.of(context)?.settings.name ?? '').path,
             stacked: stacked,
             onNavigate: (p) => _go(p.route),
-            onBack: single ? null : () => setState(() => _showTypes = true),
+            onBack: single
+                ? null
+                : () => ref.read(sheetNavShowPagesProvider.notifier).set(false),
           );
 
     final noMotion = MediaQuery.of(context).disableAnimations;
@@ -113,10 +121,8 @@ class _SheetTypeBarState extends ConsumerState<SheetTypeBar> {
     final first = section.firstPage;
     if (first == null) return;
     final route = ModalRoute.of(context)?.settings.name ?? '';
-    if (first.route == route) {
-      setState(() => _showTypes = false);
-      return;
-    }
+    ref.read(sheetNavShowPagesProvider.notifier).set(true);
+    if (first.route == route) return;
     _go(first.route);
   }
 

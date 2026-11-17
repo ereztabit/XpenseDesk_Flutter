@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
 /// Column flex weights of the B2 desktop table, shared by header and rows so
-/// they never drift: # · name · employee · status · budget · spent · balance ·
-/// used % · end date.
-const List<int> budgetTableFlex = [7, 20, 15, 13, 12, 12, 12, 8, 11];
+/// they never drift: # · name · employee · budget · spent (+ used %) · balance ·
+/// end date. Amount columns are sized for "₪10,000". No status column: each
+/// section already names the status, and the badge alone overflowed the card.
+/// Weights = the pixels each needs at the minimum width (sum = min width).
+const List<int> budgetTableFlex = [52, 150, 110, 70, 106, 70, 88];
 
-/// Below this width the table scrolls sideways instead of squeezing: every
-/// amount ("₪12,345"), the status badge and the #number keep room to read.
-const double budgetTableMinWidth = 1100;
+/// Below this width the table scrolls sideways instead of squeezing: the
+/// widest amount ("₪10,000"), the status badge and the #number keep room.
+const double budgetTableMinWidth = 646;
 
 /// One table row: cells laid out by [budgetTableFlex] with the inner vertical
 /// borders of the hand-off (logical end border, none on the last column).
@@ -32,12 +34,14 @@ class BudgetTableCells extends StatelessWidget {
             Expanded(
               flex: budgetTableFlex[i],
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 alignment: AlignmentDirectional.centerStart,
                 decoration: BoxDecoration(
                   border: i == cells.length - 1
                       ? null
-                      : const BorderDirectional(end: BorderSide(color: AppTheme.border)),
+                      : const BorderDirectional(
+                          end: BorderSide(color: AppTheme.border),
+                        ),
                 ),
                 child: DefaultTextStyle.merge(
                   style: header
@@ -46,7 +50,10 @@ class BudgetTableCells extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           color: AppTheme.mutedForeground,
                         )
-                      : const TextStyle(fontSize: 14, color: AppTheme.foreground),
+                      : const TextStyle(
+                          fontSize: 14,
+                          color: AppTheme.foreground,
+                        ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   softWrap: false,

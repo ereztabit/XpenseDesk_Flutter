@@ -19,7 +19,10 @@ class NewExpenseChoiceCard extends StatefulWidget {
   final IconData icon;
   final String title;
   final String description;
-  final VoidCallback onTap;
+
+  /// Null = disabled (dimmed, not tappable) - FS-1012: "Several receipts"
+  /// from a budget until bulk into a budget ships.
+  final VoidCallback? onTap;
 
   @override
   State<NewExpenseChoiceCard> createState() => _NewExpenseChoiceCardState();
@@ -35,55 +38,70 @@ class _NewExpenseChoiceCardState extends State<NewExpenseChoiceCard> {
 
   @override
   Widget build(BuildContext context) {
-    return FocusableActionDetector(
-      onShowFocusHighlight: (f) => setState(() => _focused = f),
-      onShowHoverHighlight: _setActive,
-      mouseCursor: SystemMouseCursors.click,
-      actions: {
-        ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (_) => widget.onTap()),
-      },
-      child: GestureDetector(
-        onTap: widget.onTap,
-        onTapDown: (_) => _setActive(true),
-        onTapUp: (_) => _setActive(false),
-        onTapCancel: () => _setActive(false),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 80),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _active ? AppTheme.muted : AppTheme.card,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: _focused
-                  ? AppTheme.primary
-                  : _active
-                      ? AppTheme.primary.withAlpha(77)
-                      : AppTheme.border,
-              width: _focused ? 2 : 1,
-            ),
+    final enabled = widget.onTap != null;
+    return Opacity(
+      opacity: enabled ? 1 : 0.5,
+      child: FocusableActionDetector(
+        enabled: enabled,
+        onShowFocusHighlight: (f) => setState(() => _focused = f),
+        onShowHoverHighlight: _setActive,
+        mouseCursor: enabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        actions: {
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) => widget.onTap?.call(),
           ),
-          child: Row(
-            children: [
-              Icon(widget.icon, size: 28, color: AppTheme.primary),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.title,
-                        style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.foreground)),
-                    const SizedBox(height: 2),
-                    Text(widget.description,
-                        style: const TextStyle(
-                            fontSize: 13, color: AppTheme.mutedForeground)),
-                  ],
-                ),
+        },
+        child: GestureDetector(
+          onTap: widget.onTap,
+          onTapDown: enabled ? (_) => _setActive(true) : null,
+          onTapUp: (_) => _setActive(false),
+          onTapCancel: () => _setActive(false),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 80),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: _active ? AppTheme.muted : AppTheme.card,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _focused
+                    ? AppTheme.primary
+                    : _active
+                    ? AppTheme.primary.withAlpha(77)
+                    : AppTheme.border,
+                width: _focused ? 2 : 1,
               ),
-            ],
+            ),
+            child: Row(
+              children: [
+                Icon(widget.icon, size: 28, color: AppTheme.primary),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.foreground,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.description,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

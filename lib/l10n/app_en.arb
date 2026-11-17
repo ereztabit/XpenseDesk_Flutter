@@ -1087,7 +1087,6 @@
   "budgetsClearFilters": "Clear search and filter",
   "budgetsColName": "Budget name",
   "budgetsColEmployee": "Employee",
-  "budgetsColStatus": "Status",
   "budgetsColBudget": "Budget",
   "budgetsColUsed": "Used %",
   "budgetsColEndDate": "End date",
@@ -1112,5 +1111,12 @@
   "budgetsErrEmployeeInactive": "This employee isn't active in the company",
   "budgetsErrNotFound": "This budget no longer exists",
   "budgetsErrNotEnabled": "Budgets aren't enabled for your company",
-  "budgetsErrAccess": "You don't have access to this budget"
+  "budgetsErrAccess": "You don't have access to this budget",
+  "budgetsErrApproved": "This budget is approved and closed",
+  "budgetsErrBalance": "This expense is more than what's left in the budget. Left:",
+  "budgetsErrCategory": "This category isn't available for budgets",
+  "budgetsBackToBudget": "Back to budget",
+  "budgetsSearchExpenses": "Search merchant or amount",
+  "budgetsNoExpensesTitle": "No expenses in this budget yet",
+  "budgetsNoExpensesDesc": "Add a receipt to start using the budget."
 }

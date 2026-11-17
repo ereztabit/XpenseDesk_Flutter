@@ -144,3 +144,31 @@ List<({String userId, String name})> budgetHolders(Iterable<Budget> budgets) {
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   return list;
 }
+
+/// FS-1012 S2a budget page search: merchant name or amount, case-insensitive;
+/// an amount matches as typed ("60" finds 60, 60.5, 160).
+bool budgetExpenseMatches(String? merchantName, double? amount, String query) {
+  final q = query.trim().toLowerCase();
+  if (q.isEmpty) return true;
+  if ((merchantName ?? '').toLowerCase().contains(q)) return true;
+  if (amount == null) return false;
+  final whole = amount == amount.roundToDouble() ? amount.toStringAsFixed(0) : null;
+  return amount.toStringAsFixed(2).contains(q) ||
+      amount.toString().contains(q) ||
+      (whole?.contains(q) ?? false);
+}
+
+/// The signed-in user (by email) holds [b].
+bool budgetIsHeldBy(Budget b, String? email) =>
+    email != null && b.holderEmail.toLowerCase() == email.toLowerCase();
+
+/// FS-1012 S2a: the holder or any manager adds / edits / deletes a budget's
+/// expenses until it is Approved (user decision 2026-11-17; the server checks
+/// the same rule).
+bool budgetExpensesEditable(Budget b, {required String? email, required bool isManager}) =>
+    budgetIsOutstanding(b) && (isManager || budgetIsHeldBy(b, email));
+
+/// The list table's budget name: at most [max] characters, then "…" (the
+/// full name is in the cell's tooltip) - user decision 2026-11-17.
+String budgetShortName(String name, [int max = 40]) =>
+    name.runes.length <= max ? name : '${String.fromCharCodes(name.runes.take(max))}…';
