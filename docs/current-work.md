@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [Business][P2] **FS-1012 (nav slice)** Sheet-type navigation bar - banked on develop as v1.45 (2026-11-17), awaiting ship-feature. see docs/in-progress/sheet-type-nav-spec.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

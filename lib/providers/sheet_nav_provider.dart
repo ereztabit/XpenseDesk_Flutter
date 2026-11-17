@@ -14,7 +14,7 @@ import 'sheet_nav_dev_provider.dart';
 const _returnedStatusId = 4;
 
 /// The sheet-type bar's visible tree for the signed-in user, or null when the
-/// bar must not show (docs/in-progress/sheet-type-nav-spec.md section 3).
+/// bar must not show (docs/completed/sheet-type-nav-spec.md section 3).
 ///
 /// Counts are best effort: while a source loads or fails its badge is 0, so the
 /// bar never waits on, or breaks with, a count.

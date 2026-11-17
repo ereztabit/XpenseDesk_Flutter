@@ -7,7 +7,7 @@
 > what the production app needs on top (real data, coming-soon state, dev preview).
 > Business rules for Budgets: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md.
 
-Status: IN PROGRESS on `feature/sheet-type-nav` - built, CR clean, manual QA run 1 done; awaiting the product owner's review.
+Status: SHIPPED v1.45 (2026-11-17, release 3f60e44). Budgets and Travel pages are still placeholders - they are designed and built in PC-1 (FS-1012) and its successors.
 
 ## 1. What it is
 

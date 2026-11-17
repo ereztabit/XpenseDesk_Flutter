@@ -11,7 +11,7 @@ import '../../utils/sheet_nav_utils.dart';
 import 'sheet_nav_level_one.dart';
 import 'sheet_nav_level_two.dart';
 
-/// The sheet-type navigation bar (docs/in-progress/sheet-type-nav-spec.md).
+/// The sheet-type navigation bar (docs/completed/sheet-type-nav-spec.md).
 ///
 /// Placed by a screen directly under `AppHeader`, outside the scroll view, so it
 /// stays pinned. Opens at level 2 of the current page's type; Back shows level 1
