@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-11-18 | v1.50 | Budgets PC-2 - manager control + audit (FS-1013) | Edit a budget, delete it, submit for the holder from the list menu, review budget lines; every change on the Activity card. |
 | 2026-11-18 | v1.49 | Daily FX sync - admin Currencies module (FS-1019) | Platform-admin Currencies module: per-currency rate status, recent syncs with detail, and a Sync now button for the daily Bank of Israel rate sync. |
 | 2026-11-17 | v1.48 | Budgets PC-1 - budget sheet end to end (FS-1012) | Budgets dashboard, budget page with single + bulk expenses, submit / approve / return with activity, nav badges; behind the Budgets module flag. |
 | 2026-11-17 | v1.47 | Email display and login validation fixes | Emails keep their real character order on Hebrew screens (shared LtrText); an invalid email on login shows one localized message instead of two. |

@@ -193,7 +193,10 @@ void main() {
     });
 
     test('AppRoutes.parseBudgetPath', () {
-      expect(AppRoutes.parseBudgetPath('/budgets/b4'), 'b4');
+      expect(AppRoutes.parseBudgetPath('/budgets/a1b2c3d4-0000-4000-8000-123456789abc'), 'a1b2c3d4-0000-4000-8000-123456789abc');
+      // FS-1013: a non-GUID segment is not a budget page.
+      expect(AppRoutes.parseBudgetPath('/budgets/b4'), isNull);
+      expect(AppRoutes.parseBudgetPath('/budgets/..%2Fadmin'), isNull);
       expect(AppRoutes.parseBudgetPath('/budgets'), isNull);
       expect(AppRoutes.parseBudgetPath('/dashboard'), isNull);
     });

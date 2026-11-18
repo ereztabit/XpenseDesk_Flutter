@@ -7,6 +7,7 @@ import '../models/expense_summary.dart';
 import '../widgets/ai_badge.dart';
 import '../widgets/app_button.dart';
 import '../models/expense_category.dart';
+import '../providers/budgets_provider.dart';
 import '../providers/company_modules_provider.dart';
 import '../providers/company_provider.dart';
 import '../models/update_expense_request.dart';
@@ -203,11 +204,22 @@ class _EmployeeExpenseDetailScreenState
       : moduleOfCategory(ref.read(companyCategoriesProvider), _initialCategoryId!);
   bool get _isBudgetLine => _categoryModule == CompanyModuleKey.pettyCash;
 
+  /// FS-1013: a budget refusal names the budget's left amount in the budget's
+  /// own currency - read from the line's budget, else the company's
+  /// (docs/bugs/budget-balance-error-uses-user-currency.md).
+  String _budgetCurrency() {
+    final sheetId = _expense?.expenseSheetId;
+    final budget = _isBudgetLine && sheetId != null
+        ? ref.read(budgetProvider(sheetId)).asData?.value
+        : null;
+    return budget?.currencyCode ?? ref.read(companyBaseCurrencyProvider);
+  }
+
   String _expenseErrorText(ExpenseException e) {
     final l10n = AppLocalizations.of(context)!;
     return budgetExpenseErrorText(l10n, e.errorCode, e.data,
             ref.read(companyLocaleProvider),
-            ref.read(userInfoProvider)?.currencyCode ?? 'ILS') ??
+            _budgetCurrency()) ??
         (e.errorCode == 'ExpenseCategoryNotAvailable'
             ? l10n.expenseCategoryNotAvailable
             : e.message);

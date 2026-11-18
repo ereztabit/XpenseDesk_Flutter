@@ -1,5 +1,7 @@
 import '../models/budget.dart';
 
+export 'budget_edit_utils.dart';
+
 /// Business rules of the Budgets screens (UX hand-off section 5), as pure
 /// functions so they are unit-testable and shared by the dashboard, the list,
 /// the budget page and the nav.
@@ -176,10 +178,11 @@ bool budgetIsHeldBy(Budget b, String? email) =>
 bool budgetExpensesEditable(Budget b, {required String? email, required bool isManager}) =>
     budgetIsOutstanding(b) && (isManager || budgetIsHeldBy(b, email));
 
-/// The budget page shows its Activity only once the budget has been sent for
-/// approval - a lone "Budget created" adds nothing (user decision 2026-11-17).
-bool budgetActivityVisible(Iterable<int> toStatusIds) =>
-    toStatusIds.any((s) => s != BudgetSection.open.statusId);
+/// The budget page shows its Activity once the trail has more than one entry
+/// - a lone "Budget created" adds nothing; a submission or any manager change
+/// shows it (user decision 2026-11-18, FS-1013 - was: from the first
+/// submission).
+bool budgetActivityVisible(int logLength) => logLength > 1;
 
 /// The budget page shows its expense search from this many expenses on -
 /// searching three receipts is noise (user decision 2026-11-17: from the 5th).
@@ -191,3 +194,4 @@ bool budgetShowsSearch(int expenseCount) => expenseCount >= budgetSearchThreshol
 /// full name is in the cell's tooltip) - user decision 2026-11-17.
 String budgetShortName(String name, [int max = 40]) =>
     name.runes.length <= max ? name : '${String.fromCharCodes(name.runes.take(max))}…';
+

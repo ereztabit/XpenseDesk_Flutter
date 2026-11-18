@@ -8,10 +8,11 @@ import '../../utils/responsive_utils.dart';
 import '../employee_dashboard/sheet_status_badge.dart';
 import '../manager_dashboard/usage_bar.dart';
 import 'budget_reason_line.dart';
+import 'budget_row_menu.dart';
 
 /// B2 mobile card row (< 768px): name + "#number" + balance; holder, usage bar
 /// and %; the attention reason (if any); the status badge. Tap opens the
-/// budget. The row ⋮ menu arrives with PC-2.
+/// budget. The row ⋮ menu (FS-1013 PC-2) sits at the end of the badge line.
 class BudgetMobileRow extends StatelessWidget {
   const BudgetMobileRow({
     super.key,
@@ -104,7 +105,13 @@ class BudgetMobileRow extends StatelessWidget {
               BudgetReasonLine(text: reason),
             ],
             const SizedBox(height: 8),
-            SheetStatusBadge(statusId: b.statusId),
+            Row(
+              children: [
+                SheetStatusBadge(statusId: b.statusId),
+                const Spacer(),
+                BudgetRowMenu(budget: b),
+              ],
+            ),
           ],
         ),
       ),
