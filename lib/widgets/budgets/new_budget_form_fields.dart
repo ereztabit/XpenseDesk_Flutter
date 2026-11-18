@@ -25,7 +25,7 @@ class NewBudgetFieldErrors {
 
 /// The four fields of the New budget dialog, in hand-off order: name,
 /// employee (non-disabled users incl. managers, me suffixed "(me)"), initial
-/// amount (LTR) and end date (today or later). State lives in the dialog.
+/// amount (LTR) and end date (up to 30 days back - FS-1013). State lives in the dialog.
 class NewBudgetFormFields extends ConsumerWidget {
   const NewBudgetFormFields({
     super.key,
@@ -106,6 +106,9 @@ class NewBudgetFormFields extends ConsumerWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [ExpenseAmountInputFormatter(maxAmount: _maxAmount)],
           textDirection: TextDirection.ltr,
+          // The digits read LTR but sit where the other fields start (right
+          // in Hebrew) - FS-1013 QA.
+          textAlign: Directionality.of(context) == TextDirection.rtl ? TextAlign.end : TextAlign.start,
           errorText: errors.amount,
           onChanged: (_) => onChanged(),
         ),
@@ -113,7 +116,7 @@ class NewBudgetFormFields extends ConsumerWidget {
         DialogDateField(
           label: l10n.budgetsColEndDate,
           value: endDate,
-          firstDate: today,
+          firstDate: budgetEarliestEndDate(today),
           lastDate: DateTime(today.year + 5, 12, 31),
           enabled: enabled,
           errorText: errors.endDate,

@@ -18,10 +18,6 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
-## Currently Working On
-
-- [Technical][P1] **FS-1019** Daily FX sync - banked on develop as v1.49 (2026-11-18), awaiting ship-feature. see docs/in-progress/fx-daily-sync-spec.md
-
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -44,15 +40,20 @@ One category per line: pick the dominant one. When an item is security-sensitive
 without being primarily a security defect (user impersonation, for example), say
 so in its spec rather than double-tagging here.
 
+## Currently Working On
+
+- [ ] **FS-1013** PC-2 manager control + audit - banked on develop as v1.50 (2026-11-18), awaiting ship-feature.
+
 ## TODO (Backlog)
 
-**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 ship. All UI is designed in the Lovable app mock first.
+**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 + PC-8 + PC-9 ship. All UI is designed in the Lovable app mock first.
 
-- [ ] [Business][P2] **FS-1013** PC-2 manager control -- edit, change holder, submit for holder, line review, soft delete, history timeline. see docs/backlog/petty-cash/pc-2-manager-control-spec.md
 - [ ] [Business][P2] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P2] **FS-1015** PC-4 unified manager dashboard -- NOT DESIGNED. see docs/backlog/petty-cash/pc-4-unified-dashboard-spec.md
 - [ ] [Business][P2] **FS-1016** PC-5 Petty Cash summary report -- NOT DESIGNED. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
+- [ ] [Business][P2] **FS-1020** PC-8 settlement -- approved budget balance goes to the payments report (To pay / To collect), sheet type + budget name columns and filter, group by employee, pending-payment block on the Budgets dashboard. Before PC-7. see docs/backlog/petty-cash/pc-8-settlement-spec.md
+- [ ] [Business][P2] **FS-1021** PC-9 budgets report -- NOT DESIGNED. Filter any budget, drill in, search by expense (merchant / amount), download. see docs/backlog/petty-cash/pc-9-budget-report-spec.md
 - [ ] [Technical][P3] **FS-1018** PC-7 remove the dark-launch flags -- Petty Cash, Travel (if Travel is done) and the stale bulk upload flag, with their admin switches. Only after Petty Cash is done. see docs/backlog/petty-cash/pc-7-remove-flags-spec.md
 
 - [ ] [Business][P2] **FS-1007** Bulk receipt upload S4 -- server read state + "Mark all as read", first-use auto-open, cycle reminder card. S1 + S1.01 (v1.35) and S2 (v1.36) are shipped dark behind the per-company flag; S3 free receipts (v1.37) is live for every trial company; S5 was server-only. Design: backend `docs/bulk-upload/ui-ux-design-guide.md` §7.5-§7.6 and §8.6. Plan + backend half: `BackEnd/XpenseDeskServer/docs/bulk-upload/00-plan.md`
@@ -80,6 +81,8 @@ so in its spec rather than double-tagging here.
 - [ ] [Business][P2] Budget "not enough balance" amount shown in the user's currency, not the budget's -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-balance-error-uses-user-currency.md
 - [ ] [LookAndFeel][P2] Approved budget page has no "Back" link for the holder -- the switcher bar is gone once approved, so a saved link leaves only the header logo as an exit -- fix in PC-2 (FS-1013) -- see docs/bugs/approved-budget-page-has-no-way-back-for-holder.md
 - [ ] [Security][P3] Budget id from the URL is not validated before it goes into API paths -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-id-from-url-not-validated.md
+- [ ] [Technical][P3] Returning from the expense editor logs a Riverpod "called during build" error on Sheet Review and My expenses -- console only; one shared post-frame refresh helper -- see docs/bugs/refresh-after-editor-return-marks-build-dirty.md
+- [ ] [LookAndFeel][P3] An unknown address shows the login screen to a signed-in user -- should go to their dashboard -- see docs/bugs/unknown-route-shows-login-to-signed-in-user.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] [LookAndFeel][P3] Edit expense: receipt panel overflows by 2px in Hebrew (IntrinsicHeight + Expanded) -- debug overflow stripe under the receipt. Found in FS-1010 QA -- see docs/bugs/expense-detail-receipt-panel-overflows-in-hebrew.md
 - [ ] [Business][P3] "Replace receipt" on the edit expense screen does nothing (wired to an empty callback; no image field on update). Found in FS-1007 S3 -- see docs/bugs/edit-expense-replace-receipt-does-nothing.md

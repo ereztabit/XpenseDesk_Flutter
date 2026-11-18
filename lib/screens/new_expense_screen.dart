@@ -605,6 +605,15 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     });
   }
 
+  /// FS-1013: a budget refusal names the budget's left amount in the budget's
+  /// currency (= the company's), never the user's own
+  /// (docs/bugs/budget-balance-error-uses-user-currency.md).
+  String _budgetCurrency() {
+    final id = widget.budgetId;
+    return (id == null ? null : ref.read(budgetProvider(id)).asData?.value.currencyCode) ??
+        ref.read(companyBaseCurrencyProvider);
+  }
+
   Future<void> _submit() async {
     if (!_canSubmit) {
       _flagMissingMandatoryFields();
@@ -719,7 +728,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _isSubmitting = false;
         _submitError = budgetExpenseErrorText(l10n, e.errorCode, e.data,
                 ref.read(companyLocaleProvider),
-                ref.read(userInfoProvider)?.currencyCode ?? 'ILS') ??
+                _budgetCurrency()) ??
             (e.errorCode == 'ExpenseCategoryNotAvailable'
                 ? l10n.expenseCategoryNotAvailable
                 : e.message);

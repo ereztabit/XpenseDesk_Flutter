@@ -2,7 +2,7 @@
 
 > Mission: FS-1019 (backend: BackEnd/XpenseDeskServer/docs/fx-sync/fx-daily-sync-story.md)
 
-Status: FILED 2026-11-18, in progress on `feature/fx-daily-sync`.
+Status: SHIPPED 2026-11-18 as v1.49.
 
 The backend story is the source of truth for the whole mission (sync algorithm,
 statuses, email, Function, schema). This doc covers only the Flutter half. Test

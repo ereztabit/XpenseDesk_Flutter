@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/budget_utils.dart';
 import '../../utils/format_utils.dart';
 import 'budget_reason_line.dart';
+import 'budget_row_menu.dart';
 import 'budget_table_cells.dart';
 
 /// B2 desktop table (>= 768px) inside a section card - the
@@ -50,6 +51,8 @@ class BudgetTable extends StatelessWidget {
               Text(l10n.budgetsSpent),
               Text(l10n.budgetsBalance),
               Text(l10n.budgetsColEndDate),
+              // FS-1013 PC-2: the row menu column.
+              const SizedBox.shrink(),
             ],
           ),
         ),
@@ -82,7 +85,7 @@ class BudgetTable extends StatelessWidget {
                             ),
                           ),
                           TextSpan(
-                            text: '  ${budgetUsedPercent(b)}%',
+                            text: ' (${budgetUsedPercent(b)}%)',
                             style: TextStyle(
                               fontSize: 12,
                               color: budgetUsedPercent(b) > 100
@@ -104,6 +107,7 @@ class BudgetTable extends StatelessWidget {
                       ),
                     ),
                     Text(b.endDate.toCompanyDate(locale), textDirection: ltr),
+                    BudgetRowMenu(budget: b),
                   ],
                 ),
                 if (reasonOf(b).isNotEmpty)

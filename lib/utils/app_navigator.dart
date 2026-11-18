@@ -37,15 +37,21 @@ class AppRoutes {
     return query.isEmpty ? budgetsList : '$budgetsList?$query';
   }
 
-  /// The budget id of a `/budgets/<id>` path, or null.
+  /// The budget id of a `/budgets/<id>` path, or null. FS-1013: only a GUID is
+  /// an id - anything else is not a budget page and never reaches an API path
+  /// (docs/bugs/budget-id-from-url-not-validated.md).
   static String? parseBudgetPath(String path) {
     final segments = Uri.parse(path).pathSegments;
     return segments.length == 2 &&
             segments.first == 'budgets' &&
-            segments.last != 'list'
+            _guid.hasMatch(segments.last)
         ? segments.last
         : null;
   }
+
+  static final RegExp _guid = RegExp(
+    r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+  );
 
   // --- Platform admin shell (FS-1000) ---
   static const String adminLanding = '/admin';

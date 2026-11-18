@@ -65,15 +65,16 @@ class BudgetService {
   /// GET /api/budgets/{id}
   Future<Budget> get(String budgetId) async => _budget(
     _validateResponse(
-      await _apiService.get('/api/budgets/$budgetId', authToken: await _token()),
+      await _apiService.get('/api/budgets/${Uri.encodeComponent(budgetId)}', authToken: await _token()),
     ),
   );
 
   /// POST /api/budgets/{id}/submit (FS-1012 S3) - the holder sends the budget
   /// for approval; a manager's own budget comes back already approved.
+  /// FS-1013 PC-2: a manager may also send someone else's (it waits).
   Future<Budget> submit(String budgetId) async => _budget(
     _validateResponse(
-      await _apiService.post('/api/budgets/$budgetId/submit', const <String, dynamic>{},
+      await _apiService.post('/api/budgets/${Uri.encodeComponent(budgetId)}/submit', const <String, dynamic>{},
           authToken: await _token()),
     ),
   );
@@ -84,20 +85,54 @@ class BudgetService {
     required String holderUserId,
     required double initialAmount,
     required DateTime endDate,
-  }) async {
-    final date =
-        '${endDate.year.toString().padLeft(4, '0')}-'
-        '${endDate.month.toString().padLeft(2, '0')}-'
-        '${endDate.day.toString().padLeft(2, '0')}';
-    return _budget(
-      _validateResponse(
-        await _apiService.post('/api/budgets', {
-          'name': name,
-          'holderUserId': holderUserId,
-          'initialAmount': initialAmount,
-          'endDate': date,
-        }, authToken: await _token()),
+  }) async => _budget(
+    _validateResponse(
+      await _apiService.post(
+        '/api/budgets',
+        _body(name, holderUserId, initialAmount, endDate),
+        authToken: await _token(),
       ),
+    ),
+  );
+
+  /// PUT /api/budgets/{id} (FS-1013 PC-2) - a manager edits a budget that is
+  /// not approved; the body is the create body, all four fields.
+  Future<Budget> update(
+    String budgetId, {
+    required String name,
+    required String holderUserId,
+    required double initialAmount,
+    required DateTime endDate,
+  }) async => _budget(
+    _validateResponse(
+      await _apiService.put(
+        '/api/budgets/${Uri.encodeComponent(budgetId)}',
+        _body(name, holderUserId, initialAmount, endDate),
+        authToken: await _token(),
+      ),
+    ),
+  );
+
+  /// DELETE /api/budgets/{id} (FS-1013 PC-2) - a manager deletes a budget
+  /// that is not approved, with its expenses (support restores).
+  Future<void> delete(String budgetId) async {
+    _validateResponse(
+      await _apiService.delete('/api/budgets/${Uri.encodeComponent(budgetId)}', authToken: await _token()),
     );
   }
+
+  Map<String, dynamic> _body(
+    String name,
+    String holderUserId,
+    double initialAmount,
+    DateTime endDate,
+  ) => {
+    'name': name,
+    'holderUserId': holderUserId,
+    'initialAmount': initialAmount,
+    'endDate':
+        '${endDate.year.toString().padLeft(4, '0')}-'
+        '${endDate.month.toString().padLeft(2, '0')}-'
+        '${endDate.day.toString().padLeft(2, '0')}',
+  };
 }

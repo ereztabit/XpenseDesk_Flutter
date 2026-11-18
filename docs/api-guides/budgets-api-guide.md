@@ -46,7 +46,7 @@ call returns **403 `BudgetsNotEnabled`**.
 | `number` | Per-company running number, 1001 first. Show as `#1001` |
 | `holderName` | May be `null` (user without a full name) - fall back to `holderEmail` |
 | `statusId` | Sheet statuses: 1 Draft (shown "Draft", same as Monthly), 2 Awaiting approval, 3 Approved, 4 Returned |
-| `budgetAmount` | Initial amount + top-ups (top-ups arrive in PC-2; equals `initialAmount` until then) |
+| `budgetAmount` | Always equals `initialAmount` (top-up was dropped in PC-2; a manager edits the amount instead) |
 | `spentAmount` | The budget's expenses, declined lines excluded (always 0 in S1) |
 | `balance` | `budgetAmount - spentAmount`; can be negative |
 | `endDate` | Date only, `yyyy-MM-dd`. Overdue = outstanding and today (company date) is after it |
@@ -88,7 +88,7 @@ email. The client may also filter locally - the list is small.
 | `BudgetAmountRequired` | 400 | `initialAmount` missing |
 | `BudgetAmountInvalid` | 400 | `initialAmount` not above 0 (or absurdly large) |
 | `BudgetEndDateRequired` | 400 | `endDate` missing |
-| `BudgetEndDateInPast` | 400 | `endDate` before the company's today |
+| `BudgetEndDateInPast` | 400 | `endDate` more than 30 days before the company's today (FS-1013; was: before today) |
 
 Validation order: name, holder, amount, end date, then holder active, end date not past, name free - the first failing check
 answers.
@@ -185,8 +185,56 @@ payments or payment reports (ModuleId = 1 guards).
 
 | Code | Status | When |
 |---|---|---|
-| `BudgetAccessDenied` | 403 | Submit by anyone but the holder (a manager included) |
+| `BudgetAccessDenied` | 403 | Submit by anyone but the holder or a manager (PC-2: a manager may submit on the holder's behalf) |
 | `BudgetSubmitNotAllowed` | 409 | The budget is not Draft or Returned (already submitted, or approved) |
 | `BudgetHasActionRequired` | 409 | An expense on it still needs action (a bulk receipt read only in part) |
-| `BudgetLineReviewNotAvailable` | 409 | Approving or declining one line of a budget |
+| `BudgetLineReviewNotAvailable` | 409 | No longer returned since PC-2 (line review on a budget is allowed) |
 | `BudgetNotFound` / `BudgetsNotEnabled` | 404 / 403 | As in S1 |
+
+## PC-2 - manager control + audit (FS-1013)
+
+Story: [pc-2-manager-control.md](../petty-cash/pc-2-manager-control.md).
+
+| Call | Who | Behaviour |
+|---|---|---|
+| `PUT /api/budgets/{budgetId}` | Manager | Body = the create body, **all four fields** `{ "name", "holderUserId", "initialAmount", "endDate" }`; returns the budget. Allowed in any status but Approved; the status never changes. Only changed fields are written, each with its own audit row; an unchanged save writes nothing. `endDate` in the past is refused only when it changed (an overdue budget can still be renamed). A new holder gets the budget (and its access); the expenses keep their author. A manager may edit a budget they hold, amount included |
+| `DELETE /api/budgets/{budgetId}` | Manager | Soft-deletes a budget that is not Approved, with its expenses. `data` is `null`. Afterwards every read of it is 404 `BudgetNotFound` and its name is free. No restore call - support only |
+| `POST /api/budgets/{budgetId}/submit` | Holder **or any manager** | A manager submitting someone else's budget sends it to **Awaiting approval** (only a manager's own budget is approved on submit). The `log` row's actor is the manager |
+| `POST /api/expenses/{expenseId}/approve` / `decline` | Manager | On a budget line: allowed while the budget is not Approved (Draft, Awaiting, Returned). **Only the line changes** - the budget's status never moves (approving every line does not close it; a returned budget stays returned). A declined line leaves "spent". Monthly lines unchanged |
+| `GET /api/expense-sheets/{budgetId}` | as S3 | Every `log` entry appends `eventTypeId`, `oldValue`, `newValue` (below) |
+
+### Audit events in `log`
+
+`eventTypeId` `null` = a status change, read from `toStatusId` as in S3. Any
+other value is an event: `fromStatusId` = `toStatusId` = the budget's status at
+that moment (not a transition), actor in `changedByUserId` / `changedByName`.
+**Status strips and "sent / returned on" dates must read only entries with
+`eventTypeId` = null.**
+
+| `eventTypeId` | Event | `oldValue` | `newValue` |
+|---|---|---|---|
+| 1 | Name changed | old name | new name |
+| 2 | Holder changed | old holder's full name (email if none), at that time | new holder's |
+| 3 | End date changed | `yyyy-MM-dd` | `yyyy-MM-dd` |
+| 4 | Amount changed | invariant `0.00` (e.g. `500.00`) | same |
+| 5 | Expense approved | the line's merchant (may be `null`) | the line's amount, `0.00` |
+| 6 | Expense declined | merchant | amount |
+| 7 | Deleted | `null` | `null` (never visible - a deleted budget can't be read) |
+
+Client rule (user decision): the Activity card shows once `log` has **more than
+one** entry ("created" is the first).
+
+### PC-2 error codes
+
+| Code | Status | When |
+|---|---|---|
+| `BudgetAccessDenied` | 403 | Edit / delete by an employee |
+| `BudgetNotFound` | 404 | No such budget, or already deleted |
+| `BudgetApprovedClosed` | 409 | Edit, delete or line review of an Approved budget |
+| `BudgetAmountBelowSpent` | 409 | **New.** Edit lowers the amount below `spentAmount` and the company does not allow a negative balance; `data.spentAmount` |
+| `BudgetBalanceExceeded` | 409 | Re-approving a declined line would take the balance below zero (negatives not allowed); `data.balance` |
+| `BudgetNameRequired` / `BudgetNameTooLong` / `BudgetNameAlreadyExists` / `BudgetHolderRequired` / `BudgetHolderNotActive` / `BudgetAmountRequired` / `BudgetAmountInvalid` / `BudgetEndDateRequired` / `BudgetEndDateInPast` | as create | Edit, same rules (`BudgetEndDateInPast` only for a changed date; the name check ignores the budget itself) |
+| `BudgetsNotEnabled` | 403 | As in S1 |
+
+A line already in the asked state, or approving a line with no amount, fails
+as on Monthly (400, no code) - the UI never offers those.

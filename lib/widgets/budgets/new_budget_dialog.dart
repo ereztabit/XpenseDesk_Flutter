@@ -11,17 +11,25 @@ import '../../utils/budget_copy_utils.dart';
 import '../../utils/budget_utils.dart';
 import '../app_button.dart';
 import '../error_alert.dart';
+import 'budget_negative_confirm.dart';
 import 'new_budget_form_fields.dart';
 
 /// B3 - New budget (UX hand-off section 2.3). Dialog on desktop, bottom sheet
 /// on mobile ([showAdaptiveSheetDialog]). Returns the created budget, or null
 /// on cancel. Errors show under each field after the first Create; amount and
 /// date errors also show live once a value is typed.
+/// FS-1013 PC-2: with a [budget] it is "Edit budget" (prefilled, "Save"); a past
+/// end date errs only once changed; below-zero amounts: [confirmBudgetBelowZero].
 class NewBudgetDialog extends ConsumerStatefulWidget {
-  const NewBudgetDialog({super.key});
+  const NewBudgetDialog({super.key, this.budget});
+
+  final Budget? budget; // null = create
 
   static Future<Budget?> show(BuildContext context) =>
       showAdaptiveSheetDialog<Budget>(context, builder: (_) => const NewBudgetDialog());
+
+  static Future<Budget?> showEdit(BuildContext context, Budget budget) =>
+      showAdaptiveSheetDialog<Budget>(context, builder: (_) => NewBudgetDialog(budget: budget));
 
   @override
   ConsumerState<NewBudgetDialog> createState() => _NewBudgetDialogState();
@@ -35,6 +43,22 @@ class _NewBudgetDialogState extends ConsumerState<NewBudgetDialog> {
   bool _attempted = false;
   bool _saving = false;
   String? _serverError;
+
+  bool get _editing => widget.budget != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final b = widget.budget;
+    if (b == null) return;
+    _name.text = b.name;
+    _amount.text = budgetAmountInput(b.initialAmount);
+    _holderId = b.holderUserId;
+    _endDate = b.endDate;
+  }
+
+  /// An overdue budget keeps its end date through an edit of anything else.
+  bool get _endDateChanged => !DateUtils.isSameDay(_endDate, widget.budget?.endDate);
 
   @override
   void dispose() {
@@ -57,7 +81,7 @@ class _NewBudgetDialogState extends ConsumerState<NewBudgetDialog> {
           : (amount == null || amount <= 0 ? l10n.budgetsErrAmount : null),
       endDate: _endDate == null
           ? (_attempted ? l10n.budgetsErrRequired : null)
-          : (_endDate!.isBefore(today) ? l10n.budgetsErrDate : null),
+          : (_endDateChanged && _endDate!.isBefore(budgetEarliestEndDate(today)) ? l10n.budgetsErrDate : null),
     );
   }
 
@@ -67,15 +91,30 @@ class _NewBudgetDialogState extends ConsumerState<NewBudgetDialog> {
       _serverError = null;
     });
     if (_errors(l10n).any) return;
+    final b = widget.budget;
+    // An edit with nothing changed closes without a call or a toast.
+    if (b != null && !budgetEditChanges(b, _name.text.trim(), _holderId!, _amountValue!, _endDate!)) {
+      return Navigator.of(context).pop();
+    }
+    if (b != null && (!await confirmBudgetBelowZero(context, ref, b, _amountValue!) || !mounted)) return;
 
     setState(() => _saving = true);
     try {
-      final budget = await ref.read(budgetServiceProvider).create(
-        name: _name.text.trim(),
-        holderUserId: _holderId!,
-        initialAmount: _amountValue!,
-        endDate: _endDate!,
-      );
+      final service = ref.read(budgetServiceProvider);
+      final budget = _editing
+          ? await service.update(
+              widget.budget!.budgetId,
+              name: _name.text.trim(),
+              holderUserId: _holderId!,
+              initialAmount: _amountValue!,
+              endDate: _endDate!,
+            )
+          : await service.create(
+              name: _name.text.trim(),
+              holderUserId: _holderId!,
+              initialAmount: _amountValue!,
+              endDate: _endDate!,
+            );
       if (mounted) Navigator.of(context).pop(budget);
     } on BudgetException catch (e) {
       if (!mounted) return;
@@ -112,7 +151,7 @@ class _NewBudgetDialogState extends ConsumerState<NewBudgetDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.budgetsNew,
+              _editing ? l10n.budgetsEditTitle : l10n.budgetsNew,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -146,7 +185,7 @@ class _NewBudgetDialogState extends ConsumerState<NewBudgetDialog> {
                 ),
                 const SizedBox(width: 8),
                 AppButton(
-                  label: l10n.budgetsCreate,
+                  label: _editing ? l10n.budgetsSave : l10n.budgetsCreate,
                   isLoading: _saving,
                   onPressed: () => _create(l10n),
                 ),

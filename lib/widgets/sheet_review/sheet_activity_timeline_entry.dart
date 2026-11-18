@@ -5,6 +5,7 @@ import '../../models/expense_sheet_log_entry.dart';
 import '../../models/expense_sheet_status.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import 'budget_log_event_detail.dart';
 
 /// One row in the activity timeline. Renders the resulting (new) status, the
 /// actor (a name, or "System" for system-driven transitions), the timestamp,
@@ -21,6 +22,7 @@ class SheetActivityTimelineEntry extends StatelessWidget {
     required this.companyLocale,
     required this.isLast,
     this.isBudget = false,
+    required this.currencyCode,
   });
 
   final ExpenseSheetLogEntry entry;
@@ -29,6 +31,9 @@ class SheetActivityTimelineEntry extends StatelessWidget {
 
   /// FS-1012 S3: budget wording for created / submitted / returned.
   final bool isBudget;
+
+  /// FS-1013 PC-2: the budget's currency, for the amount events.
+  final String currencyCode;
 
   String _statusLabel(int statusId, AppLocalizations l10n) {
     switch (ExpenseSheetStatus.fromId(statusId)) {
@@ -51,7 +56,11 @@ class SheetActivityTimelineEntry extends StatelessWidget {
     final actor = entry.isSystemDriven
         ? l10n.timelineSystemActor
         : (entry.changedByName ?? l10n.timelineSystemActor);
-    final toLabel = _statusLabel(entry.toStatusId, l10n);
+    // FS-1013 PC-2: a budget event is captioned by its type, not its status.
+    final event = entry.isStatusChange ? null : BudgetLogEvent.fromId(entry.eventTypeId);
+    final toLabel = event != null
+        ? budgetLogEventLabel(event, l10n)
+        : _statusLabel(entry.toStatusId, l10n);
     final dateText = entry.changedAt.toLongDate(companyLocale);
     final comment = entry.comment?.trim();
     final hasComment = comment != null && comment.isNotEmpty;
@@ -105,6 +114,13 @@ class SheetActivityTimelineEntry extends StatelessWidget {
                     // tells the full story — rendering "from → to" duplicated
                     // every status on screen.
                     Text(toLabel, style: transitionStyle),
+                    if (event != null)
+                      BudgetLogEventDetail(
+                        event: event,
+                        entry: entry,
+                        companyLocale: companyLocale,
+                        currencyCode: currencyCode,
+                      ),
                     const SizedBox(height: 2),
                     // Actor · date as separate runs so a mixed-direction
                     // phrase (English name + Hebrew date) doesn't scramble.

@@ -4,7 +4,6 @@ import '../providers/budgets_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../providers/free_receipts_provider.dart';
 import '../services/budget_service.dart';
-import '../utils/app_navigator.dart';
 import '../utils/budget_copy_utils.dart';
 import '../utils/budget_utils.dart';
 import '../utils/new_expense_launcher.dart';
@@ -12,9 +11,10 @@ import '../utils/responsive_utils.dart';
 import '../widgets/app_button.dart';
 import '../widgets/budgets/budget_action_bar.dart';
 import '../widgets/budgets/budget_expenses_section.dart';
+import '../widgets/budgets/budget_header_actions.dart';
 import '../widgets/budgets/budget_header_card.dart';
-import '../widgets/budgets/budget_new_expense_button.dart';
 import '../widgets/budgets/budget_review_actions.dart';
+import '../widgets/budgets/budget_review_lines_section.dart';
 import '../widgets/budgets/budget_status_strip.dart';
 import '../widgets/budgets/budgets_gate.dart';
 import '../widgets/bulk_upload/bulk_upload_entry_area.dart';
@@ -24,7 +24,9 @@ import '../widgets/sheet_review/sheet_activity_timeline.dart';
 /// B4 budget page (`/budgets/<id>`) - My expenses in budget mode: header card,
 /// the budget's expenses (search, list) and "+ New Expense" (header on
 /// desktop, sticky bar on mobile).
-/// "Back" to the list for someone else's budget. The holder and any manager
+/// "Back" to the list for someone else's budget, to the dashboard for the
+/// holder once approved (FS-1013). A manager edits it ("Edit") and reviews
+/// someone else's lines one by one (FS-1013 PC-2). The holder and any manager
 /// add / edit / delete until the budget is Approved (S2a); submit, status
 /// strips and Activity arrive in S3.
 class BudgetPageScreen extends ConsumerStatefulWidget {
@@ -84,6 +86,7 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
     // S3: the sheet behind the budget - status strip, decision buttons, Activity.
     final sheet = ref.watch(sheetDetailProvider(widget.budgetId)).asData?.value;
     final user = ref.watch(userInfoProvider);
+    final isManager = user?.isManager ?? false;
     final hasActions = loaded != null &&
         sheet != null &&
         BudgetReviewActions.hasActions(loaded, sheet,
@@ -101,7 +104,9 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                 managerOnly: false,
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(vertical: 24),
+                  // FS-1013: review mode takes the review screen's 1100 width.
                   child: ConstrainedContent(
+                    maxWidth: loaded != null && budgetLinesReviewable(loaded, email: me, isManager: isManager) ? 1100 : 720,
                     child: budget.when(
                       loading: () =>
                           const Center(child: CircularProgressIndicator()),
@@ -115,28 +120,32 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                       data: (b) => Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (!budgetIsHeldBy(b, me)) ...[
+                          if (budgetBackTarget(b, email: me, isManager: isManager)
+                              case final back?) ...[
                             Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: AppButton(
                                 label: l10n.budgetsBack,
                                 variant: AppButtonVariant.ghost,
                                 icon: Icons.arrow_back,
-                                onPressed: () =>
-                                    handleBackNavigation(AppRoutes.budgetsList),
+                                // Pop keeps the list as left; a deep link opens the target.
+                                onPressed: () => Navigator.of(context).canPop()
+                                    ? Navigator.of(context).pop()
+                                    : handleBackNavigation(back),
                               ),
                             ),
                             const SizedBox(height: 8),
                           ],
                           BudgetHeaderCard(
                             budget: b,
-                            trailing: editable && !mobile
-                                ? BudgetNewExpenseButton(
-                                    onPressed: canAdd ? _addExpenses : null,
-                                  )
-                                : null,
+                            trailing: BudgetHeaderActions(
+                              budget: b,
+                              canEdit: budgetManagerCanChange(b, isManager: isManager),
+                              showNewExpense: editable && !mobile,
+                              onNewExpense: canAdd ? _addExpenses : null,
+                            ),
                             footer: hasActions && !mobile
-                                ? BudgetReviewActions(budget: b, sheet: sheet!)
+                                ? BudgetReviewActions(budget: b, sheet: sheet)
                                 : null,
                           ),
                           if (sheet != null && BudgetStatusStrip.shows(sheet)) ...[
@@ -148,14 +157,22 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                           if (editable)
                             BulkUploadEntryArea(enabled: canAdd, budgetId: b.budgetId),
                           const SizedBox(height: 16),
-                          BudgetExpensesSection(
-                            budgetId: b.budgetId,
-                            editable: _editable(b),
-                          ),
-                          if (sheet != null &&
-                              budgetActivityVisible(sheet.log.map((l) => l.toStatusId))) ...[
+                          // FS-1013 PC-2: a manager reviewing someone else's
+                          // budget gets the review line list (approve / decline).
+                          if (budgetLinesReviewable(b, email: me, isManager: isManager))
+                            BudgetReviewLinesSection(budget: b)
+                          else
+                            BudgetExpensesSection(
+                              budgetId: b.budgetId,
+                              editable: _editable(b),
+                            ),
+                          if (sheet != null && budgetActivityVisible(sheet.log.length)) ...[
                             const SizedBox(height: 16),
-                            SheetActivityTimeline(log: sheet.log, isBudget: true),
+                            SheetActivityTimeline(
+                              log: sheet.log,
+                              isBudget: true,
+                              currencyCode: b.currencyCode,
+                            ),
                           ],
                         ],
                       ),
@@ -169,7 +186,7 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                 showNewExpense: editable,
                 onNewExpense: canAdd ? _addExpenses : null,
                 actions: hasActions
-                    ? BudgetReviewActions(budget: loaded, sheet: sheet!)
+                    ? BudgetReviewActions(budget: loaded, sheet: sheet)
                     : null,
               ),
             const AppFooter(),
