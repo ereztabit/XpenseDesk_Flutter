@@ -1,31 +1,36 @@
-/// Fixed column widths shared by the desktop Payments table header and rows.
-/// One source of truth so header and body cells always line up.
+/// Fixed column widths shared by the desktop Payments table header, rows and
+/// total row. One source of truth so the cells always line up.
+/// Order (owner, 2026-11-18): employee + status pill, amount, action, sheet
+/// type, cycle, approved date, processed date, gov ID.
 class PaymentsTableColumns {
   static const double checkbox = 44;
-  static const double employee = 140;
-  static const double govId = 100;
-  static const double email = 180;
-  static const double cycle = 110;
-  static const double approvedDate = 105;
-  static const double amount = 86;
-  static const double paymentStatus = 130;
-  static const double processedDate = 105;
+  static const double employee = 220;
+  static const double amount = 110;
 
-  /// Small "Edit" text button (#13) on every row.
-  static const double action = 96;
+  /// "Process" (pending) / "Edit" (processed) button, with its icon.
+  static const double action = 120;
+  static const double sheetType = 150;
+  static const double cycle = 120;
+  static const double approvedDate = 105;
+  static const double processedDate = 105;
+  static const double govId = 100;
 
   /// Horizontal padding around each cell.
   static const double cellGap = 8;
 
-  static const double minTableWidth = checkbox +
+  /// The Sheet type column shows only when more than one type is paid.
+  static double tableWidth({required bool showSheetType}) =>
+      showSheetType ? minTableWidth : minTableWidth - sheetType - cellGap;
+
+  static const double minTableWidth =
+      checkbox +
       employee +
-      govId +
-      email +
+      amount +
+      action +
+      sheetType +
       cycle +
       approvedDate +
-      amount +
-      paymentStatus +
       processedDate +
-      action +
-      cellGap * 10;
+      govId +
+      cellGap * 9;
 }

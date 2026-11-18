@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/company_module.dart';
 import '../../models/payment_status.dart';
+import '../../models/payments_filter.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/company_provider.dart';
+import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
 import '../../utils/format_utils.dart';
@@ -19,19 +21,26 @@ import '../app_button.dart';
 /// - All clear (count == 0): neutral chrome, success glyph, "View History"
 ///   text link → Payments Report pre-filtered to Processed.
 ///
-/// Data comes from `paymentsSummary` on the company payload; null means the
-/// caller is not a manager and the card does not render. The summary is kept
-/// fresh in place from payment write responses — never by refetching.
+/// Data: the Monthly-only payments summary (budgets are left out - they
+/// settle on the Budgets dashboard); null means the caller is not a manager
+/// and the card does not render.
 class AwaitingPaymentCard extends ConsumerWidget {
   const AwaitingPaymentCard({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final summary = ref.watch(companyProvider).asData?.value.paymentsSummary;
+    // Monthly sheets only: budgets settle on the Budgets dashboard (PC-8, owner).
+    final summary = ref
+        .watch(sheetTypePaymentsSummaryProvider(CompanyModuleKey.monthly))
+        .asData
+        ?.value;
     if (summary == null) return const SizedBox.shrink();
 
     final locale = ref.watch(companyLocaleProvider);
+    // Filter the report to Monthly only when the company also pays budgets;
+    // a Monthly-only company never sees a sheet-type filter.
+    final multiType = ref.watch(paymentsMultiTypeProvider);
     final currencyCode = ref.watch(userInfoProvider)?.currencyCode;
     final hasAwaiting = summary.awaitingCount > 0;
 
@@ -138,13 +147,18 @@ class AwaitingPaymentCard extends ConsumerWidget {
             AppButton(
               label: l10n.viewReport,
               variant: AppButtonVariant.primary,
-              onPressed: () => _openReport(context, PaymentStatus.awaitingPayment),
+              onPressed: () => _openReport(
+                context,
+                PaymentStatus.awaitingPayment,
+                multiType,
+              ),
             )
           else
             MouseRegion(
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
-                onTap: () => _openReport(context, PaymentStatus.processed),
+                onTap: () =>
+                    _openReport(context, PaymentStatus.processed, multiType),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -157,8 +171,11 @@ class AwaitingPaymentCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward,
-                        size: 14, color: AppTheme.foreground),
+                    const Icon(
+                      Icons.arrow_forward,
+                      size: 14,
+                      color: AppTheme.foreground,
+                    ),
                   ],
                 ),
               ),
@@ -168,11 +185,14 @@ class AwaitingPaymentCard extends ConsumerWidget {
     );
   }
 
-  void _openReport(BuildContext context, PaymentStatus status) {
+  void _openReport(BuildContext context, PaymentStatus status, bool multiType) {
     Navigator.pushNamed(
       context,
       AppRoutes.managerPayments,
-      arguments: status,
+      arguments: PaymentsFilter.defaults.copyWith(
+        status: status,
+        sheetType: multiType ? CompanyModuleKey.monthly : null,
+      ),
     );
   }
 }

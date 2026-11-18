@@ -12,6 +12,7 @@ import '../../services/expense_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/budget_copy_utils.dart';
 import '../../utils/budget_utils.dart';
+import '../../utils/settlement_utils.dart';
 import '../expenses/delete_expense_dialog.dart';
 import '../last_action_confirm_dialog.dart';
 import '../sheet_review/sheet_review_line_section.dart';
@@ -35,6 +36,17 @@ class BudgetReviewLinesSection extends ConsumerWidget {
     ..invalidate(myBudgetsFetchProvider)
     ..invalidate(budgetProvider);
 
+  Future<String> _settlementText(
+      AppLocalizations l10n, ProviderContainer container, String locale) async {
+    var fresh = budget;
+    try {
+      container.invalidate(budgetProvider(budget.budgetId));
+      fresh = await container.read(budgetProvider(budget.budgetId).future);
+    } catch (_) {}
+    return budgetApprovalSettlementText(l10n, fresh,
+        cycleLabel: container.read(openPaymentCycleLabelProvider), locale: locale);
+  }
+
   Future<void> _review(
     BuildContext context,
     WidgetRef ref,
@@ -56,9 +68,12 @@ class BudgetReviewLinesSection extends ConsumerWidget {
       approve
           ? await service.approveExpense(line.expenseId)
           : await service.declineExpense(line.expenseId);
+      // The decision just moved spent: settle on the fresh figures (PC-8).
+      final settlement = lastPending ? await _settlementText(l10n, container, locale) : '';
       if (lastPending && context.mounted &&
           await LastActionConfirmDialog.show(context,
-              title: l10n.budgetsReviewDoneTitle, body: l10n.budgetsReviewDoneBody)) {
+              title: l10n.budgetsReviewDoneTitle,
+              body: '${l10n.budgetsReviewDoneBody}\n\n$settlement')) {
         // The line is already saved; only the budget approve can fail here.
         String done = l10n.timelineStatusApproved;
         try {
@@ -93,6 +108,7 @@ class BudgetReviewLinesSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final detail = ref.watch(sheetDetailProvider(budget.budgetId));
+    ref.watch(openPaymentCycleLabelProvider); // loaded before the approve prompt
     final container = ProviderScope.containerOf(context, listen: false);
 
     return detail.when(

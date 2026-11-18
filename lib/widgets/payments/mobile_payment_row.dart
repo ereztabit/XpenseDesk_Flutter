@@ -4,18 +4,21 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/payments_copy_utils.dart';
 import '../app_button.dart';
-import 'payment_status_badge.dart';
+import 'payment_employee_cell.dart';
 
-/// One mobile Payments row (per the approved mobile mock): leading checkbox
-/// (Awaiting rows only), employee name, amount, payment badge, trailing "Edit"
-/// button — with the sheet's cycle label as an inline secondary line
-/// underneath. The employee name is the link that opens the sheet (#8 — not the
-/// whole row).
+/// One mobile Payments row, two lines:
+///   [x] Employee name [Pending] ............. amount (red "-₪" to charge)
+///       Budget #1016 · November 2026               [Process]
+/// Money to charge is red with a minus. The employee name opens the sheet;
+/// the button opens the payment-status dialog (Process when pending, Edit
+/// once processed).
 class MobilePaymentRow extends StatelessWidget {
   const MobilePaymentRow({
     super.key,
     required this.row,
+    this.showSheetType = true,
     required this.locale,
     required this.currencyCode,
     required this.isSelected,
@@ -26,6 +29,9 @@ class MobilePaymentRow extends StatelessWidget {
   });
 
   final PaymentReportRow row;
+
+  /// False for a Monthly-only company: the subtitle is just the cycle.
+  final bool showSheetType;
   final String locale;
   final String? currencyCode;
   final bool isSelected;
@@ -33,119 +39,107 @@ class MobilePaymentRow extends StatelessWidget {
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
 
-  /// Opens the unified edit dialog for this row. Null hides the action.
+  /// Opens the payment-status dialog for this row. Null hides the action.
   final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final amountText = currencyCode != null
-        ? row.amount.toCurrency(locale, currencyCode!)
-        : row.amount.toFormattedNumber(locale);
-
     final Color? rowColor = isHighlighted
         ? AppTheme.destructive.withAlpha(20)
         : isSelected
-            ? AppTheme.primaryTint
-            : null;
+        ? AppTheme.primaryTint
+        : null;
+    final cycle = row.cycleLabel.toCycleLongMonth(locale);
+    final subtitle = showSheetType
+        ? '${paymentBudgetText(row) ?? paymentSheetTypeText(l10n, row.sheetType)} · $cycle'
+        : cycle;
 
     return Container(
       color: rowColor,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 10, 12, 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 40,
+            height: 24,
+            child: row.isAwaiting && onToggleSelection != null
+                ? Checkbox(
+                    value: isSelected,
+                    onChanged: (v) => onToggleSelection!(v ?? false),
+                    visualDensity: VisualDensity.compact,
+                  )
+                : null,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: 36,
-                  child: row.isAwaiting && onToggleSelection != null
-                      ? Checkbox(
-                          value: isSelected,
-                          onChanged: (v) => onToggleSelection!(v ?? false),
-                          visualDensity: VisualDensity.compact,
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
+                Row(
+                  children: [
+                    Expanded(
+                      child: PaymentEmployeeCell(
+                        row: row,
                         onTap: onTap,
-                        child: Tooltip(
-                          message: row.employeeName,
-                          child: Text(
-                            row.employeeName,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.primary,
-                              decoration: TextDecoration.underline,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        showDirection: showSheetType,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      paymentRowAmountText(row, locale, currencyCode),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: row.isCollect
+                            ? AppTheme.destructive
+                            : AppTheme.foreground,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.mutedForeground,
                         ),
                       ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    amountText,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.foreground,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  flex: 3,
-                  child: row.paymentStatus != null
-                      ? Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child:
-                              PaymentStatusBadge(status: row.paymentStatus!),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                // Single "Edit" button on every row (#13) — opens the unified
-                // payment-status dialog (mark processed / edit / revert). Fixed
-                // slot width matches the header spacer so columns stay aligned.
-                SizedBox(
-                  width: 76,
-                  child: onEdit != null
-                      ? Center(
-                          child: AppButton(
-                            label: l10n.paymentEditButton,
-                            variant: AppButtonVariant.normal,
-                            dense: true,
-                            onPressed: onEdit,
-                          ),
-                        )
-                      : const SizedBox.shrink(),
+                    if (onEdit != null) ...[
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        height: 32, // a real button, not a chip
+                        child: AppButton(
+                          label: row.isAwaiting
+                              ? l10n.paymentProcessButton
+                              : l10n.paymentEditButton,
+                          variant: row.isAwaiting
+                              ? AppButtonVariant.primary
+                              : AppButtonVariant.normal,
+                          icon: row.isAwaiting
+                              ? Icons.check_circle_outline
+                              : Icons.edit_outlined,
+                          dense: true,
+                          onPressed: onEdit,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 36),
-              child: Text(
-                row.cycleLabel,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppTheme.mutedForeground,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }

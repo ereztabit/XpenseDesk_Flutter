@@ -36,9 +36,15 @@ call returns **403 `BudgetsNotEnabled`**.
   "currencyCode": "ILS",
   "createdAt": "2026-11-17T09:12:44.123",
   "submittedAt": null,
-  "reviewedAt": null
+  "reviewedAt": null,
+  "paymentStatus": null,
+  "paymentCycleId": null,
+  "paymentCycleLabel": null,
+  "settlementAmount": null
 }
 ```
+
+The last four fields are PC-8 (settlement) - see "PC-8 - settlement" below.
 
 | Field | Meaning |
 |---|---|
@@ -163,7 +169,8 @@ holder is the caller the refusals are the usual `FreeReceiptsUsedUp` /
 ## Monthly is untouched
 
 Budget sheets have no cycle and never appear in any Monthly call (sheets,
-queue, dashboard counters, payments, reports, cycle close). Budget expenses
+queue, dashboard counters, reports, cycle close; payments since PC-8 - see
+below). Budget expenses
 have no cycle either and never appear in Monthly sheets, totals or reports.
 
 ## S3 - submit and review
@@ -171,15 +178,16 @@ have no cycle either and never appear in Monthly sheets, totals or reports.
 | Call | Behaviour |
 |---|---|
 | `POST /api/budgets/{budgetId}/submit` | The **holder** sends a Draft or Returned budget for approval; returns the budget object. A manager's own budget comes back **Approved** (approved on submit, the Monthly rule). Editing stays open while Awaiting approval |
-| `POST /api/expense-sheets/{budgetId}/approve` | The existing sheet call. Approves the budget and its pending lines; Approved closes it. A budget is **prepaid**: it never enters the payment lifecycle (`paymentStatus` stays `null`) |
+| `POST /api/expense-sheets/{budgetId}/approve` | The existing sheet call. Approves the budget and its pending lines; Approved closes it. **PC-8 (FS-1020):** approval settles the budget through payments - see "PC-8 - settlement" below (was: "prepaid, never enters the payment lifecycle") |
 | `POST /api/expense-sheets/{budgetId}/decline` | The existing sheet call, `{ "comment": "..." }` required. Returns the budget to its holder; **its lines stay Pending** (a Monthly decline still declines them) so the holder edits and resubmits |
 | `GET /api/expense-sheets/{budgetId}` | `log` is the Activity trail: to-status 1 = created (by the manager), 2 = submitted, 4 = returned (`comment` = the reason), 3 = approved. `latestDeclineComment`, `submittedAt`, `reviewedAt` feed the status strips |
 
 Line-level review is PC-2: `POST /api/expenses/{id}/approve` or `/decline` on
 a budget line is refused with 409 `BudgetLineReviewNotAvailable`.
 
-Budgets never appear in the Monthly queue, company sheet lists, counters,
-payments or payment reports (ModuleId = 1 guards).
+Budgets never appear in the Monthly queue, company sheet lists or counters
+(ModuleId = 1 guards). Since PC-8 an approved budget that owes money **does**
+appear in payments and the payment exports, marked `sheetType: "PettyCash"`.
 
 ### S3 error codes
 
@@ -239,3 +247,59 @@ one** entry ("created" is the first).
 
 A line already in the asked state, or approving a line with no amount, fails
 as on Monthly (400, no code) - the UI never offers those.
+
+## PC-8 - settlement (FS-1020)
+
+Story: docs/petty-cash/pc-8-settlement.md. An approved budget settles the gap
+between what was spent and the budget amount through the **existing payment
+module** (payment-status guide: docs/done/payment-status-flutter-guide.md,
+section 10). Generic: the next sheet type (Travel) settles the same way.
+
+### On approval (approve, or approve-on-submit for a manager's own budget)
+
+| Settlement = spent - budget amount | Means | `paymentStatus` | In payments |
+|---|---|---|---|
+| > 0 (overspent) | The company pays the holder | `AwaitingPayment` | Yes, `direction: "Pay"`, positive `amount` |
+| < 0 (unspent cash + declined lines) | The holder returns money | `AwaitingPayment` | Yes, `direction: "Collect"`, negative `amount` |
+| = 0 | Nothing owed | `null` | No |
+
+`spent` is the existing rule (declined lines excluded), so a declined line
+raises the amount to collect. Frozen at approval, company currency. The
+budget's status stays Approved (final); the payment status sits beside it and
+follows the payments lifecycle (Processed, revert, edit - all the existing
+payment calls accept a budget id).
+
+### New fields (additive)
+
+On the budget object (`GET /api/budgets`, `/mine`, `/{id}`, submit response):
+
+| Field | Meaning |
+|---|---|
+| `paymentStatus` | `null` until approved, and when the settlement is zero; else `"AwaitingPayment"` / `"Processed"` (same strings as payments) |
+| `paymentCycleId` | The company's **Open** cycle at approval - the cycle the budget is paid / collected in. `null` until approved |
+| `paymentCycleLabel` | That cycle's label (e.g. `2026/11`). `null` until approved |
+| `settlementAmount` | Signed from the company's view: positive = pay the holder, negative = collect. `0` for an exact budget. `null` until approved |
+
+On the sheet detail (`GET /api/expense-sheets/{id}`): `paymentCycleId`,
+`paymentCycleLabel`, `settlementAmount` - same meaning; all `null` on a Monthly
+sheet (its payment cycle is still `expenseCycleId`). `expenseCycleId` stays
+`null` on a budget.
+
+### Payments for budgets
+
+- `GET /api/payments?sheetType=PettyCash` (or `Monthly`; omit = every type) -
+  rows carry `sheetType`, `budgetNumber`, `budgetName`, `direction`; the
+  envelope adds `payCount`, `collectCount`, `grandCollectAmount`,
+  `pageCollectAmount`.
+- `GET /api/payments/summary?sheetType=PettyCash` - the Budgets dashboard
+  panel: `awaitingCount`, `awaitingTotalAmount` (to pay), `awaitingCollectCount`,
+  `awaitingCollectAmount` (to collect, positive). Manager only.
+- Totals never net: every total is split into to pay and to collect.
+
+Full contract and the Excel changes: the payment-status guide, section 10.
+
+### PC-8 error codes
+
+| Code | Status | When |
+|---|---|---|
+| `PaymentsSheetTypeInvalid` | 400 | **New.** `sheetType` is not `Monthly` or `PettyCash` (report, summary, Export All) |

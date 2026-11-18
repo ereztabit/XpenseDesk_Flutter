@@ -8,12 +8,12 @@ import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
+import '../../utils/payments_copy_utils.dart';
 import '../../utils/payments_utils.dart';
 import '../manager_dashboard/paging_overflow_notice.dart';
 import 'desktop_bulk_action_bar.dart';
 import 'desktop_payments_table.dart';
 import 'payments_filter_card.dart';
-import 'payments_found_caption.dart';
 
 /// Desktop composition of the Payments Report body. The whole view flows with
 /// the page (no inner vertical scroll — #6); the table sizes to its rows and
@@ -64,8 +64,9 @@ class DesktopPaymentsView extends ConsumerWidget {
 
   void _back(BuildContext context) {
     final nav = Navigator.of(context);
-    nav.canPop() ? nav.pop() : nav.pushReplacementNamed(
-        AppRoutes.managerDashboard);
+    nav.canPop()
+        ? nav.pop()
+        : nav.pushReplacementNamed(AppRoutes.managerDashboard);
   }
 
   @override
@@ -85,8 +86,7 @@ class DesktopPaymentsView extends ConsumerWidget {
         Row(
           children: [
             IconButton(
-              icon:
-                  const Icon(Icons.arrow_back, color: AppTheme.foreground),
+              icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
               // canPop falls back to the dashboard so back works after a
               // browser refresh / deep link (nothing to pop otherwise).
               onPressed: () => _back(context),
@@ -122,9 +122,9 @@ class DesktopPaymentsView extends ConsumerWidget {
                   padding: const EdgeInsets.only(top: 12),
                   child: DesktopBulkActionBar(
                     selectedCount: selectedIds.length,
-                    amountText: PaymentsSelectionUtils.totalAmountTextFor(
-                      rows,
-                      selectedIds,
+                    summaryText: paymentSelectionText(
+                      l10n,
+                      PaymentsSelectionUtils.totalsFor(rows, selectedIds),
                       locale: locale,
                       currencyCode: currencyCode,
                     ),
@@ -135,12 +135,6 @@ class DesktopPaymentsView extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 16),
-        PaymentsFoundCaption(
-          rows: rows,
-          locale: locale,
-          currencyCode: currencyCode,
-        ),
-        const SizedBox(height: 8),
         DesktopPaymentsTable(
           rows: rows,
           locale: locale,

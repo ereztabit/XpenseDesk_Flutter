@@ -9,6 +9,7 @@ import '../../providers/manager_dashboard_provider.dart';
 import '../app_button.dart';
 import '../date_range_filter.dart';
 import 'payments_dropdown.dart';
+import 'payments_sheet_type_dropdown.dart';
 import 'payments_dialog_header.dart';
 
 /// Mobile filter dialog of the Payments Report (D16 — same tune-icon dialog
@@ -71,16 +72,29 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                   selected: _pending.status,
                   entries: [
                     DropdownMenuEntry<PaymentStatus?>(
-                        value: null, label: l10n.allOption),
+                      value: null,
+                      label: l10n.allOption,
+                    ),
                     DropdownMenuEntry<PaymentStatus?>(
-                        value: PaymentStatus.awaitingPayment,
-                        label: l10n.awaitingPaymentLabel),
+                      value: PaymentStatus.awaitingPayment,
+                      label: l10n.paymentStatusPending,
+                    ),
                     DropdownMenuEntry<PaymentStatus?>(
-                        value: PaymentStatus.processed,
-                        label: l10n.paymentStatusProcessed),
+                      value: PaymentStatus.processed,
+                      label: l10n.paymentStatusProcessed,
+                    ),
                   ],
                   onSelected: (value) => setState(
-                      () => _pending = _pending.copyWith(status: value)),
+                    () => _pending = _pending.copyWith(status: value),
+                  ),
+                ),
+                PaymentsSheetTypeDropdown(
+                  width: _fieldWidth,
+                  padding: const EdgeInsets.only(top: 14),
+                  selected: _pending.sheetType,
+                  onSelected: (value) => setState(
+                    () => _pending = _pending.copyWith(sheetType: value),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 DateRangeFilter(
@@ -88,8 +102,12 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                   width: _fieldWidth,
                   from: _pending.approvedFrom,
                   to: _pending.approvedTo,
-                  onChanged: (from, to) => setState(() => _pending =
-                      _pending.copyWith(approvedFrom: from, approvedTo: to)),
+                  onChanged: (from, to) => setState(
+                    () => _pending = _pending.copyWith(
+                      approvedFrom: from,
+                      approvedTo: to,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 PaymentsDropdown<String?>(
@@ -98,13 +116,18 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                   selected: _pending.userId,
                   entries: [
                     DropdownMenuEntry<String?>(
-                        value: null, label: l10n.allOption),
+                      value: null,
+                      label: l10n.allOption,
+                    ),
                     for (final e in employees)
                       DropdownMenuEntry<String?>(
-                          value: e.userId, label: e.fullName),
+                        value: e.userId,
+                        label: e.fullName,
+                      ),
                   ],
                   onSelected: (value) => setState(
-                      () => _pending = _pending.copyWith(userId: value)),
+                    () => _pending = _pending.copyWith(userId: value),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 PaymentsDropdown<String?>(
@@ -113,13 +136,18 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                   selected: _pending.cycleId,
                   entries: [
                     DropdownMenuEntry<String?>(
-                        value: null, label: l10n.allOption),
+                      value: null,
+                      label: l10n.allOption,
+                    ),
                     for (final c in cycles)
                       DropdownMenuEntry<String?>(
-                          value: c.expenseCycleId, label: c.displayLabel),
+                        value: c.expenseCycleId,
+                        label: c.displayLabel,
+                      ),
                   ],
                   onSelected: (value) => setState(
-                      () => _pending = _pending.copyWith(cycleId: value)),
+                    () => _pending = _pending.copyWith(cycleId: value),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 DateRangeFilter(
@@ -127,8 +155,12 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                   width: _fieldWidth,
                   from: _pending.processedFrom,
                   to: _pending.processedTo,
-                  onChanged: (from, to) => setState(() => _pending = _pending
-                      .copyWith(processedFrom: from, processedTo: to)),
+                  onChanged: (from, to) => setState(
+                    () => _pending = _pending.copyWith(
+                      processedFrom: from,
+                      processedTo: to,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -138,8 +170,8 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                       variant: AppButtonVariant.ghost,
                       icon: Icons.refresh,
                       dense: true,
-                      onPressed: () => setState(
-                          () => _pending = PaymentsFilter.defaults),
+                      onPressed: () =>
+                          setState(() => _pending = PaymentsFilter.defaults),
                     ),
                     const Spacer(),
                     AppButton(

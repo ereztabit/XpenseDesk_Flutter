@@ -2,24 +2,33 @@ import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/payments_copy_utils.dart';
 import '../app_button.dart';
+import 'excel_download_icon.dart';
 
-/// Mobile bulk-action card (per the approved mobile mock): green
-/// success-tinted card pinned at the top of the list area — "BULK ACTION"
-/// eyebrow, Export + Mark as Processed buttons, and the "N sheet(s) of X"
-/// summary line. The parent animates it in/out with selection.
+/// Mobile bulk-action bar, one compact row on a tinted background:
+///   (2)  2 sheets selected        [Excel]  [✓ Process 2 sheets]
+///        -₪10.00
+/// A count bubble and the signed amount of the selection, an icon Export
+/// and the primary Process - all at the row button's 32px height.
 class MobileBulkActionCard extends StatelessWidget {
   const MobileBulkActionCard({
     super.key,
     required this.selectedCount,
     required this.amountText,
+    this.isNegative = false,
     required this.onExport,
     required this.onMarkProcessed,
     this.isExporting = false,
   });
 
   final int selectedCount;
+
+  /// Signed net of the selection (plain, or "-₪10.00" when negative).
   final String amountText;
+
+  /// The company takes money back: the amount shows red.
+  final bool isNegative;
   final VoidCallback? onExport;
   final VoidCallback onMarkProcessed;
   final bool isExporting;
@@ -27,67 +36,98 @@ class MobileBulkActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final sheetsLabel = selectedCount == 1
+    final unit = selectedCount == 1
         ? l10n.awaitingPaymentSheetSingular
         : l10n.awaitingPaymentSheetPlural;
 
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsetsDirectional.fromSTEB(10, 8, 8, 8),
       decoration: BoxDecoration(
-        color: AppTheme.success.withAlpha(15),
+        color: AppTheme.primaryTint,
         borderRadius: BorderRadius.circular(AppTheme.borderRadius),
-        border: Border.all(color: AppTheme.success.withAlpha(102)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              const Icon(Icons.published_with_changes,
-                  size: 16, color: AppTheme.success),
-              const SizedBox(width: 6),
-              Text(
-                l10n.bulkActionLabel.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                  color: AppTheme.success,
-                ),
+          Container(
+            width: 28,
+            height: 28,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppTheme.primary,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '$selectedCount',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.primaryForeground,
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              AppButton(
-                label: l10n.export,
-                variant: AppButtonVariant.normal,
-                icon: Icons.download_outlined,
-                dense: true,
-                isLoading: isExporting,
-                onPressed: onExport,
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: AppButton(
-                  label: l10n.markAsProcessed,
-                  variant: AppButtonVariant.normal,
-                  icon: Icons.check_circle_outline,
-                  dense: true,
-                  onPressed: onMarkProcessed,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$unit ${l10n.paymentsSelectedSuffix}',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.mutedForeground,
+                  ),
                 ),
-              ),
-            ],
+                Text(
+                  amountText,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: isNegative
+                        ? AppTheme.destructive
+                        : AppTheme.foreground,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            '$selectedCount $sheetsLabel ${l10n.bulkSelectionOf} $amountText',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.foreground,
+          Tooltip(
+            message: l10n.export,
+            child: SizedBox(
+              width: 40,
+              height: 32,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                style: IconButton.styleFrom(
+                  backgroundColor: AppTheme.card,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: AppTheme.border),
+                  ),
+                ),
+                onPressed: isExporting ? null : onExport,
+                icon: isExporting
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const ExcelDownloadIcon(size: 18),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            height: 32,
+            child: AppButton(
+              label: paymentProcessCountText(l10n, selectedCount),
+              variant: AppButtonVariant.primary,
+              icon: Icons.check_circle_outline,
+              dense: true,
+              onPressed: onMarkProcessed,
             ),
           ),
         ],

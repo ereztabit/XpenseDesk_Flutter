@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
+import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
 import '../selectable_scope.dart';
 import 'mobile_payment_row.dart';
 import 'mobile_payments_header_cell.dart';
+import 'payments_total_row.dart';
 
 /// Mobile table-like list of the Payments Report (D17 scroll model): pinned
 /// sortable header row (Employee / Amount / Payment Status) above an internal
 /// scrolling row list. A distinct mobile layout — not a squeezed desktop.
-class MobilePaymentsTable extends StatelessWidget {
+class MobilePaymentsTable extends ConsumerWidget {
   const MobilePaymentsTable({
     super.key,
     required this.rows,
@@ -46,8 +49,9 @@ class MobilePaymentsTable extends StatelessWidget {
   final ValueChanged<PaymentReportRow> onEdit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final showSheetType = ref.watch(paymentsMultiTypeProvider);
     final selectableIds = rows
         .where((r) => r.isAwaiting)
         .map((r) => r.expenseSheetId)
@@ -66,11 +70,11 @@ class MobilePaymentsTable extends StatelessWidget {
         children: [
           Container(
             color: AppTheme.muted.withAlpha(102),
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 12, 4),
             child: Row(
               children: [
                 SizedBox(
-                  width: 36,
+                  width: 40,
                   child: selectableIds.isNotEmpty
                       ? Checkbox(
                           value: allSelected,
@@ -94,18 +98,8 @@ class MobilePaymentsTable extends StatelessWidget {
                   activeField: sortField,
                   ascending: sortAscending,
                   onSort: onSort,
+                  alignEnd: true,
                 ),
-                const SizedBox(width: 6),
-                MobilePaymentsHeaderCell(
-                  label: l10n.paymentStatusFilterLabel,
-                  flex: 3,
-                  field: PaymentsSortField.paymentStatus,
-                  activeField: sortField,
-                  ascending: sortAscending,
-                  onSort: onSort,
-                ),
-                // Matches the per-row Edit button slot so columns line up.
-                const SizedBox(width: 76),
               ],
             ),
           ),
@@ -142,6 +136,7 @@ class MobilePaymentsTable extends StatelessWidget {
                         final row = rows[index];
                         return MobilePaymentRow(
                           row: row,
+                          showSheetType: showSheetType,
                           locale: locale,
                           currencyCode: currencyCode,
                           isSelected: selectedIds.contains(row.expenseSheetId),
@@ -157,6 +152,15 @@ class MobilePaymentsTable extends StatelessWidget {
                     ),
                   ),
           ),
+          if (!loading && error == null && rows.isNotEmpty) ...[
+            const Divider(height: 1, color: AppTheme.border),
+            PaymentsTotalRow(
+              rows: rows,
+              locale: locale,
+              currencyCode: currencyCode,
+              desktop: false,
+            ),
+          ],
         ],
       ),
     );

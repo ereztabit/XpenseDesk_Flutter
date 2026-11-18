@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
+import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
 import '../selectable_scope.dart';
 import 'desktop_payments_header_row.dart';
 import 'desktop_payments_row.dart';
 import 'payments_table_columns.dart';
+import 'payments_total_row.dart';
 
 /// Desktop results table of the Payments Report. Sizes to its content — there
 /// is no inner vertical scroll (#6: the page scrolls); only horizontal scroll
 /// remains for the wide column set. Header + rows are one column inside the
 /// horizontal scroll view.
-class DesktopPaymentsTable extends StatelessWidget {
+class DesktopPaymentsTable extends ConsumerWidget {
   const DesktopPaymentsTable({
     super.key,
     required this.rows,
@@ -54,8 +57,12 @@ class DesktopPaymentsTable extends StatelessWidget {
   final ScrollController horizontalScrollController;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final showSheetType = ref.watch(paymentsMultiTypeProvider);
+    final minWidth = PaymentsTableColumns.tableWidth(
+      showSheetType: showSheetType,
+    );
     final selectableIds = rows
         .where((r) => r.isAwaiting)
         .map((r) => r.expenseSheetId)
@@ -72,10 +79,9 @@ class DesktopPaymentsTable extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final tableWidth =
-              constraints.maxWidth > PaymentsTableColumns.minTableWidth
+          final tableWidth = constraints.maxWidth > minWidth
               ? constraints.maxWidth
-              : PaymentsTableColumns.minTableWidth;
+              : minWidth;
           return Scrollbar(
             controller: horizontalScrollController,
             thumbVisibility: true,
@@ -91,6 +97,7 @@ class DesktopPaymentsTable extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DesktopPaymentsHeaderRow(
+                      showSheetType: showSheetType,
                       sortField: sortField,
                       sortAscending: sortAscending,
                       onSort: onSort,
@@ -103,7 +110,7 @@ class DesktopPaymentsTable extends StatelessWidget {
                       thickness: 1,
                       color: AppTheme.border,
                     ),
-                    _body(l10n),
+                    _body(l10n, showSheetType),
                   ],
                 ),
               ),
@@ -114,7 +121,7 @@ class DesktopPaymentsTable extends StatelessWidget {
     );
   }
 
-  Widget _body(AppLocalizations l10n) {
+  Widget _body(AppLocalizations l10n, bool showSheetType) {
     if (loading) {
       return const Padding(
         padding: EdgeInsets.all(40),
@@ -153,6 +160,7 @@ class DesktopPaymentsTable extends StatelessWidget {
           for (var i = 0; i < rows.length; i++) ...[
             DesktopPaymentsRow(
               row: rows[i],
+              showSheetType: showSheetType,
               locale: locale,
               currencyCode: currencyCode,
               isSelected: selectedIds.contains(rows[i].expenseSheetId),
@@ -166,6 +174,9 @@ class DesktopPaymentsTable extends StatelessWidget {
             if (i < rows.length - 1)
               const Divider(height: 1, color: AppTheme.border),
           ],
+          const Divider(height: 1, color: AppTheme.border),
+          PaymentsTotalRow(
+              rows: rows, locale: locale, currencyCode: currencyCode),
         ],
       ),
     );

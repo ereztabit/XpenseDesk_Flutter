@@ -7,16 +7,15 @@ import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
+import '../../utils/payments_copy_utils.dart';
 import '../../utils/payments_utils.dart';
-import '../app_button.dart';
 import '../manager_dashboard/paging_overflow_notice.dart';
 import 'mobile_bulk_action_card.dart';
 import 'mobile_payments_table.dart';
 import 'payments_active_filter_badge.dart';
-import 'payments_found_caption.dart';
 
 /// Mobile composition of the Payments Report body (D16/D17): pinned title row
-/// (back · title · filter badge · Export All), animated bulk card, caption,
+/// (back · title · filter badge), animated bulk card, caption,
 /// and the internally-scrolling mobile table. Filters live behind the
 /// tune-icon dialog. Watches the shared payments providers itself; the screen
 /// passes only screen-local state and handlers.
@@ -24,7 +23,6 @@ class MobilePaymentsView extends ConsumerWidget {
   const MobilePaymentsView({
     super.key,
     required this.onOpenFilters,
-    required this.onExportAll,
     required this.onExportSelected,
     required this.onMarkProcessedSelection,
     required this.rows,
@@ -40,7 +38,6 @@ class MobilePaymentsView extends ConsumerWidget {
   });
 
   final VoidCallback onOpenFilters;
-  final VoidCallback onExportAll;
   final VoidCallback onExportSelected;
   final VoidCallback onMarkProcessedSelection;
   final List<PaymentReportRow> rows;
@@ -56,8 +53,9 @@ class MobilePaymentsView extends ConsumerWidget {
 
   void _back(BuildContext context) {
     final nav = Navigator.of(context);
-    nav.canPop() ? nav.pop() : nav.pushReplacementNamed(
-        AppRoutes.managerDashboard);
+    nav.canPop()
+        ? nav.pop()
+        : nav.pushReplacementNamed(AppRoutes.managerDashboard);
   }
 
   @override
@@ -77,8 +75,7 @@ class MobilePaymentsView extends ConsumerWidget {
         Row(
           children: [
             IconButton(
-              icon:
-                  const Icon(Icons.arrow_back, color: AppTheme.foreground),
+              icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
               visualDensity: VisualDensity.compact,
               // canPop falls back to the dashboard so back works after a
               // browser refresh / deep link (nothing to pop otherwise).
@@ -99,15 +96,7 @@ class MobilePaymentsView extends ConsumerWidget {
               activeCount: appliedFilter.activeCount,
               onTap: onOpenFilters,
             ),
-            const SizedBox(width: 8),
-            AppButton(
-              label: l10n.exportAll,
-              variant: AppButtonVariant.normal,
-              icon: Icons.download_outlined,
-              dense: true,
-              isLoading: exportState.exportingAll,
-              onPressed: onExportAll,
-            ),
+            // No Export All on mobile: select all, then Export (owner).
           ],
         ),
         AnimatedSize(
@@ -120,12 +109,15 @@ class MobilePaymentsView extends ConsumerWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: MobileBulkActionCard(
                     selectedCount: selectedIds.length,
-                    amountText: PaymentsSelectionUtils.totalAmountTextFor(
+                    amountText: paymentNetText(
+                      PaymentsSelectionUtils.totalsFor(rows, selectedIds),
+                      locale,
+                      currencyCode,
+                    ),
+                    isNegative: PaymentsSelectionUtils.totalsFor(
                       rows,
                       selectedIds,
-                      locale: locale,
-                      currencyCode: currencyCode,
-                    ),
+                    ).isNetNegative,
                     onExport: onExportSelected,
                     onMarkProcessed: onMarkProcessedSelection,
                     isExporting: exportState.exportingSelected,
@@ -133,12 +125,6 @@ class MobilePaymentsView extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 12),
-        PaymentsFoundCaption(
-          rows: rows,
-          locale: locale,
-          currencyCode: currencyCode,
-        ),
-        const SizedBox(height: 8),
         Expanded(
           child: MobilePaymentsTable(
             rows: rows,

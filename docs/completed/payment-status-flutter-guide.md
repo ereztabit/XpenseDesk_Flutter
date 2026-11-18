@@ -204,3 +204,43 @@ bulk action, refetch the current filter and re-render before retrying.
   the accountant.
 - No currency field — all amounts are company base currency (ILS).
 - No payment data for employees anywhere — employee-facing screens are unchanged.
+
+## 10. PC-8 (FS-1020) — budgets settle here too (additive)
+
+An approved budget joins payments when it owes money: overspent = the company
+**pays** the holder, underspent = the holder **returns** money (collect). Totals
+never net pay against collect. Monthly rows and every existing field keep their
+meaning. Budget side: docs/api-guides/budgets-api-guide.md, "PC-8 - settlement".
+
+**Report** `GET /api/payments?...&sheetType=PettyCash` (`Monthly` | `PettyCash`;
+omit = all). Also accepted in the Export All body as `sheetType`.
+
+| New row field | Meaning |
+|---|---|
+| `sheetType` | `"Monthly"` / `"PettyCash"` |
+| `budgetNumber`, `budgetName` | The budget (`#1001`); `null` for Monthly |
+| `direction` | `"Pay"` / `"Collect"` |
+
+`amount` is now signed: negative = collect. `cycleLabel` is filled for budgets
+too (the open cycle at approval).
+
+| New envelope field | Meaning |
+|---|---|
+| `payCount`, `collectCount` | Rows to pay / to collect (whole filtered set) |
+| `grandCollectAmount`, `pageCollectAmount` | Money to collect, positive |
+
+`grandTotalAmount` / `pageTotalAmount` = money to pay only.
+
+**Summary** — `paymentsSummary` (company profile and every write response) adds
+`awaitingCollectCount`, `awaitingCollectAmount` (positive); `awaitingCount` /
+`awaitingTotalAmount` stay the pay side. Per sheet type:
+`GET /api/payments/summary?sheetType=PettyCash` returns the same four fields
+(manager only).
+
+**Excel** — three columns appended: Sheet Type (`Monthly` / `Budget`), Budget
+(`name #number`), Direction (`Pay` / `Collect`). Amount is signed. With money to
+collect, the single Total row becomes **To pay** and **To collect** rows; with
+none, the file looks as before.
+
+**Error** — `PaymentsSheetTypeInvalid` (400): `sheetType` is not `Monthly` or
+`PettyCash`.

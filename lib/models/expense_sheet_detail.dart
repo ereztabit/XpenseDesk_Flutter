@@ -40,6 +40,13 @@ class ExpenseSheetDetail {
   final String? paymentReference;
   final String? paymentNote;
 
+  /// FS-1020 PC-8: the cycle a non-Monthly sheet is paid / collected in
+  /// (`yyyy/MM`) and the signed settlement frozen at approval (Pay > 0,
+  /// Collect < 0). Null on payloads that predate PC-8 or until approval.
+  final String? paymentCycleId;
+  final String? paymentCycleLabel;
+  final double? settlementAmount;
+
   const ExpenseSheetDetail({
     required this.expenseSheetId,
     required this.companyId,
@@ -66,6 +73,9 @@ class ExpenseSheetDetail {
     this.processedDate,
     this.paymentReference,
     this.paymentNote,
+    this.paymentCycleId,
+    this.paymentCycleLabel,
+    this.settlementAmount,
   });
 
   factory ExpenseSheetDetail.fromJson(Map<String, dynamic> json) {
@@ -106,6 +116,9 @@ class ExpenseSheetDetail {
       processedDate: parseDate(json['processedDate'] as String?),
       paymentReference: json['reference'] as String?,
       paymentNote: json['note'] as String?,
+      paymentCycleId: json['paymentCycleId'] as String?,
+      paymentCycleLabel: json['paymentCycleLabel'] as String?,
+      settlementAmount: (json['settlementAmount'] as num?)?.toDouble(),
     );
   }
 }
