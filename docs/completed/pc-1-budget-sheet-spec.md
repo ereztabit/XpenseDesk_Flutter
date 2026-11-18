@@ -1,9 +1,9 @@
 # PC-1 - Budgets (petty cash budget sheet) end to end - frontend spec
 
-> Mission: FS-1012 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-1-budget-sheet.md). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
+> Mission: FS-1012 (backend: BackEnd/XpenseDeskServer/docs/done/pc-1-budget-sheet.md). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
 > **UX source (mandatory):** [pc-1-budgets-ux-handoff.md](pc-1-budgets-ux-handoff.md) - verbatim copy of the Lovable mock's hand-off spec. Same experience, no reinterpretation. When unsure, open the mock (Lovable "Expense Desk", 0c5b063f-74a7-4490-b75e-746f4a712bde).
 
-Status: READY TO BUILD 2026-11-17, in three slices (S1-S3). Not started. PC-0
+Status: SHIPPED 2026-11-18 as v1.48 (S1-S3), backend released and prod migrated the same day. PC-0
 shipped. The sheet-type navigation bar is already built and shipped
 (`docs/completed/sheet-type-nav-spec.md`). UI design is paused; anything not in
 the hand-off is out of scope.
@@ -317,11 +317,11 @@ notifications (PC-6).
 
 S1-S3 built and QA'd (Runs 1-8 below), pushed on `feature/pc1-s1-budget-exists`,
 not banked. 2026-11-18: `finish-feature` in both repos -> the user applies the
-four prod scripts (backend `docs/petty-cash/pc-1-prod-migration.md`) ->
+four prod scripts (backend `docs/done/pc-1-prod-migration.md`) ->
 `ship-feature` in both repos (backend first) -> sanity check on production
 (Budgets on for one company: create, add, submit, approve; Monthly and payments
 unaffected). Then PC-2 (FS-1013), designed in the Lovable mock first. Full plan:
-backend `docs/petty-cash/pc-1-budget-sheet.md`, "Close-out plan".
+backend `docs/done/pc-1-budget-sheet.md`, "Close-out plan".
 
 ## Manual QA
 

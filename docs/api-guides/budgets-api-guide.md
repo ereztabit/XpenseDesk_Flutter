@@ -1,6 +1,6 @@
 # Budgets (Petty Cash) - API Guide
 
-> Mission: FS-1012 PC-1. Story: docs/petty-cash/pc-1-budget-sheet.md.
+> Mission: FS-1012 PC-1. Story: docs/done/pc-1-budget-sheet.md.
 > Same file in the Flutter repo: docs/api-guides/budgets-api-guide.md.
 > S1 (a budget exists): create, manager list, read one. S2 / S3 append to
 > this guide; nothing here changes meaning later (additive only).
