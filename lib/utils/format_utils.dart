@@ -17,6 +17,10 @@ extension CompanyDateFormat on DateTime {
   String toCompanyDate(String companyLocale) =>
       DateFormat.yMd(companyLocale).format(toLocal());
 
+  /// Day and month only, in company locale ("31.12" Hebrew, "12/31" English).
+  String toCompanyDayMonth(String companyLocale) =>
+      DateFormat.Md(companyLocale).format(toLocal());
+
   /// Medium date in company locale (e.g., "Apr 30, 2026" for English)
   String toMediumDate(String companyLocale) =>
       DateFormat.yMMMd(companyLocale).format(toLocal());
@@ -101,6 +105,18 @@ extension CompanyCurrencyFormat on num {
   /// Plain number format (no currency symbol) using company locale.
   String toFormattedNumber(String companyLocale) =>
       NumberFormat('#,##0.00', companyLocale).format(this);
+
+  /// [toCurrency] rounded to whole units - the Budgets "whole shekels" places
+  /// (dashboard spend card, budget header strip, submit caption).
+  String toWholeCurrency(String companyLocale, String currencyCode) {
+    final symbol = NumberFormat.simpleCurrency(locale: 'en', name: currencyCode)
+        .currencySymbol;
+    return '$symbol${toWholeNumber(companyLocale)}';
+  }
+
+  /// Whole number with thousands separators, no symbol.
+  String toWholeNumber(String companyLocale) =>
+      NumberFormat('#,##0', companyLocale).format(round());
 
   /// Compact currency label for chart value-above-bar annotations.
   /// Uses K/M suffixes for amounts >= 1000 to keep labels short.

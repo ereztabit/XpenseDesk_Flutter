@@ -45,7 +45,7 @@ class SheetNavLevelOne extends StatelessWidget {
               icon: s.type.icon,
               label: stacked ? s.type.shortName(l10n) : s.type.fullName(l10n),
               accent: s.type.accent,
-              count: s.firstPage?.count ?? 0,
+              count: s.badgeCount,
               alert: s.firstPage?.alert ?? false,
               active: s.type == activeType,
               comingSoon: s.isComingSoon,

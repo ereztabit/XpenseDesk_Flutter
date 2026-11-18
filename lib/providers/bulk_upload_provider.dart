@@ -7,6 +7,7 @@ import '../models/bulk_upload_batch.dart';
 import '../services/bulk_upload_service.dart';
 import '../utils/bulk_upload_utils.dart';
 import 'auth_provider.dart';
+import 'budgets_provider.dart';
 import 'company_provider.dart';
 import 'expense_sheet_provider.dart';
 import 'free_receipts_provider.dart';
@@ -92,6 +93,10 @@ class BulkUploadBatchesNotifier extends AsyncNotifier<List<BulkUploadBatch>> {
     ref.read(recentlyFiledExpensesProvider.notifier).add(filed);
     ref.invalidate(mySheetsProvider);
     ref.invalidate(sheetDetailProvider);
+    // FS-1012 S2b: a batch sent into a budget moves its Spent / Left too.
+    ref.invalidate(budgetsProvider);
+    ref.invalidate(myBudgetsFetchProvider);
+    ref.invalidate(budgetProvider);
   }
 }
 

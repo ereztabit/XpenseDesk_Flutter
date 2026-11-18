@@ -89,6 +89,40 @@ void main() {
       expect(budgets.pages[2].balance, -80);
     });
 
+    test('FS-1012 S3: budgets awaiting approval badge Budgets for a manager', () {
+      SheetNavPage budgetsPage(int toReview, int belowZero) => buildSheetNavSections(
+            SheetNavInput(
+              isManager: true,
+              budgetsOn: true,
+              budgetsBuilt: true,
+              budgetsToReview: toReview,
+              budgetsBelowZero: belowZero,
+            ),
+          )!.firstWhere((x) => x.type == SheetNavType.budgets).firstPage!;
+      expect(budgetsPage(1, 0).count, 1, reason: 'one budget to approve');
+      expect(budgetsPage(1, 0).alert, isFalse, reason: 'waiting, not in trouble');
+      expect(budgetsPage(3, 1).count, 3);
+      expect(budgetsPage(3, 1).alert, isTrue, reason: 'one is over budget or overdue');
+      expect(budgetsPage(0, 0).count, 0, reason: 'nothing to do hides the badge');
+    });
+
+    test('FS-1012 S3: a returned budget badges the holder\'s Budgets', () {
+      final s = buildSheetNavSections(
+        const SheetNavInput(
+          isManager: false,
+          budgetsOn: true,
+          budgetsBuilt: true,
+          myBudgets: [
+            SheetNavMockBudget('a', 'Open one', 100),
+            SheetNavMockBudget('b', 'Returned one', 50, returned: true),
+          ],
+        ),
+      )!;
+      final budgets = s.firstWhere((x) => x.type == SheetNavType.budgets);
+      expect(budgets.pages.map((p) => p.count), [0, 1]);
+      expect(budgets.badgeCount, 1, reason: 'the type shows the returned count');
+    });
+
     test('Budgets built: employee without a budget has no Budgets type', () {
       expect(
         buildSheetNavSections(

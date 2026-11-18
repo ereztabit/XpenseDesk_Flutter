@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/app_theme.dart';
 
-/// Labeled text input used in the payment dialogs (Reference ID, Note).
+/// Labeled text input used in the payment dialogs (Reference ID, Note) and the
+/// New budget dialog (name, amount: [errorText], [keyboardType],
+/// [inputFormatters], [maxLength], [textDirection]).
 class DialogTextField extends StatelessWidget {
   const DialogTextField({
     super.key,
@@ -11,6 +14,12 @@ class DialogTextField extends StatelessWidget {
     this.hint = '',
     this.maxLines = 1,
     this.enabled = true,
+    this.errorText,
+    this.keyboardType,
+    this.inputFormatters,
+    this.maxLength,
+    this.textDirection,
+    this.onChanged,
   });
 
   final String label;
@@ -21,8 +30,25 @@ class DialogTextField extends StatelessWidget {
   final int maxLines;
   final bool enabled;
 
+  /// Inline red message under the field; null hides it.
+  final String? errorText;
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// Hard cap on characters, without the counter.
+  final int? maxLength;
+
+  /// E.g. LTR for amounts on a Hebrew screen.
+  final TextDirection? textDirection;
+  final ValueChanged<String>? onChanged;
+
   @override
   Widget build(BuildContext context) {
+    OutlineInputBorder border(Color color) => OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: color),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,21 +67,23 @@ class DialogTextField extends StatelessWidget {
           controller: controller,
           enabled: enabled,
           maxLines: maxLines,
+          keyboardType: keyboardType,
+          inputFormatters: [
+            ...?inputFormatters,
+            if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+          ],
+          textDirection: textDirection,
+          onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(
                 fontSize: 13, color: AppTheme.mutedForeground),
             isDense: true,
+            errorText: errorText,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppTheme.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppTheme.border),
-            ),
+            border: border(AppTheme.border),
+            enabledBorder: border(AppTheme.border),
           ),
         ),
       ],

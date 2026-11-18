@@ -20,7 +20,9 @@ import '../models/expenses_analysis_breakdown_row.dart';
 class ExpenseException implements Exception {
   final String message;
   final String? errorCode;
-  const ExpenseException(this.message, {this.errorCode});
+  /// The response's `data` (FS-1012: `{balance}` on BudgetBalanceExceeded).
+  final Map<String, dynamic>? data;
+  const ExpenseException(this.message, {this.errorCode, this.data});
 
   @override
   String toString() => message;
@@ -116,7 +118,9 @@ class ExpenseService {
       if (errorCode == 'FreeReceiptsUsedUp') {
         throw const FreeReceiptsUsedUpException();
       }
-      throw ExpenseException(message, errorCode: errorCode);
+      final data = response['data'];
+      throw ExpenseException(message,
+          errorCode: errorCode, data: data is Map<String, dynamic> ? data : null);
     }
   }
 
@@ -248,7 +252,9 @@ class ExpenseService {
       }
       final message =
           response['message'] as String? ?? 'Failed to load sheets';
-      throw ExpenseException(message, errorCode: errorCode);
+      final data = response['data'];
+      throw ExpenseException(message,
+          errorCode: errorCode, data: data is Map<String, dynamic> ? data : null);
     }
 
     final data = response['data'] as Map<String, dynamic>?;
@@ -370,7 +376,8 @@ class ExpenseService {
   /// it null for the employee's own new-expense flow.
   Future<void> createExpense({
     required DateTime expenseDate,
-    required int categoryId,
+    /// Null = the server files it under the sheet module's "Other" (FS-1012).
+    int? categoryId,
     double? dynamicAmount,
     String? currencyCode,
     String? merchantName,
@@ -469,7 +476,9 @@ class ExpenseService {
       }
       final message =
           response['message'] as String? ?? 'Currency conversion failed';
-      throw ExpenseException(message, errorCode: errorCode);
+      final data = response['data'];
+      throw ExpenseException(message,
+          errorCode: errorCode, data: data is Map<String, dynamic> ? data : null);
     }
 
     // Success envelope but no rate published for the date (data.ils is null,
@@ -521,10 +530,17 @@ class ExpenseService {
       authToken: sessionToken,
     );
 
+    final errorCode = result.body['errorCode'] as String?;
+    final data = result.body['data'];
+    // FS-1012: a budget refusal (404 / 409 / 403 / 400) keeps its own code and
+    // data (the balance) - it is not a generic "not found" / "closed".
+    if (result.body['success'] != true && (errorCode?.startsWith('Budget') ?? false)) {
+      throw ExpenseException(result.body['message'] as String? ?? 'Failed to update expense',
+          errorCode: errorCode, data: data is Map<String, dynamic> ? data : null);
+    }
     if (result.statusCode == 404) throw const ExpenseNotFoundException();
     if (result.statusCode == 409) throw const ExpenseClosedException();
     if (result.body['success'] != true) {
-      final errorCode = result.body['errorCode'] as String?;
       if (errorCode == 'ExpenseDateTooOld') {
         throw const ExpenseDateTooOldException();
       }
@@ -532,7 +548,8 @@ class ExpenseService {
         throw const ExchangeRateUnavailableException();
       }
       final message = result.body['message'] as String? ?? 'Failed to update expense';
-      throw ExpenseException(message, errorCode: errorCode);
+      throw ExpenseException(message,
+          errorCode: errorCode, data: data is Map<String, dynamic> ? data : null);
     }
   }
 

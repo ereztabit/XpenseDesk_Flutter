@@ -12,6 +12,15 @@ enum BulkUploadSendError {
   // left, or none are left.
   freeReceiptsNotEnough,
   freeReceiptsUsedUp,
+  // FS-1012 S2b: a batch sent into a budget - the holder's free receipts
+  // (a manager sending into someone else's budget), and the budget's own
+  // refusals.
+  holderFreeReceiptsNotEnough,
+  holderFreeReceiptsUsedUp,
+  budgetsOff,
+  budgetNoAccess,
+  budgetGone,
+  budgetClosed,
   generic,
 }
 

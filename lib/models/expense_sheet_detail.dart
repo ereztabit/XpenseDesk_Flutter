@@ -14,6 +14,10 @@ class ExpenseSheetDetail {
   final String createdByName;
   final String? createdByEmail;
   final String expenseCycleId;
+
+  /// FS-1012: 1 Monthly, 2 PettyCash (a budget - no cycle).
+  final int moduleId;
+  bool get isBudget => moduleId == 2;
   final String cycleLabel;
   final DateTime? cycleStartAt;
   final DateTime? cycleEndAt;
@@ -43,6 +47,7 @@ class ExpenseSheetDetail {
     required this.createdByName,
     this.createdByEmail,
     required this.expenseCycleId,
+    this.moduleId = 1,
     required this.cycleLabel,
     this.cycleStartAt,
     this.cycleEndAt,
@@ -76,7 +81,9 @@ class ExpenseSheetDetail {
       createdByUserId: json['createdByUserId'] as String,
       createdByName: json['createdByName'] as String? ?? '',
       createdByEmail: json['createdByEmail'] as String?,
-      expenseCycleId: json['expenseCycleId'] as String,
+      // FS-1012: a budget sheet has no cycle (empty id, moduleId 2).
+      expenseCycleId: json['expenseCycleId'] as String? ?? '',
+      moduleId: json['moduleId'] as int? ?? 1,
       cycleLabel: json['cycleLabel'] as String? ?? '',
       cycleStartAt: parseDate(json['cycleStartAt'] as String?),
       cycleEndAt: parseDate(json['cycleEndAt'] as String?),

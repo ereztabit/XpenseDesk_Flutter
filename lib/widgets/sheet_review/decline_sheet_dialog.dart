@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/responsive_utils.dart';
+import '../../utils/adaptive_dialog_utils.dart';
 import '../app_button.dart';
 
 /// Required-comment decline modal. Centered dialog on desktop, bottom sheet on
@@ -16,28 +16,11 @@ class DeclineSheetDialog extends StatefulWidget {
   static Future<String?> show(
     BuildContext context, {
     required String employeeName,
-  }) {
-    if (context.isMobile) {
-      return showModalBottomSheet<String>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: AppTheme.card,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
+  }) =>
+      showAdaptiveSheetDialog<String>(
+        context,
         builder: (_) => DeclineSheetDialog(employeeName: employeeName),
       );
-    }
-    return showDialog<String>(
-      context: context,
-      builder: (_) => Dialog(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 448),
-          child: DeclineSheetDialog(employeeName: employeeName),
-        ),
-      ),
-    );
-  }
 
   @override
   State<DeclineSheetDialog> createState() => _DeclineSheetDialogState();

@@ -111,6 +111,21 @@ void main() {
           BulkUploadSendError.fileNotFound);
     });
 
+    test('maps the budget send codes (FS-1012 S2b)', () {
+      expect(sendErrorFromCode('BudgetHolderFreeReceiptsNotEnough'),
+          BulkUploadSendError.holderFreeReceiptsNotEnough);
+      expect(sendErrorFromCode('BudgetHolderFreeReceiptsUsedUp'),
+          BulkUploadSendError.holderFreeReceiptsUsedUp);
+      expect(sendErrorFromCode('BudgetsNotEnabled'),
+          BulkUploadSendError.budgetsOff);
+      expect(sendErrorFromCode('BudgetAccessDenied'),
+          BulkUploadSendError.budgetNoAccess);
+      expect(sendErrorFromCode('BudgetNotFound'),
+          BulkUploadSendError.budgetGone);
+      expect(sendErrorFromCode('BudgetApprovedClosed'),
+          BulkUploadSendError.budgetClosed);
+    });
+
     test('unknown or missing codes fall back to generic', () {
       expect(sendErrorFromCode(null), BulkUploadSendError.generic);
       expect(sendErrorFromCode('Something'), BulkUploadSendError.generic);

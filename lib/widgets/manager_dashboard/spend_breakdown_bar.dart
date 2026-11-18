@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import 'usage_bar.dart';
 
 /// One labeled progress bar in the Spend Overview breakdown (§6.5).
 /// Presentational only — the amount is pre-formatted by the caller.
@@ -46,16 +47,7 @@ class SpendBreakdownBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: AppTheme.border,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppTheme.chartBar),
-            ),
-          ),
+          UsageBar(fraction: progress),
         ],
       ),
     );

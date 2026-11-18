@@ -26,6 +26,12 @@ class BulkUploadNotifier extends Notifier<BulkUploadState> {
   Future<void> _addChain = Future.value();
   int _nextId = 0;
 
+  /// FS-1012 S2b: the budget this dialog sends into (null = Monthly). Set once
+  /// by the dialog when it opens.
+  String? _budgetId;
+
+  void setBudget(String? budgetId) => _budgetId = budgetId;
+
   @override
   BulkUploadState build() {
     ref.onDispose(() {
@@ -227,7 +233,9 @@ class BulkUploadNotifier extends Notifier<BulkUploadState> {
     ];
 
     try {
-      await ref.read(bulkUploadServiceProvider).submit(files);
+      await ref
+          .read(bulkUploadServiceProvider)
+          .submit(files, budgetId: _budgetId);
       if (!ref.mounted) return;
       state = state.copyWith(isSending: false, isSent: true);
       unawaited(ref.read(bulkUploadBatchesProvider.notifier).refresh());
