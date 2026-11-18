@@ -56,6 +56,8 @@ String? budgetErrorText(AppLocalizations l10n, String? code) => switch (code) {
   'BudgetAmountInvalid' => l10n.budgetsErrAmount,
   'BudgetEndDateRequired' => l10n.budgetsErrRequired,
   'BudgetEndDateInPast' => l10n.budgetsErrDate,
+  // FS-1013 PC-2: an edit lowers the amount below what was spent.
+  'BudgetAmountBelowSpent' => l10n.budgetsErrAmountBelowSpent,
   _ => null,
 };
 

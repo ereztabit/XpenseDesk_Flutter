@@ -19,6 +19,7 @@ class DialogTextField extends StatelessWidget {
     this.inputFormatters,
     this.maxLength,
     this.textDirection,
+    this.textAlign = TextAlign.start,
     this.onChanged,
   });
 
@@ -40,6 +41,9 @@ class DialogTextField extends StatelessWidget {
 
   /// E.g. LTR for amounts on a Hebrew screen.
   final TextDirection? textDirection;
+
+  /// FS-1013: e.g. an LTR amount aligned with the screen's other fields.
+  final TextAlign textAlign;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -73,6 +77,7 @@ class DialogTextField extends StatelessWidget {
             if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
           ],
           textDirection: textDirection,
+          textAlign: textAlign,
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,

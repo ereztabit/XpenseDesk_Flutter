@@ -10,7 +10,12 @@ import 'sheet_activity_timeline_entry.dart';
 /// The sheet's status-log audit trail, rendered as a vertical timeline.
 /// Hidden entirely when the log is empty.
 class SheetActivityTimeline extends ConsumerWidget {
-  const SheetActivityTimeline({super.key, required this.log, this.isBudget = false});
+  const SheetActivityTimeline({
+    super.key,
+    required this.log,
+    this.isBudget = false,
+    this.currencyCode,
+  });
 
   final List<ExpenseSheetLogEntry> log;
 
@@ -18,9 +23,18 @@ class SheetActivityTimeline extends ConsumerWidget {
   /// approval / Returned for changes / Approved".
   final bool isBudget;
 
+  /// FS-1013 PC-2: the budget's currency, for the amount events; null = the
+  /// company's base currency.
+  final String? currencyCode;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (log.isEmpty) return const SizedBox.shrink();
+    // FS-1013: an event type this build does not know is skipped, never
+    // shown as a status change (forward compatible with new server events).
+    final shown = log
+        .where((e) => e.isStatusChange || BudgetLogEvent.fromId(e.eventTypeId) != null)
+        .toList();
+    if (shown.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.watch(companyLocaleProvider);
 
@@ -44,12 +58,13 @@ class SheetActivityTimeline extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ...List.generate(log.length, (index) {
+            ...List.generate(shown.length, (index) {
               return SheetActivityTimelineEntry(
-                entry: log[index],
+                entry: shown[index],
                 companyLocale: companyLocale,
-                isLast: index == log.length - 1,
+                isLast: index == shown.length - 1,
                 isBudget: isBudget,
+                currencyCode: currencyCode ?? ref.watch(companyBaseCurrencyProvider),
               );
             }),
           ],

@@ -160,7 +160,7 @@ void main() {
     expect(AppRoutes.budgetsListPath(focus: 'draft', attention: true),
         '/budgets/list?focus=draft&attention=1');
     expect(AppRoutes.parseBudgetPath('/budgets/list'), isNull);
-    expect(AppRoutes.parseBudgetPath('/budgets/abc'), 'abc');
+    expect(AppRoutes.parseBudgetPath('/budgets/abc'), isNull, reason: 'not a GUID');
   });
 
   test('budgetShortName cuts at 40 characters with an ellipsis', () {
@@ -175,9 +175,82 @@ void main() {
     expect(budgetShowsSearch(5), isTrue);
   });
 
-  test('Activity shows once the budget was sent for approval', () {
-    expect(budgetActivityVisible([1]), isFalse, reason: 'created only');
-    expect(budgetActivityVisible([1, 2]), isTrue);
-    expect(budgetActivityVisible(const []), isFalse);
+  test('Activity shows once the trail has more than one entry (FS-1013)', () {
+    expect(budgetActivityVisible(1), isFalse, reason: 'created only');
+    expect(budgetActivityVisible(2), isTrue, reason: 'created + any change');
+    expect(budgetActivityVisible(0), isFalse);
+  });
+
+  group('FS-1013 manager control', () {
+    Budget b(int status, {String holder = 'e@x.com'}) => Budget.fromJson({
+      'budgetId': 'b1',
+      'number': 1001,
+      'name': 'B',
+      'holderUserId': 'u1',
+      'holderName': null,
+      'holderEmail': holder,
+      'statusId': status,
+      'initialAmount': 100,
+      'budgetAmount': 100,
+      'spentAmount': 0,
+      'balance': 100,
+      'endDate': '2026-12-31',
+      'currencyCode': 'ILS',
+      'createdAt': '2026-11-18T00:00:00Z',
+      'submittedAt': null,
+      'reviewedAt': null,
+    });
+
+    test('a manager changes a budget until it is approved', () {
+      for (final s in [1, 2, 4]) {
+        expect(budgetManagerCanChange(b(s), isManager: true), isTrue, reason: 'status $s');
+      }
+      expect(budgetManagerCanChange(b(3), isManager: true), isFalse, reason: 'approved');
+      expect(budgetManagerCanChange(b(1), isManager: false), isFalse, reason: 'employee');
+    });
+
+    test('submit from the row menu only from Draft or Returned', () {
+      expect(budgetCanSubmit(b(1)), isTrue);
+      expect(budgetCanSubmit(b(4)), isTrue);
+      expect(budgetCanSubmit(b(2)), isFalse);
+      expect(budgetCanSubmit(b(3)), isFalse);
+    });
+
+    test('Back: list for someone else, dashboard once the holder\'s is approved', () {
+      expect(budgetBackTarget(b(2), email: 'm@x.com', isManager: true), AppRoutes.budgetsList);
+      expect(budgetBackTarget(b(1), email: 'e@x.com', isManager: false), isNull,
+          reason: 'open - the switcher bar is there');
+      expect(budgetBackTarget(b(3), email: 'e@x.com', isManager: false), AppRoutes.employeeDashboard);
+      expect(budgetBackTarget(b(3), email: 'e@x.com', isManager: true), AppRoutes.managerDashboard);
+    });
+
+    test('the amount field shows the amount grouped, decimals only when needed', () {
+      expect(budgetAmountInput(1500), '1,500');
+      expect(budgetAmountInput(500.5), '500.50');
+      expect(budgetAmountInput(1234567.89), '1,234,567.89');
+    });
+
+    test('an end date may lie up to 30 days back', () {
+      expect(budgetEarliestEndDate(DateTime(2026, 11, 18)), DateTime(2026, 10, 19));
+      expect(budgetEarliestEndDate(DateTime(2026, 3, 15)), DateTime(2026, 2, 13));
+    });
+
+    test('an edit with nothing changed is not a change', () {
+      final x = b(1);
+      expect(budgetEditChanges(x, 'B', 'u1', 100, DateTime(2026, 12, 31)), isFalse);
+      expect(budgetEditChanges(x, 'b', 'u1', 100, DateTime(2026, 12, 31)), isTrue, reason: 'case');
+      expect(budgetEditChanges(x, 'B', 'u2', 100, DateTime(2026, 12, 31)), isTrue);
+      expect(budgetEditChanges(x, 'B', 'u1', 100.01, DateTime(2026, 12, 31)), isTrue);
+      expect(budgetEditChanges(x, 'B', 'u1', 100, DateTime(2027, 1, 1)), isTrue);
+    });
+
+    test('lines are reviewable by a manager who is not the holder', () {
+      expect(budgetLinesReviewable(b(2), email: 'm@x.com', isManager: true), isTrue);
+      expect(budgetLinesReviewable(b(2), email: 'E@x.com', isManager: true), isFalse,
+          reason: 'own budget');
+      expect(budgetLinesReviewable(b(3), email: 'm@x.com', isManager: true), isFalse,
+          reason: 'approved');
+      expect(budgetLinesReviewable(b(2), email: 'm@x.com', isManager: false), isFalse);
+    });
   });
 }
