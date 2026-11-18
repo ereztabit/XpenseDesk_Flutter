@@ -65,10 +65,13 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
     context,
     ref,
     budgetId: widget.budgetId,
-    onSingleDone: () {
+    // After the frame: the page resumes from behind the editor during that
+    // frame, and refreshing then marks it dirty mid-build (FS-1013 QA run 4).
+    onSingleDone: () => WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.invalidate(sheetDetailProvider(widget.budgetId));
       invalidateBudgetReads(ref);
-    },
+    }),
   );
 
   @override
@@ -120,8 +123,6 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                       data: (b) => Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          if (budgetBackTarget(b, email: me, isManager: isManager)
-                              case final back?) ...[
                             Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: AppButton(
@@ -131,11 +132,10 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                                 // Pop keeps the list as left; a deep link opens the target.
                                 onPressed: () => Navigator.of(context).canPop()
                                     ? Navigator.of(context).pop()
-                                    : handleBackNavigation(back),
+                                    : handleBackNavigation(budgetBackTarget(b, email: me, isManager: isManager)),
                               ),
                             ),
                             const SizedBox(height: 8),
-                          ],
                           BudgetHeaderCard(
                             budget: b,
                             trailing: BudgetHeaderActions(

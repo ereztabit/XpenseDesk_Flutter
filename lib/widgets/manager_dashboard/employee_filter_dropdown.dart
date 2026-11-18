@@ -47,6 +47,10 @@ class EmployeeFilterDropdown extends ConsumerWidget {
     final initialSelection = selected ?? _allSentinel;
 
     return DropdownMenu<String>(
+      // DropdownMenu writes the selected label into its field once; keying it
+      // by locale rebuilds that text when the language changes (FS-1013 QA:
+      // "All employees" stayed English on a Hebrew screen).
+      key: ValueKey(Localizations.localeOf(context).languageCode),
       width: width,
       initialSelection: initialSelection,
       enableSearch: false,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
@@ -38,6 +39,7 @@ class NewBudgetFormFields extends ConsumerWidget {
     required this.onChanged,
     required this.onHolderChanged,
     required this.onEndDateChanged,
+    this.currencyCode,
   });
 
   final TextEditingController nameController;
@@ -49,6 +51,9 @@ class NewBudgetFormFields extends ConsumerWidget {
   final VoidCallback onChanged;
   final ValueChanged<String?> onHolderChanged;
   final ValueChanged<DateTime> onEndDateChanged;
+
+  /// FS-1013: the budget's currency (edit); null = the company's (create).
+  final String? currencyCode;
 
   /// The server's DECIMAL(18,2) guard is 999,999,999.99; the field stops there.
   static const double _maxAmount = 999999999.99;
@@ -106,6 +111,10 @@ class NewBudgetFormFields extends ConsumerWidget {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [ExpenseAmountInputFormatter(maxAmount: _maxAmount)],
           textDirection: TextDirection.ltr,
+          prefixText: NumberFormat.simpleCurrency(
+            locale: 'en',
+            name: currencyCode ?? ref.watch(companyBaseCurrencyProvider),
+          ).currencySymbol,
           // The digits read LTR but sit where the other fields start (right
           // in Hebrew) - FS-1013 QA.
           textAlign: Directionality.of(context) == TextDirection.rtl ? TextAlign.end : TextAlign.start,

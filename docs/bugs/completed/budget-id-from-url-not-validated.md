@@ -1,6 +1,6 @@
 # Bug: Budget id taken from the URL is not validated
 
-> **Status: new**
+> **Status: done**
 
 Found in the PC-1 (FS-1012) finish code review, 2026-11-18. Fix in PC-2 (FS-1013).
 
@@ -33,3 +33,12 @@ to the API; anything else lands on the Budgets list.
   `Uri.encodeComponent(budgetId)` as a second guard.
 - Add the non-GUID case to `test/utils/sheet_nav_utils_test.dart`
   (`AppRoutes.parseBudgetPath`).
+
+## Resolution
+
+Fixed in FS-1013 PC-2, shipped as v1.50 (2026-11-18). `AppRoutes.parseBudgetPath`
+(`lib/utils/app_navigator.dart`) accepts a GUID only; every budget API path in
+`lib/services/budget_service.dart` is built with `Uri.encodeComponent`. Tests in
+`test/utils/sheet_nav_utils_test.dart` and `budget_utils_test.dart`. A non-GUID
+path now falls to the unknown-route screen - filed separately as
+`docs/bugs/unknown-route-shows-login-to-signed-in-user.md`. Commit 62f4d42.

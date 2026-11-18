@@ -20,6 +20,7 @@ class DialogTextField extends StatelessWidget {
     this.maxLength,
     this.textDirection,
     this.textAlign = TextAlign.start,
+    this.prefixText,
     this.onChanged,
   });
 
@@ -44,6 +45,10 @@ class DialogTextField extends StatelessWidget {
 
   /// FS-1013: e.g. an LTR amount aligned with the screen's other fields.
   final TextAlign textAlign;
+
+  /// FS-1013: e.g. the currency symbol before an amount (laid out by the
+  /// screen's direction, so it sits next to the number in LTR and RTL).
+  final String? prefixText;
   final ValueChanged<String>? onChanged;
 
   @override
@@ -81,6 +86,9 @@ class DialogTextField extends StatelessWidget {
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
+            prefixText: prefixText,
+            // A prefix (currency) shows even while the field is empty.
+            floatingLabelBehavior: prefixText != null ? FloatingLabelBehavior.always : null,
             hintStyle: const TextStyle(
                 fontSize: 13, color: AppTheme.mutedForeground),
             isDense: true,
