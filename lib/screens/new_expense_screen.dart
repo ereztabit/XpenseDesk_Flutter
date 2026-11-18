@@ -10,6 +10,7 @@ import 'screen_imports.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/app_button.dart';
 import '../utils/pdf_utils.dart';
+import '../utils/app_navigator.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../utils/conversion_preview_controller.dart';
 import '../widgets/expenses/conversion_preview_label.dart';
@@ -674,7 +675,11 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       // FS-1012: back to the budget page, which refreshes its numbers.
       if (widget.isForBudget) {
         invalidateBudgetReads(ref);
-        Navigator.of(context).pop(true);
+        // A refreshed / deep-linked page is the only route: replace it.
+        final nav = Navigator.of(context);
+        nav.canPop()
+            ? nav.pop(true)
+            : nav.pushReplacementNamed(AppRoutes.budgetPath(widget.budgetId!));
         return;
       }
 
@@ -1924,7 +1929,10 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                         icon: Icons.arrow_back,
                         // FS-1012: maybePop, so unsaved changes still ask.
                         onPressed: widget.isForBudget
-                            ? () => Navigator.of(context).maybePop(false)
+                            ? () => Navigator.of(context).canPop()
+                                  ? Navigator.of(context).maybePop(false)
+                                  : handleBackNavigation(
+                                      AppRoutes.budgetPath(widget.budgetId!))
                             : widget.isFilingForEmployee
                             ? () => Navigator.of(context).pop(false)
                             : () => handleBackNavigation('/user/dashboard'),

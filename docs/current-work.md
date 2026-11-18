@@ -18,7 +18,7 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 ## Currently Working On
 
-- [Business][P2] **FS-1012** PC-1 Budgets end to end -- IN PROGRESS: S1 a budget exists (branch `feature/pc1-s1-budget-exists`); then S2 budget page (single + bulk), S3 submit / approve / return + activity. UX source: docs/in-progress/pc-1-budgets-ux-handoff.md. see docs/in-progress/pc-1-budget-sheet-spec.md
+- [Business][P2] **FS-1012** PC-1 Budgets end to end - banked on develop as v1.48 (2026-11-18), awaiting ship-feature. Ships only after the 4 PC-1 scripts are applied to prod (backend docs/petty-cash/pc-1-prod-migration.md). see docs/in-progress/pc-1-budget-sheet-spec.md
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 

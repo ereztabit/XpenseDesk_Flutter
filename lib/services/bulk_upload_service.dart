@@ -136,7 +136,7 @@ class BulkUploadService {
               'originalFileName': f.originalFileName,
             },
         ],
-        if (budgetId != null) 'budgetId': budgetId,
+        'budgetId': ?budgetId,
       },
       authToken: token,
     );

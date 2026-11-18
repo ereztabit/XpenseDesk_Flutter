@@ -65,6 +65,8 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
   Future<void> _run(Future<void> Function() action, String doneMessage) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
+    // Held before the await: `ref` is gone if the user left the page meanwhile.
+    final container = ProviderScope.containerOf(context, listen: false);
     setState(() => _busy = true);
     String? error;
     try {
@@ -77,8 +79,11 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
       error = l10n.genericErrorRetry;
     }
     // Success or refusal, the budget may have moved: read it again.
-    ref.invalidate(sheetDetailProvider(widget.budget.budgetId));
-    invalidateBudgetReads(ref);
+    container
+      ..invalidate(sheetDetailProvider(widget.budget.budgetId))
+      ..invalidate(budgetsProvider)
+      ..invalidate(myBudgetsFetchProvider)
+      ..invalidate(budgetProvider);
     if (!mounted) return;
     setState(() => _busy = false);
     messenger.showSnackBar(SnackBar(

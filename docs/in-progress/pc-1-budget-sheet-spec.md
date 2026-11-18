@@ -218,9 +218,9 @@ Built 2026-11-17 - decisions:
 - Activity: `SheetActivityTimeline(isBudget: true)` - budget wording for
   created / submitted / returned. Its title keeps the existing "Activity /
   פעילות" key (the copy table's "פעולות" would make two Activity titles).
-- New captions, added in build and not yet reviewed: "Complete the expenses
-  that need action before submitting" / "יש להשלים את ההוצאות שדורשות טיפול
-  לפני ההגשה".
+- Caption "Complete the expenses that need action before submitting" / "יש
+  להשלים את ההוצאות שדורשות טיפול לפני ההגשה" - approved 2026-11-17. Activity
+  title stays "פעילות" (user decision 2026-11-17).
 
 ## Copy and formatting (reviewed 2026-11-17)
 
@@ -312,6 +312,16 @@ mock's live-spent simulation.
 Same as the backend story: top-up, edits, holder change, line review, delete
 (PC-2); moving expenses (PC-3); unified dashboard (PC-4); report (PC-5);
 notifications (PC-6).
+
+## Close-out (agreed with the user 2026-11-17)
+
+S1-S3 built and QA'd (Runs 1-8 below), pushed on `feature/pc1-s1-budget-exists`,
+not banked. 2026-11-18: `finish-feature` in both repos -> the user applies the
+four prod scripts (backend `docs/petty-cash/pc-1-prod-migration.md`) ->
+`ship-feature` in both repos (backend first) -> sanity check on production
+(Budgets on for one company: create, add, submit, approve; Monthly and payments
+unaffected). Then PC-2 (FS-1013), designed in the Lovable mock first. Full plan:
+backend `docs/petty-cash/pc-1-budget-sheet.md`, "Close-out plan".
 
 ## Manual QA
 
