@@ -127,6 +127,32 @@ void main() {
     expect(batchFailedFilesText(en, _batch('Completed', 3, 0, 0)), isNull);
   });
 
+  test('FS-1012 S2b: a receipt a budget refused is named under its reason', () {
+    final batch = BulkUploadBatch(
+      batchId: 'b',
+      status: 'Completed',
+      submittedAt: DateTime.utc(2026, 11, 17),
+      totalCount: 2,
+      createdCount: 0,
+      actionRequiredCount: 0,
+      unreadableCount: 2,
+      pendingCount: 0,
+      items: const [
+        BulkUploadItem(itemId: '1', originalFileName: 'broken.pdf', status: 'Unreadable'),
+        BulkUploadItem(
+            itemId: '2',
+            originalFileName: 'heater.png',
+            status: 'Unreadable',
+            failureCode: 'BudgetBalanceExceeded'),
+      ],
+    );
+    final text = batchFailedFilesText(en, batch)!
+        .replaceAll(String.fromCharCode(0x2068), '')
+        .replaceAll(String.fromCharCode(0x2069), '');
+    expect(text,
+        "Couldn't read: broken.pdf\nMore than what's left in the budget: heater.png");
+  });
+
   test('relative time: English suffix, Hebrew prefix, singulars', () {
     final now = DateTime.utc(2026, 9, 27, 12);
     Duration ago(int m) => Duration(minutes: m);
@@ -151,6 +177,12 @@ void main() {
       'ExchangeRateUnavailable',
       'MandatoryFieldsMissing',
       'MultiPageReceiptNotSupported',
+      'BudgetBalanceExceeded',
+      'BudgetApprovedClosed',
+      'BudgetNotFound',
+      'BudgetsNotEnabled',
+      'BudgetAccessDenied',
+      'BudgetExpenseCategoryNotAvailable',
     ];
     final texts = codes.map((c) => itemFailureText(en, c)).toSet();
     expect(texts.length, codes.length, reason: 'each code has its own text');

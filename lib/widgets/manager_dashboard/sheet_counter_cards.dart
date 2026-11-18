@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../models/status_counter.dart';
 import '../../utils/app_navigator.dart';
-import '../../utils/responsive_utils.dart';
-import 'counter_card.dart';
-import 'sheets_summary_mobile_card.dart';
+import 'status_counter_cards.dart';
 
 /// Sheets summary block (§3, §4) — Pending / Approved / Returned.
 ///
-/// Desktop: three equal-width cards with a shared [_kDesktopCardMinHeight] so
-/// they read as equal-height without `IntrinsicHeight` (CR Rule 6). Mobile: a
-/// single "Sheets" card holding a three-column mini-table.
+/// Desktop: three equal-width cards. Mobile: a single "Sheets" card holding a
+/// three-column mini-table (both via [StatusCounterCards]).
 ///
 /// The Pending card/column takes the amber alert treatment (§7.1) when there
 /// are sheets awaiting review; Approved and Returned are always neutral (§9).
@@ -31,8 +29,6 @@ class SheetCounterCards extends StatelessWidget {
   final int returnedCount;
   final bool interactive;
 
-  static const double _kDesktopCardMinHeight = 150;
-
   VoidCallback? _route(BuildContext context, ManagerApprovalsSection section) {
     if (!interactive) return null;
     return () => Navigator.pushNamed(
@@ -47,69 +43,35 @@ class SheetCounterCards extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final pendingAlert = interactive && pendingCount > 0;
 
-    final onPending = _route(context, ManagerApprovalsSection.pending);
-    final onApproved = _route(context, ManagerApprovalsSection.processed);
-    final onReturned = _route(context, ManagerApprovalsSection.returned);
-
-    if (context.isMobile) {
-      return SheetsSummaryMobileCard(
-        pendingCount: pendingCount,
-        approvedCount: approvedCount,
-        returnedCount: returnedCount,
-        pendingAlert: pendingAlert,
-        onPending: onPending,
-        onApproved: onApproved,
-        onReturned: onReturned,
-      );
-    }
-
-    // Desktop — three truly equal-height cards. `IntrinsicHeight` gives the Row
-    // a bounded height (the tallest card's content), so `stretch` is safe even
-    // inside the dashboard's vertical scroll view — without it, `stretch` would
-    // assert "BoxConstraints forces an infinite height". `minHeight` stays as a
-    // floor for the all-short-content case.
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: CounterCard(
-              count: pendingCount,
-              label: l10n.managerDashboardSheetsPendingReview,
-              eyebrow: pendingAlert ? l10n.managerDashboardNeedsReview : null,
-              icon: Icons.schedule,
-              alert: pendingAlert,
-              minHeight: _kDesktopCardMinHeight,
-              onTap: onPending,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: CounterCard(
-              count: approvedCount,
-              label: l10n.managerDashboardApprovedSheets,
-              icon: Icons.check_circle_outline,
-              alert: false,
-              minHeight: _kDesktopCardMinHeight,
-              onTap: onApproved,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: CounterCard(
-              count: returnedCount,
-              label: l10n.managerDashboardReturnedSheets,
-              eyebrow: returnedCount > 0
-                  ? l10n.managerDashboardAwaitingResubmit
-                  : null,
-              icon: Icons.cancel_outlined,
-              alert: false,
-              minHeight: _kDesktopCardMinHeight,
-              onTap: onReturned,
-            ),
-          ),
-        ],
-      ),
+    return StatusCounterCards(
+      mobileTitle: l10n.managerDashboardSheetsCardTitle,
+      counters: [
+        StatusCounter(
+          count: pendingCount,
+          label: l10n.managerDashboardSheetsPendingReview,
+          shortLabel: l10n.managerDashboardToReviewShort,
+          eyebrow: pendingAlert ? l10n.managerDashboardNeedsReview : null,
+          icon: Icons.schedule,
+          alert: pendingAlert,
+          onTap: _route(context, ManagerApprovalsSection.pending),
+        ),
+        StatusCounter(
+          count: approvedCount,
+          label: l10n.managerDashboardApprovedSheets,
+          shortLabel: l10n.managerDashboardApprovedShort,
+          icon: Icons.check_circle_outline,
+          onTap: _route(context, ManagerApprovalsSection.processed),
+        ),
+        StatusCounter(
+          count: returnedCount,
+          label: l10n.managerDashboardReturnedSheets,
+          shortLabel: l10n.managerDashboardReturnedShort,
+          eyebrow:
+              returnedCount > 0 ? l10n.managerDashboardAwaitingResubmit : null,
+          icon: Icons.cancel_outlined,
+          onTap: _route(context, ManagerApprovalsSection.returned),
+        ),
+      ],
     );
   }
 }

@@ -44,6 +44,18 @@ String sendErrorText(AppLocalizations l10n, BulkUploadSendError error) {
     // (FreeReceiptsCallout), which needs the user's role and allowance.
     case BulkUploadSendError.freeReceiptsUsedUp:
       return l10n.bulkUploadSendFailed;
+    case BulkUploadSendError.holderFreeReceiptsNotEnough:
+      return l10n.freeReceiptsHolderNotEnough;
+    case BulkUploadSendError.holderFreeReceiptsUsedUp:
+      return l10n.freeReceiptsHolderUsedUp;
+    case BulkUploadSendError.budgetsOff:
+      return l10n.budgetsErrNotEnabled;
+    case BulkUploadSendError.budgetNoAccess:
+      return l10n.budgetsErrAccess;
+    case BulkUploadSendError.budgetGone:
+      return l10n.budgetsErrNotFound;
+    case BulkUploadSendError.budgetClosed:
+      return l10n.budgetsErrApproved;
     case BulkUploadSendError.generic:
       return l10n.bulkUploadSendFailed;
   }
@@ -71,6 +83,19 @@ String itemFailureText(AppLocalizations l10n, String? failureCode) {
       return l10n.bulkItemDetailsRefused;
     case 'MultiPageReceiptNotSupported':
       return l10n.bulkErrMultiPage;
+    // FS-1012 S2b: a budget rule refused the receipt's line.
+    case 'BudgetBalanceExceeded':
+      return l10n.bulkItemBudgetBalance;
+    case 'BudgetApprovedClosed':
+      return l10n.budgetsErrApproved;
+    case 'BudgetNotFound':
+      return l10n.budgetsErrNotFound;
+    case 'BudgetsNotEnabled':
+      return l10n.budgetsErrNotEnabled;
+    case 'BudgetAccessDenied':
+      return l10n.budgetsErrAccess;
+    case 'BudgetExpenseCategoryNotAvailable':
+      return l10n.budgetsErrCategory;
     case 'BulkUploadReceiptNotReadable':
     default:
       return l10n.bulkItemNotReadable;
@@ -147,13 +172,26 @@ String? batchFailedFilesText(AppLocalizations l10n, BulkUploadBatch batch) {
   // First-strong isolate ... pop directional isolate.
   final fsi = String.fromCharCode(0x2068);
   final pdi = String.fromCharCode(0x2069);
-  final names = [
-    for (final item in batch.items)
-      if (item.status == 'Unreadable' && item.originalFileName.isNotEmpty)
-        '$fsi${item.originalFileName}$pdi',
+  // FS-1012 S2b: a receipt a budget refused was read fine - it is listed
+  // under its own reason ("More than what's left in the budget: a.jpg"),
+  // never as "Couldn't read".
+  final unreadable = <String>[];
+  final byBudgetReason = <String, List<String>>{};
+  for (final item in batch.items) {
+    if (item.status != 'Unreadable' || item.originalFileName.isEmpty) continue;
+    final name = '$fsi${item.originalFileName}$pdi';
+    if (item.failureCode?.startsWith('Budget') ?? false) {
+      (byBudgetReason[itemFailureText(l10n, item.failureCode)] ??= []).add(name);
+    } else {
+      unreadable.add(name);
+    }
+  }
+  final lines = [
+    if (unreadable.isNotEmpty)
+      joinWords([l10n.notifFailedFilesPrefix, unreadable.join(', ')]),
+    for (final e in byBudgetReason.entries) '${e.key}: ${e.value.join(', ')}',
   ];
-  if (names.isEmpty) return null;
-  return joinWords([l10n.notifFailedFilesPrefix, names.join(', ')]);
+  return lines.isEmpty ? null : lines.join('\n');
 }
 
 /// Progress label under the bar: "3 of 10".

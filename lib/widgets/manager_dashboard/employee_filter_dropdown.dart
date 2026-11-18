@@ -11,8 +11,22 @@ import '../../theme/app_theme.dart';
 ///
 /// Source: `companyEmployeesProvider` — active employees only (RoleId=2,
 /// Status=Active). Filtered + sorted alphabetically in the provider.
+///
+/// The budget list (FS-1012) passes its own [options] (the budget holders),
+/// [value] and [onSelected] instead of the shared provider.
 class EmployeeFilterDropdown extends ConsumerWidget {
-  const EmployeeFilterDropdown({super.key});
+  const EmployeeFilterDropdown({super.key, this.options, this.value, this.onSelected, this.width = 160});
+
+  /// userId → display name, already sorted. Null = the company's employees.
+  final List<({String userId, String name})>? options;
+
+  /// Selected userId (null = All employees) when [options] is set.
+  final String? value;
+  final ValueChanged<String?>? onSelected;
+
+  /// 160 on Sheet Approvals; the budget list passes more so "All employees"
+  /// is not clipped.
+  final double width;
 
   /// Non-null sentinel for the "All employees" option. Internally translated
   /// to `null` on the way to the provider.
@@ -21,18 +35,19 @@ class EmployeeFilterDropdown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final selected = ref.watch(selectedEmployeeFilterProvider);
-    final employeesAsync = ref.watch(companyEmployeesProvider);
-
-    final employees = employeesAsync.maybeWhen(
-      data: (list) => list,
-      orElse: () => const [],
-    );
+    final custom = options != null;
+    final selected = custom ? value : ref.watch(selectedEmployeeFilterProvider);
+    final employees = custom
+        ? options!
+        : [
+            for (final emp in ref.watch(companyEmployeesProvider).asData?.value ?? const [])
+              (userId: emp.userId, name: emp.fullName.isEmpty ? emp.email : emp.fullName),
+          ];
 
     final initialSelection = selected ?? _allSentinel;
 
     return DropdownMenu<String>(
-      width: 160,
+      width: width,
       initialSelection: initialSelection,
       enableSearch: false,
       leadingIcon: const Padding(
@@ -72,12 +87,16 @@ class EmployeeFilterDropdown extends ConsumerWidget {
         for (final emp in employees)
           DropdownMenuEntry<String>(
             value: emp.userId,
-            label: emp.fullName.isEmpty ? emp.email : emp.fullName,
+            label: emp.name,
           ),
       ],
-      onSelected: (value) {
-        final newFilter = value == _allSentinel ? null : value;
-        ref.read(selectedEmployeeFilterProvider.notifier).set(newFilter);
+      onSelected: (picked) {
+        final newFilter = picked == _allSentinel ? null : picked;
+        if (custom) {
+          onSelected?.call(newFilter);
+        } else {
+          ref.read(selectedEmployeeFilterProvider.notifier).set(newFilter);
+        }
       },
     );
   }

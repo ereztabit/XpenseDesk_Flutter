@@ -19,18 +19,26 @@ Future<void> startNewExpense(
   BuildContext context,
   WidgetRef ref, {
   required VoidCallback onSingleDone,
+  String? budgetId,
 }) async {
   // S3 backstop: every entry point is disabled once the free receipts are
   // used up (UI/UX guide §9.4); a stale button must not open either flow.
   if (ref.read(currentFreeReceiptsProvider).isUsedUp) return;
+  // FS-1012: the budget page opens the same choice sheet, and both paths file
+  // into the budget (S2a single, S2b several).
   if (context.isMobile && ref.read(isBulkUploadEnabledProvider)) {
     final choice = await NewExpenseChoiceSheet.show(context);
     if (!context.mounted || choice == null) return;
     if (choice == NewExpenseChoice.severalReceipts) {
-      await showBulkUploadDialog(context);
+      await showBulkUploadDialog(context, budgetId: budgetId);
       return;
     }
   }
-  await Navigator.of(context).pushNamed(AppRoutes.employeeNewExpense);
+  // FS-1012: the budget rides in the URL, so a refresh keeps filing onto it.
+  await Navigator.of(context).pushNamed(
+    budgetId == null
+        ? AppRoutes.employeeNewExpense
+        : '${AppRoutes.employeeNewExpense}?budgetId=${Uri.encodeQueryComponent(budgetId)}',
+  );
   onSingleDone();
 }

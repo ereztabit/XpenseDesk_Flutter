@@ -21,7 +21,10 @@ import 'screens/payments_report_screen.dart';
 import 'screens/admin_landing_screen.dart';
 import 'screens/admin_companies_screen.dart';
 import 'screens/admin_company_screen.dart';
-import 'screens/budgets_placeholder_screen.dart';
+import 'screens/budget_list_screen.dart';
+import 'screens/budget_page_screen.dart';
+import 'screens/budgets_dashboard_screen.dart';
+import 'utils/budget_utils.dart';
 import 'models/payment_status.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
@@ -57,16 +60,23 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     );
   }
 
-  // /budgets and /budgets/{id} — Budgets placeholders (FS-1012). The screen
-  // itself bounces when the page is not in the user's sheet-type tree.
+  // /budgets, /budgets/list and /budgets/{id} — Budgets (FS-1012). Each
+  // screen bounces (BudgetsGate) when Budgets are off for the company.
   final budgetId = AppRoutes.parseBudgetPath(uri.path);
-  if (uri.path == AppRoutes.budgets || budgetId != null) {
+  if (uri.path == AppRoutes.budgets ||
+      uri.path == AppRoutes.budgetsList ||
+      budgetId != null) {
+    final Widget screen = budgetId != null
+        ? BudgetPageScreen(budgetId: budgetId)
+        : uri.path == AppRoutes.budgetsList
+        ? BudgetListScreen(
+            focus: BudgetSection.fromFocus(uri.queryParameters['focus']),
+            attention: uri.queryParameters['attention'] == '1',
+          )
+        : const BudgetsDashboardScreen();
     return MaterialPageRoute(
       settings: settings,
-      builder: (_) => AuthGate(
-        mode: AuthGateMode.selfExpenseAccess,
-        child: BudgetsPlaceholderScreen(budgetId: budgetId),
-      ),
+      builder: (_) => AuthGate(mode: AuthGateMode.selfExpenseAccess, child: screen),
     );
   }
 
@@ -247,12 +257,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
+    // FS-1012: `?budgetId=` files onto that budget (holder or a manager - the
+    // server checks); in the URL so a refresh or deep link keeps the target.
+    // Without it, the ordinary Monthly flow.
     case '/employee/new-expense':
+      final targetBudgetId = uri.queryParameters['budgetId'];
       return MaterialPageRoute(
         settings: settings,
-        builder: (_) => const AuthGate(
+        builder: (_) => AuthGate(
           mode: AuthGateMode.selfExpenseAccess,
-          child: NewExpenseScreen(),
+          child: NewExpenseScreen(
+            budgetId: (targetBudgetId?.isEmpty ?? true) ? null : targetBudgetId,
+          ),
         ),
       );
 

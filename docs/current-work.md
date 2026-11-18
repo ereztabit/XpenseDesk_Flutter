@@ -16,13 +16,11 @@ So: `docs/in-progress/` holds specs for what we are working on **right now** and
 is empty when we are not; `docs/backlog/` holds specs for open features we are not
 working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
-Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
-
 ## Currently Working On
 
-- [LookAndFeel][P3] Emails reordered in RTL - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/profile-email-bidi-reordered-in-rtl.md
-- [LookAndFeel][P3] Login invalid-email message shown twice - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/login-invalid-email-message-shown-twice.md
-- [Technical][P3] AuthService email regex - banked on develop as v1.47 (2026-11-17), awaiting ship-feature. -- see docs/bugs/auth-service-email-regex-violates-validator-rule.md
+- [Business][P2] **FS-1012** PC-1 Budgets end to end - banked on develop as v1.48 (2026-11-18), awaiting ship-feature. Ships only after the 4 PC-1 scripts are applied to prod (backend docs/petty-cash/pc-1-prod-migration.md). see docs/in-progress/pc-1-budget-sheet-spec.md
+
+Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
 ## Tags
 
@@ -50,7 +48,6 @@ so in its spec rather than double-tagging here.
 
 **Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 ship. All UI is designed in the Lovable app mock first.
 
-- [ ] [Business][P2] **FS-1012** PC-1 budget sheet end to end -- manager Petty Cash module, holder ledger + "where am I" sheet cards, submit / approve / return. see docs/backlog/petty-cash/pc-1-budget-sheet-spec.md
 - [ ] [Business][P2] **FS-1013** PC-2 manager control -- edit, change holder, submit for holder, line review, soft delete, history timeline. see docs/backlog/petty-cash/pc-2-manager-control-spec.md
 - [ ] [Business][P2] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P2] **FS-1015** PC-4 unified manager dashboard -- NOT DESIGNED. see docs/backlog/petty-cash/pc-4-unified-dashboard-spec.md
@@ -80,6 +77,8 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Sheet Approvals employee filter keeps its old-language label after a live language switch, and "All employees" is cut off at 160px on mobile -- see docs/bugs/employee-filter-label-stale-after-language-switch.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
+- [ ] [Business][P2] Budget "not enough balance" amount shown in the user's currency, not the budget's -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-balance-error-uses-user-currency.md
+- [ ] [Security][P3] Budget id from the URL is not validated before it goes into API paths -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-id-from-url-not-validated.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] [LookAndFeel][P3] Edit expense: receipt panel overflows by 2px in Hebrew (IntrinsicHeight + Expanded) -- debug overflow stripe under the receipt. Found in FS-1010 QA -- see docs/bugs/expense-detail-receipt-panel-overflows-in-hebrew.md
 - [ ] [Business][P3] "Replace receipt" on the edit expense screen does nothing (wired to an empty callback; no image field on update). Found in FS-1007 S3 -- see docs/bugs/edit-expense-replace-receipt-does-nothing.md

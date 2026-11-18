@@ -10,8 +10,15 @@ import 'employee_filter_dropdown.dart';
 /// Leading: title `sheetApprovals` ("Sheet Approvals").
 /// Trailing: [EmployeeFilterDropdown] (160×32). No "+ New expense" button —
 /// the Sheet Approvals screen is read-only.
+///
+/// The budget list (FS-1012) passes its own [leading] (back button), [title]
+/// and [trailing] (its employee filter); the defaults are Sheet Approvals'.
 class ManagerPageHeaderRow extends StatelessWidget {
-  const ManagerPageHeaderRow({super.key});
+  const ManagerPageHeaderRow({super.key, this.leading, this.title, this.trailing});
+
+  final Widget? leading;
+  final String? title;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +35,17 @@ class ManagerPageHeaderRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            l10n.sheetApprovals,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontSize: context.isMobile ? 18 : 24,
-                ),
+          ?leading,
+          Expanded(
+            child: Text(
+              title ?? l10n.sheetApprovals,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontSize: context.isMobile ? 18 : 24,
+                  ),
+            ),
           ),
-          const EmployeeFilterDropdown(),
+          trailing ?? const EmployeeFilterDropdown(),
         ],
       ),
     );

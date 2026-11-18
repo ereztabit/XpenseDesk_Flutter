@@ -33,7 +33,17 @@ class SheetExpensesArea extends ConsumerWidget {
     this.isReadOnly = false,
     this.warnOnResolveLastDeclined = false,
     this.onResubmitted,
+    this.emptyTitle,
+    this.emptyDescription,
+    this.budgetId,
   });
+
+  /// FS-1012 budget page: its own empty-state copy (null = Monthly's).
+  final String? emptyTitle;
+  final String? emptyDescription;
+
+  /// FS-1012: the empty state's "+ New expense" files onto this budget.
+  final String? budgetId;
 
   final List<ExpenseSummary> expenses;
   final String companyLocale;
@@ -89,9 +99,9 @@ class SheetExpensesArea extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     if (expenses.isEmpty) {
-      final emptyTitle = l10n.employeeEmptyStateTitle;
-      final emptyDesc =
-          isDraft ? l10n.employeeEmptyStateDesc : l10n.noExpensesPendingDesc;
+      final title = emptyTitle ?? l10n.employeeEmptyStateTitle;
+      final emptyDesc = emptyDescription ??
+          (isDraft ? l10n.employeeEmptyStateDesc : l10n.noExpensesPendingDesc);
       // S3: no way in once the free receipts are used up (the header shows why).
       final canAdd =
           isDraft && !ref.watch(currentFreeReceiptsProvider).isUsedUp;
@@ -105,11 +115,12 @@ class SheetExpensesArea extends ConsumerWidget {
           ),
           child: Center(
             child: SheetExpenseEmptyState(
-              title: emptyTitle,
+              title: title,
               description: emptyDesc,
               actionLabel: canAdd ? l10n.newExpense : null,
               onAction: canAdd
-                  ? () => startNewExpense(context, ref, onSingleDone: onRefresh)
+                  ? () => startNewExpense(context, ref,
+                      onSingleDone: onRefresh, budgetId: budgetId)
                   : null,
             ),
           ),

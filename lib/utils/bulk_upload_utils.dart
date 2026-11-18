@@ -90,6 +90,18 @@ BulkUploadSendError sendErrorFromCode(String? errorCode) {
       return BulkUploadSendError.freeReceiptsNotEnough;
     case 'FreeReceiptsUsedUp':
       return BulkUploadSendError.freeReceiptsUsedUp;
+    case 'BudgetHolderFreeReceiptsNotEnough':
+      return BulkUploadSendError.holderFreeReceiptsNotEnough;
+    case 'BudgetHolderFreeReceiptsUsedUp':
+      return BulkUploadSendError.holderFreeReceiptsUsedUp;
+    case 'BudgetsNotEnabled':
+      return BulkUploadSendError.budgetsOff;
+    case 'BudgetAccessDenied':
+      return BulkUploadSendError.budgetNoAccess;
+    case 'BudgetNotFound':
+      return BulkUploadSendError.budgetGone;
+    case 'BudgetApprovedClosed':
+      return BulkUploadSendError.budgetClosed;
     default:
       return BulkUploadSendError.generic;
   }

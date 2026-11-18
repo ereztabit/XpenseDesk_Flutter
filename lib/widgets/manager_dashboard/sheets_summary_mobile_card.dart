@@ -1,37 +1,29 @@
 import 'package:flutter/material.dart';
 
-import '../../generated/l10n/app_localizations.dart';
+import '../../models/status_counter.dart';
 import '../../theme/app_theme.dart';
 import 'sheet_summary_column.dart';
 
-/// Mobile layout of the Sheets summary block (§4): a single card titled
-/// "Sheets" holding one horizontal three-column mini-table (Pending / Approved /
-/// Returned). Each column is a tap target routed by the parent. Columns never
-/// stack vertically. Status icons must match the desktop [SheetCounterCards].
+/// Mobile layout of a counters block (§4): one card with a [title] holding a
+/// horizontal mini-table, one column per counter. Each column is a tap target.
+/// Columns never stack vertically. Icons must match the desktop cards.
+/// Fed by [StatusCounterCards] (Monthly sheets, Budgets).
 class SheetsSummaryMobileCard extends StatelessWidget {
   const SheetsSummaryMobileCard({
     super.key,
-    required this.pendingCount,
-    required this.approvedCount,
-    required this.returnedCount,
-    required this.pendingAlert,
-    this.onPending,
-    this.onApproved,
-    this.onReturned,
+    required this.title,
+    required this.counters,
+    this.linkLabel,
   });
 
-  final int pendingCount;
-  final int approvedCount;
-  final int returnedCount;
-  final bool pendingAlert;
-  final VoidCallback? onPending;
-  final VoidCallback? onApproved;
-  final VoidCallback? onReturned;
+  final String title;
+  final List<StatusCounter> counters;
+
+  /// Caption of each column's link; null = "View More".
+  final String? linkLabel;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -43,7 +35,7 @@ class SheetsSummaryMobileCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.managerDashboardSheetsCardTitle,
+            title,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -56,35 +48,19 @@ class SheetsSummaryMobileCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: SheetSummaryColumn(
-                  count: pendingCount,
-                  label: l10n.managerDashboardToReviewShort,
-                  icon: Icons.schedule,
-                  alert: pendingAlert,
-                  onTap: onPending,
+              for (var i = 0; i < counters.length; i++) ...[
+                if (i > 0) const _ColumnDivider(),
+                Expanded(
+                  child: SheetSummaryColumn(
+                    count: counters[i].count,
+                    label: counters[i].shortLabel,
+                    icon: counters[i].icon,
+                    alert: counters[i].alert,
+                    onTap: counters[i].onTap,
+                    linkLabel: linkLabel,
+                  ),
                 ),
-              ),
-              const _ColumnDivider(),
-              Expanded(
-                child: SheetSummaryColumn(
-                  count: approvedCount,
-                  label: l10n.managerDashboardApprovedShort,
-                  icon: Icons.check_circle_outline,
-                  alert: false,
-                  onTap: onApproved,
-                ),
-              ),
-              const _ColumnDivider(),
-              Expanded(
-                child: SheetSummaryColumn(
-                  count: returnedCount,
-                  label: l10n.managerDashboardReturnedShort,
-                  icon: Icons.cancel_outlined,
-                  alert: false,
-                  onTap: onReturned,
-                ),
-              ),
+              ],
             ],
           ),
         ],

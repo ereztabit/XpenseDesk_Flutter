@@ -16,7 +16,11 @@ class SheetSummaryColumn extends StatelessWidget {
     required this.icon,
     required this.alert,
     this.onTap,
+    this.linkLabel,
   });
+
+  /// Link caption; null = "View More" (Monthly). Budgets pass "View".
+  final String? linkLabel;
 
   final int count;
   final String label;
@@ -73,7 +77,7 @@ class SheetSummaryColumn extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  l10n.managerDashboardViewMore,
+                  linkLabel ?? l10n.managerDashboardViewMore,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,

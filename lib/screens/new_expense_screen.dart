@@ -10,6 +10,7 @@ import 'screen_imports.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/app_button.dart';
 import '../utils/pdf_utils.dart';
+import '../utils/app_navigator.dart';
 import '../utils/expense_amount_input_formatter.dart';
 import '../utils/conversion_preview_controller.dart';
 import '../widgets/expenses/conversion_preview_label.dart';
@@ -29,6 +30,9 @@ import '../providers/company_modules_provider.dart';
 import '../providers/company_provider.dart';
 import '../providers/free_receipts_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
+import '../models/company_module.dart';
+import '../providers/budgets_provider.dart';
+import '../utils/budget_copy_utils.dart';
 import '../utils/category_utils.dart';
 import '../utils/free_receipts_utils.dart';
 import '../widgets/free_receipts/free_receipts_callout.dart';
@@ -41,12 +45,23 @@ class NewExpenseScreen extends ConsumerStatefulWidget {
   /// moment it is saved. Null means the ordinary self-service flow.
   final String? targetSheetId;
 
+  /// FS-1012. When set, the expense goes onto this budget (its holder or a
+  /// manager filing it): Budgets categories, the line stays pending, and back /
+  /// save return to the budget page that pushed this screen.
+  final String? budgetId;
+
   const NewExpenseScreen({
     super.key,
     this.targetSheetId,
+    this.budgetId,
   });
 
   bool get isFilingForEmployee => targetSheetId != null;
+  bool get isForBudget => budgetId != null;
+
+  /// The category module of the sheet being filed onto.
+  CompanyModuleKey get categoryModule =>
+      isForBudget ? CompanyModuleKey.pettyCash : CompanyModuleKey.monthly;
 
   @override
   ConsumerState<NewExpenseScreen> createState() => _NewExpenseScreenState();
@@ -227,7 +242,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
     }
     final lang = Localizations.localeOf(context).languageCode;
     final matchesAny = expenseCategoryChoices(
-            ref.read(companyCategoriesProvider), lang)
+            ref.read(companyCategoriesProvider), lang,
+            module: widget.categoryModule)
         .any((c) => c.displayName(lang) == text);
     if (!matchesAny) {
       setState(() => _selectedCategoryId = null);
@@ -504,7 +520,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         _isModifying = needsInput;
         _hasAttemptedSubmit = needsInput;
         _selectedCategoryId = resolveScannedCategoryId(
-            ref.read(companyCategoriesProvider), result.categoryId);
+            ref.read(companyCategoriesProvider), result.categoryId,
+            module: widget.categoryModule);
         _selectedCurrencyCode =
             result.currencyCode ?? ref.read(companyBaseCurrencyProvider);
         _selectedDate = result.expenseDate != null
@@ -597,9 +614,12 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
     final amount = double.tryParse(_amountController.text.trim().replaceAll(',', ''));
     // Category is optional: an expense left uncategorized files under "Other".
-    final categoryId = _selectedCategoryId ??
-        fallbackCategoryId(ref.read(companyCategoriesProvider)) ??
-        ExpenseCategory.other.id;
+    // FS-1012: on a budget the server picks the Budgets "Other" (null here).
+    final int? categoryId = widget.isForBudget
+        ? _selectedCategoryId
+        : _selectedCategoryId ??
+            fallbackCategoryId(ref.read(companyCategoriesProvider)) ??
+            ExpenseCategory.other.id;
     final merchant = _merchantController.text.trim();
     final currency = _selectedCurrencyCode;
     final date = _selectedDate ?? DateTime.now();
@@ -632,7 +652,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         receiptRef: receiptRef,
         imageUrl: _aiImageUrl,
         isAiData: _isAiData,
-        expenseSheetId: widget.targetSheetId,
+        expenseSheetId: widget.targetSheetId ?? widget.budgetId,
       );
       unawaited(freeReceipts.refresh());
       if (!mounted) return;
@@ -649,6 +669,17 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         ref.invalidate(approvalsQueueProvider(null));
         ref.invalidate(returnedSheetsProvider(null));
         Navigator.of(context).pop(true);
+        return;
+      }
+
+      // FS-1012: back to the budget page, which refreshes its numbers.
+      if (widget.isForBudget) {
+        invalidateBudgetReads(ref);
+        // A refreshed / deep-linked page is the only route: replace it.
+        final nav = Navigator.of(context);
+        nav.canPop()
+            ? nav.pop(true)
+            : nav.pushReplacementNamed(AppRoutes.budgetPath(widget.budgetId!));
         return;
       }
 
@@ -683,11 +714,15 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       });
     } on ExpenseException catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       setState(() {
         _isSubmitting = false;
-        _submitError = e.errorCode == 'ExpenseCategoryNotAvailable'
-            ? AppLocalizations.of(context)!.expenseCategoryNotAvailable
-            : e.message;
+        _submitError = budgetExpenseErrorText(l10n, e.errorCode, e.data,
+                ref.read(companyLocaleProvider),
+                ref.read(userInfoProvider)?.currencyCode ?? 'ILS') ??
+            (e.errorCode == 'ExpenseCategoryNotAvailable'
+                ? l10n.expenseCategoryNotAvailable
+                : e.message);
       });
     } catch (e) {
       if (!mounted) return;
@@ -1459,7 +1494,8 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           hintText: l10n.selectCategory,
           inputDecorationTheme: _dropdownTheme(),
           dropdownMenuEntries: expenseCategoryChoices(
-                  ref.watch(companyCategoriesProvider), uiLocale.languageCode)
+                  ref.watch(companyCategoriesProvider), uiLocale.languageCode,
+                  module: widget.categoryModule)
               .map((c) => DropdownMenuEntry<int>(
                     value: c.categoryId,
                     label: c.displayName(uiLocale.languageCode),
@@ -1884,12 +1920,20 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppButton(
-                        label: widget.isFilingForEmployee
+                        label: widget.isForBudget
+                            ? l10n.budgetsBackToBudget
+                            : widget.isFilingForEmployee
                             ? l10n.backToSheet
                             : l10n.backToDashboard,
                         variant: AppButtonVariant.ghost,
                         icon: Icons.arrow_back,
-                        onPressed: widget.isFilingForEmployee
+                        // FS-1012: maybePop, so unsaved changes still ask.
+                        onPressed: widget.isForBudget
+                            ? () => Navigator.of(context).canPop()
+                                  ? Navigator.of(context).maybePop(false)
+                                  : handleBackNavigation(
+                                      AppRoutes.budgetPath(widget.budgetId!))
+                            : widget.isFilingForEmployee
                             ? () => Navigator.of(context).pop(false)
                             : () => handleBackNavigation('/user/dashboard'),
                       ),

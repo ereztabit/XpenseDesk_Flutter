@@ -119,10 +119,12 @@ class BulkUploadService {
   }
 
   /// POST /api/bulk-uploads — sends the staged files as one batch and
-  /// returns its `batchId`.
+  /// returns its `batchId`. FS-1012 S2b: [budgetId] files every receipt into
+  /// that budget instead of the sender's Monthly sheet.
   Future<String> submit(
-    List<({String stagedFileId, String originalFileName})> files,
-  ) async {
+    List<({String stagedFileId, String originalFileName})> files, {
+    String? budgetId,
+  }) async {
     final token = await _requireSessionToken();
     final response = await _apiService.postWithStatus(
       '/api/bulk-uploads',
@@ -134,6 +136,7 @@ class BulkUploadService {
               'originalFileName': f.originalFileName,
             },
         ],
+        'budgetId': ?budgetId,
       },
       authToken: token,
     );

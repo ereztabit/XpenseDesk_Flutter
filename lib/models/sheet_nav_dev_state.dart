@@ -7,7 +7,10 @@ class SheetNavMockBudget {
   final String name;
   final double balance;
 
-  const SheetNavMockBudget(this.id, this.name, this.balance);
+  /// FS-1012 S3: returned to its holder for changes - badges the page.
+  final bool returned;
+
+  const SheetNavMockBudget(this.id, this.name, this.balance, {this.returned = false});
 }
 
 class SheetNavDevState {

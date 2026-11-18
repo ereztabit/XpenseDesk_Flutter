@@ -17,6 +17,11 @@ class SheetNavInput {
   final int myReturned;
   final int budgetsBelowZero;
 
+  /// FS-1012 S3: budgets a manager has to act on - awaiting approval, or over
+  /// budget / overdue - each once. The "All budgets" (and so the Budgets
+  /// type) badge; red only while [budgetsBelowZero] > 0.
+  final int budgetsToReview;
+
   const SheetNavInput({
     required this.isManager,
     this.monthlyOn = true,
@@ -27,6 +32,7 @@ class SheetNavInput {
     this.teamWaiting = 0,
     this.myReturned = 0,
     this.budgetsBelowZero = 0,
+    this.budgetsToReview = 0,
   });
 }
 
@@ -63,8 +69,8 @@ List<SheetNavSection>? buildSheetNavSections(SheetNavInput i) {
           SheetNavPage(
             kind: SheetNavPageKind.allBudgets,
             route: AppRoutes.budgets,
-            count: i.budgetsBelowZero,
-            alert: true,
+            count: i.budgetsToReview > i.budgetsBelowZero ? i.budgetsToReview : i.budgetsBelowZero,
+            alert: i.budgetsBelowZero > 0,
           ),
         for (final b in i.myBudgets)
           SheetNavPage(
@@ -72,6 +78,7 @@ List<SheetNavSection>? buildSheetNavSections(SheetNavInput i) {
             route: AppRoutes.budgetPath(b.id),
             label: b.name,
             balance: b.balance,
+            count: b.returned ? 1 : 0,
           ),
       ];
       // An employee without a budget has nothing to see in Budgets.
@@ -111,6 +118,18 @@ SheetNavPage? sheetNavPageFor(List<SheetNavSection>? sections, String route) {
     }
   }
   return null;
+}
+
+/// The tree route the current page belongs to: the route without its query;
+/// any Budgets page that is not one of the user's own budgets (the list,
+/// someone else's budget) keeps "All budgets" active (hand-off section 2.6).
+String sheetNavActiveRoute(List<SheetNavSection> sections, String route) {
+  final path = Uri.parse(route).path;
+  if (sheetNavPageFor(sections, path) != null) return path;
+  if (path == AppRoutes.budgets || path.startsWith('${AppRoutes.budgets}/')) {
+    return AppRoutes.budgets;
+  }
+  return path;
 }
 
 /// Number of budgets below zero, for the All budgets badge.

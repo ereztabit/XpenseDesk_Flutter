@@ -1,6 +1,6 @@
 # Bug: AuthService.isValidEmail uses hand-rolled regex instead of email_validator
 
-> **Status: in progress**
+> **Status: done**
 
 ## Problem
 
@@ -44,3 +44,8 @@ No call sites outside the file, so the rename is contained.
 `isValidEmail` -> private `_isValidEmail`, delegating to
 `EmailValidator.validate`. Shipped with
 login-invalid-email-message-shown-twice.md; manual QA recorded there.
+
+## Resolution
+
+Shipped in v1.47 (release 8c39ad1, 2026-11-17). `AuthService._isValidEmail`
+delegates to `EmailValidator.validate`. Commit 7351cfc.

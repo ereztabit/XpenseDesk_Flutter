@@ -69,7 +69,7 @@ transformation (stories 01–03); the new UI lives in `widgets/employee_dashboar
 - **#1 — DELETED.** `CompletePaymentScreen` was an unreachable stub. Removed the
   screen + the `/complete-payment` route case + `AppRoutes.completePayment` constant.
   (`CouponSection`/`PlanCard` kept — they have other live consumers.)
-- **#4 — FILED as a bug.** `docs/bugs/auth-service-email-regex-violates-validator-rule.md`.
+- **#4 — FILED as a bug.** `docs/bugs/completed/auth-service-email-regex-violates-validator-rule.md`.
 - **#7 — DONE.** `SheetExpenseBuckets.approvable` → `_approvable`,
   `PaymentsSelectionUtils.totalAmountFor` → `_totalAmountFor`.
 - **#2, #3, #5, #6 — left as-is** per your call (see below).

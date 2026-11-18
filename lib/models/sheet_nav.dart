@@ -48,4 +48,11 @@ class SheetNavSection {
 
   /// The level-1 badge is the badge of the type's first page.
   SheetNavPage? get firstPage => pages.isEmpty ? null : pages.first;
+
+  /// FS-1012 S3: the level-1 badge. The first page's, except an employee's
+  /// Budgets (no "All budgets" page): the count of their returned budgets.
+  int get badgeCount => type == SheetNavType.budgets &&
+          firstPage?.kind != SheetNavPageKind.allBudgets
+      ? pages.fold(0, (sum, p) => sum + p.count)
+      : firstPage?.count ?? 0;
 }

@@ -1,6 +1,6 @@
 # Bug: Profile email is reordered in Hebrew (RTL)
 
-> **Status: in progress**
+> **Status: done**
 >
 > Scope widened 2026-11-17: the same reorder hits every place an email is shown
 > as text, so all 8 are fixed together through a shared `LtrText` widget:
@@ -55,3 +55,10 @@ Local dev, Hebrew UI, XpenseDesk Demo Company, user `info@bambayadigital.com_`
 | 8 | Onboarding Microsoft identity card | - | not reachable without a real Microsoft sign-in; covered by `test/widgets/ltr_text_test.dart` |
 
 Before the fix, 1 and 2 were reproduced showing `_info@bambayadigital.com`.
+
+## Resolution
+
+Shipped in v1.47 (release 8c39ad1, 2026-11-17). New shared widget
+`lib/widgets/ltr_text.dart` forces left-to-right layout and resolves alignment
+against the page; used in all 8 places an email is shown as text. Tests:
+`test/widgets/ltr_text_test.dart`. Commit f58c9ba.
