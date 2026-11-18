@@ -40,10 +40,6 @@ One category per line: pick the dominant one. When an item is security-sensitive
 without being primarily a security defect (user impersonation, for example), say
 so in its spec rather than double-tagging here.
 
-## Currently Working On
-
-- [ ] **FS-1013** PC-2 manager control + audit - banked on develop as v1.50 (2026-11-18), awaiting ship-feature.
-
 ## TODO (Backlog)
 
 **Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. In slice order. Not done until PC-4 + PC-5 + PC-8 + PC-9 ship. All UI is designed in the Lovable app mock first.
@@ -78,9 +74,6 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Sheet Approvals employee filter keeps its old-language label after a live language switch, and "All employees" is cut off at 160px on mobile -- see docs/bugs/employee-filter-label-stale-after-language-switch.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
-- [ ] [Business][P2] Budget "not enough balance" amount shown in the user's currency, not the budget's -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-balance-error-uses-user-currency.md
-- [ ] [LookAndFeel][P2] Approved budget page has no "Back" link for the holder -- the switcher bar is gone once approved, so a saved link leaves only the header logo as an exit -- fix in PC-2 (FS-1013) -- see docs/bugs/approved-budget-page-has-no-way-back-for-holder.md
-- [ ] [Security][P3] Budget id from the URL is not validated before it goes into API paths -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-id-from-url-not-validated.md
 - [ ] [Technical][P3] Returning from the expense editor logs a Riverpod "called during build" error on Sheet Review and My expenses -- console only; one shared post-frame refresh helper -- see docs/bugs/refresh-after-editor-return-marks-build-dirty.md
 - [ ] [LookAndFeel][P3] An unknown address shows the login screen to a signed-in user -- should go to their dashboard -- see docs/bugs/unknown-route-shows-login-to-signed-in-user.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md

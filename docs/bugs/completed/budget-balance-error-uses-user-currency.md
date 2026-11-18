@@ -1,6 +1,6 @@
 # Bug: Budget "not enough balance" amount shown in the user's currency
 
-> **Status: new**
+> **Status: done**
 
 Found in the PC-1 (FS-1012) finish code review, 2026-11-18. Fix in PC-2 (FS-1013).
 
@@ -33,3 +33,11 @@ The refusal amount always reads in the budget's currency.
   detail screen can read the budget), falling back to
   `companyBaseCurrencyProvider` (`lib/providers/auth_provider.dart:224`). No
   hardcoded currency (CR rule 3).
+
+## Resolution
+
+Fixed in FS-1013 PC-2, shipped as v1.50 (2026-11-18). The new-expense screen
+uses the budget's `currencyCode` (`_budgetCurrency()` in
+`lib/screens/new_expense_screen.dart`), the expense detail screen reads the
+line's budget the same way (`employee_expense_detail_screen.dart`), both
+falling back to `companyBaseCurrencyProvider`. Commit 62f4d42.

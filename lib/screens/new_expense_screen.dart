@@ -607,7 +607,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
 
   /// FS-1013: a budget refusal names the budget's left amount in the budget's
   /// currency (= the company's), never the user's own
-  /// (docs/bugs/budget-balance-error-uses-user-currency.md).
+  /// (docs/bugs/completed/budget-balance-error-uses-user-currency.md).
   String _budgetCurrency() {
     final id = widget.budgetId;
     return (id == null ? null : ref.read(budgetProvider(id)).asData?.value.currencyCode) ??

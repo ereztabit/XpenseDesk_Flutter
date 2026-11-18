@@ -206,7 +206,7 @@ class _EmployeeExpenseDetailScreenState
 
   /// FS-1013: a budget refusal names the budget's left amount in the budget's
   /// own currency - read from the line's budget, else the company's
-  /// (docs/bugs/budget-balance-error-uses-user-currency.md).
+  /// (docs/bugs/completed/budget-balance-error-uses-user-currency.md).
   String _budgetCurrency() {
     final sheetId = _expense?.expenseSheetId;
     final budget = _isBudgetLine && sheetId != null

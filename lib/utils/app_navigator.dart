@@ -39,7 +39,7 @@ class AppRoutes {
 
   /// The budget id of a `/budgets/<id>` path, or null. FS-1013: only a GUID is
   /// an id - anything else is not a budget page and never reaches an API path
-  /// (docs/bugs/budget-id-from-url-not-validated.md).
+  /// (docs/bugs/completed/budget-id-from-url-not-validated.md).
   static String? parseBudgetPath(String path) {
     final segments = Uri.parse(path).pathSegments;
     return segments.length == 2 &&

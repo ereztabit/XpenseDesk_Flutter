@@ -28,7 +28,7 @@ bool budgetLinesReviewable(Budget b, {required String? email, required bool isMa
 /// Someone else's budget -> the budgets list (a manager came from there). The
 /// holder's own budget has the sheet switcher bar while it is open; once it is
 /// approved the bar is gone, so "Back" goes to the holder's dashboard
-/// (docs/bugs/approved-budget-page-has-no-way-back-for-holder.md).
+/// (docs/bugs/completed/approved-budget-page-has-no-way-back-for-holder.md).
 String? budgetBackTarget(Budget b, {required String? email, required bool isManager}) {
   if (!budgetIsHeldBy(b, email)) return AppRoutes.budgetsList;
   if (budgetIsOutstanding(b)) return null;

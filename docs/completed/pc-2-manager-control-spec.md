@@ -1,8 +1,8 @@
 # PC-2 - Budget sheet manager control + audit
 
-> Mission: FS-1013 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-2-manager-control.md - decisions, API rules, error codes). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md. API: [budgets-api-guide.md](../api-guides/budgets-api-guide.md)
+> Mission: FS-1013 (backend: BackEnd/XpenseDeskServer/docs/done/pc-2-manager-control.md - decisions, API rules, error codes). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md. API: [budgets-api-guide.md](../api-guides/budgets-api-guide.md)
 
-Status: IN PROGRESS 2026-11-18 on `feature/pc2-manager-control`.
+Status: SHIPPED 2026-11-18 as v1.50.
 
 No Lovable design round (user decision 2026-11-18): every piece reuses an
 existing widget. Top-up is dropped. The B2 row menu and delete dialog follow
@@ -23,9 +23,9 @@ the mock as recorded in
 
 ## Bugs folded in (filed for PC-2)
 
-- [budget-balance-error-uses-user-currency.md](../bugs/budget-balance-error-uses-user-currency.md)
-- [budget-id-from-url-not-validated.md](../bugs/budget-id-from-url-not-validated.md)
-- [approved-budget-page-has-no-way-back-for-holder.md](../bugs/approved-budget-page-has-no-way-back-for-holder.md)
+- [budget-balance-error-uses-user-currency.md](../bugs/completed/budget-balance-error-uses-user-currency.md)
+- [budget-id-from-url-not-validated.md](../bugs/completed/budget-id-from-url-not-validated.md)
+- [approved-budget-page-has-no-way-back-for-holder.md](../bugs/completed/approved-budget-page-has-no-way-back-for-holder.md)
 
 ## Copy (EN / HE)
 

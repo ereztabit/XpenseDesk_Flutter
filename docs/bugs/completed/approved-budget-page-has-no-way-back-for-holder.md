@@ -1,6 +1,6 @@
 # Bug: Holder has no way back from an approved budget's page
 
-> **Status: new**
+> **Status: done**
 
 Found in the PC-1 (FS-1012) production sanity check, 2026-11-18. Fix in PC-2 (FS-1013).
 
@@ -53,3 +53,11 @@ The budget page always shows a way back. For a manager it is the Budgets list
   targeting the holder's dashboard (`/user/dashboard`, or `/dashboard` for a
   manager-holder) instead of `budgetsList`. Put the target choice in
   `lib/utils/budget_utils.dart` and unit-test it.
+
+## Resolution
+
+Fixed in FS-1013 PC-2, shipped as v1.50 (2026-11-18). `budgetBackTarget`
+(`lib/utils/budget_edit_utils.dart`) shows "Back" for the holder once the budget
+is approved, to `/user/dashboard` (`/dashboard` for a manager-holder); the
+budget page pops to the previous page when there is one. Verified in manual QA
+(Q14, runs 1-3). Commit 62f4d42.
