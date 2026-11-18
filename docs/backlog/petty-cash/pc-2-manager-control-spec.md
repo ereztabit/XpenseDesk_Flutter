@@ -16,7 +16,7 @@ Status: FILED 2026-11-16. Not started. Needs PC-1. **UI designed in Lovable firs
 - Top-up (moved here from PC-1 on 2026-11-17 - not designed yet).
 - Budget list row ⋮ menu (Submit for approval on the holder's behalf, Delete +
   confirm) is already designed in the mock - see
-  [pc-1-budgets-ux-handoff.md](../../in-progress/pc-1-budgets-ux-handoff.md) §2.2.
+  [pc-1-budgets-ux-handoff.md](../../completed/pc-1-budgets-ux-handoff.md) §2.2.
 - No restore UI (support only).
 - Not designed yet: top-up, edits, the manager's budget review screen. Resume
   per the backend PC-1 story's "Design paused - resume here".

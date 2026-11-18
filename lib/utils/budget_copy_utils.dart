@@ -4,7 +4,7 @@ import 'budget_utils.dart';
 import 'format_utils.dart';
 
 /// Budgets captions built by concatenation (no ARB placeholders), from the
-/// reviewed copy table in docs/in-progress/pc-1-budget-sheet-spec.md.
+/// reviewed copy table in docs/completed/pc-1-budget-sheet-spec.md.
 
 /// 1 -> "1 day" / "יום אחד", 2 -> "2 days" / "יומיים", n -> "n days" / "n ימים".
 String budgetDaysText(AppLocalizations l10n, int days) => switch (days) {
