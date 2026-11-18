@@ -77,6 +77,8 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Sheet Approvals employee filter keeps its old-language label after a live language switch, and "All employees" is cut off at 160px on mobile -- see docs/bugs/employee-filter-label-stale-after-language-switch.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
+- [ ] [Business][P2] Budget "not enough balance" amount shown in the user's currency, not the budget's -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-balance-error-uses-user-currency.md
+- [ ] [Security][P3] Budget id from the URL is not validated before it goes into API paths -- fix in PC-2 (FS-1013) -- see docs/bugs/budget-id-from-url-not-validated.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md
 - [ ] [LookAndFeel][P3] Edit expense: receipt panel overflows by 2px in Hebrew (IntrinsicHeight + Expanded) -- debug overflow stripe under the receipt. Found in FS-1010 QA -- see docs/bugs/expense-detail-receipt-panel-overflows-in-hebrew.md
 - [ ] [Business][P3] "Replace receipt" on the edit expense screen does nothing (wired to an empty callback; no image field on update). Found in FS-1007 S3 -- see docs/bugs/edit-expense-replace-receipt-does-nothing.md
