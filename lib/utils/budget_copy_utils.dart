@@ -79,6 +79,9 @@ String? budgetExpenseErrorText(
           : '${l10n.budgetsErrBalance} ${balance.toCurrency(locale, currency)}';
     case 'BudgetApprovedClosed':
       return l10n.budgetsErrApproved;
+    // FS-1013 fix: a line a manager approved is locked for the holder.
+    case 'BudgetExpenseApprovedLocked':
+      return l10n.budgetsErrLineLocked;
     case 'BudgetExpenseCategoryNotAvailable':
       return l10n.budgetsErrCategory;
     // FS-1012 S2b: a manager filing into a budget whose holder has none left.

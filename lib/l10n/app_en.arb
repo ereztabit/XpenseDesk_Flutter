@@ -527,7 +527,7 @@
   "activeUsers": "Active Users",
 
   "cycleExpensesReport": "Cycle Expenses Report",
-  "expensesDetailReport": "Expenses Detail Report",
+  "expensesDetailReport": "Digital Archive",
   "currentCycle": "Current Cycle",
   "byEmployee": "By Employee",
   "byCategory": "By Category",
@@ -1187,7 +1187,7 @@
   "budgetsSubmit": "Submit for approval",
   "budgetsDelete": "Delete",
   "budgetsDeleteTitle": "Delete budget?",
-  "budgetsDeleteBody": "and all its expenses will be removed. Recovery is possible only through support.",
+  "budgetsDeleteBody": "and all its expenses will be permanently deleted. This action cannot be undone.",
   "budgetsDeleteConfirm": "Delete budget",
   "budgetsDeleted": "Budget deleted",
   "budgetsEvRenamed": "Name changed",
@@ -1196,5 +1196,9 @@
   "budgetsEvAmount": "Amount changed",
   "budgetsEvLineApproved": "Expense approved",
   "budgetsEvLineDeclined": "Expense declined",
-  "budgetsErrAmountBelowSpent": "The amount is lower than what was already spent, and this company doesn't allow a negative balance."
+  "budgetsErrAmountBelowSpent": "The amount is lower than what was already spent, and this company doesn't allow a negative balance.",
+  "budgetsErrLineLocked": "A manager approved this expense - it can no longer be changed.",
+  "budgetsReviewDoneTitle": "All expenses reviewed",
+  "budgetsReviewDoneBody": "Every expense on this budget has been approved or declined. Approve the budget now?",
+  "budgetsApproveAfterReviewFailed": "The expense was saved, but the budget could not be approved. Approve it again from the budget page."
 }

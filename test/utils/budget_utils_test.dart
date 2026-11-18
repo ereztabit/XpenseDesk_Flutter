@@ -215,13 +215,21 @@ void main() {
       expect(budgetCanSubmit(b(2)), isFalse);
       expect(budgetCanSubmit(b(3)), isFalse);
     });
-
-    test('Back: list for someone else, dashboard once the holder\'s is approved', () {
+    test('Back: every budget page has a target - list for a manager, dashboard for an employee', () {
       expect(budgetBackTarget(b(2), email: 'm@x.com', isManager: true), AppRoutes.budgetsList);
-      expect(budgetBackTarget(b(1), email: 'e@x.com', isManager: false), isNull,
-          reason: 'open - the switcher bar is there');
+      expect(budgetBackTarget(b(1), email: 'e@x.com', isManager: true), AppRoutes.budgetsList,
+          reason: "a manager's own open budget");
+      expect(budgetBackTarget(b(1), email: 'e@x.com', isManager: false), AppRoutes.employeeDashboard,
+          reason: "the holder's own open budget");
       expect(budgetBackTarget(b(3), email: 'e@x.com', isManager: false), AppRoutes.employeeDashboard);
       expect(budgetBackTarget(b(3), email: 'e@x.com', isManager: true), AppRoutes.managerDashboard);
+    });
+
+    test('the list opens only sections that hold a budget, or the focus', () {
+      expect(budgetInitiallyExpanded([b(1)], null), {BudgetSection.open});
+      expect(budgetInitiallyExpanded([b(1), b(4)], null), {BudgetSection.open, BudgetSection.returned});
+      expect(budgetInitiallyExpanded(const [], null), isEmpty);
+      expect(budgetInitiallyExpanded([b(1)], BudgetSection.awaiting), {BudgetSection.awaiting});
     });
 
     test('the amount field shows the amount grouped, decimals only when needed', () {
@@ -251,6 +259,9 @@ void main() {
       expect(budgetLinesReviewable(b(3), email: 'm@x.com', isManager: true), isFalse,
           reason: 'approved');
       expect(budgetLinesReviewable(b(2), email: 'm@x.com', isManager: false), isFalse);
+      expect(budgetLinesReviewable(b(4), email: 'm@x.com', isManager: true), isTrue, reason: 'returned');
+      expect(budgetLinesReviewable(b(1), email: 'm@x.com', isManager: true), isFalse,
+          reason: 'a draft shows the plain list');
     });
   });
 }

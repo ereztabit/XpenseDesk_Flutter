@@ -106,9 +106,14 @@ TableRow buildSheetReviewRow(
         onTap,
         Align(
           alignment: AlignmentDirectional.centerStart,
-          child: ExpenseStatusBadge(
-            expenseStatusId: expense.expenseStatusId,
-            isAiData: expense.isAiData,
+          // One line always: in a narrow column the pill scales down instead
+          // of breaking mid-word ("Approve/d") - FS-1013 owner QA.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: ExpenseStatusBadge(
+              expenseStatusId: expense.expenseStatusId,
+              isAiData: expense.isAiData,
+            ),
           ),
         ),
       ),

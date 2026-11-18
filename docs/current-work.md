@@ -73,6 +73,8 @@ so in its spec rather than double-tagging here.
 - [ ] [LookAndFeel][P3] Sheet Approvals employee filter keeps its old-language label after a live language switch, and "All employees" is cut off at 160px on mobile -- see docs/bugs/employee-filter-label-stale-after-language-switch.md
 - [ ] [Technical][P2] Claude cannot run and drive the app locally -- `.claude/launch.json` produces a CORS-rejected origin, and Flutter web's canvas rendering leaves no DOM to click -- see docs/bugs/agent-cannot-run-and-drive-the-app-locally.md
 - [ ] [Business][P3] Out-of-range invoice date only fails at submit (no client-side validation) -- see docs/bugs/invoice-date-out-of-range-client-validation.md
+- [ ] [LookAndFeel][P2] Budget list opens its empty sections (Awaiting / Returned with no budgets) -- should load collapsed; keep the user's choice after -- see docs/bugs/budget-list-opens-empty-sections.md
+- [ ] [LookAndFeel][P2] No "Back" on the budget page for a budget you hold yourself (open) -- manager's own budget has no way back to the list -- see docs/bugs/budget-page-no-back-for-holder-of-open-budget.md
 - [ ] [Technical][P3] Returning from the expense editor logs a Riverpod "called during build" error on Sheet Review and My expenses -- console only; one shared post-frame refresh helper -- see docs/bugs/refresh-after-editor-return-marks-build-dirty.md
 - [ ] [LookAndFeel][P3] An unknown address shows the login screen to a signed-in user -- should go to their dashboard -- see docs/bugs/unknown-route-shows-login-to-signed-in-user.md
 - [ ] [LookAndFeel][P3] Payments "all done" caption is wrong on a fresh all-zeros dashboard (onboarding state) -- see docs/bugs/payments-all-done-caption-wrong-at-onboarding-zero-state.md

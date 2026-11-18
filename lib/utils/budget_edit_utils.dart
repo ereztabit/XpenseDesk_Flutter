@@ -20,20 +20,24 @@ bool budgetCanSubmit(Budget b) =>
     b.statusId == BudgetSection.returned.statusId;
 
 /// FS-1013 PC-2: a manager reviews the budget line by line (approve /
-/// decline) - not on a budget they hold themselves, and not once Approved.
+/// decline) once it was sent - Awaiting approval or Returned - and not on a
+/// budget they hold themselves. A Draft shows the plain expense list (owner,
+/// 2026-11-18: nothing to review before it is submitted).
 bool budgetLinesReviewable(Budget b, {required String? email, required bool isManager}) =>
-    budgetManagerCanChange(b, isManager: isManager) && !budgetIsHeldBy(b, email);
+    isManager &&
+    (b.statusId == BudgetSection.awaiting.statusId || b.statusId == BudgetSection.returned.statusId) &&
+    !budgetIsHeldBy(b, email);
 
-/// FS-1013: where the budget page's "Back" goes, or null for no button.
-/// Someone else's budget -> the budgets list (a manager came from there). The
-/// holder's own budget has the sheet switcher bar while it is open; once it is
-/// approved the bar is gone, so "Back" goes to the holder's dashboard
-/// (docs/bugs/completed/approved-budget-page-has-no-way-back-for-holder.md).
-String? budgetBackTarget(Budget b, {required String? email, required bool isManager}) {
-  if (!budgetIsHeldBy(b, email)) return AppRoutes.budgetsList;
-  if (budgetIsOutstanding(b)) return null;
-  return isManager ? AppRoutes.managerDashboard : AppRoutes.employeeDashboard;
-}
+/// FS-1013: where the budget page's "Back" goes when there is no page to pop
+/// back to (a deep link) - every budget page has Back (owner, 2026-11-18;
+/// docs/bugs/budget-page-no-back-for-holder-of-open-budget.md). A manager goes
+/// to the budget list (own budget included), an employee to their dashboard.
+String budgetBackTarget(Budget b, {required String? email, required bool isManager}) =>
+    isManager && budgetIsOutstanding(b)
+        ? AppRoutes.budgetsList
+        : isManager
+            ? AppRoutes.managerDashboard
+            : AppRoutes.employeeDashboard;
 
 /// FS-1013: an amount as the amount field shows it while typing - "1,500",
 /// "1,500.50" (ExpenseAmountInputFormatter grouping, no currency).
@@ -60,3 +64,14 @@ const int budgetEndDateMaxDaysBack = 30;
 /// The earliest end date a budget may get today.
 DateTime budgetEarliestEndDate(DateTime today) =>
     DateTime(today.year, today.month, today.day - budgetEndDateMaxDaysBack);
+
+/// FS-1013 fix: the list's sections open on first load - a dashboard focus
+/// opens just that one; otherwise only sections that hold a budget (an empty
+/// "No budgets" card stays collapsed). The user's own toggles win afterwards.
+Set<BudgetSection> budgetInitiallyExpanded(List<Budget> budgets, BudgetSection? focus) =>
+    focus != null
+        ? {focus}
+        : {
+            for (final s in BudgetSection.values)
+              if (budgets.any((b) => b.statusId == s.statusId)) s,
+          };

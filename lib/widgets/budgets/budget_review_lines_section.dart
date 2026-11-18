@@ -11,15 +11,17 @@ import '../../providers/expense_sheet_provider.dart';
 import '../../services/expense_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/budget_copy_utils.dart';
+import '../../utils/budget_utils.dart';
 import '../expenses/delete_expense_dialog.dart';
+import '../last_action_confirm_dialog.dart';
 import '../sheet_review/sheet_review_line_section.dart';
 
 /// FS-1013 PC-2 - a manager reviewing someone else's budget sees its expenses
 /// as the sheet review's line list ([SheetReviewLineSection]: Pending /
 /// Approved / Declined tabs, approve / decline / delete / open per line)
-/// instead of the holder's My-expenses list. Only the line changes - the
-/// budget keeps its status (no "last approve closes the sheet" warning: on a
-/// budget it does not).
+/// instead of the holder's My-expenses list, once the budget is Awaiting or
+/// Returned. Only the line changes; deciding the last pending line of an
+/// Awaiting budget offers to approve the whole budget.
 class BudgetReviewLinesSection extends ConsumerWidget {
   const BudgetReviewLinesSection({super.key, required this.budget});
 
@@ -44,10 +46,28 @@ class BudgetReviewLinesSection extends ConsumerWidget {
     final container = ProviderScope.containerOf(context, listen: false);
     final locale = ref.read(companyLocaleProvider);
     final service = ref.read(expenseServiceProvider);
+    // FS-1013 fix: deciding the last pending line of an Awaiting budget
+    // offers to approve the whole budget (owner, 2026-11-18).
+    final lines = container.read(sheetDetailProvider(budget.budgetId)).asData?.value.expenses ?? const [];
+    final lastPending = budget.statusId == BudgetSection.awaiting.statusId &&
+        line.expenseStatusId == 1 &&
+        !lines.any((e) => e.expenseStatusId == 1 && e.expenseId != line.expenseId);
     try {
       approve
           ? await service.approveExpense(line.expenseId)
           : await service.declineExpense(line.expenseId);
+      if (lastPending && context.mounted &&
+          await LastActionConfirmDialog.show(context,
+              title: l10n.budgetsReviewDoneTitle, body: l10n.budgetsReviewDoneBody)) {
+        // The line is already saved; only the budget approve can fail here.
+        String done = l10n.timelineStatusApproved;
+        try {
+          await service.approveSheet(budget.budgetId);
+        } catch (_) {
+          done = l10n.budgetsApproveAfterReviewFailed;
+        }
+        messenger.showSnackBar(SnackBar(content: Text(done), duration: const Duration(seconds: 3)));
+      }
     } on ExpenseException catch (e) {
       messenger.showSnackBar(SnackBar(
         content: Text(budgetExpenseErrorText(
