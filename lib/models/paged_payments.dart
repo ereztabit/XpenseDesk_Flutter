@@ -2,8 +2,7 @@ import 'payment_report_row.dart';
 
 /// Paging envelope for `GET /api/payments` — same shape as the sheet lists.
 ///
-/// `pageTotalAmount` = sum across items on this page.
-/// `grandTotalAmount` = sum across the FULL filtered set.
+/// PC-8: To pay and To collect totals are kept apart, never netted.
 class PagedPayments {
   final List<PaymentReportRow> items;
   final int page;
@@ -12,6 +11,10 @@ class PagedPayments {
   final bool hasMore;
   final double pageTotalAmount;
   final double grandTotalAmount;
+  final int payCount;
+  final int collectCount;
+  final double pageCollectAmount;
+  final double grandCollectAmount;
 
   const PagedPayments({
     required this.items,
@@ -21,6 +24,10 @@ class PagedPayments {
     required this.hasMore,
     required this.pageTotalAmount,
     required this.grandTotalAmount,
+    this.payCount = 0,
+    this.collectCount = 0,
+    this.pageCollectAmount = 0,
+    this.grandCollectAmount = 0,
   });
 
   /// Empty envelope used as the loading / error / unauthenticated fallback.
@@ -34,42 +41,55 @@ class PagedPayments {
     grandTotalAmount: 0,
   );
 
+  static double _d(Object? v) => (v as num?)?.toDouble() ?? 0;
+
   factory PagedPayments.fromJson(Map<String, dynamic> json) {
     final itemsJson = (json['items'] as List?) ?? const [];
+    final totalCount = (json['totalCount'] as num?)?.toInt() ?? 0;
+    final collectCount = (json['collectCount'] as num?)?.toInt() ?? 0;
     return PagedPayments(
       items: itemsJson
           .map((e) => PaymentReportRow.fromJson(e as Map<String, dynamic>))
           .toList(growable: false),
       page: (json['page'] as num?)?.toInt() ?? 1,
       pageSize: (json['pageSize'] as num?)?.toInt() ?? 0,
-      totalCount: (json['totalCount'] as num?)?.toInt() ?? 0,
+      totalCount: totalCount,
       hasMore: json['hasMore'] as bool? ?? false,
-      pageTotalAmount: (json['pageTotalAmount'] as num?)?.toDouble() ?? 0,
-      grandTotalAmount: (json['grandTotalAmount'] as num?)?.toDouble() ?? 0,
+      pageTotalAmount: _d(json['pageTotalAmount']),
+      grandTotalAmount: _d(json['grandTotalAmount']),
+      // Pre-PC-8 payloads: every row is a Pay row.
+      payCount:
+          (json['payCount'] as num?)?.toInt() ?? totalCount - collectCount,
+      collectCount: collectCount,
+      pageCollectAmount: _d(json['pageCollectAmount']),
+      grandCollectAmount: _d(json['grandCollectAmount']),
     );
   }
 
-  /// Drops [sheetIds] from the page in place (after a successful process under
-  /// the Awaiting filter) so the manager keeps scroll/filter context without a
-  /// refetch. Totals are adjusted by the removed rows' amounts.
+  /// Drops just-processed sheets from the page, keeping the manager's place.
   PagedPayments withoutSheets(Set<String> sheetIds) {
     final removed = items
         .where((r) => sheetIds.contains(r.expenseSheetId))
         .toList(growable: false);
     if (removed.isEmpty) return this;
-    final removedAmount =
-        removed.fold<double>(0, (sum, r) => sum + r.amount);
-    final removedCount = removed.length;
+    final pays = removed.where((r) => !r.isCollect);
+    final collects = removed.where((r) => r.isCollect);
+    final payAmount = pays.fold<double>(0, (s, r) => s + r.magnitude);
+    final collectAmount = collects.fold<double>(0, (s, r) => s + r.magnitude);
     return PagedPayments(
       items: items
           .where((r) => !sheetIds.contains(r.expenseSheetId))
           .toList(growable: false),
       page: page,
       pageSize: pageSize,
-      totalCount: totalCount - removedCount,
+      totalCount: totalCount - removed.length,
       hasMore: hasMore,
-      pageTotalAmount: pageTotalAmount - removedAmount,
-      grandTotalAmount: grandTotalAmount - removedAmount,
+      pageTotalAmount: pageTotalAmount - payAmount,
+      grandTotalAmount: grandTotalAmount - payAmount,
+      payCount: payCount - pays.length,
+      collectCount: collectCount - collects.length,
+      pageCollectAmount: pageCollectAmount - collectAmount,
+      grandCollectAmount: grandCollectAmount - collectAmount,
     );
   }
 }

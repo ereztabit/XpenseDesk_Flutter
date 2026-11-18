@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/expense_sheet_detail.dart';
+import '../../models/payment_direction.dart';
 import '../../models/payment_status.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/payments_copy_utils.dart';
 import '../../utils/sheet_utils.dart';
 import '../payments/payment_status_badge.dart';
+import 'payment_strip_detail_row.dart';
 
 /// Payment-status strip on the manager's sheet review screen — sits between
 /// the approval actions and the expense lines, visually subordinate to the
@@ -16,6 +19,8 @@ import '../payments/payment_status_badge.dart';
 ///
 /// Awaiting: warning wallet glyph + badge + payable total. Processed: success
 /// glyph + badge + bold reference + processed-on date + payable total.
+/// PC-8 (also on the approved budget page): shows the settled amount as To pay /
+/// To collect, Paid / Collected, and the payment cycle.
 /// Reference/date rows never render empty — the caller hides the strip
 /// entirely when the sheet has no payment dimension.
 class PaymentStatusStrip extends ConsumerWidget {
@@ -30,13 +35,18 @@ class PaymentStatusStrip extends ConsumerWidget {
 
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(companyLocaleProvider);
-    final currencyCode = ref.watch(userInfoProvider)?.currencyCode;
+    final user = ref.watch(userInfoProvider);
+    final currencyCode = user?.currencyCode;
+    final isManager = user?.isManager ?? false;
 
     final isAwaiting = status == PaymentStatus.awaitingPayment;
-    final payable = SheetExpenseBuckets.approvedAmount(sheet.expenses);
-    final amountText = currencyCode != null
-        ? payable.toCurrency(locale, currencyCode)
-        : payable.toFormattedNumber(locale);
+    final settlement = sheet.settlementAmount;
+    final direction =
+        settlement != null ? PaymentDirection.fromAmount(settlement) : null;
+    final amount = settlement?.abs() ??
+        SheetExpenseBuckets.approvedAmount(sheet.expenses);
+    final amountText = paymentAmountText(amount, locale, currencyCode);
+    final cycle = sheet.paymentCycleLabel;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -82,7 +92,7 @@ class PaymentStatusStrip extends ConsumerWidget {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    PaymentStatusBadge(status: status),
+                    PaymentStatusBadge(status: status, direction: direction),
                     if (sheet.paymentReference != null &&
                         sheet.paymentReference!.isNotEmpty)
                       Text(
@@ -96,30 +106,16 @@ class PaymentStatusStrip extends ConsumerWidget {
                       ),
                   ],
                 ),
-                if (!isAwaiting && sheet.processedDate != null) ...[
-                  const SizedBox(height: 6),
-                  // Separate runs — mixed-direction label + date scrambles
-                  // under RTL bidi if concatenated.
-                  Row(
-                    children: [
-                      Text(
-                        l10n.processedOnLabel,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.mutedForeground,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        sheet.processedDate!.toCompanyDate(locale),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.mutedForeground,
-                        ),
-                      ),
-                    ],
+                if (cycle != null && cycle.isNotEmpty)
+                  PaymentStripDetailRow(
+                    label: l10n.paymentCycleLabel,
+                    value: cycle.toCycleLongMonth(locale),
                   ),
-                ],
+                if (!isAwaiting && sheet.processedDate != null)
+                  PaymentStripDetailRow(
+                    label: l10n.processedOnLabel,
+                    value: sheet.processedDate!.toCompanyDate(locale),
+                  ),
               ],
             ),
           ),
@@ -128,7 +124,13 @@ class PaymentStatusStrip extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                l10n.total,
+                direction == null
+                    ? l10n.total
+                    // The holder returns unspent cash; "To collect" is the
+                    // company's word for it.
+                    : direction == PaymentDirection.collect && !isManager
+                        ? l10n.paymentsDirectionToReturn
+                        : paymentDirectionText(l10n, direction),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppTheme.mutedForeground,
@@ -137,10 +139,12 @@ class PaymentStatusStrip extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 amountText,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.foreground,
+                  color: direction == PaymentDirection.collect
+                      ? AppTheme.primary
+                      : AppTheme.foreground,
                 ),
               ),
             ],

@@ -16,17 +16,22 @@ class ApproveSheetConfirmDialog extends StatelessWidget {
     required this.amountText,
     required this.employeeName,
     this.nothingToApprove = false,
+    this.settlementText,
   });
 
   final String amountText;
   final String employeeName;
   final bool nothingToApprove;
 
+  /// Budgets: what approving settles, and in which cycle (PC-8).
+  final String? settlementText;
+
   static Future<bool> show(
     BuildContext context, {
     required String amountText,
     required String employeeName,
     bool nothingToApprove = false,
+    String? settlementText,
   }) async {
     final result = await showDialog<bool>(
       context: context,
@@ -34,6 +39,7 @@ class ApproveSheetConfirmDialog extends StatelessWidget {
         amountText: amountText,
         employeeName: employeeName,
         nothingToApprove: nothingToApprove,
+        settlementText: settlementText,
       ),
     );
     return result ?? false;
@@ -42,18 +48,21 @@ class ApproveSheetConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Only a budget passes a settlement line; it reads as a budget, not a sheet.
+    final isBudget = settlementText != null;
     final body = nothingToApprove
         ? l10n.approveAllDeclinedConfirmBody
-        : '${l10n.approveSheetConfirmBodyAmount} $amountText '
+        : '${isBudget ? l10n.budgetApproveConfirmBodyAmount : l10n.approveSheetConfirmBodyAmount} $amountText '
             '${l10n.approveSheetConfirmBodyFor} $employeeName?'
             '\n${l10n.approveSheetConfirmEditWarning}';
+    final text = settlementText == null ? body : '$body\n\n$settlementText';
     return AlertDialog(
       title: Text(
-        l10n.approveSheetConfirmTitle,
+        isBudget ? l10n.budgetApproveConfirmTitle : l10n.approveSheetConfirmTitle,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
       content: Text(
-        body,
+        text,
         style: const TextStyle(fontSize: 14, color: AppTheme.mutedForeground),
       ),
       actions: [
@@ -63,7 +72,7 @@ class ApproveSheetConfirmDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(false),
         ),
         AppButton(
-          label: l10n.approveSheet,
+          label: isBudget ? l10n.approveBudget : l10n.approveSheet,
           variant: AppButtonVariant.success,
           onPressed: () => Navigator.of(context).pop(true),
         ),

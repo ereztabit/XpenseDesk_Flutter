@@ -24,8 +24,9 @@ class PaymentsDialogSummary extends StatelessWidget {
         : l10n.awaitingPaymentSheetPlural;
     const style = TextStyle(fontSize: 13, color: AppTheme.mutedForeground);
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    // Wrap, not Row: the pay / charge split runs long on a phone (PC-8 QA).
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text('$sheetCount $sheetsWord', style: style),
         const Text(' · ', style: style),

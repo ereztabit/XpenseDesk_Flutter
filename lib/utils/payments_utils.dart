@@ -1,56 +1,66 @@
 import '../models/payment_report_row.dart';
-import 'format_utils.dart';
 
 /// Sortable columns of the Payments Report (D15 — the API has no sort param,
 /// so sorting is client-side over the loaded page).
 enum PaymentsSortField {
   employee,
   govId,
-  email,
   cycle,
   approvedDate,
   amount,
-  paymentStatus,
+  sheetType,
   processedDate,
+}
+
+/// FS-1020 PC-8: totals never net — To pay and To collect are counted and
+/// summed apart (amounts as positive magnitudes).
+class PaymentTotals {
+  final int payCount;
+  final double payAmount;
+  final int collectCount;
+  final double collectAmount;
+
+  const PaymentTotals({
+    this.payCount = 0,
+    this.payAmount = 0,
+    this.collectCount = 0,
+    this.collectAmount = 0,
+  });
+
+  int get count => payCount + collectCount;
+  bool get hasCollect => collectCount > 0;
+
+  /// The company takes back more than it pays.
+  bool get isNetNegative => ((payAmount - collectAmount) * 100).round() < 0;
+
+  static PaymentTotals of(Iterable<PaymentReportRow> rows) {
+    var payCount = 0, collectCount = 0;
+    var payAmount = 0.0, collectAmount = 0.0;
+    for (final r in rows) {
+      if (r.isCollect) {
+        collectCount++;
+        collectAmount += r.magnitude;
+      } else {
+        payCount++;
+        payAmount += r.magnitude;
+      }
+    }
+    return PaymentTotals(
+      payCount: payCount,
+      payAmount: payAmount,
+      collectCount: collectCount,
+      collectAmount: collectAmount,
+    );
+  }
 }
 
 /// Pure selection helpers for the Payments Report.
 class PaymentsSelectionUtils {
-  /// Combined payable amount of the selected rows (bulk bar summary).
-  static double _totalAmountFor(
-      List<PaymentReportRow> rows, Set<String> selectedIds) {
-    return rows
-        .where((r) => selectedIds.contains(r.expenseSheetId))
-        .fold<double>(0, (sum, r) => sum + r.amount);
-  }
-
-  /// [_totalAmountFor], formatted in the company locale/currency for display.
-  static String totalAmountTextFor(
-    List<PaymentReportRow> rows,
-    Set<String> selectedIds, {
-    required String locale,
-    required String? currencyCode,
-  }) {
-    final total = _totalAmountFor(rows, selectedIds);
-    return _formatAmount(total, locale, currencyCode);
-  }
-
-  /// Combined payable amount of ALL [rows], formatted — for the results
-  /// "sheets found (count · total)" caption.
-  static String allAmountText(
-    List<PaymentReportRow> rows, {
-    required String locale,
-    required String? currencyCode,
-  }) {
-    final total = rows.fold<double>(0, (sum, r) => sum + r.amount);
-    return _formatAmount(total, locale, currencyCode);
-  }
-
-  static String _formatAmount(double total, String locale, String? currency) {
-    return currency != null
-        ? total.toCurrency(locale, currency)
-        : total.toFormattedNumber(locale);
-  }
+  /// Split totals of the selected rows (bulk bar / dialog summary).
+  static PaymentTotals totalsFor(
+          List<PaymentReportRow> rows, Set<String> selectedIds) =>
+      PaymentTotals.of(
+          rows.where((r) => selectedIds.contains(r.expenseSheetId)));
 }
 
 /// Pure sorting helpers for the Payments Report.
@@ -105,10 +115,6 @@ class PaymentsSortUtils {
             .compareTo(b.employeeName.toLowerCase());
       case PaymentsSortField.govId:
         return (a.employeeGovId ?? '').compareTo(b.employeeGovId ?? '');
-      case PaymentsSortField.email:
-        return (a.employeeEmail ?? '')
-            .toLowerCase()
-            .compareTo((b.employeeEmail ?? '').toLowerCase());
       case PaymentsSortField.cycle:
         return a.cycleLabel
             .toLowerCase()
@@ -117,9 +123,14 @@ class PaymentsSortUtils {
         return _compareDates(a.approvedDate, b.approvedDate);
       case PaymentsSortField.amount:
         return a.amount.compareTo(b.amount);
-      case PaymentsSortField.paymentStatus:
-        return (a.paymentStatus?.wireName ?? '')
-            .compareTo(b.paymentStatus?.wireName ?? '');
+      case PaymentsSortField.sheetType:
+        // Monthly before Budget; budgets by name, then number.
+        final byType = a.sheetType.index.compareTo(b.sheetType.index);
+        if (byType != 0) return byType;
+        final byName = (a.budgetName ?? '').toLowerCase()
+            .compareTo((b.budgetName ?? '').toLowerCase());
+        if (byName != 0) return byName;
+        return (a.budgetNumber ?? 0).compareTo(b.budgetNumber ?? 0);
       case PaymentsSortField.processedDate:
         return _compareDates(a.processedDate, b.processedDate);
     }

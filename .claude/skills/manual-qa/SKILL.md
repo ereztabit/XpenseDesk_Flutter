@@ -250,6 +250,47 @@ is marked as role-specific.
 - Validation errors appear next to the field. A failed server call keeps what
   the user typed.
 
+## 5a - The scenario matrix (mandatory - added after FS-1013)
+
+FS-1013 passed three QA runs and the owner still found nine defects in the
+first hour on prod. Each one came from a gap in how the checklist was built,
+not from a missed click. So the checklist is not a list of happy paths: it is
+written into the feature md as the matrices below, **before** any lane runs,
+and a separate **reviewer subagent** checks it against these six rules (as the
+backend SQL gate does for scripts). Missing rows are added before QA starts.
+
+1. **State matrix (where it must NOT appear).** For every action the feature
+   adds, one row per record status (e.g. Draft / Awaiting / Returned /
+   Approved) x role (manager / owner-employee / other employee), expected
+   "shown" or "absent". *Missed: the review tabs on a Draft budget.*
+2. **Parity with the flow it copies.** When a screen reuses a Monthly flow
+   (sheet review, line approve/decline, locking, resubmit), list the Monthly
+   behaviours first (`sheet_review_screen.dart`, `SheetPermissions`,
+   `LastActionConfirmDialog` uses...) and check each on the new screen.
+   *Missed: the "approve the sheet?" prompt after the last line; the employee
+   locked out of an approved line.*
+3. **Cross-role follow-through.** After every manager action, switch to the
+   other role and check what they can and cannot do **now** (and the reverse).
+   A lane that only ever looks at its own role cannot see this. *Missed: the
+   employee still editing a line the manager approved.*
+4. **Visual sweep at two desktop widths.** 1440 **and** the narrow desktop
+   (about 870 - the browser pane's usual width): zoom every amount field
+   (currency symbol, alignment in HE), every status pill (one line), every
+   table column. *Missed: no currency in the amount field; "Approve/d".*
+5. **Language switch per screen, controls included.** Switch EN -> HE **on each
+   screen** (not once per run) and re-read every dropdown, filter, chip and
+   prefilled field - controls that keep their own text do not re-render.
+   *Missed: "All employees" staying English.*
+6. **Navigation and first load.** Open each new screen four ways - fresh by
+   URL, from its list, from the dashboard link, as the record's own owner - and
+   from each, use the in-app Back and the browser back. Check what a fresh load
+   opens / expands. *Missed: empty sections expanded; no Back on your own
+   budget.*
+
+Plus one copy rule: read every confirm / destructive message against what the
+system really does (permanent vs recoverable, who can undo). *Missed: "support
+can restore" on a delete the owner wants final.*
+
 ## 6 - Findings and the report
 
 Collect findings from every lane in one table, most severe first:
@@ -323,3 +364,8 @@ Result: <N> findings - <open> open, <fixed> fixed.
 
 A run with no findings still gets its subsection: write `Result: clean` with the
 coverage line. That is the proof the QA happened.
+
+A run that stops before its matrix is done (the browser pane went hidden, the
+server died) is recorded as `Result: partial - stopped at <step>` and **never
+counts as passed**: finish-feature treats it like no record. Re-run the rows
+it did not reach.

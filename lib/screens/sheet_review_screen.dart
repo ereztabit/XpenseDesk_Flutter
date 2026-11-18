@@ -6,6 +6,7 @@ import '../models/dashboard_ui_state.dart';
 import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
+import '../providers/payments_provider.dart';
 import '../services/expense_service.dart';
 import '../utils/format_utils.dart';
 import '../utils/ref_utils.dart';
@@ -311,6 +312,8 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     }
     // Approval succeeded. UI work (toast + navigation) lives outside the try so
     // a navigation/toast hiccup can never masquerade as a failed approval.
+    // The approved sheet now awaits payment: refresh the dashboard card.
+    ref.invalidate(sheetTypePaymentsSummaryProvider);
     _dismissWithMessage(l10n.sheetApprovedToast);
   }
 

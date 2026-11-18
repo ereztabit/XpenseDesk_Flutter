@@ -14,6 +14,7 @@ class MobilePaymentsHeaderCell extends StatelessWidget {
     required this.activeField,
     required this.ascending,
     required this.onSort,
+    this.alignEnd = false,
   });
 
   final String label;
@@ -23,6 +24,9 @@ class MobilePaymentsHeaderCell extends StatelessWidget {
   final bool ascending;
   final ValueChanged<PaymentsSortField> onSort;
 
+  /// Right-align (start in RTL) under an end-aligned row value, e.g. Amount.
+  final bool alignEnd;
+
   @override
   Widget build(BuildContext context) {
     final isActive = field == activeField;
@@ -31,7 +35,9 @@ class MobilePaymentsHeaderCell extends StatelessWidget {
       child: InkWell(
         onTap: () => onSort(field),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: alignEnd
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
           children: [
             Flexible(
               child: Text(
@@ -39,8 +45,7 @@ class MobilePaymentsHeaderCell extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color:
-                      isActive ? AppTheme.primary : AppTheme.mutedForeground,
+                  color: isActive ? AppTheme.primary : AppTheme.mutedForeground,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
