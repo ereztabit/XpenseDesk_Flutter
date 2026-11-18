@@ -1,6 +1,6 @@
 # Bug: No "Back" on the budget page for a budget you hold yourself
 
-> **Status: new**
+> **Status: done**
 
 Found by the owner on prod, 2026-11-18 (v1.50), on budget #1002, which the
 signed-in manager holds herself.
@@ -39,3 +39,7 @@ block). Make it always return a target: `AppRoutes.budgetsList` for a manager
 (own budget included), `AppRoutes.employeeDashboard` for an employee. The page
 already pops when the navigator can pop, and only falls back to the target for
 a deep link. Update the "Back" unit test in `test/utils/budget_utils_test.dart`.
+
+## Resolution
+
+Fixed in the FS-1013 PC-2 fixes, shipped as v1.51 (2026-11-18). Verified in manual QA runs 4-4c. Commit e83c89d.

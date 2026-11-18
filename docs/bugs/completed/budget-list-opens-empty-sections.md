@@ -1,6 +1,6 @@
 # Bug: The budget list opens its empty sections
 
-> **Status: new**
+> **Status: done**
 
 Found by the owner on prod, 2026-11-18 (v1.50).
 
@@ -38,3 +38,7 @@ in `initState`, before any data. Seed it instead the first time
 toggle. Put the rule in `lib/utils/budget_utils.dart` (e.g.
 `budgetInitiallyExpanded(budgets, focus)`) and unit-test it: empty sections
 collapsed, focus wins, and all sections empty means all collapsed.
+
+## Resolution
+
+Fixed in the FS-1013 PC-2 fixes, shipped as v1.51 (2026-11-18). Verified in manual QA runs 4-4c. Commit e83c89d.

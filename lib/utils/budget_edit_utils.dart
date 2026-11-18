@@ -30,7 +30,7 @@ bool budgetLinesReviewable(Budget b, {required String? email, required bool isMa
 
 /// FS-1013: where the budget page's "Back" goes when there is no page to pop
 /// back to (a deep link) - every budget page has Back (owner, 2026-11-18;
-/// docs/bugs/budget-page-no-back-for-holder-of-open-budget.md). A manager goes
+/// docs/bugs/completed/budget-page-no-back-for-holder-of-open-budget.md). A manager goes
 /// to the budget list (own budget included), an employee to their dashboard.
 String budgetBackTarget(Budget b, {required String? email, required bool isManager}) =>
     isManager && budgetIsOutstanding(b)
