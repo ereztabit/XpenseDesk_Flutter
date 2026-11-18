@@ -250,7 +250,7 @@ as on Monthly (400, no code) - the UI never offers those.
 
 ## PC-8 - settlement (FS-1020)
 
-Story: docs/petty-cash/pc-8-settlement.md. An approved budget settles the gap
+Story: docs/done/pc-8-settlement.md. An approved budget settles the gap
 between what was spent and the budget amount through the **existing payment
 module** (payment-status guide: docs/done/payment-status-flutter-guide.md,
 section 10). Generic: the next sheet type (Travel) settles the same way.

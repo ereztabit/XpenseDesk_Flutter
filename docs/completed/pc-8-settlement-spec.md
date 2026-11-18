@@ -1,6 +1,6 @@
 # PC-8 - Sheet settlement through the payment module
 
-> Mission: FS-1020 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-8-settlement.md - the generic model and the business rules). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
+> Mission: FS-1020 (backend: BackEnd/XpenseDeskServer/docs/done/pc-8-settlement.md - the generic model and the business rules). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
 
 Status: FILED 2026-11-18, rewritten 2026-11-18 (generic: any sheet type
 settles through payments - Budgets now, Travel next). Not started.

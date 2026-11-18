@@ -47,7 +47,6 @@ so in its spec rather than double-tagging here.
 - [ ] [Business][P3] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module -- not phase 1. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". POC done. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
-- [ ] [Business][P2] **FS-1020** PC-8 settlement - banked on develop as v1.52 (2026-11-18), awaiting ship-feature. see docs/backlog/petty-cash/pc-8-settlement-spec.md
 - [ ] [Business][P2] **FS-1021** PC-9 budget history -- NOT DESIGNED. Approved budgets at sheet level, built from the analysis / report widgets, open one, download is PC-5. see docs/backlog/petty-cash/pc-9-budget-report-spec.md
 - [ ] [Business][P2] **FS-1022** Monthly history -- NOT DESIGNED. PC-9's twin for approved Monthly sheets, same widgets, PC-5 download. After PC-5. see docs/backlog/monthly-history-spec.md
 - [ ] [Business][P3] **FS-1023** Digital archive -- NOT DESIGNED, another day. The renamed cycle expenses report becomes a receipt search engine (merchant / amount across cycles and sheet types). see docs/backlog/digital-archive-spec.md
