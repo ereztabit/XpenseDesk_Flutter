@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [Technical][P1] **FS-1019** Daily FX sync - banked on develop as v1.49 (2026-11-18), awaiting ship-feature. see docs/in-progress/fx-daily-sync-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New

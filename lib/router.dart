@@ -21,6 +21,8 @@ import 'screens/payments_report_screen.dart';
 import 'screens/admin_landing_screen.dart';
 import 'screens/admin_companies_screen.dart';
 import 'screens/admin_company_screen.dart';
+import 'screens/admin_currencies_screen.dart';
+import 'screens/admin_currency_sync_run_screen.dart';
 import 'screens/budget_list_screen.dart';
 import 'screens/budget_page_screen.dart';
 import 'screens/budgets_dashboard_screen.dart';
@@ -56,6 +58,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           companyId: companyRoute.companyId,
           initialTab: companyRoute.tab,
         ),
+      ),
+    );
+  }
+
+  // /admin/currencies/runs/{id} — one currency sync (FS-1019). Same reason as
+  // the company module: the id is in the path, so it is matched before the switch.
+  final currencyRunId = AppRoutes.parseAdminCurrencyRunPath(uri.path);
+  if (currencyRunId != null) {
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) => AdminAuthGate(
+        child: AdminCurrencySyncRunScreen(syncRunId: currencyRunId),
       ),
     );
   }
@@ -120,6 +134,12 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const AdminAuthGate(child: AdminCompaniesScreen()),
+      );
+
+    case AppRoutes.adminCurrencies:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AdminAuthGate(child: AdminCurrenciesScreen()),
       );
 
 
