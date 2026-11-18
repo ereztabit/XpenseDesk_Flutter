@@ -1,10 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/company_module.dart';
 import '../models/paged_payments.dart';
 import '../models/payments_filter.dart';
+import '../models/payments_summary.dart';
 import '../services/excel_export_service.dart';
 import '../services/payment_service.dart';
+import '../services/payments_summary_service.dart';
+import '../utils/payments_export_utils.dart';
 import 'auth_provider.dart';
+import 'budgets_provider.dart';
+import 'company_modules_provider.dart';
 
 /// Singleton provider for the PaymentService.
 final paymentServiceProvider = Provider<PaymentService>((ref) {
@@ -90,8 +96,7 @@ class PaymentsExportNotifier extends Notifier<PaymentsExportState> {
   @override
   PaymentsExportState build() => const PaymentsExportState();
 
-  static String _datedFileName(String base) =>
-      '$base-${DateTime.now().toIso8601String().split('T').first}.xlsx';
+  static String _datedFileName(String base) => paymentsExportFileName(base);
 
   Future<bool> exportAll() async {
     if (state.exportingAll) return true;
@@ -126,3 +131,35 @@ class PaymentsExportNotifier extends Notifier<PaymentsExportState> {
     }
   }
 }
+
+final paymentsSummaryServiceProvider =
+    Provider<PaymentsSummaryService>((ref) => PaymentsSummaryService());
+
+/// Awaiting payments for one sheet type (Budgets dashboard panel); fresh each visit.
+final sheetTypePaymentsSummaryProvider = FutureProvider.autoDispose
+    .family<PaymentsSummary?, CompanyModuleKey>((ref, sheetType) async {
+  final user = ref.watch(userInfoProvider);
+  if (user == null || !user.isManager) return null;
+  return ref
+      .watch(paymentsSummaryServiceProvider)
+      .getSummary(sheetType: sheetType);
+});
+
+/// Sheet types the company pays through payments; the report offers a type
+/// filter only when there is more than one.
+final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
+  final modules = ref.watch(companyModulesProvider);
+  final monthly = modules
+      .where((m) => m.key == CompanyModuleKey.monthly)
+      .map((m) => m.isEnabled)
+      .firstOrNull;
+  return [
+    if (monthly ?? true) CompanyModuleKey.monthly,
+    if (ref.watch(isPettyCashEnabledProvider)) CompanyModuleKey.pettyCash,
+  ];
+});
+
+/// More than one sheet type is paid; a Monthly-only company sees the
+/// Payments report exactly as before PC-8.
+final paymentsMultiTypeProvider =
+    Provider<bool>((ref) => ref.watch(paymentSheetTypesProvider).length > 1);

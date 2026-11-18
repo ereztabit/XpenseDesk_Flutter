@@ -6,12 +6,13 @@ import '../../utils/payments_utils.dart';
 import 'payments_header_cell.dart';
 import 'payments_table_columns.dart';
 
-/// Sticky header row of the desktop Payments table — the select-all checkbox
-/// plus one [PaymentsHeaderCell] per column (sortable where D15 allows). Kept
-/// in its own file so the table widget stays under the file-size cap.
+/// Sticky header row of the desktop Payments table - the select-all checkbox
+/// plus one [PaymentsHeaderCell] per column, in [PaymentsTableColumns] order.
+/// The action column (Process / Edit) has no caption: it sits by the amount.
 class DesktopPaymentsHeaderRow extends StatelessWidget {
   const DesktopPaymentsHeaderRow({
     super.key,
+    this.showSheetType = true,
     required this.sortField,
     required this.sortAscending,
     required this.onSort,
@@ -20,6 +21,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
     required this.onToggleAll,
   });
 
+  final bool showSheetType;
   final PaymentsSortField? sortField;
   final bool sortAscending;
   final ValueChanged<PaymentsSortField> onSort;
@@ -30,10 +32,27 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    PaymentsHeaderCell cell(
+      String label,
+      double width,
+      PaymentsSortField field, {
+      bool centered = false,
+    }) => PaymentsHeaderCell(
+      label: label,
+      width: width,
+      field: field,
+      activeField: sortField,
+      ascending: sortAscending,
+      onSort: onSort,
+      centered: centered,
+    );
+
     return Container(
       color: AppTheme.muted.withAlpha(102),
       padding: const EdgeInsets.symmetric(
-          horizontal: PaymentsTableColumns.cellGap / 2, vertical: 6),
+        horizontal: PaymentsTableColumns.cellGap / 2,
+        vertical: 6,
+      ),
       child: Row(
         children: [
           SizedBox(
@@ -46,73 +65,40 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
                   )
                 : const SizedBox.shrink(),
           ),
-          PaymentsHeaderCell(
-            label: l10n.employee,
-            width: PaymentsTableColumns.employee,
-            field: PaymentsSortField.employee,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
+          cell(
+            l10n.employee,
+            PaymentsTableColumns.employee,
+            PaymentsSortField.employee,
           ),
-          PaymentsHeaderCell(
-            label: l10n.govIdColumn,
-            width: PaymentsTableColumns.govId,
-            field: PaymentsSortField.govId,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.email,
-            width: PaymentsTableColumns.email,
-            field: PaymentsSortField.email,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.cycle,
-            width: PaymentsTableColumns.cycle,
-            field: PaymentsSortField.cycle,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.approvedDateColumn,
-            width: PaymentsTableColumns.approvedDate,
-            field: PaymentsSortField.approvedDate,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.amount,
-            width: PaymentsTableColumns.amount,
-            field: PaymentsSortField.amount,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
+          cell(
+            l10n.amount,
+            PaymentsTableColumns.amount,
+            PaymentsSortField.amount,
             centered: true,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.paymentStatusFilterLabel,
-            width: PaymentsTableColumns.paymentStatus,
-            field: PaymentsSortField.paymentStatus,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
-            centered: true,
-          ),
-          PaymentsHeaderCell(
-            label: l10n.processedDateFilterLabel,
-            width: PaymentsTableColumns.processedDate,
-            field: PaymentsSortField.processedDate,
-            activeField: sortField,
-            ascending: sortAscending,
-            onSort: onSort,
           ),
           const SizedBox(width: PaymentsTableColumns.action),
+          if (showSheetType)
+            cell(
+              l10n.paymentsSheetTypeLabel,
+              PaymentsTableColumns.sheetType,
+              PaymentsSortField.sheetType,
+            ),
+          cell(l10n.cycle, PaymentsTableColumns.cycle, PaymentsSortField.cycle),
+          cell(
+            l10n.approvedDateColumn,
+            PaymentsTableColumns.approvedDate,
+            PaymentsSortField.approvedDate,
+          ),
+          cell(
+            l10n.processedDateFilterLabel,
+            PaymentsTableColumns.processedDate,
+            PaymentsSortField.processedDate,
+          ),
+          cell(
+            l10n.govIdColumn,
+            PaymentsTableColumns.govId,
+            PaymentsSortField.govId,
+          ),
         ],
       ),
     );

@@ -38,7 +38,7 @@ class PaymentStatusEditFields extends StatelessWidget {
         PaymentStatusSelector(
           status: status,
           label: l10n.paymentStatusFilterLabel,
-          awaitingLabel: l10n.awaitingPaymentLabel,
+          awaitingLabel: l10n.paymentStatusPending,
           processedLabel: l10n.paymentStatusProcessed,
           enabled: enabled,
           onChanged: onStatusChanged,

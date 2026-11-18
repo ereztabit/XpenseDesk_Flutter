@@ -1,3 +1,5 @@
+import 'payment_status.dart';
+
 /// One budget (FS-1012) - a PettyCash expense sheet held by one user until an
 /// end date. Shape: docs/api-guides/budgets-api-guide.md. Derived rules
 /// (overdue, attention, used %) live in `utils/budget_utils.dart`.
@@ -23,6 +25,14 @@ class Budget {
   final String currencyCode;
   final DateTime createdAt;
 
+  /// FS-1020 PC-8 settlement (null until approved / on older payloads).
+  final PaymentStatus? paymentStatus;
+  final String? paymentCycleId;
+  final String? paymentCycleLabel;
+
+  /// Signed: Pay > 0 (overspent), Collect < 0 (unspent).
+  final double? settlementAmount;
+
   const Budget({
     required this.budgetId,
     required this.number,
@@ -38,6 +48,10 @@ class Budget {
     required this.endDate,
     required this.currencyCode,
     required this.createdAt,
+    this.paymentStatus,
+    this.paymentCycleId,
+    this.paymentCycleLabel,
+    this.settlementAmount,
   });
 
   /// The holder as shown on screen: name, else email.
@@ -61,6 +75,10 @@ class Budget {
       endDate: DateTime(end.year, end.month, end.day),
       currencyCode: json['currencyCode'] as String? ?? 'ILS',
       createdAt: DateTime.parse(json['createdAt'] as String),
+      paymentStatus: PaymentStatus.tryParse(json['paymentStatus'] as String?),
+      paymentCycleId: json['paymentCycleId'] as String?,
+      paymentCycleLabel: json['paymentCycleLabel'] as String?,
+      settlementAmount: (json['settlementAmount'] as num?)?.toDouble(),
     );
   }
 }

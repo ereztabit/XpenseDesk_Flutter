@@ -9,12 +9,14 @@ import '../../providers/auth_provider.dart';
 import '../../providers/budgets_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/expense_sheet_provider.dart';
+import '../../providers/payments_provider.dart';
 import '../../services/budget_service.dart';
 import '../../services/expense_service.dart';
 import '../../utils/budget_copy_utils.dart';
 import '../../utils/budget_utils.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/responsive_utils.dart';
+import '../../utils/settlement_utils.dart';
 import '../../utils/sheet_utils.dart';
 import '../app_button.dart';
 import '../sheet_review/approve_sheet_confirm_dialog.dart';
@@ -83,7 +85,8 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
       ..invalidate(sheetDetailProvider(widget.budget.budgetId))
       ..invalidate(budgetsProvider)
       ..invalidate(myBudgetsFetchProvider)
-      ..invalidate(budgetProvider);
+      ..invalidate(budgetProvider)
+      ..invalidate(sheetTypePaymentsSummaryProvider);
     if (!mounted) return;
     setState(() => _busy = false);
     messenger.showSnackBar(SnackBar(
@@ -100,17 +103,37 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
         approvesOwn ? l10n.timelineStatusApproved : l10n.budgetsSubmittedToast);
   }
 
-  Future<void> _approve() async {
+  // Says what approving settles and in which cycle (D11) - for a manager's
+  // own budget too. Cycles are re-read first: the open month may have rolled.
+  Future<bool> _confirmApprove() async {
     final l10n = AppLocalizations.of(context)!;
-    final ok = await ApproveSheetConfirmDialog.show(
+    String? cycleLabel;
+    try {
+      cycleLabel = openCycleLabel(await ref.refresh(cyclesProvider.future));
+    } catch (_) {
+      cycleLabel = ref.read(openPaymentCycleLabelProvider);
+    }
+    if (!mounted) return false;
+    return ApproveSheetConfirmDialog.show(
       context,
       amountText: _amountText,
       employeeName: widget.budget.holderDisplayName,
       nothingToApprove: SheetExpenseBuckets.approvableCount(widget.sheet.expenses) == 0,
+      settlementText: budgetApprovalSettlementText(l10n, widget.budget,
+          cycleLabel: cycleLabel, locale: ref.read(companyLocaleProvider)),
     );
-    if (!ok || !mounted) return;
+  }
+
+  Future<void> _approve() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!await _confirmApprove() || !mounted) return;
     await _run(() => ref.read(expenseServiceProvider).approveSheet(widget.budget.budgetId),
         l10n.timelineStatusApproved);
+  }
+
+  Future<void> _approveOwn() async {
+    if (!await _confirmApprove() || !mounted) return;
+    await _submit(approvesOwn: true);
   }
 
   Future<void> _return() async {
@@ -125,6 +148,7 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(userInfoProvider);
+    ref.watch(openPaymentCycleLabelProvider); // loaded before Approve opens
     final b = widget.budget;
     final sheet = widget.sheet;
 
@@ -133,7 +157,7 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
       // decision 2026-11-17, the Monthly rule): the review screen's Approve CTA.
       if (user?.isManager ?? false) {
         return SheetReviewActions(
-          onApprove: () => _submit(approvesOwn: true),
+          onApprove: _approveOwn,
           isBusy: _busy,
           expenseCount: SheetExpenseBuckets.approvableCount(sheet.expenses),
           amountText: _amountText,

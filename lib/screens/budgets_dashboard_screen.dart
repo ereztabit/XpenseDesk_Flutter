@@ -14,6 +14,7 @@ import '../widgets/budgets/budgets_gate.dart';
 import '../widgets/budgets/budgets_header_row.dart';
 import '../widgets/budgets/budgets_team_row.dart';
 import '../widgets/dashboard_greeting.dart';
+import '../widgets/budgets/budget_settlement_panel.dart';
 import '../widgets/sheet_nav/sheet_type_bar.dart';
 
 /// B1 - manager Budgets dashboard (`/budgets`, UX hand-off section 2.1):
@@ -87,6 +88,10 @@ class _BudgetsDashboardScreenState extends ConsumerState<BudgetsDashboardScreen>
     );
   }
 
+  /// FS-1020 PC-8 F7: approved budgets awaiting settlement; shown even when
+  /// no budget is outstanding.
+  static const _settlementPanel = BudgetSettlementPanel();
+
   List<Widget> _content(AppLocalizations l10n, List<Budget> budgets, Widget gap) {
     if (budgets.isEmpty) {
       return [
@@ -98,6 +103,8 @@ class _BudgetsDashboardScreenState extends ConsumerState<BudgetsDashboardScreen>
           buttonIcon: Icons.add,
           onPressed: () => startNewBudget(context, ref),
         ),
+        gap,
+        _settlementPanel,
       ];
     }
     final attention = budgetAttentionCounts(budgets, budgetToday());
@@ -113,6 +120,8 @@ class _BudgetsDashboardScreenState extends ConsumerState<BudgetsDashboardScreen>
           ),
         ),
       ],
+      gap,
+      _settlementPanel,
       gap,
       BudgetSpendCard(budgets: budgets),
     ];

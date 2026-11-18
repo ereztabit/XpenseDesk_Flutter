@@ -42,12 +42,12 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
-**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. Phase 1 order PC-8 -> PC-9 -> PC-5, then FS-1022. Phase 1 not done until PC-5 + PC-8 + PC-9 ship (PC-4 dropped, PC-3 not phase 1). All UI is designed in the Lovable app mock first.
+**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. Phase 1 order PC-8 -> PC-5 -> PC-9, then FS-1022. Phase 1 not done until PC-5 + PC-8 + PC-9 ship (PC-4 dropped, PC-3 not phase 1). All UI is designed in the Lovable app mock first.
 
 - [ ] [Business][P3] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module -- not phase 1. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
-- [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- download button on approved sheets: one zip with formatted Excel, numbered receipts, printable HTML; admin "clear stored exports". see docs/backlog/petty-cash/pc-5-summary-report-spec.md
+- [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". POC done. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
-- [ ] [Business][P2] **FS-1020** PC-8 settlement -- approved budget balance goes to the payments report (To pay / To collect), sheet type + budget name columns and filter, group by employee, pending-payment block on the Budgets dashboard. Before PC-7. see docs/backlog/petty-cash/pc-8-settlement-spec.md
+- [ ] [Business][P2] **FS-1020** PC-8 settlement - banked on develop as v1.52 (2026-11-18), awaiting ship-feature. see docs/backlog/petty-cash/pc-8-settlement-spec.md
 - [ ] [Business][P2] **FS-1021** PC-9 budget history -- NOT DESIGNED. Approved budgets at sheet level, built from the analysis / report widgets, open one, download is PC-5. see docs/backlog/petty-cash/pc-9-budget-report-spec.md
 - [ ] [Business][P2] **FS-1022** Monthly history -- NOT DESIGNED. PC-9's twin for approved Monthly sheets, same widgets, PC-5 download. After PC-5. see docs/backlog/monthly-history-spec.md
 - [ ] [Business][P3] **FS-1023** Digital archive -- NOT DESIGNED, another day. The renamed cycle expenses report becomes a receipt search engine (merchant / amount across cycles and sheet types). see docs/backlog/digital-archive-spec.md
@@ -64,6 +64,7 @@ so in its spec rather than double-tagging here.
 
 ## report bugs (pending)
 
+- [ ] [LookAndFeel][P2] **FS-1024** Activity card prints the server's English "Auto-approved on cycle promotion (manager-owned sheet)." on Hebrew sheets (payment events too) -- map typed events to EN/HE once the server writes them -- see docs/bugs/activity-log-auto-approve-comment-english.md
 - [ ] [Business][P1] A declined expense cannot be resubmitted without editing a field -- the save CTA is gated on `_isDirty`, so an employee with nothing to correct sees a permanently greyed button and no explanation; the only workaround is to falsify a field. The server accepts an unchanged save and resets the line to Pending. Overlaps FS-1003 -- see docs/bugs/declined-expense-cannot-be-resubmitted-without-editing-a-field.md
 - [ ] [Business][P1] Onboarding OTP step -- always-visible Microsoft signup option + slow-delivery warning after 30s (365 mailboxes up to ~3 min) -- see docs/bugs/onboarding-otp-slow-delivery-warning-and-microsoft-fallback.md
 - [ ] [Security][P1] Stale data (users list) after switching company -- previous tenant's data leaks into new session -- see docs/bugs/stale-data-after-switching-company.md

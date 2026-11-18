@@ -7,6 +7,7 @@ import '../../models/expense_sheet_status.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../sheet_review/payment_status_strip.dart';
 
 /// Left-to-right isolate around a date inside an RTL text run.
 final String _lri = String.fromCharCode(0x2066);
@@ -15,7 +16,8 @@ final String _pdi = String.fromCharCode(0x2069);
 /// B4 status strip (FS-1012 S3, UX hand-off section 2.4): under the header
 /// card while a budget is Awaiting approval ("Awaiting approval · sent {date}" /
 /// "You can still edit expenses", amber) or Returned ("Returned for changes ·
-/// {date}" / the manager's reason, red). Nothing for any other status.
+/// {date}" / the manager's reason, red); once approved, the settlement
+/// ([PaymentStatusStrip]). Nothing otherwise.
 ///
 /// The `DeclinedSheetBanner` box (tinted fill, tinted border, icon + title +
 /// body) - not that widget itself: its title names the manager and its body is
@@ -25,9 +27,10 @@ class BudgetStatusStrip extends ConsumerWidget {
 
   final ExpenseSheetDetail sheet;
 
-  /// Whether the strip draws anything (Awaiting or Returned) - the page adds
+  /// Whether the strip draws anything (Awaiting, Returned, settlement) - the page adds
   /// its spacing only then, so a Draft budget has no empty band.
   static bool shows(ExpenseSheetDetail sheet) =>
+      sheet.paymentStatus != null ||
       sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
       sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
 
@@ -58,6 +61,9 @@ class BudgetStatusStrip extends ConsumerWidget {
       body = reason == null || reason.isEmpty ? null : reason;
       color = AppTheme.destructive;
       icon = Icons.assignment_return;
+    } else if (sheet.paymentStatus != null) {
+      // Approved: what is paid to / collected from the holder, and when (PC-8).
+      return PaymentStatusStrip(sheet: sheet);
     } else {
       return const SizedBox.shrink();
     }

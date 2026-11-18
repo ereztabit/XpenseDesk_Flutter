@@ -1,3 +1,4 @@
+import 'company_module.dart';
 import 'payment_status.dart';
 
 /// Immutable filter state for the Payments Report.
@@ -13,6 +14,9 @@ class PaymentsFilter {
   final DateTime? processedFrom;
   final DateTime? processedTo;
 
+  /// FS-1020 PC-8: Monthly / PettyCash; null = every type.
+  final CompanyModuleKey? sheetType;
+
   const PaymentsFilter({
     this.status,
     this.userId,
@@ -21,6 +25,7 @@ class PaymentsFilter {
     this.approvedTo,
     this.processedFrom,
     this.processedTo,
+    this.sheetType,
   });
 
   /// The report's landing state: Awaiting Payment, nothing else filtered.
@@ -38,6 +43,7 @@ class PaymentsFilter {
     Object? approvedTo = _unset,
     Object? processedFrom = _unset,
     Object? processedTo = _unset,
+    Object? sheetType = _unset,
   }) {
     return PaymentsFilter(
       status:
@@ -56,6 +62,9 @@ class PaymentsFilter {
       processedTo: identical(processedTo, _unset)
           ? this.processedTo
           : processedTo as DateTime?,
+      sheetType: identical(sheetType, _unset)
+          ? this.sheetType
+          : sheetType as CompanyModuleKey?,
     );
   }
 
@@ -69,6 +78,7 @@ class PaymentsFilter {
     if (cycleId != null) count++;
     if (approvedFrom != null || approvedTo != null) count++;
     if (processedFrom != null || processedTo != null) count++;
+    if (sheetType != null) count++;
     return count;
   }
 
@@ -87,6 +97,7 @@ class PaymentsFilter {
       if (approvedTo != null) 'approvedTo': _apiDate(approvedTo!),
       if (processedFrom != null) 'processedFrom': _apiDate(processedFrom!),
       if (processedTo != null) 'processedTo': _apiDate(processedTo!),
+      if (sheetType != null) 'sheetType': sheetType!.apiValue,
       'page': ?page?.toString(),
       'pageSize': ?pageSize?.toString(),
     };
@@ -101,9 +112,10 @@ class PaymentsFilter {
       other.approvedFrom == approvedFrom &&
       other.approvedTo == approvedTo &&
       other.processedFrom == processedFrom &&
-      other.processedTo == processedTo;
+      other.processedTo == processedTo &&
+      other.sheetType == sheetType;
 
   @override
   int get hashCode => Object.hash(status, userId, cycleId, approvedFrom,
-      approvedTo, processedFrom, processedTo);
+      approvedTo, processedFrom, processedTo, sheetType);
 }

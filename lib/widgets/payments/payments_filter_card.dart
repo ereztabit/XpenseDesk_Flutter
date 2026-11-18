@@ -8,6 +8,7 @@ import '../app_button.dart';
 import '../date_range_filter.dart';
 import 'payments_advanced_filters.dart';
 import 'payments_dropdown.dart';
+import 'payments_sheet_type_dropdown.dart';
 
 /// Desktop filter card of the Payments Report: Payment Status + Approval Date
 /// up top, an expandable Advanced section (Employee / Cycle / Processed Date),
@@ -71,23 +72,33 @@ class _PaymentsFilterCardState extends State<PaymentsFilterCard> {
                 selected: pending.status,
                 entries: [
                   DropdownMenuEntry<PaymentStatus?>(
-                      value: null, label: l10n.allOption),
+                    value: null,
+                    label: l10n.allOption,
+                  ),
                   DropdownMenuEntry<PaymentStatus?>(
-                      value: PaymentStatus.awaitingPayment,
-                      label: l10n.awaitingPaymentLabel),
+                    value: PaymentStatus.awaitingPayment,
+                    label: l10n.paymentStatusPending,
+                  ),
                   DropdownMenuEntry<PaymentStatus?>(
-                      value: PaymentStatus.processed,
-                      label: l10n.paymentStatusProcessed),
+                    value: PaymentStatus.processed,
+                    label: l10n.paymentStatusProcessed,
+                  ),
                 ],
-                onSelected: (value) => widget
-                    .onPendingChanged(pending.copyWith(status: value)),
+                onSelected: (value) =>
+                    widget.onPendingChanged(pending.copyWith(status: value)),
+              ),
+              PaymentsSheetTypeDropdown(
+                selected: pending.sheetType,
+                onSelected: (value) =>
+                    widget.onPendingChanged(pending.copyWith(sheetType: value)),
               ),
               DateRangeFilter(
                 sectionLabel: l10n.approvalDateFilterLabel,
                 from: pending.approvedFrom,
                 to: pending.approvedTo,
                 onChanged: (from, to) => widget.onPendingChanged(
-                    pending.copyWith(approvedFrom: from, approvedTo: to)),
+                  pending.copyWith(approvedFrom: from, approvedTo: to),
+                ),
               ),
             ],
           ),

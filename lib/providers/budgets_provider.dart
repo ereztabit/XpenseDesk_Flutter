@@ -4,9 +4,11 @@ import '../models/budget.dart';
 import '../models/company_module.dart';
 import '../models/user_list_item.dart';
 import '../services/budget_service.dart';
+import '../utils/settlement_utils.dart';
 import 'auth_provider.dart';
 import 'company_modules_provider.dart';
 import 'company_provider.dart';
+import 'expense_provider.dart';
 import 'manager_dashboard_provider.dart';
 
 final budgetServiceProvider = Provider<BudgetService>((ref) => BudgetService());
@@ -81,3 +83,8 @@ final budgetHolderCandidatesProvider = FutureProvider<List<UserListItem>>((
         .toLowerCase()
         .compareTo((b.fullName.isEmpty ? b.email : b.fullName).toLowerCase()));
 });
+
+/// PC-8: the cycle an approval settles in today - the company's Open cycle
+/// (`yyyy/MM`); null while cycles load or none is open.
+final openPaymentCycleLabelProvider = Provider<String?>((ref) =>
+    openCycleLabel(ref.watch(cyclesProvider).asData?.value ?? const []));
