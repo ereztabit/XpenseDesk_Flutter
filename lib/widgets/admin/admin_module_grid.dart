@@ -27,11 +27,20 @@ const List<_AdminModule> _modules = [
     icon: Icons.apartment_outlined,
     route: AppRoutes.adminCompanies,
   ),
+  _AdminModule(
+    title: _currenciesTitle,
+    description: _currenciesDescription,
+    icon: Icons.currency_exchange,
+    route: AppRoutes.adminCurrencies,
+  ),
 ];
 
 String _companiesTitle(AppLocalizations l10n) => l10n.adminModuleCompanies;
 String _companiesDescription(AppLocalizations l10n) =>
     l10n.adminModuleCompaniesDescription;
+String _currenciesTitle(AppLocalizations l10n) => l10n.adminModuleCurrencies;
+String _currenciesDescription(AppLocalizations l10n) =>
+    l10n.adminModuleCurrenciesDescription;
 
 /// The admin landing grid — the extension point for future admin modules.
 /// Tiles have a fixed width and reflow, so the layout holds from one module to

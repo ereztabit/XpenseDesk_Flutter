@@ -51,6 +51,19 @@ class AppRoutes {
   static const String adminLanding = '/admin';
   static const String adminCompanies = '/admin/companies';
 
+  // --- Currencies module (FS-1019) ---
+  static const String adminCurrencies = '/admin/currencies';
+
+  /// One sync run; the id is in the path so refresh and bookmarks work.
+  static String adminCurrencyRun(int syncRunId) => '$adminCurrencies/runs/$syncRunId';
+
+  /// Parses `/admin/currencies/runs/{id}` (positive int), or null.
+  static int? parseAdminCurrencyRunPath(String path) {
+    final match = RegExp('^${RegExp.escape(adminCurrencies)}/runs/([1-9][0-9]{0,9})/?\$')
+        .firstMatch(path);
+    return match == null ? null : int.tryParse(match.group(1)!);
+  }
+
   // --- Company module (FS-1001) ---
   //
   // The company id lives in the PATH, not in route arguments, so the address bar

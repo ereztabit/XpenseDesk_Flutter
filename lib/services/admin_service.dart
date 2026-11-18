@@ -1,6 +1,7 @@
 import 'api_service.dart';
 import 'auth_service.dart';
 import '../models/admin_company_configuration.dart';
+import '../models/admin_currency_status.dart';
 import '../models/admin_company_row.dart';
 import '../models/admin_company_user_row.dart';
 import '../models/admin_free_plan.dart';
@@ -242,6 +243,62 @@ class AdminService {
       throw const AdminException('Invalid response from server');
     }
     return AdminFreePlan.fromJson(data);
+  }
+
+  // --- FS-1019: Currencies module -------------------------------------------
+
+  /// GET /api/admin/currencies — every tracked currency with its newest rate
+  /// and status, the newest Bank of Israel date, and the last 30 syncs.
+  Future<AdminCurrencyOverview> getCurrencyOverview() async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/admin/currencies',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load currencies');
+    return AdminCurrencyOverview.fromJson(_dataFrom(response));
+  }
+
+  /// GET /api/admin/currencies/sync-runs/{id} — one sync with its
+  /// per-currency lines. Error: `CurrencySyncRunNotFound`.
+  Future<AdminCurrencySyncRun> getCurrencySyncRun(int syncRunId) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.get(
+      '/api/admin/currencies/sync-runs/$syncRunId',
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to load the sync');
+    return AdminCurrencySyncRun.fromJson(_dataFrom(response));
+  }
+
+  /// POST /api/admin/currencies/sync — runs the sync now (a few seconds) and
+  /// returns the finished run. Error: `CurrencySyncAlreadyRunning`.
+  Future<AdminCurrencySyncRun> syncCurrenciesNow() async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/admin/currencies/sync',
+      const <String, dynamic>{},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to sync currencies');
+    return AdminCurrencySyncRun.fromJson(_dataFrom(response));
+  }
+
+  Map<String, dynamic> _dataFrom(Map<String, dynamic> response) {
+    final data = response['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      throw const AdminException('Invalid response from server');
+    }
+    return data;
   }
 
   AdminCompanyConfiguration _configurationFrom(Map<String, dynamic> response) {

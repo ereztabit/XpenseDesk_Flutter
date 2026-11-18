@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/misc.dart'; // ProviderOrFamily
 import '../models/admin_companies_sort.dart';
 import '../models/admin_company_configuration.dart';
+import '../models/admin_currency_status.dart';
 import '../models/admin_company_row.dart';
 import '../models/admin_company_user_row.dart';
 import '../services/admin_service.dart';
@@ -198,6 +199,20 @@ final adminCompanyConfigurationProvider = FutureProvider.autoDispose
   return ref.read(adminServiceProvider).getCompanyConfiguration(companyId);
 });
 
+/// FS-1019: the Currencies module overview (`GET /api/admin/currencies`).
+/// autoDispose: re-read every time the screen opens - the daily sync or another
+/// admin may have changed it. Sync now refreshes it explicitly.
+final adminCurrencyOverviewProvider =
+    FutureProvider.autoDispose<AdminCurrencyOverview>((ref) {
+  return ref.read(adminServiceProvider).getCurrencyOverview();
+});
+
+/// FS-1019: one sync run's detail, by id.
+final adminCurrencySyncRunProvider = FutureProvider.autoDispose
+    .family<AdminCurrencySyncRun, int>((ref, syncRunId) {
+  return ref.read(adminServiceProvider).getCurrencySyncRun(syncRunId);
+});
+
 /// Every admin-shell provider holding state from the current session — cached
 /// server data and the view state over it. Disconnect invalidates all of them
 /// so nothing survives into the next login (see
@@ -212,4 +227,6 @@ final List<ProviderOrFamily> adminCachedProviders = [
   adminShowInactiveUsersProvider,
   adminCompanyUserSearchProvider,
   adminCompanyConfigurationProvider,
+  adminCurrencyOverviewProvider,
+  adminCurrencySyncRunProvider,
 ];

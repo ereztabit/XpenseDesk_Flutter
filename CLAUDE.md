@@ -813,6 +813,7 @@ When building multi-platform features:
 ## Cross-Project References
 
 - **Backend backlog:** `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\001_Backlog.md` — server-side bugs, features, and test suite tracking
+- **Platform admin guide:** `C:\Projects\XpenseDesk\BackEnd\XpenseDeskServer\docs\admin-panel\platform-admin-guide.md` — how the admin shell works, what modules exist, and the checklist for adding a module or tab. Read it before any `/admin` work.
 
 ### Filing a Backend Bug
 
