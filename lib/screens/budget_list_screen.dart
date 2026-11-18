@@ -32,7 +32,8 @@ class _BudgetListScreenState extends ConsumerState<BudgetListScreen>
   bool get hasUnsavedChanges => false;
 
   final _sectionKeys = {for (final s in BudgetSection.values) s: GlobalKey()};
-  late final Set<BudgetSection> _expanded;
+  /// Seeded on the first data (budgetInitiallyExpanded), then the user's.
+  Set<BudgetSection>? _expanded;
   late bool _attentionOn;
   String _query = '';
   String? _holderId;
@@ -44,7 +45,6 @@ class _BudgetListScreenState extends ConsumerState<BudgetListScreen>
   @override
   void initState() {
     super.initState();
-    _expanded = widget.focus == null ? BudgetSection.values.toSet() : {widget.focus!};
     _attentionOn = widget.attention;
     Future.microtask(() => ref.invalidate(budgetsProvider));
     if (widget.focus != null) {
@@ -137,11 +137,15 @@ class _BudgetListScreenState extends ConsumerState<BudgetListScreen>
                                 )
                               : BudgetSections(
                                   budgets: shown,
-                                  expanded: _expanded,
+                                  // Seeded from the first real list: an empty one is what the
+                                  // provider returns before the user / company is known.
+                                  expanded: budgetsAsync.isLoading || all.isEmpty
+                                      ? (_expanded ?? const {})
+                                      : (_expanded ??= budgetInitiallyExpanded(_attentionOn ? shown : all, widget.focus)),
                                   focus: widget.focus,
                                   sectionKeys: _sectionKeys,
                                   onToggle: (s) => setState(() =>
-                                      _expanded.contains(s) ? _expanded.remove(s) : _expanded.add(s)),
+                                      (_expanded ??= {}).contains(s) ? _expanded!.remove(s) : _expanded!.add(s)),
                                   onOpen: _open,
                                 ),
                         ),

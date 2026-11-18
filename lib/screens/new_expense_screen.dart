@@ -665,6 +665,29 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
       );
       unawaited(freeReceipts.refresh());
       if (!mounted) return;
+
+      // FS-1012/1013: back to the budget page first, then refresh. The page
+      // under this screen is paused while it is covered; refreshing before the
+      // pop marks it dirty while it resumes mid-build (console error, FS-1013
+      // QA run 4b) - so the refresh runs a frame after the pop, through the
+      // container (this screen is gone by then).
+      if (widget.isForBudget) {
+        final container = ProviderScope.containerOf(context, listen: false);
+        final nav = Navigator.of(context);
+        // A refreshed / deep-linked page is the only route: replace it.
+        nav.canPop()
+            ? nav.pop(true)
+            : nav.pushReplacementNamed(AppRoutes.budgetPath(widget.budgetId!));
+        WidgetsBinding.instance.addPostFrameCallback((_) => container
+          ..invalidate(expenseSearchProvider)
+          ..invalidate(mySheetsProvider)
+          ..invalidate(sheetDetailProvider)
+          ..invalidate(budgetsProvider)
+          ..invalidate(myBudgetsFetchProvider)
+          ..invalidate(budgetProvider));
+        return;
+      }
+
       // Refresh the cycle view AND the dashboard's sheet list + per-sheet
       // expense cards (the new expense lands in the current draft sheet).
       ref.invalidate(expenseSearchProvider);
@@ -678,17 +701,6 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
         ref.invalidate(approvalsQueueProvider(null));
         ref.invalidate(returnedSheetsProvider(null));
         Navigator.of(context).pop(true);
-        return;
-      }
-
-      // FS-1012: back to the budget page, which refreshes its numbers.
-      if (widget.isForBudget) {
-        invalidateBudgetReads(ref);
-        // A refreshed / deep-linked page is the only route: replace it.
-        final nav = Navigator.of(context);
-        nav.canPop()
-            ? nav.pop(true)
-            : nav.pushReplacementNamed(AppRoutes.budgetPath(widget.budgetId!));
         return;
       }
 

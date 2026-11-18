@@ -17,7 +17,7 @@ the mock as recorded in
 | F2 | **Negative amount** - when the new amount is below "spent": negatives allowed -> confirm "The balance will be {amount} below zero. Save anyway?"; not allowed -> the server's `BudgetAmountBelowSpent` shows in the dialog. | `showAppConfirmDialog` / the dialog's `ErrorAlert` |
 | F3 | **Row menu** on the budget list (table ⋮ column and mobile card ⋮): "Submit for approval" (Draft / Returned only) and "Delete" (destructive). Submit -> toast "Submitted for approval". | the user-management row menu pattern |
 | F4 | **Delete** - confirm "Delete budget?" / "\"{name}\" and all its expenses will be removed. Recovery is possible only through support." / Cancel + "Delete budget" -> toast "Budget deleted", list refreshes. | app confirm dialog (destructive) |
-| F5 | **Line review** - a manager who is not the holder sees the budget's expenses as the review line list (Pending / Approved / Declined tabs, approve / decline / edit / delete per line) while the budget is not Approved. The holder keeps today's My-expenses list. | `SheetReviewLineSection` + the review screen's line handlers |
+| F5 | **Line review** - a manager who is not the holder sees the budget's expenses as the review line list (Pending / Approved / Declined tabs, approve / decline / edit / delete per line) once it is Awaiting approval or Returned; a Draft shows the plain list (owner, 2026-11-18). The holder keeps today's My-expenses list. | `SheetReviewLineSection` + the review screen's line handlers |
 | F6 | **Activity** - shown once the log has more than one entry (was: after the first submission). New entries: "Name changed: {old} -> {new}", "Holder changed: {old} -> {new}", "End date changed: {old} -> {new}", "Amount changed: {old} -> {new}", "Expense approved: {merchant} {amount}", "Expense declined: {merchant} {amount}". Status strips and the "sent" / "returned" dates read status entries only. | `SheetActivityTimeline` / `...Entry` |
 | F7 | Every refusal code of the API guide maps to its own EN + HE caption. | `budgetErrorText` |
 
@@ -41,7 +41,7 @@ the mock as recorded in
 | budgetsSubmit | Submit for approval | הגשה לאישור |
 | budgetsDelete | Delete | מחיקה |
 | budgetsDeleteTitle | Delete budget? | מחיקת התקציב? |
-| budgetsDeleteBody | "{name}" and all its expenses will be removed. Recovery is possible only through support. | "{name}" וכל ההוצאות שלו יימחקו. שחזור אפשרי רק דרך התמיכה. |
+| budgetsDeleteBody | "{name}" and all its expenses will be permanently deleted. This action cannot be undone. | "{name}" וכל ההוצאות שלו יימחקו לצמיתות. לא ניתן לבטל פעולה זו. |
 | budgetsDeleteConfirm | Delete budget | מחיקת תקציב |
 | budgetsDeleted | Budget deleted | התקציב נמחק |
 | budgetsEvRenamed | Name changed | השם שונה |
@@ -137,3 +137,51 @@ Result: clean - run 1 findings 1, 2, 3, 5, 6 fixed; 4 kept by design; no new fin
 | - | A, B | EN + HE | List -> budget -> Back / browser back | - | F5: collapsed section, scroll position and UI language kept on both Back paths; long-name tooltip shows on hover | Verified |
 
 Result: clean.
+
+### Run 4 - 2026-11-18 (partial - stopped)
+- Branch / commit: feature/budgets-pc2-fixes @ uncommitted (owner's post-release fixes V1-V7)
+- QA company: XpenseDesk Demo Company; manager m@xpensedesk.com
+- Coverage: lane A (manager, pane width 871 = desktop layout) EN only - New budget dialog, new e@ Draft budget page, manager-held budget page, budget list fresh load
+- Not covered: V2, V3, V5, V6 toggle / Back, V7 (e@ part, and m@ Back from the list), every HE pass, lane C. The run stopped because the browser pane went hidden again partway through (`visibilityState` "hidden", 5 frames/s), so the page stopped redrawing and later screenshots could not be trusted
+- Data changed: created QA PC2 R4 A #1010 (holder e@, ₪500, 2 lines: ₪87.50 + ₪40.00) and QA PC2 R4 Mine #1011 (holder m@, ₪100); added 2 lines to #1008 (₪30.00 + ₪20.00). Nothing submitted or approved
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | A | EN | Budget list - fresh load | Major | Open (3), later Open (5), loads collapsed although it holds budgets (V6 expects sections that hold budgets expanded); seen on 3 fresh loads, the first 2 while the page was confirmed visible. My first clicks to expand it showed no change, probably because of the hidden pane - re-check | Open - not fixed (run 4b) |
+| 2 | A | EN | Budget page -> new expense -> Finish (back to budget) | Major | Console: the Riverpod "setState() or markNeedsBuild() called during build" error (UncontrolledProviderScope, `_updateTickerMode`) appears again in this build - at least 2 times while I added the 4 test expenses (the exact step that raised it was not isolated) | Open - not fixed (run 4b) |
+| - | A | EN | New / Edit budget dialog | - | V4 EN: empty amount field shows "₪"; typed value shows "₪500" | Verified (EN) |
+| - | A | EN | New e@ Draft budget opened by m@ | - | V1: plain list with "+ New Expense", edit / delete per line, no tabs, no approve / decline | Verified |
+| - | A | EN | Manager-held open budget | - | V7 (m@ part): "Back" is shown | Verified |
+
+Result: partial - 2 open (both need a re-check in a visible pane), V1 verified, V4 EN verified, V7 m@ partly verified.
+
+#### Run 4b - 2026-11-18 (re-check after the fixes for #1 and #2)
+- Coverage: lane A (m@, pane width 871 = desktop layout) EN + HE pass on V5 / V6; lane C (e@, desktop) EN for V3 / V7. The pane stayed visible for the whole run
+- Data changed: #1010 got a 3rd line (₪15.00), was submitted, 2 lines approved + 1 declined, then approved via the prompt; #1008 submitted, both lines approved, prompt cancelled (Awaiting); #1007 submitted, returned with "QA PC2 run 4 return", its line declined (Returned)
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | A | EN | Budget list - fresh load | Major | Still collapsed: a fresh `/budgets/list` showed Open (5) collapsed (2 loads, page visible, 13 s after load), and after the run all three sections (Awaiting 1, Returned 1, Open 2) loaded collapsed. Entering with `?focus=` expands the focused section; manual toggles work | Open - not fixed |
+| 2 | A | EN | Budget page -> + New expense -> Finish | Major | Still raised: with a console marker set on the budget page, New expense -> Finish logged the Riverpod "called during build" error once (UncontrolledProviderScope, `_updateTickerMode`) | Open - not fixed |
+| 3 | A | HE | Budget list - employee filter | Major | After switching EN -> HE on the list, the filter still reads "All employees" in English (all other captions switch) | Open |
+| 4 | A | EN | Review list status pill at 871 wide | Minor | "Appro/ved" wraps mid-word at this width (fixed at 1440 in run 2) | Open |
+| - | A | EN | V2 | - | Submit from the row menu -> Awaiting (toast "Submitted for approval"); review tabs + approve / decline; after the last pending decision "All expenses reviewed" / "Every expense on this budget has been approved or declined. Approve the budget now?"; Continue -> toast "Approved", page shows Approved, lines view-only; on #1008 Cancel -> stays Awaiting (API status 2); on Returned #1007 deciding the line shows no prompt | Verified |
+| - | C | EN | V3 | - | e@ on Awaiting #1008: Approved tab line has only a view (eye) icon; its detail page has no Edit / Delete / Save; Pending line keeps edit + delete | Verified |
+| - | A | EN + HE | V5 | - | EN: '"QA PC2 R4 A" and all its expenses will be permanently deleted. This action cannot be undone.'; HE: '"QA PC2 Past" וכל ההוצאות שלו יימחקו לצמיתות. לא ניתן לבטל פעולה זו.'; Cancel kept the budget | Verified |
+| - | A | EN + HE | V6 | - | Toggled sections kept on Back from a budget and across the EN -> HE switch | Verified (fresh-load part: see #1) |
+| - | A, C | EN | V7 | - | m@ on his own open budget #1011: Back returns to the list as left; e@ on own open #1009: Back -> employee dashboard | Verified |
+
+Result: 4 open (2 Major not fixed, 1 Major new, 1 Minor); V2, V3, V5, V6 toggles, V7 verified.
+
+#### Run 4c - 2026-11-18 (re-check of the 4 run 4b findings)
+- Coverage: lane A (m@, pane width 871 = desktop layout) EN + HE switch; pane visible throughout
+- Data changed: #1009 got a line "QA PC2 R4C SIX" ₪12.00
+
+| # | Finding (run 4b) | Result | Status |
+|---|---|---|---|
+| 1 | List fresh load collapsed | 3 fresh `/budgets/list` loads: Awaiting (1), Returned (1), Open (2) all expanded (no empty section existed to check the collapsed case) | Fixed (run 4c) |
+| 2 | Riverpod "called during build" after New expense -> Finish | Marker set on #1009, New expense -> Finish: no error after the marker; page shows the new line, Spent ₪12.00, Left ₪1,588.00 | Fixed (run 4c) |
+| 3 | Employee filter stuck in English | EN -> HE reads "כל העובדים"; HE -> EN reads "All employees" | Fixed (run 4c) |
+| 4 | Status pill wraps at 871 | "Approved" (#1008) and "Declined" (#1007) on one line; no pending line on a submitted budget was available to check "Pending" | Fixed (run 4c) |
+
+Result: clean - run 4b findings 1-4 fixed.

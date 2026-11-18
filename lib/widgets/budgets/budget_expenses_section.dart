@@ -75,7 +75,11 @@ class _BudgetExpensesSectionState extends ConsumerState<BudgetExpensesSection> {
         final shown = inTab
             .where((e) => budgetExpenseMatches(e.merchantName, e.amount, query))
             .toList();
-        final toggle = context.isMobile && widget.editable && inTab.isNotEmpty;
+        // FS-1013 fix: a line a manager approved is locked for the holder, as on
+        // Monthly (the server refuses it too) - the Approved tab is view-only.
+        final lineEditable = widget.editable &&
+            !(reviewed && tab == FilterTab.approved && !(ref.watch(userInfoProvider)?.isManager ?? false));
+        final toggle = context.isMobile && inTab.isNotEmpty && lineEditable;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -134,10 +138,10 @@ class _BudgetExpensesSectionState extends ConsumerState<BudgetExpensesSection> {
               SheetExpensesArea(
                 expenses: shown,
                 companyLocale: locale,
-                canEdit: widget.editable,
-                canDelete: widget.editable,
-                isDraft: widget.editable,
-                isReadOnly: !widget.editable,
+                canEdit: lineEditable,
+                canDelete: lineEditable,
+                isDraft: lineEditable,
+                isReadOnly: !lineEditable,
                 onRefresh: _refresh,
                 emptyTitle: l10n.budgetsNoExpensesTitle,
                 emptyDescription: l10n.budgetsNoExpensesDesc,

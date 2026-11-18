@@ -22,7 +22,6 @@ import 'new_budget_form_fields.dart';
 /// end date errs only once changed; below-zero amounts: [confirmBudgetBelowZero].
 class NewBudgetDialog extends ConsumerStatefulWidget {
   const NewBudgetDialog({super.key, this.budget});
-
   final Budget? budget; // null = create
 
   static Future<Budget?> show(BuildContext context) =>
@@ -173,6 +172,7 @@ class _NewBudgetDialogState extends ConsumerState<NewBudgetDialog> {
               onChanged: () => setState(() {}),
               onHolderChanged: (id) => setState(() => _holderId = id),
               onEndDateChanged: (d) => setState(() => _endDate = d),
+              currencyCode: widget.budget?.currencyCode,
             ),
             const SizedBox(height: 20),
             Row(

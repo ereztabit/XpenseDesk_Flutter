@@ -193,7 +193,7 @@ payments or payment reports (ModuleId = 1 guards).
 
 ## PC-2 - manager control + audit (FS-1013)
 
-Story: [pc-2-manager-control.md](../petty-cash/pc-2-manager-control.md).
+Story: [pc-2-manager-control.md](../done/pc-2-manager-control.md).
 
 | Call | Who | Behaviour |
 |---|---|---|
@@ -235,6 +235,7 @@ one** entry ("created" is the first).
 | `BudgetBalanceExceeded` | 409 | Re-approving a declined line would take the balance below zero (negatives not allowed); `data.balance` |
 | `BudgetNameRequired` / `BudgetNameTooLong` / `BudgetNameAlreadyExists` / `BudgetHolderRequired` / `BudgetHolderNotActive` / `BudgetAmountRequired` / `BudgetAmountInvalid` / `BudgetEndDateRequired` / `BudgetEndDateInPast` | as create | Edit, same rules (`BudgetEndDateInPast` only for a changed date; the name check ignores the budget itself) |
 | `BudgetsNotEnabled` | 403 | As in S1 |
+| `BudgetExpenseApprovedLocked` | 403 | **New (FS-1013 fixes).** `PUT` / `DELETE /api/expenses/{id}` by a non-manager on a budget line a manager approved - locked, as on Monthly |
 
 A line already in the asked state, or approving a line with no amount, fails
 as on Monthly (400, no code) - the UI never offers those.

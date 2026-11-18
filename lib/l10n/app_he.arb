@@ -527,7 +527,7 @@
   "activeUsers": "משתמשים פעילים",
 
   "cycleExpensesReport": "דוח הוצאות מחזור",
-  "expensesDetailReport": "דו\"ח הוצאות מפורט",
+  "expensesDetailReport": "ארכיון דיגיטלי",
   "currentCycle": "מחזור נוכחי",
   "byEmployee": "לפי עובד",
   "byCategory": "לפי קטגוריה",
@@ -1187,7 +1187,7 @@
   "budgetsSubmit": "הגשה לאישור",
   "budgetsDelete": "מחיקה",
   "budgetsDeleteTitle": "מחיקת התקציב?",
-  "budgetsDeleteBody": "וכל ההוצאות שלו יימחקו. שחזור אפשרי רק דרך התמיכה.",
+  "budgetsDeleteBody": "וכל ההוצאות שלו יימחקו לצמיתות. לא ניתן לבטל פעולה זו.",
   "budgetsDeleteConfirm": "מחיקת תקציב",
   "budgetsDeleted": "התקציב נמחק",
   "budgetsEvRenamed": "השם שונה",
@@ -1196,5 +1196,9 @@
   "budgetsEvAmount": "הסכום שונה",
   "budgetsEvLineApproved": "הוצאה אושרה",
   "budgetsEvLineDeclined": "הוצאה נדחתה",
-  "budgetsErrAmountBelowSpent": "הסכום נמוך ממה שכבר נוצל, והחברה לא מאפשרת יתרה שלילית."
+  "budgetsErrAmountBelowSpent": "הסכום נמוך ממה שכבר נוצל, והחברה לא מאפשרת יתרה שלילית.",
+  "budgetsErrLineLocked": "מנהל אישר את ההוצאה - לא ניתן עוד לשנות אותה.",
+  "budgetsReviewDoneTitle": "כל ההוצאות נבדקו",
+  "budgetsReviewDoneBody": "כל ההוצאות בתקציב אושרו או נדחו. לאשר את התקציב עכשיו?",
+  "budgetsApproveAfterReviewFailed": "ההוצאה נשמרה, אבל לא ניתן היה לאשר את התקציב. אשרו אותו שוב מדף התקציב."
 }
