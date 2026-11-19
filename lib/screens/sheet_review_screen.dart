@@ -23,6 +23,7 @@ import '../widgets/sheet_review/sheet_activity_timeline.dart';
 import '../widgets/sheet_review/sheet_review_back_row.dart';
 import '../widgets/sheet_review/sheet_review_error_view.dart';
 import '../widgets/sheet_review/sheet_review_header_card.dart';
+import '../widgets/sheet_export/sheet_export_actions.dart';
 import '../widgets/sheet_review/sheet_review_line_section.dart';
 import '../widgets/sheet_review/sheet_review_just_added_strip.dart';
 
@@ -467,7 +468,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
       children: [
         SheetReviewBackRow(title: l10n.sheetReviewTitle),
         const SizedBox(height: 16),
-        SheetReviewHeaderCard(sheet: sheet),
+        SheetReviewHeaderCard(
+          sheet: sheet,
+          // PC-5: downloads on an approved sheet only.
+          actions: sheet.expenseSheetStatusId == ExpenseSheetStatus.approved.id
+              ? SheetExportActions(sheetId: sheet.expenseSheetId)
+              : null,
+        ),
         // Desktop: actions inline below the header. Mobile: sticky bottom bar.
         if (canApproveSheet && context.isDesktop) ...[
           const SizedBox(height: 16),
@@ -504,6 +511,7 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
           onDeclineLine: canApproveSheet ? _handleLineDecline : null,
           onDeleteLine: !isSheetLocked ? _handleLineDelete : null,
           focusTab: _showJustAddedCue ? FilterTab.approved : null,
+          approvedOnly: isSheetLocked,
         ),
         const SizedBox(height: 16),
         SheetActivityTimeline(log: sheet.log),

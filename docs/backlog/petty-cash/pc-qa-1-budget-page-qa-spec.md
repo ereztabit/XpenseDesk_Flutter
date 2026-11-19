@@ -61,7 +61,17 @@ Seen on Sheet review of an approved Monthly sheet (manager view).
     Same on the budget page. On mobile the line cards also each carry an
     "Approved" pill on an approved sheet; drop it with item 10.
 
+## Added 2026-11-19 - Payments report (client only)
+
+Found in PC-5 manual QA run 2 (`docs/in-progress/pc-5-summary-report-spec.md`).
+
+13. **Filter dropdowns stay English after a language switch.** On the desktop
+    Payments filter card, switching EN -> HE from the header leaves the
+    Payment status and Sheet type dropdowns showing "Pending" / "All" in
+    English. Every control must re-render in the new language (the mobile
+    filter dialog already does).
+
 ## Done when
 
-- All twelve verified on desktop and mobile, Hebrew and English (QA clicks every
+- All thirteen verified on desktop and mobile, Hebrew and English (QA clicks every
   control).

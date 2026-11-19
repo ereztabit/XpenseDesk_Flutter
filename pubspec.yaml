@@ -59,6 +59,8 @@ dependencies:
   email_validator: ^3.0.0
   fl_chart: ^1.2.0
   excel: ^4.0.6
+  # Zip access to the saved .xlsx - landscape page setup (lib/utils/xlsx_utils.dart).
+  archive: ^3.6.1
 
   # PDF page count on the client (pure Dart, Apache-2.0) — a receipt upload must
   # be one page, so a multi-page PDF is declined before it is sent.

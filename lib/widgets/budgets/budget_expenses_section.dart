@@ -24,12 +24,17 @@ class BudgetExpensesSection extends ConsumerStatefulWidget {
     super.key,
     required this.budgetId,
     required this.editable,
+    this.approvedOnly = false,
   });
 
   final String budgetId;
 
   /// Holder or manager, and the budget is not Approved.
   final bool editable;
+
+  /// An Approved budget is closed: only its approved lines, no status tabs -
+  /// a declined line is gone for good (owner QA, 2026-11-19).
+  final bool approvedOnly;
 
   @override
   ConsumerState<BudgetExpensesSection> createState() =>
@@ -67,11 +72,12 @@ class _BudgetExpensesSectionState extends ConsumerState<BudgetExpensesSection> {
         // FS-1013 PC-2: once a manager approved or declined a line, the list
         // splits into Pending / Approved / Declined, as a reviewed Monthly
         // sheet does - a declined line never reads as a plain one.
-        final reviewed = sheet.expenses.any((e) => e.expenseStatusId != 1);
+        final closed = widget.approvedOnly;
+        final reviewed = !closed && sheet.expenses.any((e) => e.expenseStatusId != 1);
         final counts = SheetExpenseBuckets.countsPerTab(sheet.expenses);
         // Opens on the first non-empty tab (as Sheet Review); a picked tab stays.
-        final tab = _tab ?? SheetExpenseBuckets.initialTab(counts);
-        final inTab = reviewed ? SheetExpenseBuckets.filterByTab(sheet.expenses, tab) : sheet.expenses;
+        final tab = closed ? FilterTab.approved : _tab ?? SheetExpenseBuckets.initialTab(counts);
+        final inTab = reviewed || closed ? SheetExpenseBuckets.filterByTab(sheet.expenses, tab) : sheet.expenses;
         final shown = inTab
             .where((e) => budgetExpenseMatches(e.merchantName, e.amount, query))
             .toList();

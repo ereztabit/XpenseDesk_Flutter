@@ -44,10 +44,14 @@ String paymentsTotalLabelText(AppLocalizations l10n, int count) =>
     '${l10n.paymentsTotalLabel} · $count '
     '${count == 1 ? l10n.awaitingPaymentSheetSingular : l10n.awaitingPaymentSheetPlural}';
 
-/// Bulk action label: "Process 2 sheets" / "Process 1 sheet".
-String paymentProcessCountText(AppLocalizations l10n, int count) =>
-    '${l10n.paymentProcessButton} $count '
-    '${count == 1 ? l10n.awaitingPaymentSheetSingular : l10n.awaitingPaymentSheetPlural}';
+/// Bulk action label: "Process 2 sheets" / "טיפול ב-2 גליונות" - a prefix
+/// ending in a hyphen joins the number with no space.
+String paymentProcessCountText(AppLocalizations l10n, int count) {
+  final prefix = l10n.paymentProcessCountPrefix;
+  final join = prefix.endsWith('-') ? '' : ' ';
+  return '$prefix$join$count '
+      '${count == 1 ? l10n.awaitingPaymentSheetSingular : l10n.awaitingPaymentSheetPlural}';
+}
 
 String paymentDirectionText(AppLocalizations l10n, PaymentDirection d) =>
     d == PaymentDirection.collect

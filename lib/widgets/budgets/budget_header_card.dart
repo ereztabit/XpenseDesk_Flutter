@@ -8,8 +8,10 @@ import '../../theme/app_theme.dart';
 import '../../utils/budget_copy_utils.dart';
 import '../../utils/budget_utils.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/responsive_utils.dart';
 import '../employee_dashboard/sheet_status_badge.dart';
 import '../manager_dashboard/usage_bar.dart';
+import '../sheet_export/sheet_export_actions.dart';
 import 'budget_stat_column.dart';
 
 /// Left-to-right isolate around #number and dates inside RTL text runs.
@@ -45,6 +47,12 @@ class BudgetHeaderCard extends ConsumerWidget {
     final over = budgetIsOverBudget(b);
     const ltr = TextDirection.ltr;
     final endShort = b.endDate.toCompanyDayMonth(locale);
+    // PC-5: an approved budget's downloads sit where the Monthly sheet's do -
+    // the trailing top corner on desktop, under the status row below it
+    // (owner QA, 2026-11-19).
+    final downloads =
+        budgetIsApproved(b) ? SheetExportActions(sheetId: b.budgetId) : null;
+    final narrow = !context.isDesktop;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -87,6 +95,10 @@ class BudgetHeaderCard extends ConsumerWidget {
                       const SizedBox(width: 12),
                       trailing!,
                     ],
+                    if (downloads != null && !narrow) ...[
+                      const SizedBox(width: 12),
+                      downloads,
+                    ],
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -124,6 +136,10 @@ class BudgetHeaderCard extends ConsumerWidget {
                     ),
                   ],
                 ),
+                if (downloads != null && narrow) ...[
+                  const SizedBox(height: 12),
+                  downloads,
+                ],
               ],
             ),
           ),

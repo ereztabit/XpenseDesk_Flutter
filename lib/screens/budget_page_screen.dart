@@ -165,6 +165,7 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                             BudgetExpensesSection(
                               budgetId: b.budgetId,
                               editable: _editable(b),
+                              approvedOnly: budgetIsApproved(b),
                             ),
                           if (sheet != null && budgetActivityVisible(sheet.log.length)) ...[
                             const SizedBox(height: 16),

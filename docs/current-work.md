@@ -18,6 +18,10 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- IN PROGRESS on `feature/pc5-sheet-export` (both repos). "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". see docs/in-progress/pc-5-summary-report-spec.md
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -46,7 +50,6 @@ so in its spec rather than double-tagging here.
 
 - [ ] [Business][P1] **FS-1025** Budgets QA bundle (9 comments) -- NEXT after PC-5, before anything else. Needs-attention section, upload scoped to its budget, bell target, manager submit, policy blocks submit, search bar, limit reached, arrow. see docs/backlog/petty-cash/pc-qa-1-budget-page-qa-spec.md
 - [ ] [Business][P3] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module -- not phase 1. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
-- [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". POC done. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
 - [ ] [Business][P2] **FS-1021** PC-9 budget history -- NOT DESIGNED. Approved budgets at sheet level, built from the analysis / report widgets, open one, download is PC-5. see docs/backlog/petty-cash/pc-9-budget-report-spec.md
 - [ ] [Business][P2] **FS-1022** Monthly history -- NOT DESIGNED. PC-9's twin for approved Monthly sheets, same widgets, PC-5 download. After PC-5. see docs/backlog/monthly-history-spec.md

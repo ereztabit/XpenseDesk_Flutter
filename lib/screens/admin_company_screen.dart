@@ -3,6 +3,7 @@ import '../utils/app_navigator.dart';
 import '../providers/admin_provider.dart';
 import '../widgets/admin/admin_company_configuration_body.dart';
 import '../widgets/admin/admin_company_users_body.dart';
+import '../widgets/admin/admin_clear_exports_button.dart';
 import '../widgets/admin/admin_destroy_company_button.dart';
 import '../widgets/admin/admin_header.dart';
 import '../widgets/app_button.dart';
@@ -139,19 +140,18 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
+                      // Wrap: on a narrow screen the actions drop under the name.
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
                         children: [
-                          Expanded(
-                            child: Text(
-                              companyName,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          AdminDestroyCompanyButton(
-                            companyId: widget.companyId,
-                            companyName: companyName,
-                          ),
+                          Text(companyName, style: Theme.of(context).textTheme.headlineMedium),
+                          Wrap(spacing: 8, runSpacing: 8, children: [
+                            AdminClearExportsButton(companyId: widget.companyId),
+                            AdminDestroyCompanyButton(companyId: widget.companyId, companyName: companyName),
+                          ]),
                         ],
                       ),
                       const SizedBox(height: 8),

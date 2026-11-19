@@ -8,11 +8,12 @@ import '../app_button.dart';
 import 'payment_amount_cell.dart';
 import 'payment_employee_cell.dart';
 import 'payment_sheet_type_cell.dart';
+import 'payment_view_sheet_button.dart';
 import 'payments_table_columns.dart';
 
 /// One desktop Payments row, in [PaymentsTableColumns] order: checkbox
-/// (pending rows only), name + status pill, amount, Process / Edit, then the
-/// reference columns.
+/// (pending rows only) + eye (opens the sheet), name + status pill, amount,
+/// Process / Edit, then the reference columns.
 class DesktopPaymentsRow extends StatelessWidget {
   const DesktopPaymentsRow({
     super.key,
@@ -63,13 +64,23 @@ class DesktopPaymentsRow extends StatelessWidget {
         children: [
           _cell(
             PaymentsTableColumns.checkbox,
-            row.isAwaiting && onToggleSelection != null
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (v) => onToggleSelection!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : const SizedBox.shrink(),
+            Row(
+              children: [
+                SizedBox(
+                  width:
+                      PaymentsTableColumns.selectBox -
+                      PaymentsTableColumns.cellGap,
+                  child: row.isAwaiting && onToggleSelection != null
+                      ? Checkbox(
+                          value: isSelected,
+                          onChanged: (v) => onToggleSelection!(v ?? false),
+                          visualDensity: VisualDensity.compact,
+                        )
+                      : null,
+                ),
+                PaymentViewSheetButton(onPressed: onTap),
+              ],
+            ),
           ),
           _cell(
             PaymentsTableColumns.employee,
@@ -85,7 +96,6 @@ class DesktopPaymentsRow extends StatelessWidget {
               row: row,
               locale: locale,
               currencyCode: currencyCode,
-              showDirection: showSheetType,
             ),
           ),
           _cell(

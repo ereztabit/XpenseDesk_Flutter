@@ -3,7 +3,10 @@
 /// Order (owner, 2026-11-18): employee + status pill, amount, action, sheet
 /// type, cycle, approved date, processed date, gov ID.
 class PaymentsTableColumns {
-  static const double checkbox = 44;
+  /// Select checkbox + the eye that opens the sheet (owner QA, 2026-11-19).
+  static const double selectBox = 44;
+  static const double viewIcon = 32;
+  static const double checkbox = selectBox + viewIcon;
   static const double employee = 220;
   static const double amount = 110;
 

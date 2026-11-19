@@ -9,6 +9,7 @@ import '../../utils/payments_utils.dart';
 import '../selectable_scope.dart';
 import 'mobile_payment_row.dart';
 import 'mobile_payments_header_cell.dart';
+import 'payments_amount_info_icon.dart';
 import 'payments_total_row.dart';
 
 /// Mobile table-like list of the Payments Report (D17 scroll model): pinned
@@ -83,6 +84,7 @@ class MobilePaymentsTable extends ConsumerWidget {
                         )
                       : const SizedBox.shrink(),
                 ),
+                const SizedBox(width: 36), // the rows' eye column
                 MobilePaymentsHeaderCell(
                   label: l10n.employee,
                   flex: 3,
@@ -99,6 +101,7 @@ class MobilePaymentsTable extends ConsumerWidget {
                   ascending: sortAscending,
                   onSort: onSort,
                   alignEnd: true,
+                  trailing: const PaymentsAmountInfoIcon(),
                 ),
               ],
             ),

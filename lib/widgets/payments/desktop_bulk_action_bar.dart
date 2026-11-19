@@ -4,7 +4,6 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_copy_utils.dart';
 import '../app_button.dart';
-import 'excel_download_icon.dart';
 
 /// Desktop bulk-action bar: a white card (the buttons stay readable) with the
 /// "BULK ACTION" eyebrow, Export + Process, and the selection summary on the
@@ -60,7 +59,9 @@ class DesktopBulkActionBar extends StatelessWidget {
           AppButton(
             label: l10n.export,
             variant: AppButtonVariant.normal,
-            iconWidget: const ExcelDownloadIcon(size: 16),
+            // Desktop export buttons share one look (Export All); the Excel
+            // glyph stays on the mobile card (owner QA, 2026-11-19).
+            icon: Icons.download_outlined,
             isLoading: isExporting,
             onPressed: onExport,
           ),

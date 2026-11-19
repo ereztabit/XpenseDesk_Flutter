@@ -164,6 +164,23 @@ class AdminService {
     _validateResponse(response, 'Failed to destroy company');
   }
 
+  /// POST /api/admin/companies/{companyId}/sheet-exports/clear — FS-1016 PC-5.
+  /// Deletes every stored sheet download of the company; returns how many.
+  Future<int> clearSheetExports(String companyId) async {
+    final sessionToken = await _authService.getAdminSessionToken();
+    _validateSessionToken(sessionToken);
+
+    final response = await _apiService.post(
+      '/api/admin/companies/$companyId/sheet-exports/clear',
+      const <String, dynamic>{},
+      authToken: sessionToken,
+    );
+
+    _validateResponse(response, 'Failed to clear stored sheet exports');
+    final data = response['data'] as Map<String, dynamic>?;
+    return (data?['deletedCount'] as num?)?.toInt() ?? 0;
+  }
+
   /// GET /api/admin/companies/{companyId}/configuration — the company's
   /// feature flags (FS-1007). `AdminCompanyNotFound` when the company is gone.
   Future<AdminCompanyConfiguration> getCompanyConfiguration(

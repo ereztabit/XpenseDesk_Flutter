@@ -7,13 +7,14 @@ import '../../utils/format_utils.dart';
 import '../../utils/payments_copy_utils.dart';
 import '../app_button.dart';
 import 'payment_employee_cell.dart';
+import 'payment_view_sheet_button.dart';
 
 /// One mobile Payments row, two lines:
-///   [x] Employee name [Pending] ............. amount (red "-₪" to charge)
-///       Budget #1016 · November 2026               [Process]
-/// Money to charge is red with a minus. The employee name opens the sheet;
-/// the button opens the payment-status dialog (Process when pending, Edit
-/// once processed).
+///   [x] (eye) Employee name [Pending] ......... amount (red "-₪" to charge)
+///             Budget #1016 · November 2026               [Process]
+/// Money to charge is red with a minus. The eye and the employee name open
+/// the sheet; the button opens the payment-status dialog (Process when
+/// pending, Edit once processed).
 class MobilePaymentRow extends StatelessWidget {
   const MobilePaymentRow({
     super.key,
@@ -63,7 +64,7 @@ class MobilePaymentRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 40,
-            height: 24,
+            height: 32,
             child: row.isAwaiting && onToggleSelection != null
                 ? Checkbox(
                     value: isSelected,
@@ -72,6 +73,8 @@ class MobilePaymentRow extends StatelessWidget {
                   )
                 : null,
           ),
+          PaymentViewSheetButton(onPressed: onTap),
+          const SizedBox(width: 4),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
