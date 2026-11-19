@@ -178,7 +178,7 @@ have no cycle either and never appear in Monthly sheets, totals or reports.
 | Call | Behaviour |
 |---|---|
 | `POST /api/budgets/{budgetId}/submit` | The **holder** sends a Draft or Returned budget for approval; returns the budget object. A manager's own budget comes back **Approved** (approved on submit, the Monthly rule). Editing stays open while Awaiting approval |
-| `POST /api/expense-sheets/{budgetId}/approve` | The existing sheet call. Approves the budget and its pending lines; Approved closes it. **PC-8 (FS-1020):** approval settles the budget through payments - see "PC-8 - settlement" below (was: "prepaid, never enters the payment lifecycle") |
+| `POST /api/expense-sheets/{budgetId}/approve` | The existing sheet call. Approves the budget and its pending lines; Approved closes it. **PC-8 (FS-1020):** approval settles the budget through payments - see "PC-8 - settlement" below (was: "prepaid, never enters the payment lifecycle"). **409 `BudgetHasActionRequired`** while a line still needs action, as submit (2026-11-19) |
 | `POST /api/expense-sheets/{budgetId}/decline` | The existing sheet call, `{ "comment": "..." }` required. Returns the budget to its holder; **its lines stay Pending** (a Monthly decline still declines them) so the holder edits and resubmits |
 | `GET /api/expense-sheets/{budgetId}` | `log` is the Activity trail: to-status 1 = created (by the manager), 2 = submitted, 4 = returned (`comment` = the reason), 3 = approved. `latestDeclineComment`, `submittedAt`, `reviewedAt` feed the status strips |
 

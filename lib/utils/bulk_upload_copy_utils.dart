@@ -75,6 +75,9 @@ String itemFailureText(AppLocalizations l10n, String? failureCode) {
       return l10n.bulkItemProcessingFailed;
     case 'BulkUploadNoOpenCycle':
       return l10n.bulkItemNoOpenCycle;
+    // A receipt that needs completing reached a Monthly sheet already submitted.
+    case 'BulkUploadSheetSubmitted':
+      return l10n.bulkItemSheetSubmitted;
     case 'ExpenseDateTooOld':
       return l10n.expenseDateTooOld;
     case 'ExchangeRateUnavailable':

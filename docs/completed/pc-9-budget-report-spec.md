@@ -1,6 +1,6 @@
 # PC-9 - Payments & History (manager) / History (employee)
 
-> Mission: FS-1021 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-9-budget-report.md). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
+> Mission: FS-1021 (backend: BackEnd/XpenseDeskServer/docs/done/pc-9-budget-report.md). Plan: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md
 
 Status: FILED 2026-11-18, **reshaped 2026-11-19** (owner). Extends the existing
 Payments report (`lib/screens/payments_report_screen.dart`) instead of a new

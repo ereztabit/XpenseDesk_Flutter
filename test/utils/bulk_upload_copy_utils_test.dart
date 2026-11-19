@@ -173,6 +173,7 @@ void main() {
       'BulkUploadFileNotAvailable',
       'BulkUploadProcessingFailed',
       'BulkUploadNoOpenCycle',
+      'BulkUploadSheetSubmitted',
       'ExpenseDateTooOld',
       'ExchangeRateUnavailable',
       'MandatoryFieldsMissing',

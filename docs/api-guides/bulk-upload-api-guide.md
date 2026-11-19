@@ -230,6 +230,7 @@ it raw. The server never returns English text for an item.
 | `BulkUploadFileNotAvailable` | The uploaded file was gone (e.g. the same file sent in two batches at once) |
 | `BulkUploadProcessingFailed` | Still failing after every retry, and the receipt's image could not be stored either. From S5 a receipt the AI keeps failing on is `ActionRequired`, filed empty, so this is rare |
 | `BulkUploadNoOpenCycle` | The company has no open expense cycle to file into |
+| `BulkUploadSheetSubmitted` | A receipt that needs completing reached the sender's Monthly sheet after it was submitted (only a draft takes one). Added 2026-11-19 |
 | `ExpenseDateTooOld` | Existing code: the receipt date is more than 12 months old. S1 only: from S2 such a receipt is `ActionRequired` (§10) |
 | `ExchangeRateUnavailable` | Existing code: no exchange rate for the receipt's currency and date. S1/S2 only: from S5 such a receipt is `ActionRequired`, kept in its own currency |
 | `MandatoryFieldsMissing` | Existing code: an expense rule refused the values. S1: a future date; from S2 such a receipt is `ActionRequired` (§10) |
@@ -319,6 +320,7 @@ already in use elsewhere, so reuse their keys if the app has them.
 | `BulkUploadFileNotAvailable` | item | The file was no longer available - upload it again |
 | `BulkUploadProcessingFailed` | item | Something went wrong reading this receipt |
 | `BulkUploadNoOpenCycle` | item | There's no open expense period to file into |
+| `BulkUploadSheetSubmitted` | item | Your sheet was already submitted, so this receipt was not filed - add it by hand |
 | `ExpenseDateTooOld` *existing* | item | The receipt is more than 12 months old |
 | `ExchangeRateUnavailable` *existing* | item | No exchange rate for this currency and date |
 | `MandatoryFieldsMissing` *existing* | item, admin | The receipt's details were refused (e.g. a future date) |

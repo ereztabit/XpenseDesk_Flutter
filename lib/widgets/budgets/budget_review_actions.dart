@@ -75,7 +75,8 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
     } on BudgetException catch (e) {
       error = budgetErrorText(l10n, e.errorCode) ?? l10n.genericErrorRetry;
     } on ExpenseException catch (e) {
-      error = e.message;
+      // Approve shares the sheet call: its budget refusals read as captions.
+      error = budgetErrorText(l10n, e.errorCode) ?? e.message;
     } catch (_) {
       error = l10n.genericErrorRetry;
     }

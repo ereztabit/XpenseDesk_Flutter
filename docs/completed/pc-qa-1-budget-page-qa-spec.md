@@ -1,6 +1,6 @@
 # PC-QA-1 - Budget page QA comments (bundle of 9)
 
-> Mission: FS-1025 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-qa-1-budget-page-qa.md). Guide: BackEnd/XpenseDeskServer/docs/petty-cash/budgets-guide.md
+> Mission: FS-1025 (backend: BackEnd/XpenseDeskServer/docs/done/pc-qa-1-budget-page-qa.md). Guide: BackEnd/XpenseDeskServer/docs/petty-cash/budgets-guide.md
 
 Status: FILED 2026-11-19. **Built 2026-11-19 on `feature/pc5-sheet-export`**
 with PC-5 (see Build below) - not shipped, prod SQL not applied.
@@ -63,7 +63,7 @@ Seen on Sheet review of an approved Monthly sheet (manager view).
 
 ## Added 2026-11-19 - Payments report (client only)
 
-Found in PC-5 manual QA run 2 (`docs/in-progress/pc-5-summary-report-spec.md`).
+Found in PC-5 manual QA run 2 (`docs/completed/pc-5-summary-report-spec.md`).
 
 13. **Filter dropdowns stay English after a language switch.** On the desktop
     Payments filter card, switching EN -> HE from the header leaves the
