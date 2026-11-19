@@ -32,6 +32,9 @@ class PaymentsFilter {
   /// dashboard cards still open on Pending by passing it explicitly.
   static const defaults = PaymentsFilter();
 
+  /// The manager's "Payments" entry: what still has to be settled.
+  static const pending = PaymentsFilter(status: PaymentStatus.awaitingPayment);
+
   static const Object _unset = Object();
 
   /// copyWith that can also CLEAR fields (pass null explicitly).

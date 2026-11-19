@@ -7,6 +7,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../utils/responsive_utils.dart';
 import 'desktop_menu.dart';
 import '../../models/menu_items.dart';
+import '../../utils/app_navigator.dart';
 import 'mobile_menu_sheet.dart';
 import '../language_switcher.dart';
 import '../cycle/cycle_compact_badge.dart';
@@ -143,7 +144,10 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
         if (mounted) Navigator.pushNamed(context, '/manager/payments');
         break;
       case 'history':
-        if (mounted) Navigator.pushNamed(context, '/employee/history');
+        if (mounted) {
+          Navigator.pushNamed(context,
+              AppRoutes.historyFor(isManager: _isManager(userInfo.roleId)));
+        }
         break;
       case 'profile':
         final role = _isManager(userInfo.roleId) ? 'manager' : 'employee';

@@ -57,6 +57,33 @@ existing screen. Last slice of Petty Cash phase 1.
 - Landing filter All (`PaymentsFilter.defaults`); the dashboard Awaiting card and
   the Budgets panel tiles still pass Pending.
 
+## Owner QA round 1 (2026-11-19) - supersedes the matching lines above
+
+1. **Sign-in lands on Budgets** when the user has Budgets and Monthly shows no
+   badge; otherwise it lands on the Monthly dashboard (D43; magic link via
+   `completePostLogin`, Microsoft sign-in and a reopened app via `/home`;
+   `sheetNavLandingRoute` decides, and it waits at most 4 s on the
+   counts).
+2. **No ⋮ menu.** A Pending row has a select box, a Closed row has Edit in the
+   same place, and the eye sits next to it (`payment_row_select_cell.dart`).
+   There is no per-row Settle: select, then Settle from the bulk bar. The phone
+   works the same way (D35).
+3. **One word per state:** Settle / התחשבנות for the action, Closed / סגור for
+   the done state. Paid, Charged, Returned and Processed are gone, including
+   in the Excel file ("Closed Date"). D42 replaces the earlier "Returned"
+   wording.
+4. **The status is plain text in its own sortable column**, with no pill
+   (`payment_status_cell.dart`). The sheet's payment box keeps its badge.
+5. **Phone:** no Settle / Edit buttons on rows. A status toggle (All / Pending
+   / Closed / No payment) above the table applies in one tap
+   (`payment_status_toggle.dart`). The cards carry no status text, because
+   the toggle holds it (owner, same round).
+6. **Manager menu has "Payments" and "History":** `/manager/payments` opens on
+   Pending (the dashboard card leads here), and `/manager/history` opens on
+   All. The title follows the route, and Reset returns to the entry's own
+   status. The employee keeps "History". History opens sorted by approval
+   date, newest first, and Payments by employee A-Z (owner, same day).
+
 ## QA
 
 Manager + employee x desktop + mobile, EN + HE; module off; an employee cannot
@@ -177,5 +204,38 @@ Result: 3 findings - 0 open, 3 fixed.
   (History pill and their sheet's payment box); managers keep "Charged".
 - Coverage: C employee 1440 EN + HE - History pill on a settled budget the
   employee returned money on; HE fits on one line. Unit test for both wordings.
+
+Result: clean.
+
+### Run 3 - 2026-11-19 (owner QA round 1 fixes)
+- Branch / commit: feature/pc5-sheet-export @ ce9bd62 + uncommitted round-1 fixes
+- Before QA: backend suite 772/772, Flutter 296 tests, analyzer clean (9 old
+  infos). CR + security review: no security findings; 4 should-fix fixed
+  (Back between Payments and History kept the other filter; Closed links
+  opened "Payments"; Microsoft sign-in / reopened app skipped the landing -
+  now via `/home`; phone Reset ignored the entry) plus 3 nits.
+- Coverage: A manager 1440 EN/HE - sign-in lands on Budgets (Monthly had no
+  badge; with Budgets off it lands on Monthly); menu Payments + History;
+  Payments opens on Pending, History on All; Closed row Edit opens the dialog
+  (Pending / Closed, "Closed Date") and cancels; No payment row has the eye
+  only; status column sorts Pending first; HE headers on one line. B manager
+  375 EN - toggle All / Pending / Closed / No payment applies at once; Closed
+  rows show Edit; selecting a Pending row gives "Settle 1 sheet" in the bulk
+  card; menu Payments / History. C employee 1440 EN - History, eye only, plain
+  status. D employee 375 EN - sign-in lands on their budget; History cards
+  have no status text, no buttons, toggle on top. Budgets OFF: manager History
+  lists and works; `/` lands via `/home`; Payments -> History -> Back shows
+  Payments on Pending again. Budgets left OFF for the Demo company, as found.
+- Not covered: settling or editing for real (it writes payment data on the
+  shared QA users); opening the Excel file to read the new captions (covered
+  by the backend tests).
+
+Result: clean.
+
+### Run 4 - 2026-11-19 (History sort)
+- Change: History opens on Approved Date, newest first; Payments stays
+  employee A-Z. Unit test added (297 tests).
+- Coverage: C employee 1440 EN - History opens newest first (11/19 rows on
+  top), the Approved Date header shows the down arrow, and Search keeps it.
 
 Result: clean.

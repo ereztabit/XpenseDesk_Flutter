@@ -76,18 +76,17 @@ class MobilePaymentsTable extends ConsumerWidget {
             padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 12, 4),
             child: Row(
               children: [
-                if (!historyOnly)
-                  SizedBox(
-                    width: 40,
-                    child: selectableIds.isNotEmpty
-                        ? Checkbox(
-                            value: allSelected,
-                            onChanged: (v) => onToggleAll(v ?? false),
-                            visualDensity: VisualDensity.compact,
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                const SizedBox(width: 36), // the rows' eye column
+                SizedBox(
+                  width: 40,
+                  child: selectableIds.isNotEmpty
+                      ? Checkbox(
+                          value: allSelected,
+                          onChanged: (v) => onToggleAll(v ?? false),
+                          visualDensity: VisualDensity.compact,
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                const SizedBox(width: 40), // the rows' eye column + gap
                 MobilePaymentsHeaderCell(
                   label: historyOnly ? l10n.paymentsSheetColumn : l10n.employee,
                   flex: 3,

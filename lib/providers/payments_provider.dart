@@ -18,9 +18,9 @@ final paymentServiceProvider = Provider<PaymentService>((ref) {
 });
 
 /// The APPLIED report filter (the screen edits a pending copy and commits it
-/// here on Search). Deliberately non-autoDispose so the filter survives
-/// navigating away and back within the session — the spec's filter-retention
-/// requirement.
+/// here on Search). Shared by the Payments and History entries; each screen
+/// opens on its entry's filter and takes it back when it is on top again
+/// (`PaymentsScreenEntry`).
 final paymentsFilterProvider =
     NotifierProvider<PaymentsFilterNotifier, PaymentsFilter>(
   PaymentsFilterNotifier.new,

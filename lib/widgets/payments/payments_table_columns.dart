@@ -1,20 +1,16 @@
 /// Fixed column widths shared by the desktop Payments table header, rows and
 /// total row. One source of truth so the cells always line up.
-/// Order (owner, 2026-11-18; PC-9 menu): select, employee + status pill,
-/// amount, actions (⋮), sheet type, cycle, approved date, processed date,
-/// gov ID.
+/// Order (owner QA 2026-11-19): select box or Edit + eye, employee, amount,
+/// payment status, sheet type, cycle, approved date, closed date, gov ID.
 class PaymentsTableColumns {
-  /// Select checkbox. The eye left for the row menu (PC-9).
-  static const double selectBox = 44;
-  static const double checkbox = selectBox;
-  static const double employee = 220;
+  /// Select box (or Edit) slot, then the 32px eye.
+  static const double selectSlot = 40;
+  static const double checkbox = selectSlot + 36;
+  static const double employee = 200;
   static const double amount = 110;
 
-  /// The row's vertical ⋮ menu (View, Settle or Edit) - PC-9, D35.
-  static const double action = 76;
-
-  /// "Settle" / "Edit" button on a phone row, with its icon.
-  static const double actionButton = 120;
+  /// Plain-text payment status (no pill).
+  static const double status = 120;
   static const double sheetType = 150;
   static const double cycle = 120;
   static const double approvedDate = 105;
@@ -35,7 +31,7 @@ class PaymentsTableColumns {
       checkbox +
       employee +
       amount +
-      action +
+      status +
       sheetType +
       cycle +
       approvedDate +

@@ -5,7 +5,7 @@ import '../../models/payment_status.dart';
 import '../../utils/payments_copy_utils.dart';
 import 'payments_dropdown.dart';
 
-/// Payment status filter of Payments & History: All, Pending, Processed and
+/// Payment status filter of Payments / History: All, Pending, Closed and
 /// (PC-9) No payment. Shared by the desktop filter card and the mobile dialog.
 class PaymentStatusFilterDropdown extends StatelessWidget {
   const PaymentStatusFilterDropdown({

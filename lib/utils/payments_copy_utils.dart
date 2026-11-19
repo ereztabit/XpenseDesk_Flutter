@@ -58,24 +58,14 @@ String paymentDirectionText(AppLocalizations l10n, PaymentDirection d) =>
     ? l10n.paymentsDirectionToCollect
     : l10n.paymentsDirectionToPay;
 
-/// Awaiting Payment / Paid / Collected; plain "Processed" without a direction.
-/// [forHolder]: the employee is looking - money they gave back reads
-/// "Returned", not "Charged" (owner 2026-11-19, as D16's "To return").
-String paymentStatusText(
-  AppLocalizations l10n,
-  PaymentStatus status, {
-  PaymentDirection? direction,
-  bool forHolder = false,
-}) {
-  if (status == PaymentStatus.awaitingPayment) return l10n.paymentStatusPending;
-  if (status == PaymentStatus.noPayment) return l10n.paymentStatusNoPayment;
-  return switch (direction) {
-    PaymentDirection.pay => l10n.paymentStatusPaid,
-    PaymentDirection.collect =>
-      forHolder ? l10n.paymentStatusReturned : l10n.paymentStatusCollected,
-    null => l10n.paymentStatusProcessed,
-  };
-}
+/// Pending / Closed / No payment - one word per state, whichever way the
+/// money went (owner QA 2026-11-19: not Paid, Charged or Returned).
+String paymentStatusText(AppLocalizations l10n, PaymentStatus status) =>
+    switch (status) {
+      PaymentStatus.awaitingPayment => l10n.paymentStatusPending,
+      PaymentStatus.processed => l10n.paymentStatusProcessed,
+      PaymentStatus.noPayment => l10n.paymentStatusNoPayment,
+    };
 
 String paymentSheetTypeText(AppLocalizations l10n, CompanyModuleKey type) =>
     type == CompanyModuleKey.pettyCash

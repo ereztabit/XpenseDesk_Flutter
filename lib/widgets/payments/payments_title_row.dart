@@ -6,8 +6,8 @@ import '../../providers/payments_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/app_navigator.dart';
 
-/// Back arrow + title of the payments screen: "Payments & History" for a
-/// manager, "History" for an employee (PC-9). Back pops, or - after a deep
+/// Back arrow + title of the payments screen: "Payments" on its own route,
+/// "History" on either History route (owner QA 2026-11-19). Back pops, or - after a deep
 /// link / refresh - goes to that user's dashboard. [trailing] fills the end.
 class PaymentsTitleRow extends ConsumerWidget {
   const PaymentsTitleRow({super.key, this.compact = false, this.trailing = const []});
@@ -21,7 +21,9 @@ class PaymentsTitleRow extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final historyOnly = ref.watch(paymentsHistoryOnlyProvider);
     final title = Text(
-      historyOnly ? l10n.historyTitle : l10n.paymentsHistoryTitle,
+      ModalRoute.of(context)?.settings.name == AppRoutes.managerPayments
+          ? l10n.paymentsTitle
+          : l10n.historyTitle,
       style: TextStyle(
         fontSize: compact ? 20 : 22,
         fontWeight: FontWeight.w700,

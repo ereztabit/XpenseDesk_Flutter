@@ -5,16 +5,15 @@ import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/payments_copy_utils.dart';
-import 'payment_action_button.dart';
 import 'payment_employee_cell.dart';
-import 'payment_view_sheet_button.dart';
+import 'payment_row_select_cell.dart';
 
 /// One mobile Payments row, two lines:
-///   [x] (eye) Employee name [Pending] ......... amount (red "-₪" to charge)
-///             Budget #1016 · November 2026               [Process]
-/// Money to charge is red with a minus. The eye and the employee name open
-/// the sheet; the button opens the payment-status dialog (Process when
-/// pending, Edit once processed).
+///   [x] (eye) Employee name ..................... amount (red "-₪" to charge)
+///             Budget #1016 · November 2026
+/// The select box (Pending) or Edit (Closed) leads, as on desktop; Settle runs
+/// from the bulk card (owner QA 2026-11-19: no per-row Settle button). No
+/// status on the card - the toggle above the table holds it.
 class MobilePaymentRow extends StatelessWidget {
   const MobilePaymentRow({
     super.key,
@@ -35,7 +34,7 @@ class MobilePaymentRow extends StatelessWidget {
   /// False for a Monthly-only company: the subtitle is just the cycle.
   final bool showSheetType;
 
-  /// An employee's History (PC-9): the sheet names the row, no select column.
+  /// An employee's History (PC-9): the sheet names the row.
   final bool historyOnly;
   final String locale;
   final String? currencyCode;
@@ -44,7 +43,7 @@ class MobilePaymentRow extends StatelessWidget {
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
 
-  /// Opens the payment-status dialog for this row. Null hides the action.
+  /// Opens the payment-status dialog of a Closed row. Null hides Edit.
   final VoidCallback? onEdit;
 
   @override
@@ -68,19 +67,13 @@ class MobilePaymentRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!historyOnly)
-            SizedBox(
-              width: 40,
-              height: 32,
-              child: row.isAwaiting && onToggleSelection != null
-                  ? Checkbox(
-                      value: isSelected,
-                      onChanged: (v) => onToggleSelection!(v ?? false),
-                      visualDensity: VisualDensity.compact,
-                    )
-                  : null,
-            ),
-          PaymentViewSheetButton(onPressed: onTap),
+          PaymentRowSelectCell(
+            row: row,
+            isSelected: isSelected,
+            onToggleSelection: onToggleSelection,
+            onView: onTap,
+            onEdit: onEdit,
+          ),
           const SizedBox(width: 4),
           Expanded(
             child: Column(
@@ -92,7 +85,6 @@ class MobilePaymentRow extends StatelessWidget {
                       child: PaymentEmployeeCell(
                         row: row,
                         onTap: onTap,
-                        showDirection: showSheetType,
                         fontSize: 14,
                         label: historyOnly ? sheet : null,
                       ),
@@ -125,10 +117,6 @@ class MobilePaymentRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (onEdit != null) ...[
-                      const SizedBox(width: 6),
-                      PaymentActionButton(row: row, onPressed: onEdit!),
-                    ],
                   ],
                 ),
               ],

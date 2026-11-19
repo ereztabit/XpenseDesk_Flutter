@@ -31,6 +31,7 @@ import 'models/payment_status.dart';
 import 'models/payments_filter.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
+import 'widgets/home/home_landing.dart';
 import 'widgets/route_redirector.dart';
 import 'widgets/admin/admin_auth_gate.dart';
 
@@ -120,6 +121,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => const AuthGate(
           mode: AuthGateMode.guestOnly,
           child: LoginScreen(),
+        ),
+      );
+
+    case AppRoutes.home:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.authenticated,
+          child: HomeLanding(),
         ),
       );
 
@@ -225,15 +235,19 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    // Payments Report — payroll workspace. Optional `PaymentStatus` or
-    // `PaymentsFilter` argument pre-applies the filter (dashboard card CTAs).
-    case '/manager/payments':
+    // Payments (opens on Pending) and the manager's History (opens on All) -
+    // one screen (owner QA 2026-11-19). A `PaymentStatus` / `PaymentsFilter`
+    // argument (dashboard card CTAs) overrides the landing filter.
+    case AppRoutes.managerPayments:
+    case AppRoutes.managerHistory:
       final args = settings.arguments;
       final initialFilter = args is PaymentsFilter
           ? args
           : args is PaymentStatus
               ? PaymentsFilter.defaults.copyWith(status: args)
-              : null;
+              : settings.name == AppRoutes.managerPayments
+                  ? PaymentsFilter.pending
+                  : PaymentsFilter.defaults;
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => AuthGate(
@@ -320,7 +334,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings: settings,
         builder: (_) => const AuthGate(
           mode: AuthGateMode.employeeOnboardedOnly,
-          child: PaymentsReportScreen(),
+          child: PaymentsReportScreen(initialFilter: PaymentsFilter.defaults),
         ),
       );
 

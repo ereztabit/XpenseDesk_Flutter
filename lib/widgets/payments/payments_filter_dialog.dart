@@ -21,19 +21,28 @@ class PaymentsFilterDialog extends ConsumerStatefulWidget {
     super.key,
     required this.initial,
     required this.onApply,
+    this.resetFilter = PaymentsFilter.defaults,
   });
 
   final PaymentsFilter initial;
   final ValueChanged<PaymentsFilter> onApply;
 
+  /// What Reset returns to: the entry's own status (Pending on Payments).
+  final PaymentsFilter resetFilter;
+
   static Future<void> show(
     BuildContext context, {
     required PaymentsFilter initial,
     required ValueChanged<PaymentsFilter> onApply,
+    PaymentsFilter resetFilter = PaymentsFilter.defaults,
   }) {
     return showDialog(
       context: context,
-      builder: (_) => PaymentsFilterDialog(initial: initial, onApply: onApply),
+      builder: (_) => PaymentsFilterDialog(
+        initial: initial,
+        onApply: onApply,
+        resetFilter: resetFilter,
+      ),
     );
   }
 
@@ -160,7 +169,7 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                       icon: Icons.refresh,
                       dense: true,
                       onPressed: () =>
-                          setState(() => _pending = PaymentsFilter.defaults),
+                          setState(() => _pending = widget.resetFilter),
                     ),
                     const Spacer(),
                     AppButton(

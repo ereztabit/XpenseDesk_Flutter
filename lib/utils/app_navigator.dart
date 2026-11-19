@@ -7,6 +7,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 /// Canonical route strings — always use these, never hardcode route paths.
 class AppRoutes {
   static const String managerDashboard = '/dashboard';
+
+  /// Picks Monthly or Budgets for a signed-in user, then replaces itself (D43).
+  static const String home = '/home';
   static const String managerApprovals = '/manager-approvals';
   static const String employeeDashboard = '/user/dashboard';
   static const String login = '/';
@@ -20,6 +23,11 @@ class AppRoutes {
   static const String employeeProfile = '/employee/profile';
   static const String employeeNewExpense = '/employee/new-expense';
   static const String managerPayments = '/manager/payments';
+
+  /// Same screen as Payments, opened on All (owner QA 2026-11-19).
+  static const String managerHistory = '/manager/history';
+  static String historyFor({required bool isManager}) =>
+      isManager ? managerHistory : employeeHistory;
 
   /// PC-9: an employee's History and the read-only sheet it opens.
   static const String employeeHistory = '/employee/history';

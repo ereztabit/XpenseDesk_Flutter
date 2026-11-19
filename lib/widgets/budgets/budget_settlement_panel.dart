@@ -153,7 +153,10 @@ class BudgetSettlementPanel extends ConsumerWidget {
   void _openReport(BuildContext context, PaymentStatus status) {
     Navigator.pushNamed(
       context,
-      AppRoutes.managerPayments,
+      // Closed sheets live under History (owner QA 2026-11-19).
+      status == PaymentStatus.processed
+          ? AppRoutes.managerHistory
+          : AppRoutes.managerPayments,
       arguments: PaymentsFilter.defaults.copyWith(
         status: status,
         sheetType: CompanyModuleKey.pettyCash,

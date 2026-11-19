@@ -402,8 +402,10 @@ may carry its approved amount), `direction` = `"Pay"`; a budget among them has
 is now nullable** on every row. The envelope money (`pageTotalAmount`,
 `grandTotalAmount`, `payCount`, `collectCount`, `grandCollectAmount`,
 `pageCollectAmount`) counts payment sheets only; `totalCount` counts every
-listed sheet. Excel: Payment Status reads "No Payment", Direction is empty,
-and the Total adds up the payment sheets only.
+listed sheet. Excel: a no-payment row reads "No Payment" with an empty
+Direction, and the Total adds up the payment sheets only. Other rows read
+"Pending" / "Closed", and the date column is "Closed Date" (owner QA
+2026-11-19; the API values stay `AwaitingPayment` / `Processed`).
 
 ### Still manager-only (403 for an employee)
 

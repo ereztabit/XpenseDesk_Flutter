@@ -7,13 +7,14 @@ import '../../utils/format_utils.dart';
 import '../../utils/payments_copy_utils.dart';
 import 'payment_amount_cell.dart';
 import 'payment_employee_cell.dart';
-import 'payment_row_menu.dart';
+import 'payment_row_select_cell.dart';
 import 'payment_sheet_type_cell.dart';
+import 'payment_status_cell.dart';
 import 'payments_table_columns.dart';
 
-/// One desktop Payments row, in [PaymentsTableColumns] order: checkbox
-/// (pending rows only), name + status pill, amount, the ⋮ menu (View, Settle
-/// or Edit - PC-9), then the reference columns.
+/// One desktop Payments row, in [PaymentsTableColumns] order: select box
+/// (Pending) or Edit (Closed) + eye, name, amount, plain-text status, then
+/// the reference columns (owner QA 2026-11-19).
 class DesktopPaymentsRow extends StatelessWidget {
   const DesktopPaymentsRow({
     super.key,
@@ -41,7 +42,7 @@ class DesktopPaymentsRow extends StatelessWidget {
   final bool isHighlighted; // processed meanwhile by another manager
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
-  final VoidCallback? onEdit; // null: the menu offers View only
+  final VoidCallback? onEdit; // null: no Edit (History, No payment)
 
   static const _dash = '—';
   static const _cellStyle = TextStyle(fontSize: 13, color: AppTheme.foreground);
@@ -66,22 +67,18 @@ class DesktopPaymentsRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _cell(
-            PaymentsTableColumns.checkbox,
-            row.isAwaiting && onToggleSelection != null
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (v) => onToggleSelection!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : const SizedBox.shrink(),
+          PaymentRowSelectCell(
+            row: row,
+            isSelected: isSelected,
+            onToggleSelection: onToggleSelection,
+            onView: onTap,
+            onEdit: onEdit,
           ),
           _cell(
             PaymentsTableColumns.employee,
             PaymentEmployeeCell(
               row: row,
               onTap: onTap,
-              showDirection: showSheetType,
               label: historyOnly ? _sheetLabel(context) : null,
             ),
           ),
@@ -93,10 +90,7 @@ class DesktopPaymentsRow extends StatelessWidget {
               currencyCode: currencyCode,
             ),
           ),
-          _cell(
-            PaymentsTableColumns.action,
-            PaymentRowMenu(row: row, onView: onTap, onSettle: onEdit),
-          ),
+          _cell(PaymentsTableColumns.status, PaymentStatusCell(row: row)),
           if (showSheetType)
             _cell(
               PaymentsTableColumns.sheetType,

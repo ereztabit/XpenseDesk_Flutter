@@ -66,7 +66,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: SizedBox(
-                width: PaymentsTableColumns.selectBox,
+                width: PaymentsTableColumns.selectSlot, // the eye sits after it
                 child: hasSelectable && onToggleAll != null
                     ? Checkbox(
                         value: allSelected,
@@ -89,11 +89,10 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             centered: true,
             trailing: const PaymentsAmountInfoIcon(),
           ),
-          // The row ⋮ menu (PC-9; owner QA 2026-11-19: the column needs a caption).
-          PaymentsHeaderCell(
-            label: l10n.actions,
-            width: PaymentsTableColumns.action,
-            centered: true,
+          cell(
+            l10n.paymentStatusFilterLabel,
+            PaymentsTableColumns.status,
+            PaymentsSortField.status,
           ),
           if (showSheetType)
             cell(

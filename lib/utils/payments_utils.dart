@@ -10,6 +10,7 @@ enum PaymentsSortField {
   amount,
   sheetType,
   processedDate,
+  status,
 }
 
 /// FS-1020 PC-8: totals never net — To pay and To collect are counted and
@@ -140,6 +141,9 @@ class PaymentsSortUtils {
         return (a.budgetNumber ?? 0).compareTo(b.budgetNumber ?? 0);
       case PaymentsSortField.processedDate:
         return _compareDates(a.processedDate, b.processedDate);
+      case PaymentsSortField.status:
+        // Pending, Closed, No payment - the work order.
+        return a.displayStatus.index.compareTo(b.displayStatus.index);
     }
   }
 

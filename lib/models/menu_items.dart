@@ -16,9 +16,6 @@ class MenuItem {
   final String label;
   final MenuGroup group;
   final bool requiresManagerRole;
-
-  /// Shown to employees only - a manager has the full version elsewhere.
-  final bool employeeOnly;
   final bool isDestructive;
   final bool isAction;
   final bool desktopOnly;
@@ -29,7 +26,6 @@ class MenuItem {
     required this.label,
     required this.group,
     this.requiresManagerRole = false,
-    this.employeeOnly = false,
     this.isDestructive = false,
     this.isAction = false,
     this.desktopOnly = false,
@@ -58,17 +54,17 @@ class MenuItems {
       MenuItem(
         id: 'payments',
         icon: Icons.payments_outlined,
-        label: t.paymentsHistoryTitle,
+        label: t.paymentsTitle,
         group: MenuGroup.work,
         requiresManagerRole: true,
       ),
-      // PC-9: an employee's own approved sheets - replaces their Digital archive.
+      // Every approved sheet (owner QA 2026-11-19). An employee sees their
+      // own - it replaces their Digital archive (PC-9).
       MenuItem(
         id: 'history',
         icon: Icons.history,
         label: t.historyTitle,
         group: MenuGroup.work,
-        employeeOnly: true,
       ),
       // Reports
       MenuItem(
@@ -151,7 +147,6 @@ class MenuItems {
 
     return allItems
         .where((item) => !item.requiresManagerRole || isManager)
-        .where((item) => !item.employeeOnly || !isManager)
         .toList();
   }
 
@@ -204,6 +199,7 @@ class MenuItems {
     if (route == '/dashboard') return 'dashboard';
     if (route == '/manager-approvals') return 'sheet-approvals';
     if (route == '/manager/payments') return 'payments';
+    if (route == '/manager/history') return 'history';
     if (route.startsWith('/employee/history') &&
         !route.endsWith('/history/report')) {
       return 'history';

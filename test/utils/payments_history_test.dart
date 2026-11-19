@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:xpensedesk_flutter/generated/l10n/app_localizations.dart';
 import 'package:xpensedesk_flutter/models/company_module.dart';
-import 'package:xpensedesk_flutter/models/payment_direction.dart';
 import 'package:xpensedesk_flutter/models/payment_report_row.dart';
 import 'package:xpensedesk_flutter/models/payment_status.dart';
 import 'package:xpensedesk_flutter/models/payments_filter.dart';
@@ -55,12 +54,10 @@ void main() {
       expect(t.collectAmount, 0);
     });
 
-    test('money an employee gave back reads Returned for them, Charged for a manager', () {
-      String text(bool holder, AppLocalizations l) => paymentStatusText(l, PaymentStatus.processed,
-          direction: PaymentDirection.collect, forHolder: holder);
-      expect(text(true, en), 'Returned');
-      expect(text(true, he), 'הוחזר');
-      expect(text(false, en), 'Charged');
+    test('one word per state, whichever way the money went', () {
+      expect(paymentStatusText(en, PaymentStatus.awaitingPayment), 'Pending');
+      expect(paymentStatusText(en, PaymentStatus.processed), 'Closed');
+      expect(paymentStatusText(he, PaymentStatus.processed), 'סגור');
     });
 
     test('No payment reads in both languages', () {
@@ -106,5 +103,15 @@ void main() {
     final sorted = PaymentsSortUtils.sort(rows, PaymentsSortField.employee, ascending: true);
     expect(sorted.map((r) => r.expenseSheetId), ['2', '3', '1'],
         reason: 'Monthly first, then budgets by name');
+  });
+
+
+  test('History opens newest approval first', () {
+    PaymentReportRow r(String id, String date) => PaymentReportRow.fromJson(
+        {'expenseSheetId': id, 'amount': 1, 'approvedDate': date});
+    final rows = [r('old', '2026-11-01'), r('new', '2026-11-19'), r('mid', '2026-11-10')];
+    final sorted = PaymentsSortUtils.sort(rows, PaymentsSortField.approvedDate, ascending: false);
+    expect(sorted.map((x) => x.expenseSheetId), ['new', 'mid', 'old'],
+        reason: 'the latest approval is on top');
   });
 }

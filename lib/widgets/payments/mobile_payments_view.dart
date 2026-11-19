@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
+import '../../models/payment_status.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
 import '../../utils/payments_copy_utils.dart';
@@ -11,6 +12,7 @@ import '../manager_dashboard/paging_overflow_notice.dart';
 import 'history_export_button.dart';
 import 'mobile_bulk_action_card.dart';
 import 'mobile_payments_table.dart';
+import 'payment_status_toggle.dart';
 import 'payments_active_filter_badge.dart';
 import 'payments_title_row.dart';
 
@@ -36,6 +38,7 @@ class MobilePaymentsView extends ConsumerWidget {
     required this.onRowTap,
     required this.onEditRow,
     required this.onExportAll,
+    required this.onStatusSelected,
   });
 
   final VoidCallback onOpenFilters;
@@ -54,6 +57,9 @@ class MobilePaymentsView extends ConsumerWidget {
 
   /// Exports the applied filter - offered on the phone to an employee only.
   final VoidCallback onExportAll;
+
+  /// The quick status toggle above the table - applies at once.
+  final ValueChanged<PaymentStatus?> onStatusSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,6 +117,11 @@ class MobilePaymentsView extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 12),
+        PaymentStatusToggle(
+          selected: appliedFilter.status,
+          onSelected: onStatusSelected,
+        ),
+        const SizedBox(height: 8),
         Expanded(
           child: MobilePaymentsTable(
             rows: rows,
