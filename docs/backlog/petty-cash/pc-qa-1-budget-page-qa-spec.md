@@ -2,8 +2,8 @@
 
 > Mission: FS-1025 (backend: BackEnd/XpenseDeskServer/docs/petty-cash/pc-qa-1-budget-page-qa.md). Guide: BackEnd/XpenseDeskServer/docs/petty-cash/budgets-guide.md
 
-Status: FILED 2026-11-19. Not started. **Next after PC-5 (FS-1016), before
-anything else moves forward.**
+Status: FILED 2026-11-19. **Built 2026-11-19 on `feature/pc5-sheet-export`**
+with PC-5 (see Build below) - not shipped, prod SQL not applied.
 
 Owner QA pass on the budget page. Numbers match the backend story.
 
@@ -105,6 +105,17 @@ Found in PC-5 manual QA run 2 (`docs/in-progress/pc-5-summary-report-spec.md`).
 32. Expense note: max 300 characters, counter right below the input (create and edit).
     A longer note saved before keeps its length - never cut on edit.
 33. The support-session marker ("התחברות תמיכה") moves from the header to the footer.
+
+## Added 2026-11-19 - owner QA round 5
+
+34. Dashboard Awaiting Payment (Monthly): the amount was cut off on a phone - it wraps
+    under the count instead.
+35. Payments: "Settle" and "Edit" are the same size, desktop and phone, EN and HE.
+36. Payments: the sheet-type filter and column stay when Budgets is off (budget
+    history) - for any company that has the Budgets module, on or off.
+37. A manager can edit an employee's note (after "Edit", AI-read expense) - with the
+    300 counter. Round 4's checklist wrongly said read-only. Owner: the full form
+    (manual / Action required expenses) lets the manager edit the note too.
 
 ## Done when
 
@@ -229,3 +240,14 @@ Result: 2 findings - 0 open, 2 fixed.
 Checked clean: R30 "התחשבנות" one line at 1440 / 870 / 375, bulk "התחשבנות ב-2 גליונות" one line; R31 Budgets off: budget rows listed, eye opens the sheet review with both download buttons, PDF + Excel 200; R32 "0/300" under the note, typing stops at 300/300; R33 "Support session: QA Manager" / "התחברות תמיכה: QA Manager" in the footer, header clean, 375 wraps above the copyright line. Backend: full suite 766/767 then the one fixed scenario green (sheet export 125/125). Flutter: 281 tests, analyze clean (9 earlier infos).
 
 Result: 2 findings - 0 open, 2 fixed.
+
+### Run 4 - 2026-11-19 (round 5)
+- Branch / commit: feature/pc5-sheet-export @ 28baa2a + uncommitted
+- QA company: XpenseDesk Demo Company; manager m@
+- Coverage: R34-R37; dashboard 1440 EN, 375 EN + HE; Payments All statuses 1440 EN + HE, 375 HE; Budgets off -> Payments desktop + 375, Budget filter; manager on an employee's AI expense, Edit.
+- Data changed and restored: Budgets module off -> on.
+- Owner's findings, not caught by run 3: R34 (phone width of the dashboard card was not in run 3's sweep), R35, R36, and a wrong checklist row (R37).
+
+Checked clean: R34 "2 sheets" / "2 גליונות" with ₪477.24 on the next line, nothing cut; R35 Settle and Edit identical 120x32 in every row, one line in HE, phone too; R36 Budgets off: "Sheet type" filter (All / Monthly / Budget) and column present, Budget filter returns the 6 budget rows, phone keeps budget names; R37 before Edit the note is read-only, after Edit editable with "0/300" - AI expense (fast-track) and manual expense (full form): "QA manager note" saved, reloaded, then cleared again. Flutter: 281 tests, analyze clean (earlier infos only).
+
+Result: clean (4 owner findings fixed).

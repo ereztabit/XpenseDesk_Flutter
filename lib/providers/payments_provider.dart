@@ -145,8 +145,9 @@ final sheetTypePaymentsSummaryProvider = FutureProvider.autoDispose
       .getSummary(sheetType: sheetType);
 });
 
-/// Sheet types the company pays through payments; the report offers a type
-/// filter only when there is more than one.
+/// Sheet types in the company's payments; the report offers a type filter and
+/// column only when there is more than one. Budgets count while the module is
+/// off too - their history stays (owner QA 2026-11-19).
 final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
   final modules = ref.watch(companyModulesProvider);
   final monthly = modules
@@ -155,7 +156,7 @@ final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
       .firstOrNull;
   return [
     if (monthly ?? true) CompanyModuleKey.monthly,
-    if (ref.watch(isPettyCashEnabledProvider)) CompanyModuleKey.pettyCash,
+    if (ref.watch(isPettyCashAvailableProvider)) CompanyModuleKey.pettyCash,
   ];
 });
 

@@ -1028,13 +1028,11 @@ class _EmployeeExpenseDetailScreenState
         const SizedBox(height: 16),
         _buildCategoryDropdown(l10n, uiLocale, enabled: enabled),
         const SizedBox(height: 16),
-        // Manager cannot edit notes
+        // A manager edits the note too, as in the fast-track form (owner 2026-11-19).
         _buildTextField(l10n.noteLabel, _noteController,
             maxLines: 3,
-            // Counter only where the note is editable (never for a manager).
-            maxLength: _isEditable && !widget.isManagerMode
-                ? ExpensePolicy.noteLimitFor(_initialNote) : null,
-            enabled: widget.isManagerMode ? false : enabled),
+            maxLength: _isEditable ? ExpensePolicy.noteLimitFor(_initialNote) : null,
+            enabled: enabled),
       ],
     );
   }

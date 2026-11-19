@@ -37,6 +37,16 @@ final isPettyCashEnabledProvider = Provider<bool>((ref) {
   return false;
 });
 
+/// The company has Budgets at all, on or off - its budget history stays
+/// visible after the module is turned off (owner QA 2026-11-19).
+final isPettyCashAvailableProvider = Provider<bool>((ref) {
+  final flag =
+      ref.watch(companyProvider).asData?.value.configuration.isPettyCashEnabled ??
+          false;
+  return flag &&
+      ref.watch(companyModulesProvider).any((m) => m.key == CompanyModuleKey.pettyCash);
+});
+
 /// The company lets a budget go below zero (module setting, D4).
 final budgetsAllowNegativeProvider = Provider<bool>((ref) {
   for (final m in ref.watch(companyModulesProvider)) {

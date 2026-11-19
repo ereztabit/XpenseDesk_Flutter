@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
-import '../app_button.dart';
+import 'payment_action_button.dart';
 import 'payment_amount_cell.dart';
 import 'payment_employee_cell.dart';
 import 'payment_sheet_type_cell.dart';
@@ -47,7 +46,6 @@ class DesktopPaymentsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final Color? rowColor = isHighlighted
         ? AppTheme.destructive.withAlpha(20)
         : isSelected
@@ -102,26 +100,7 @@ class DesktopPaymentsRow extends StatelessWidget {
             PaymentsTableColumns.action,
             onEdit == null
                 ? const SizedBox.shrink()
-                : Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: SizedBox(
-                      height: 32,
-                      child: AppButton(
-                        label: row.isAwaiting
-                            ? l10n.paymentProcessButton
-                            : l10n.paymentEditButton,
-                        variant: row.isAwaiting
-                            ? AppButtonVariant.primary
-                            : AppButtonVariant.normal,
-                        icon: row.isAwaiting
-                            ? Icons.check_circle_outline
-                            : Icons.edit_outlined,
-                        dense: true,
-                        fitLabel: true, // "התחשבנות" in the 120px column
-                        onPressed: onEdit!,
-                      ),
-                    ),
-                  ),
+                : PaymentActionButton(row: row, onPressed: onEdit!),
           ),
           if (showSheetType)
             _cell(

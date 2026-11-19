@@ -90,9 +90,11 @@ class AwaitingPaymentCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 2),
                 if (hasAwaiting)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+                  // Wraps, never cuts: on a phone (and in Hebrew) the amount
+                  // drops under the count (owner QA 2026-11-19).
+                  Wrap(
+                    spacing: 10,
+                    crossAxisAlignment: WrapCrossAlignment.end,
                     children: [
                       Text(
                         '${summary.awaitingCount} $sheetsLabel',
@@ -102,8 +104,8 @@ class AwaitingPaymentCard extends ConsumerWidget {
                           color: AppTheme.foreground,
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Flexible(
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
                         child: Text(
                           amountText,
                           style: const TextStyle(
@@ -111,7 +113,6 @@ class AwaitingPaymentCard extends ConsumerWidget {
                             fontWeight: FontWeight.w600,
                             color: AppTheme.foreground,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

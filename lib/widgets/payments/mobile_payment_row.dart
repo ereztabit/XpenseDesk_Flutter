@@ -5,7 +5,7 @@ import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/payments_copy_utils.dart';
-import '../app_button.dart';
+import 'payment_action_button.dart';
 import 'payment_employee_cell.dart';
 import 'payment_view_sheet_button.dart';
 
@@ -119,22 +119,7 @@ class MobilePaymentRow extends StatelessWidget {
                     ),
                     if (onEdit != null) ...[
                       const SizedBox(width: 6),
-                      SizedBox(
-                        height: 32, // a real button, not a chip
-                        child: AppButton(
-                          label: row.isAwaiting
-                              ? l10n.paymentProcessButton
-                              : l10n.paymentEditButton,
-                          variant: row.isAwaiting
-                              ? AppButtonVariant.primary
-                              : AppButtonVariant.normal,
-                          icon: row.isAwaiting
-                              ? Icons.check_circle_outline
-                              : Icons.edit_outlined,
-                          dense: true,
-                          onPressed: onEdit,
-                        ),
-                      ),
+                      PaymentActionButton(row: row, onPressed: onEdit!),
                     ],
                   ],
                 ),
