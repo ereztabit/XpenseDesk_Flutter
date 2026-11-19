@@ -20,7 +20,7 @@ import 'payment_strip_detail_row.dart';
 /// Awaiting: warning wallet glyph + badge + payable total. Processed: success
 /// glyph + badge + bold reference + processed-on date + payable total.
 /// PC-8 (also on the approved budget page): shows the settled amount as To pay /
-/// To collect, Paid / Collected, and the payment cycle.
+/// To collect and the payment cycle; the badge reads Pending / Closed.
 /// Reference/date rows never render empty — the caller hides the strip
 /// entirely when the sheet has no payment dimension.
 class PaymentStatusStrip extends ConsumerWidget {
@@ -49,6 +49,9 @@ class PaymentStatusStrip extends ConsumerWidget {
     final cycle = sheet.paymentCycleLabel;
 
     return Container(
+      // Card's default side margin, so the edges line up with the header
+      // card and the table (FS-1025 #11).
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.card,
@@ -92,7 +95,7 @@ class PaymentStatusStrip extends ConsumerWidget {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    PaymentStatusBadge(status: status, direction: direction),
+                    PaymentStatusBadge(status: status),
                     if (sheet.paymentReference != null &&
                         sheet.paymentReference!.isNotEmpty)
                       Text(

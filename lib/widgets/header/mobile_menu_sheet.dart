@@ -4,6 +4,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../models/menu_items.dart';
+import '../../utils/app_navigator.dart';
 import '../../utils/responsive_utils.dart';
 import '../free_receipts/free_receipts_meter.dart';
 import '../language_switcher.dart';
@@ -75,6 +76,10 @@ class _MobileMenuSheetState extends ConsumerState<MobileMenuSheet>
         break;
       case 'payments':
         await _navigateToRoute('/manager/payments');
+        break;
+      case 'history':
+        await _navigateToRoute(
+            AppRoutes.historyFor(isManager: userInfo.roleId == 1));
         break;
       case 'profile':
         await _navigateToProfile(userInfo);

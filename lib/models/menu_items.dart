@@ -58,6 +58,14 @@ class MenuItems {
         group: MenuGroup.work,
         requiresManagerRole: true,
       ),
+      // Every approved sheet (owner QA 2026-11-19). An employee sees their
+      // own - it replaces their Digital archive (PC-9).
+      MenuItem(
+        id: 'history',
+        icon: Icons.history,
+        label: t.historyTitle,
+        group: MenuGroup.work,
+      ),
       // Reports
       MenuItem(
         id: 'expenses-analysis',
@@ -71,6 +79,7 @@ class MenuItems {
         icon: Icons.description_outlined,
         label: t.expensesDetailReport,
         group: MenuGroup.reports,
+        requiresManagerRole: true, // PC-9, D34: employees use History
       ),
       // Settings — personal profile sits above company/admin settings
       MenuItem(
@@ -190,6 +199,11 @@ class MenuItems {
     if (route == '/dashboard') return 'dashboard';
     if (route == '/manager-approvals') return 'sheet-approvals';
     if (route == '/manager/payments') return 'payments';
+    if (route == '/manager/history') return 'history';
+    if (route.startsWith('/employee/history') &&
+        !route.endsWith('/history/report')) {
+      return 'history';
+    }
     if (route.endsWith('/profile')) return 'profile';
     if (route == '/manager/analysis') return 'expenses-analysis';
     if (route.endsWith('/history/report')) return 'expenses-detail-report';

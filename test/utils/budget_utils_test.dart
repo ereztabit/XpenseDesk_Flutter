@@ -238,9 +238,11 @@ void main() {
       expect(budgetAmountInput(1234567.89), '1,234,567.89');
     });
 
-    test('an end date may lie up to 30 days back', () {
-      expect(budgetEarliestEndDate(DateTime(2026, 11, 18)), DateTime(2026, 10, 19));
-      expect(budgetEarliestEndDate(DateTime(2026, 3, 15)), DateTime(2026, 2, 13));
+    test('an end date may lie up to 6 calendar months back', () {
+      expect(budgetEarliestEndDate(DateTime(2026, 11, 18)), DateTime(2026, 5, 18));
+      expect(budgetEarliestEndDate(DateTime(2026, 3, 15)), DateTime(2025, 9, 15));
+      expect(budgetEarliestEndDate(DateTime(2026, 8, 31)), DateTime(2026, 2, 28));
+      expect(budgetEarliestEndDate(DateTime(2028, 8, 31)), DateTime(2028, 2, 29));
     });
 
     test('an edit with nothing changed is not a change', () {

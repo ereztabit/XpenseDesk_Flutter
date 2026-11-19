@@ -24,7 +24,8 @@ class NotificationsPanel extends ConsumerStatefulWidget {
 
   final DateTime? previousSeen;
   final double maxListHeight;
-  final VoidCallback onBatchTap;
+  /// Opens where the batch filed (FS-1025 #3: a budget, or My expenses).
+  final ValueChanged<BulkUploadBatch> onBatchTap;
 
   @override
   ConsumerState<NotificationsPanel> createState() => _NotificationsPanelState();
@@ -84,7 +85,7 @@ class _NotificationsPanelState extends ConsumerState<NotificationsPanel> {
                 batch: batches[i],
                 isNew: isBatchNew(batches[i], widget.previousSeen),
                 now: now,
-                onTap: widget.onBatchTap,
+                onTap: () => widget.onBatchTap(batches[i]),
               ),
             ),
     );

@@ -31,6 +31,8 @@ import 'models/payment_status.dart';
 import 'models/payments_filter.dart';
 import 'utils/app_navigator.dart';
 import 'widgets/auth_gate.dart';
+import 'widgets/home/home_landing.dart';
+import 'widgets/route_redirector.dart';
 import 'widgets/admin/admin_auth_gate.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -119,6 +121,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => const AuthGate(
           mode: AuthGateMode.guestOnly,
           child: LoginScreen(),
+        ),
+      );
+
+    case AppRoutes.home:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const AuthGate(
+          mode: AuthGateMode.authenticated,
+          child: HomeLanding(),
         ),
       );
 
@@ -224,15 +235,19 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    // Payments Report — payroll workspace. Optional `PaymentStatus` or
-    // `PaymentsFilter` argument pre-applies the filter (dashboard card CTAs).
-    case '/manager/payments':
+    // Payments (opens on Pending) and the manager's History (opens on All) -
+    // one screen (owner QA 2026-11-19). A `PaymentStatus` / `PaymentsFilter`
+    // argument (dashboard card CTAs) overrides the landing filter.
+    case AppRoutes.managerPayments:
+    case AppRoutes.managerHistory:
       final args = settings.arguments;
       final initialFilter = args is PaymentsFilter
           ? args
           : args is PaymentStatus
               ? PaymentsFilter.defaults.copyWith(status: args)
-              : null;
+              : settings.name == AppRoutes.managerPayments
+                  ? PaymentsFilter.pending
+                  : PaymentsFilter.defaults;
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => AuthGate(
@@ -312,13 +327,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
 
-    case '/employee/history/report':
+    // PC-9: an employee's read-only History (own approved sheets). Their old
+    // Digital archive URL lands there - the archive is manager-only (D34).
+    case AppRoutes.employeeHistory:
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const AuthGate(
           mode: AuthGateMode.employeeOnboardedOnly,
-          child: CycleExpensesReportScreen(isManager: false),
+          child: PaymentsReportScreen(initialFilter: PaymentsFilter.defaults),
         ),
+      );
+
+    case '/employee/history/report':
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const RouteRedirector(route: AppRoutes.employeeHistory),
       );
 
     // --- Expense detail ---
@@ -342,6 +365,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           builder: (_) => AuthGate(
             mode: AuthGateMode.managerOnly,
             child: EmployeeExpenseDetailScreen(expenseId: id, isManagerMode: true),
+          ),
+        );
+      }
+      // /employee/history/sheet/:id - read-only, own sheets only (PC-9, D40;
+      // the server answers 404 for anyone else's sheet).
+      if (uri.path.startsWith('${AppRoutes.employeeHistory}/sheet/')) {
+        final id = uri.pathSegments.last;
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => AuthGate(
+            mode: AuthGateMode.employeeOnboardedOnly,
+            child: SheetReviewScreen(expenseSheetId: id, readOnly: true),
           ),
         );
       }

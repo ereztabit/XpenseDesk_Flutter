@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/expense_display_utils.dart';
+import 'expense_needs_action_note.dart';
 import 'expense_status_badge.dart';
 
 /// Spec-aligned mobile expense card used in the 3-tab mobile layout.
@@ -115,6 +116,7 @@ class MobileExpenseCard extends ConsumerWidget {
                   ),
               ],
             ),
+            ExpenseNeedsActionNote(expense: expense, fontSize: 13), // FS-1025 #15
             const SizedBox(height: 12),
             Container(
               decoration: const BoxDecoration(

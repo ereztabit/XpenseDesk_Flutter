@@ -8,7 +8,7 @@ import '../../theme/app_theme.dart';
 ///
 /// `ValueKey(selected)` forces the underlying DropdownMenu to rebuild when the
 /// value is changed from outside (Reset) — `initialSelection` alone is only
-/// read on first build.
+/// read on first build. The UI language is in the key for the same reason.
 class PaymentsDropdown<T> extends StatelessWidget {
   const PaymentsDropdown({
     super.key,
@@ -42,7 +42,9 @@ class PaymentsDropdown<T> extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         DropdownMenu<T>(
-          key: ValueKey(selected),
+          // The language too: the field keeps the label it was built with, so a
+          // language switch must rebuild it (FS-1025 #13).
+          key: ValueKey((selected, Localizations.localeOf(context).languageCode)),
           width: width,
           initialSelection: selected,
           requestFocusOnTap: false,

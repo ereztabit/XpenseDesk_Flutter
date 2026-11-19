@@ -139,19 +139,15 @@ class _AdminCompanyScreenState extends ConsumerState<AdminCompanyScreen>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
+                      // Wrap: on a narrow screen the actions drop under the name.
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
                         children: [
-                          Expanded(
-                            child: Text(
-                              companyName,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          AdminDestroyCompanyButton(
-                            companyId: widget.companyId,
-                            companyName: companyName,
-                          ),
+                          Text(companyName, style: Theme.of(context).textTheme.headlineMedium),
+                          AdminDestroyCompanyButton(companyId: widget.companyId, companyName: companyName),
                         ],
                       ),
                       const SizedBox(height: 8),

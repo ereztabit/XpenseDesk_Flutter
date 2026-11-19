@@ -37,6 +37,9 @@ DateTime budgetToday([DateTime? now]) {
 
 bool budgetIsOutstanding(Budget b) => b.statusId != budgetApprovedStatusId;
 
+/// PC-5: an approved budget offers its PDF / Excel downloads.
+bool budgetIsApproved(Budget b) => b.statusId == budgetApprovedStatusId;
+
 /// Judged on whole units, as every Budgets amount is shown (-0.40 reads ₪0).
 bool budgetIsOverBudget(Budget b) => b.balance.round() < 0;
 

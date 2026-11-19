@@ -119,6 +119,18 @@ Layout/RTL bugs this codebase has repeatedly hit — check each on any new layou
 - **Directional Material icons auto-mirror in RTL.** `Icons.arrow_back` / `arrow_forward` (and other `matchTextDirection` glyphs) flip automatically — correct for nav back/forward buttons, but it means you must NOT manually pick `arrow_back` to mean "left". For a manually-direction-chosen arrow (e.g. a status transition), use a plain glyph in a `Text` (`'←' / '→'`) forced to `TextDirection.ltr` so it renders verbatim.
 - **Don't concatenate mixed-direction content into one string** (e.g. an English name + a Hebrew date: `'$name · $date'`). Bidi reordering scrambles it. Split into separate `Text` runs in a `Row` so each keeps its own direction.
 - Use `EdgeInsetsDirectional` / `start`/`end` / `PositionedDirectional`, never `left`/`right`.
+- **A button in a fixed-width spot** (table column, chip, pill) must stay on one line in Hebrew — Hebrew words often run longer than the English. Use `AppButton(fitLabel: true)` (text shrinks, button keeps its size); never widen the control to fit.
+
+### Rule 8 — Every free-text input has a max length and a visible counter
+
+Best practice, owner rule (2026-11-19): every `TextField` / `TextFormField` a user types free text into (notes, comments, reasons, names) sets `maxLength`, so the built-in counter shows right below the input and typing stops at the limit.
+
+- The limit is a named constant shared by every screen that edits the same field (e.g. `ExpensePolicy.noteMaxLength` = 300), never a bare number repeated per screen.
+- The limit is at or below the server's own limit / column size — check the service and the column, and say which you checked in the CR.
+- Read-only views of the same field show no counter.
+- A stored value longer than the limit (saved before the rule, or from another source such as WhatsApp) is never cut silently on edit: the limit on that field is the longer of the two (`ExpensePolicy.noteLimitFor`).
+- Exempt: inputs already bounded another way (email/phone/gov-id widgets, amount formatters, OTP digits, search boxes that never persist).
+- Grep: `grep -n "TextFormField\|TextField(" <touched files>` — each hit either has `maxLength` or is on the exempt list.
 
 ## How to apply
 

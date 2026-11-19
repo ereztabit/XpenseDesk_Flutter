@@ -4,20 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/responsive_utils.dart';
 
-/// "You are viewing someone else's account" marker, shown **inside the header
-/// bar** (FS-1001).
-///
-/// It started as a full-width bar under the header and was moved in: a banner
-/// that pushes every screen down changes the layout of the whole app for the
-/// duration of a support call, and support sessions are the case where the agent
-/// most needs the page to look exactly like the customer's.
-///
-/// So it is a chip on the header row instead — always visible, never displacing
-/// content. On a narrow viewport it collapses to the icon alone, which still
-/// answers the only question that matters at a glance: is this my account or
-/// someone else's? The tooltip carries the full sentence at any width.
+/// "You are viewing someone else's account" marker (FS-1001), shown in the
+/// **footer**: a banner pushed every screen down, and a chip in the header
+/// crowded the bar and overflowed (owner QA 2026-11-19). The footer has room for
+/// the full label at every width; the tooltip carries the whole sentence.
 ///
 /// No dismiss control, by design. A marker you can close is a marker that is
 /// closed.
@@ -40,7 +31,8 @@ class ImpersonationBanner extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final detail = '${l10n.impersonationBannerConnectedAs} '
+    final detail =
+        '${l10n.impersonationBannerConnectedAs} '
         '${userInfo.fullName} · '
         '${l10n.impersonationBannerAgent} ${userInfo.impersonatorName}';
 
@@ -60,17 +52,15 @@ class ImpersonationBanner extends ConsumerWidget {
               size: 16,
               color: AppTheme.foreground,
             ),
-            if (!context.isMobile) ...[
-              const SizedBox(width: 6),
-              Text(
-                '${l10n.impersonationBannerLabel}: ${userInfo.fullName}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.foreground,
-                ),
+            const SizedBox(width: 6),
+            Text(
+              '${l10n.impersonationBannerLabel}: ${userInfo.fullName}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.foreground,
               ),
-            ],
+            ),
           ],
         ),
       ),

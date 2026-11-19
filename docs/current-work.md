@@ -18,6 +18,14 @@ working on; `docs/completed/` holds shipped ones; bugs live in `docs/bugs/`.
 
 Production readiness: see docs/pre-deployment-issues.md — no hard blockers remain.
 
+## Currently Working On
+
+- [ ] [Business][P1] **FS-1025** Budgets QA bundle - banked on develop as v1.53 (2026-11-19), awaiting ship-feature.
+
+- [ ] [Business][P2] **FS-1016** PC-5 sheet export - banked on develop as v1.53 (2026-11-19), awaiting ship-feature.
+
+- [ ] [Business][P2] **FS-1021** PC-9 Payments + History - banked on develop as v1.53 (2026-11-19), awaiting ship-feature.
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -42,14 +50,10 @@ so in its spec rather than double-tagging here.
 
 ## TODO (Backlog)
 
-**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. Phase 1 order PC-8 -> PC-5 -> PC-9, then FS-1022. Phase 1 not done until PC-5 + PC-8 + PC-9 ship (PC-4 dropped, PC-3 not phase 1). All UI is designed in the Lovable app mock first.
+**Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. Phase 1 order PC-8 -> PC-5 (+ FS-1025 QA) -> PC-9 (FS-1022 merged into it 2026-11-19). Phase 1 not done until PC-5 + PC-8 + PC-9 ship (PC-4 dropped, PC-3 not phase 1). All UI is designed in the Lovable app mock first.
 
 - [ ] [Business][P3] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module -- not phase 1. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
-- [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". POC done. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
-- [ ] [Business][P2] **FS-1020** PC-8 settlement - banked on develop as v1.52 (2026-11-18), awaiting ship-feature. see docs/backlog/petty-cash/pc-8-settlement-spec.md
-- [ ] [Business][P2] **FS-1021** PC-9 budget history -- NOT DESIGNED. Approved budgets at sheet level, built from the analysis / report widgets, open one, download is PC-5. see docs/backlog/petty-cash/pc-9-budget-report-spec.md
-- [ ] [Business][P2] **FS-1022** Monthly history -- NOT DESIGNED. PC-9's twin for approved Monthly sheets, same widgets, PC-5 download. After PC-5. see docs/backlog/monthly-history-spec.md
 - [ ] [Business][P3] **FS-1023** Digital archive -- NOT DESIGNED, another day. The renamed cycle expenses report becomes a receipt search engine (merchant / amount across cycles and sheet types). see docs/backlog/digital-archive-spec.md
 - [ ] [Technical][P3] **FS-1018** PC-7 remove the dark-launch flags -- Petty Cash, Travel (if Travel is done) and the stale bulk upload flag, with their admin switches. Only after Petty Cash is done. see docs/backlog/petty-cash/pc-7-remove-flags-spec.md
 

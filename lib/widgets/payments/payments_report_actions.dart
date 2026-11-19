@@ -161,8 +161,11 @@ mixin PaymentsReportActions<T extends ConsumerStatefulWidget>
     // there's an overflow (hasMore), the loaded awaiting rows are a subset and
     // silently processing just those would mislead. There the manager selects
     // explicitly instead (the 100-cap is visible in that flow).
+    // An employee's History never offers to settle (PC-9).
     final paged = ref.read(paymentsResultProvider).asData?.value;
-    final awaitingIds = (paged != null && !paged.hasMore)
+    final awaitingIds = (paged != null &&
+            !paged.hasMore &&
+            !ref.read(paymentsHistoryOnlyProvider))
         ? paged.items
               .where((r) => r.isAwaiting)
               .map((r) => r.expenseSheetId)

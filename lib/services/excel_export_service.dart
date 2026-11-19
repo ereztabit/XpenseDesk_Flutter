@@ -9,6 +9,7 @@ import '../models/expense_category.dart';
 import '../models/expenses_analysis_detail_state.dart';
 import '../models/expenses_analysis_summary_row.dart';
 import '../utils/format_utils.dart';
+import '../utils/xlsx_utils.dart';
 
 /// Handles all Excel export operations for the app.
 /// Screens pass domain models; this service owns all workbook construction
@@ -93,12 +94,17 @@ class ExcelExportService {
   static void downloadXlsxBytes(List<int> bytes, String fileName) =>
       _download(bytes, fileName);
 
-  static void _download(List<int> bytes, String fileName) {
+  static void _download(List<int> bytes, String fileName) => downloadBytes(
+      bytes,
+      fileName,
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+  /// Triggers a browser download of any server-produced file (PC-5: the sheet
+  /// export PDF / xlsx) - the one Blob/anchor helper, MIME given by the caller.
+  static void downloadBytes(List<int> bytes, String fileName, String mimeType) {
     final blob = web.Blob(
       [Uint8List.fromList(bytes).toJS].toJS,
-      web.BlobPropertyBag(
-          type:
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+      web.BlobPropertyBag(type: mimeType),
     );
     final url = web.URL.createObjectURL(blob);
     final anchor =
@@ -142,7 +148,8 @@ class ExcelExportService {
     }
 
     _autoWidths(sheet, allRows);
-    _download(workbook.encode()!, 'monthly-breakdown-$today.xlsx');
+    // Client-built: landscape, fit on one page (the server sets its own files).
+    _download(xlsxPrintSetup(workbook.encode()!), 'monthly-breakdown-$today.xlsx');
   }
 
   /// Pivot breakdown — employees × categories for a single cycle.
@@ -204,6 +211,6 @@ class ExcelExportService {
     _styleRow(sheet, totalRowIndex, colCount, _totalStyle());
 
     _autoWidths(sheet, allRows);
-    _download(workbook.encode()!, 'pivot-${state.cycleId}-$today.xlsx');
+    _download(xlsxPrintSetup(workbook.encode()!), 'pivot-${state.cycleId}-$today.xlsx');
   }
 }

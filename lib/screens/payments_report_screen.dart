@@ -1,31 +1,24 @@
 import 'screen_imports.dart';
-import '../models/company_module.dart';
-import '../models/payment_report_row.dart';
 import '../models/payments_filter.dart';
 import '../providers/payments_provider.dart';
-import '../utils/app_navigator.dart';
 import '../utils/payments_utils.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/payments/desktop_payments_view.dart';
 import '../widgets/payments/mobile_payments_view.dart';
 import '../widgets/payments/payments_filter_dialog.dart';
 import '../widgets/payments/payments_report_actions.dart';
+import '../widgets/payments/payments_screen_entry.dart';
 
-/// Payments Report — the manager's payroll workspace (manager-only).
-///
-/// Scroll model (D17): header, title row, filters, and caption are pinned;
-/// only the table body scrolls. The APPLIED filter lives in
-/// [paymentsFilterProvider] (session persistence); the screen edits a PENDING
-/// copy that Search commits. Sorting is client-side over the loaded page
-/// (D15). Desktop gets the inline filter card; mobile gets the tune-icon
-/// filter dialog (D16). Row / payment / export handlers live in
-/// [PaymentsReportActions].
+/// One screen, two doors (owner QA 2026-11-19): manager "Payments" (opens on
+/// Pending) and "History" (opens on All); an employee's History is read-only,
+/// own sheets (PC-9). Only the table body scrolls (D17). The APPLIED filter
+/// lives in [paymentsFilterProvider]; the screen edits a PENDING copy that
+/// Search commits. Sorting is client-side (D15). Handlers: [PaymentsReportActions].
 class PaymentsReportScreen extends ConsumerStatefulWidget {
   const PaymentsReportScreen({super.key, this.initialFilter});
 
-  /// Pre-applied filter from the dashboard card CTAs (status, and the sheet
-  /// type from the Budgets panel). Null (menu / direct URL) keeps the
-  /// session's current filter.
+  /// Pre-applied filter: the route's own (Payments = Pending, History = All)
+  /// or a dashboard card's (status + sheet type). Null keeps the session's.
   final PaymentsFilter? initialFilter;
 
   @override
@@ -34,18 +27,26 @@ class PaymentsReportScreen extends ConsumerStatefulWidget {
 }
 
 class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
-    with FormBehaviorMixin, PaymentsReportActions<PaymentsReportScreen> {
+    with
+        FormBehaviorMixin,
+        PaymentsReportActions<PaymentsReportScreen>,
+        PaymentsScreenEntry<PaymentsReportScreen> {
   @override
   bool get hasUnsavedChanges => false;
 
   late PaymentsFilter _pending;
+  late PaymentsFilter _applied;
+  @override
+  PaymentsFilter get appliedHere => _applied;
+  @override
+  void onOwnFilterRestored(PaymentsFilter f) => setState(() => _pending = f);
   final _horizontalScroll = ScrollController();
-  PaymentsSortField? _sortField = PaymentsSortField.employee;
-  bool _sortAscending = true;
+  // First read in build, where the route is known (History: newest first).
+  late PaymentsSortField? _sortField = defaultSort.field;
+  late bool _sortAscending = defaultSort.ascending;
 
   @override
   final Set<String> selectedIds = {};
-
   @override
   final Set<String> highlightedIds = {};
 
@@ -53,7 +54,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
   void initState() {
     super.initState();
     final initial = widget.initialFilter;
-    _pending = initial ?? ref.read(paymentsFilterProvider);
+    _pending = _applied = initial ?? ref.read(paymentsFilterProvider);
     if (initial != null) {
       // Provider writes are not allowed while the tree is building.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -72,12 +73,12 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
   /// always re-queries. Sort and selection reset with every new search.
   void _search() {
     setState(() {
-      // Reset to the default sort (employee asc) on every new search.
-      _sortField = PaymentsSortField.employee;
-      _sortAscending = true;
+      _sortField = defaultSort.field;
+      _sortAscending = defaultSort.ascending;
       selectedIds.clear();
       highlightedIds.clear();
     });
+    _applied = _pending;
     final applied = ref.read(paymentsFilterProvider);
     if (_pending == applied) {
       ref.read(paymentsResultProvider.notifier).refresh();
@@ -87,7 +88,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
   }
 
   void _reset() {
-    setState(() => _pending = PaymentsFilter.defaults);
+    setState(() => _pending = resetFilter);
     _search();
   }
 
@@ -97,6 +98,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     PaymentsFilterDialog.show(
       context,
       initial: ref.read(paymentsFilterProvider),
+      resetFilter: resetFilter,
       onApply: (filter) {
         setState(() => _pending = filter);
         _search();
@@ -115,16 +117,9 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     });
   }
 
-  // A budget opens its budget page; a Monthly sheet its review (PC-8 QA).
-  void _openSheet(PaymentReportRow row) => Navigator.pushNamed(
-        context,
-        row.sheetType == CompanyModuleKey.pettyCash
-            ? AppRoutes.budgetPath(row.expenseSheetId)
-            : '/manager/sheet/${row.expenseSheetId}',
-      );
-
   @override
   Widget build(BuildContext context) {
+    keepOwnFilter();
     final resultAsync = ref.watch(paymentsResultProvider);
     final rows = PaymentsSortUtils.sort(
       resultAsync.asData?.value.items ?? const [],
@@ -135,6 +130,11 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     final view = context.isMobile
         ? MobilePaymentsView(
             onOpenFilters: _openFilterDialog,
+            onStatusSelected: (status) {
+              setState(() => _pending = ref.read(paymentsFilterProvider).copyWith(status: status));
+              _search();
+            },
+            onExportAll: exportAll,
             onExportSelected: exportSelected,
             onMarkProcessedSelection: () => markProcessed(selectedIds.toList()),
             rows: rows,
@@ -145,7 +145,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             highlightedIds: highlightedIds,
             onToggleSelection: toggleSelection,
             onToggleAll: (selectAll) => toggleAll(rows, selectAll),
-            onRowTap: _openSheet,
+            onRowTap: openSheet,
             onEditRow: editRow,
           )
         : DesktopPaymentsView(
@@ -164,7 +164,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
             highlightedIds: highlightedIds,
             onToggleSelection: toggleSelection,
             onToggleAll: (selectAll) => toggleAll(rows, selectAll),
-            onRowTap: _openSheet,
+            onRowTap: openSheet,
             onEditRow: editRow,
             horizontalScrollController: _horizontalScroll,
           );

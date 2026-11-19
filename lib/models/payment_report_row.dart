@@ -61,6 +61,14 @@ class PaymentReportRow {
   bool get isAwaiting => paymentStatus == PaymentStatus.awaitingPayment;
   bool get isCollect => direction == PaymentDirection.collect;
 
+  /// PC-9: an approved sheet outside the payment lifecycle - listed for
+  /// history, never selected, settled or edited.
+  bool get isNoPayment =>
+      paymentStatus == null || paymentStatus == PaymentStatus.noPayment;
+
+  /// The pill to show: "No payment" when the server sent no status.
+  PaymentStatus get displayStatus => paymentStatus ?? PaymentStatus.noPayment;
+
   /// The amount as a positive magnitude — the direction carries the sign.
   double get magnitude => amount.abs();
 

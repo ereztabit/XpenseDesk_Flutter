@@ -201,4 +201,43 @@ void main() {
       expect(AppRoutes.parseBudgetPath('/dashboard'), isNull);
     });
   });
+
+  group('sheetNavLandingRoute - where a sign-in lands', () {
+    const home = AppRoutes.managerDashboard;
+    List<SheetNavSection>? tree({int waiting = 0, int returned = 0}) =>
+        buildSheetNavSections(SheetNavInput(
+          isManager: true,
+          budgetsOn: true,
+          budgetsBuilt: true,
+          teamWaiting: waiting,
+          myReturned: returned,
+        ));
+
+    test('Budgets when Monthly has no badge', () {
+      expect(sheetNavLandingRoute(tree(), home), AppRoutes.budgets);
+    });
+
+    test('Monthly when a sheet waits or came back', () {
+      expect(sheetNavLandingRoute(tree(waiting: 2), home), home);
+      expect(sheetNavLandingRoute(tree(returned: 1), home), home);
+    });
+
+    test('Monthly when the user has no Budgets', () {
+      final monthlyOnly = buildSheetNavSections(
+          const SheetNavInput(isManager: true));
+      expect(sheetNavLandingRoute(monthlyOnly, home), home);
+      expect(sheetNavLandingRoute(null, home), home);
+    });
+
+    test('an employee lands on their budget', () {
+      final sections = buildSheetNavSections(const SheetNavInput(
+        isManager: false,
+        budgetsOn: true,
+        budgetsBuilt: true,
+        myBudgets: [SheetNavMockBudget('b1', 'Events', 100)],
+      ));
+      expect(sheetNavLandingRoute(sections, AppRoutes.employeeDashboard),
+          AppRoutes.budgetPath('b1'));
+    });
+  });
 }

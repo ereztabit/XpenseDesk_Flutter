@@ -22,7 +22,11 @@ class DesktopSheetReviewTable extends ConsumerWidget {
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
+    this.hideStatus = false,
   });
+
+  /// An approved sheet: no Status column (FS-1025 #10).
+  final bool hideStatus;
 
   final List<ExpenseSummary> expenses;
   final String companyLocale;
@@ -46,6 +50,13 @@ class DesktopSheetReviewTable extends ConsumerWidget {
     4: FlexColumnWidth(12),
     5: FixedColumnWidth(148),
   };
+  static const Map<int, TableColumnWidth> _noStatusWidths = {
+    0: FlexColumnWidth(20),
+    1: FlexColumnWidth(24),
+    2: FlexColumnWidth(20),
+    3: FlexColumnWidth(15),
+    4: FixedColumnWidth(148),
+  };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -64,7 +75,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
       // triggers a defunct-element markNeedsBuild assertion. Copyable sheet
       // values live in SheetReviewHeaderCard instead.
       child: Table(
-        columnWidths: _columnWidths,
+        columnWidths: hideStatus ? _noStatusWidths : _columnWidths,
         defaultVerticalAlignment: TableCellVerticalAlignment.middle,
         border: const TableBorder(
           horizontalInside: BorderSide(color: AppTheme.borderMedium, width: 1),
@@ -84,6 +95,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
               onApprove: onApproveLine == null ? null : () => onApproveLine!(e),
               onDecline: onDeclineLine == null ? null : () => onDeclineLine!(e),
               onDelete: onDeleteLine == null ? null : () => onDeleteLine!(e),
+              showStatus: !hideStatus,
             ),
           ),
         ],
@@ -110,7 +122,7 @@ class DesktopSheetReviewTable extends ConsumerWidget {
         cell(l10n.tableMerchantHeader),
         cell(l10n.tableCategoryHeader),
         cell(l10n.tableAmountHeader),
-        cell(l10n.status),
+        if (!hideStatus) cell(l10n.status),
         const SizedBox.shrink(),
       ],
     );

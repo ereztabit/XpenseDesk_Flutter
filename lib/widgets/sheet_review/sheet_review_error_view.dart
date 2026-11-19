@@ -6,18 +6,27 @@ import '../app_button.dart';
 
 /// Centered error state for Sheet Review — shows a not-found message (the
 /// server returns 404 for both missing and not-authorized) or a generic
-/// error, plus a back button.
+/// error, plus a back button. [fallbackRoute] is where Back goes when there is
+/// nothing to pop: Sheet Approvals for a manager, History for an employee
+/// opening a read-only sheet (PC-9) - the label follows it.
 class SheetReviewErrorView extends StatelessWidget {
-  const SheetReviewErrorView({super.key, required this.isNotFound});
+  const SheetReviewErrorView({
+    super.key,
+    required this.isNotFound,
+    this.fallbackRoute = '/manager-approvals',
+  });
 
   final bool isNotFound;
+  final String fallbackRoute;
+
+  bool get _toApprovals => fallbackRoute == '/manager-approvals';
 
   void _back(BuildContext context) {
     final nav = Navigator.of(context);
     if (nav.canPop()) {
       nav.pop();
     } else {
-      nav.pushReplacementNamed('/manager-approvals');
+      nav.pushReplacementNamed(fallbackRoute);
     }
   }
 
@@ -38,7 +47,7 @@ class SheetReviewErrorView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           AppButton(
-            label: l10n.backToApprovals,
+            label: _toApprovals ? l10n.backToApprovals : l10n.back,
             variant: AppButtonVariant.normal,
             icon: Icons.arrow_back,
             onPressed: () => _back(context),

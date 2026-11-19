@@ -143,3 +143,16 @@ bool sheetNavResolve(bool server, SheetNavModuleOverride override) =>
       SheetNavModuleOverride.on => true,
       SheetNavModuleOverride.off => false,
     };
+
+/// Where a sign-in lands (owner QA 2026-11-19): Budgets when the user has it
+/// and Monthly shows no badge (nothing waiting, nothing returned); otherwise
+/// [fallback] - the Monthly dashboard, as before.
+String sheetNavLandingRoute(List<SheetNavSection>? sections, String fallback) {
+  SheetNavSection? of(SheetNavType t) =>
+      sections?.where((s) => s.type == t).firstOrNull;
+  final budgets = of(SheetNavType.budgets)?.firstPage;
+  if (budgets == null) return fallback;
+  final monthly = of(SheetNavType.monthly);
+  final monthlyWaiting = monthly?.pages.any((p) => p.count > 0) ?? false;
+  return monthlyWaiting ? fallback : budgets.route;
+}

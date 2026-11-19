@@ -8,8 +8,8 @@ import '../utils/budget_copy_utils.dart';
 import '../utils/budget_utils.dart';
 import '../utils/new_expense_launcher.dart';
 import '../utils/responsive_utils.dart';
-import '../widgets/app_button.dart';
 import '../widgets/budgets/budget_action_bar.dart';
+import '../widgets/budgets/budget_back_row.dart';
 import '../widgets/budgets/budget_expenses_section.dart';
 import '../widgets/budgets/budget_header_actions.dart';
 import '../widgets/budgets/budget_header_card.dart';
@@ -80,8 +80,10 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
     final budget = ref.watch(budgetProvider(widget.budgetId));
     final loaded = budget.asData?.value;
     final editable = loaded != null && _editable(loaded);
-    // Free receipts used up: no way in, as on Monthly (the empty state agrees).
-    final canAdd = !ref.watch(currentFreeReceiptsProvider).isUsedUp;
+    // Free receipts used up, or the budget at its limit (FS-1025 #8): no way in.
+    final atLimit = loaded != null &&
+        budgetAtLimit(loaded, allowNegative: ref.watch(budgetsAllowNegativeProvider));
+    final canAdd = !ref.watch(currentFreeReceiptsProvider).isUsedUp && !atLimit;
     final me = ref.watch(userInfoProvider)?.email;
     // "+ New Expense": top-right of the header card on desktop, sticky
     // bottom bar on mobile - as on My expenses (user decision 2026-11-17).
@@ -123,17 +125,12 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                       data: (b) => Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                            Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: AppButton(
-                                label: l10n.budgetsBack,
-                                variant: AppButtonVariant.ghost,
-                                icon: Icons.arrow_back,
-                                // Pop keeps the list as left; a deep link opens the target.
-                                onPressed: () => Navigator.of(context).canPop()
-                                    ? Navigator.of(context).pop()
-                                    : handleBackNavigation(budgetBackTarget(b, email: me, isManager: isManager)),
-                              ),
+                            BudgetBackRow(
+                              budget: b,
+                              email: me,
+                              isManager: isManager,
+                              onDeepLinkBack: handleBackNavigation,
+                              sheet: sheet,
                             ),
                             const SizedBox(height: 8),
                           BudgetHeaderCard(
@@ -148,13 +145,13 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                                 ? BudgetReviewActions(budget: b, sheet: sheet)
                                 : null,
                           ),
-                          if (sheet != null && BudgetStatusStrip.shows(sheet)) ...[
+                          if (sheet != null && BudgetStatusStrip.shows(sheet) && !BudgetBackRow.showsAwaiting(context, sheet)) ...[
                             const SizedBox(height: 16),
                             BudgetStatusStrip(sheet: sheet),
                           ],
                           // S2b: the My expenses drop strip / free-receipts
                           // callout / progress strip, sending into this budget.
-                          if (editable)
+                          if (editable && !atLimit)
                             BulkUploadEntryArea(enabled: canAdd, budgetId: b.budgetId),
                           const SizedBox(height: 16),
                           // FS-1013 PC-2: a manager reviewing someone else's
@@ -165,6 +162,7 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                             BudgetExpensesSection(
                               budgetId: b.budgetId,
                               editable: _editable(b),
+                              approvedOnly: budgetIsApproved(b),
                             ),
                           if (sheet != null && budgetActivityVisible(sheet.log.length)) ...[
                             const SizedBox(height: 16),
