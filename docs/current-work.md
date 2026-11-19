@@ -44,6 +44,7 @@ so in its spec rather than double-tagging here.
 
 **Petty Cash budget sheets** (FS-1011..FS-1017, filed 2026-11-16) -- plan + agreed decisions: BackEnd/XpenseDeskServer/docs/petty-cash/00-plan.md; general sheet-types plan: docs/product/configurable-expense-sheet-types-spec.md. Phase 1 order PC-8 -> PC-5 -> PC-9, then FS-1022. Phase 1 not done until PC-5 + PC-8 + PC-9 ship (PC-4 dropped, PC-3 not phase 1). All UI is designed in the Lovable app mock first.
 
+- [ ] [Business][P1] **FS-1025** Budgets QA bundle (9 comments) -- NEXT after PC-5, before anything else. Needs-attention section, upload scoped to its budget, bell target, manager submit, policy blocks submit, search bar, limit reached, arrow. see docs/backlog/petty-cash/pc-qa-1-budget-page-qa-spec.md
 - [ ] [Business][P3] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module -- not phase 1. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". POC done. see docs/backlog/petty-cash/pc-5-summary-report-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
