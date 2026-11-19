@@ -14,7 +14,9 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
-| 2026-11-18 | TBD | PC-5 sheet export (FS-1016) | "Download as PDF" and "Download as Excel" on approved Monthly sheets and approved budgets; admin "Clear stored sheet exports". |
+| 2026-11-19 | v1.53 | Budgets PC-9 - Payments + History (FS-1021) | Manager Payments (pending) and History (all), employee read-only History, Settle / Closed wording, phone status toggle, sign-in lands on Budgets. |
+| 2026-11-19 | v1.53 | Budgets owner QA fixes (FS-1025) | Budget page QA rounds 1-5: layout, bell opens the batch sheet, end date up to 6 months back, same-size Settle / Edit, sheet type with Budgets off. |
+| 2026-11-18 | v1.53 | PC-5 sheet export (FS-1016) | "Download as PDF" and "Download as Excel" on approved Monthly sheets and approved budgets; admin "Clear stored sheet exports". |
 | 2026-11-18 | v1.52 | Budgets PC-8 - settlement through payments (FS-1020) | Approved budgets in Payments (pay / charge, red minus), sheet-type filter and sort, total row, Process button, Budgets settlement panel; Monthly card stays Monthly-only. |
 | 2026-11-18 | v1.51 | Budgets PC-2 fixes (FS-1013) | Draft budget shows the plain list; approve prompt after the last line; approved line locked for the employee; currency in the amount field; permanent delete text; list and Back fixes. |
 | 2026-11-18 | v1.50 | Budgets PC-2 - manager control + audit (FS-1013) | Edit a budget, delete it, submit for the holder from the list menu, review budget lines; every change on the Activity card. |

@@ -354,8 +354,8 @@ reason.
 `expenseSheetId` (the budget it files into; `null` = the sender's Monthly
 sheet) and `sheetType` (`"Monthly"` / `"PettyCash"`). The bell's "Processing
 complete" opens `/budgets/{expenseSheetId}` when `sheetType` is `PettyCash`.
-Both fields read `null` until the owner applies
-`docs/petty-cash/pc-qa-1-proc-BulkUpload_GetBatches.sql`.
+Both fields come from `proc_BulkUpload_GetBatches` (applied on dev and prod
+2026-11-19).
 
 ### Budget at its limit (item 8)
 
@@ -378,15 +378,13 @@ Best effort - a failed email never fails the create or the edit.
 No contract change - same `BudgetEndDateInPast` (400), on create and on an edit
 that changes the date. The rule: `endDate` may be as early as **today minus 6
 calendar months** in the company's time zone (today 19.11.2026 -> earliest
-19.05.2026; 31.08 -> 28.02/29.02). One day earlier is refused. Takes effect
-once the owner applies `docs/petty-cash/pc-qa-2-proc-budget-end-date.sql`;
-until then the server still refuses more than 30 days back.
+19.05.2026; 31.08 -> 28.02/29.02). One day earlier is refused. The procs are applied on dev and prod (2026-11-19).
 
 ## PC-9 - Payments & History (FS-1021)
 
 Story: docs/petty-cash/pc-9-budget-report.md. All additive - a caller that
-sends nothing new gets exactly today's answer. Needs
-`docs/petty-cash/pc-9-proc-payments-history.sql` applied.
+sends nothing new gets exactly today's answer. Its SQL is
+applied on dev and prod (2026-11-19).
 
 ### `GET /api/payments` and `POST /api/reports/export-payments-report`
 

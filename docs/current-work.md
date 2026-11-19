@@ -20,11 +20,11 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 ## Currently Working On
 
-- [ ] [Business][P1] **FS-1025** Budgets QA bundle (13 comments) -- IN PROGRESS on `feature/pc5-sheet-export` (both repos, owner's call). Needs-attention section, upload scoped to its budget, bell target, manager submit, policy blocks submit, search bar, limit reached, arrow, approved-sheet status column, payment box, mobile top row, payments dropdown language. see docs/backlog/petty-cash/pc-qa-1-budget-page-qa-spec.md (kept in backlog/ - the mission registry links that path)
+- [ ] [Business][P1] **FS-1025** Budgets QA bundle - banked on develop as v1.53 (2026-11-19), awaiting ship-feature.
 
-- [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- IN PROGRESS on `feature/pc5-sheet-export` (both repos). "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". see docs/in-progress/pc-5-summary-report-spec.md
+- [ ] [Business][P2] **FS-1016** PC-5 sheet export - banked on develop as v1.53 (2026-11-19), awaiting ship-feature.
 
-- [ ] [Business][P2] **FS-1021** PC-9 Payments & History (absorbs FS-1022) -- IN PROGRESS on `feature/pc5-sheet-export` (both repos, owner's call). Payments screen renamed, every approved sheet incl. "No payment", desktop row actions into a ⋮ menu; employee read-only "History" (own sheets, view / export / PDF + Excel), Digital archive hidden from employees. see docs/backlog/petty-cash/pc-9-budget-report-spec.md (kept in backlog/ - the mission registry links that path)
+- [ ] [Business][P2] **FS-1021** PC-9 Payments + History - banked on develop as v1.53 (2026-11-19), awaiting ship-feature.
 
 ## Tags
 

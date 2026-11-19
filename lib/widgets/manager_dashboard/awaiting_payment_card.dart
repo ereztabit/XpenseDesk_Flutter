@@ -189,10 +189,8 @@ class AwaitingPaymentCard extends ConsumerWidget {
   void _openReport(BuildContext context, PaymentStatus status, bool multiType) {
     Navigator.pushNamed(
       context,
-      // Closed sheets live under History (owner QA 2026-11-19).
-      status == PaymentStatus.processed
-          ? AppRoutes.managerHistory
-          : AppRoutes.managerPayments,
+      status == PaymentStatus.processed // Closed sheets live under History
+          ? AppRoutes.managerHistory : AppRoutes.managerPayments,
       arguments: PaymentsFilter.defaults.copyWith(
         status: status,
         sheetType: multiType ? CompanyModuleKey.monthly : null,
