@@ -32,8 +32,8 @@ Facts (checked 2026-11-18): `SheetReviewScreen` (`lib/screens/sheet_review_scree
 511 lines) shows `SheetReviewHeaderCard` (`lib/widgets/sheet_review/sheet_review_header_card.dart`,
 210 lines - already over the 200-line rule) with the status badge in its top row.
 An Approved sheet renders no action block (`_canApproveSheet` false). Employees
-have no page for an approved sheet - their downloads come with Monthly history
-(FS-1022).
+have no page for an approved sheet - their downloads come with PC-9 History
+(D33).
 
 | # | Piece | Where | Notes |
 |---|---|---|---|
@@ -83,7 +83,7 @@ so the PDF carries real receipt pages.
 
 | # | Lane | Lang | Steps | Expected |
 |---|---|---|---|---|
-| T1 | A | HE | Open the approved sheet -> **Download as PDF** | Spinner on that button only; file `Monthly_<yyyy-MM>_<6>.pdf` downloads; opens: logo + company name, title, facts, numbered lines, Total; one grayscale receipt per page; footer site link + "printed" time in Israel time; dates `d.M.yyyy`, amounts `₪1,234.56` |
+| T1 | A | HE | Open the approved sheet -> **Download as PDF** | Spinner on that button only; file `Monthly_<yyyy-MM>_<6>.pdf` downloads; opens: logo + company name, title, facts, numbered lines, Total; one grayscale receipt per page; footer site link + "Created at" time in Israel time (D36); dates `d.M.yyyy`, amounts `₪1,234.56` |
 | T2 | A | HE | Same -> **Download as Excel** | `.xlsx` opens right-to-left; same lines; real dates `d.m.yyyy`; numeric amounts; Total |
 | T3 | A | HE | Download the PDF again | Immediate; same file |
 | T4 | A | HE | Print the PDF (browser print preview, A4) | Nothing clipped; one receipt per sheet of paper; small receipts not stretched, with the low-resolution note |
