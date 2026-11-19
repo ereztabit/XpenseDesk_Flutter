@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
+import '../expenses/expense_needs_action_note.dart';
 import '../expenses/expense_status_badge.dart';
 
 /// Shared cell padding for the desktop Sheet Review [Table] (header + rows).
@@ -69,10 +70,17 @@ TableRow buildSheetReviewRow(
       ),
       _tapCell(
         onTap,
-        Text(
-          (merchant != null && merchant.isNotEmpty) ? merchant : '—',
-          style: _cellTextStyle,
-          overflow: TextOverflow.ellipsis,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (merchant != null && merchant.isNotEmpty) ? merchant : '—',
+              style: _cellTextStyle,
+              overflow: TextOverflow.ellipsis,
+            ),
+            ExpenseNeedsActionNote(expense: expense), // FS-1025 #15
+          ],
         ),
       ),
       _tapCell(

@@ -46,7 +46,7 @@ class BudgetHeaderCard extends ConsumerWidget {
     final overdue = budgetOverdueDays(b, budgetToday());
     final over = budgetIsOverBudget(b);
     const ltr = TextDirection.ltr;
-    final endShort = b.endDate.toCompanyDayMonth(locale);
+    final endShort = b.endDate.toCompanyDate(locale); // with the year (FS-1025 #19)
     // PC-5: an approved budget's downloads sit where the Monthly sheet's do -
     // the trailing top corner on desktop; on mobile they move up into the
     // back row (BudgetBackRow, FS-1025 #12).

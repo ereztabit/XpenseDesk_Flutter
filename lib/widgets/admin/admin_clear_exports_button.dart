@@ -6,8 +6,8 @@ import '../../providers/admin_provider.dart';
 import '../app_button.dart';
 import '../bulk_upload/confirm_choice_dialog.dart';
 
-/// FS-1016 PC-5: "Clear stored sheet exports" in the company module's title
-/// row, next to Destroy. Confirms first; the SnackBar says how many stored
+/// FS-1016 PC-5: "Clear stored sheet exports" in its own card under Billing
+/// (Configuration tab). Confirms first; the SnackBar says how many stored
 /// PDF / Excel files were deleted. The next download of each sheet rebuilds it.
 class AdminClearExportsButton extends ConsumerStatefulWidget {
   const AdminClearExportsButton({super.key, required this.companyId});

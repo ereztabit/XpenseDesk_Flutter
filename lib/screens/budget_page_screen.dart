@@ -130,6 +130,7 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                               email: me,
                               isManager: isManager,
                               onDeepLinkBack: handleBackNavigation,
+                              sheet: sheet,
                             ),
                             const SizedBox(height: 8),
                           BudgetHeaderCard(
@@ -144,7 +145,7 @@ class _BudgetPageScreenState extends ConsumerState<BudgetPageScreen>
                                 ? BudgetReviewActions(budget: b, sheet: sheet)
                                 : null,
                           ),
-                          if (sheet != null && BudgetStatusStrip.shows(sheet)) ...[
+                          if (sheet != null && BudgetStatusStrip.shows(sheet) && !BudgetBackRow.showsAwaiting(context, sheet)) ...[
                             const SizedBox(height: 16),
                             BudgetStatusStrip(sheet: sheet),
                           ],

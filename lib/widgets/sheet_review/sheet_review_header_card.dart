@@ -40,7 +40,10 @@ class SheetReviewHeaderCard extends ConsumerWidget {
     final narrow = !context.isDesktop;
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
 
-    final cycleText = sheet.cycleLabel.toCycleLongMonth(companyLocale);
+    // A budget has no cycle: name the sheet type (budgets off, from Payments - FS-1025 #27).
+    final cycleText = sheet.isBudget && sheet.cycleLabel.trim().isEmpty
+        ? l10n.paymentsSheetTypeBudget
+        : sheet.cycleLabel.toCycleLongMonth(companyLocale);
     final itemsText =
         '${sheet.expenses.length} ${sheet.expenses.length == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural}';
     final total = _sheetTotal();

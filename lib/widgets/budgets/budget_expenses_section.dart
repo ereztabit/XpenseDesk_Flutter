@@ -5,10 +5,10 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/dashboard_ui_state.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/budget_shake_provider.dart';
 import '../../providers/budgets_provider.dart';
 import '../../providers/expense_sheet_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../utils/budget_copy_utils.dart';
 import '../../utils/budget_utils.dart';
 import '../../utils/responsive_utils.dart';
 import '../../utils/sheet_utils.dart';
@@ -17,6 +17,7 @@ import '../employee_dashboard/needs_action_section.dart';
 import '../employee_dashboard/sheet_expenses_area.dart';
 import '../employee_dashboard/view_mode_toggle.dart';
 import '../sheet_review/sheet_review_filter_tabs.dart';
+import '../shake_on_demand.dart';
 
 /// B4 expense list (UX hand-off section 2.4 items 4-5): the My expenses list
 /// ([SheetExpensesArea] - desktop table, mobile carousel / list) fed from the
@@ -131,22 +132,22 @@ class _BudgetExpensesSectionState extends ConsumerState<BudgetExpensesSection> {
               const SizedBox(height: 12),
             ],
             if (needsAction.isNotEmpty) ...[
-              NeedsActionSection(
-                count: needsAction.length,
-                // Policy lines (FS-1025 #6) say what to fix; unreadable ones keep
-                // the Monthly wording.
-                explanation: needsAction.any((e) => e.policyViolations.isNotEmpty)
-                    ? l10n.budgetsNeedsActionExplanation
-                    : null,
-                reasons: budgetNeedsActionReasons(l10n, needsAction, locale),
-                child: SheetExpensesArea(
-                  expenses: needsAction,
-                  companyLocale: locale,
-                  canEdit: lineEditable,
-                  canDelete: lineEditable,
-                  isDraft: lineEditable,
-                  onRefresh: _refresh,
-                  budgetId: widget.budgetId,
+              // Each line says what to fix in its own row (FS-1025 #15); a tap on
+              // the blocked Submit shakes the card (#17).
+              ShakeOnDemand(
+                token: ref.watch(budgetNeedsActionShakeProvider(widget.budgetId)),
+                child: NeedsActionSection(
+                  count: needsAction.length,
+                  explanation: l10n.budgetsNeedsActionExplanation,
+                  child: SheetExpensesArea(
+                    expenses: needsAction,
+                    companyLocale: locale,
+                    canEdit: lineEditable,
+                    canDelete: lineEditable,
+                    isDraft: lineEditable,
+                    onRefresh: _refresh,
+                    budgetId: widget.budgetId,
+                  ),
                 ),
               ),
               if (rest.isNotEmpty) const SizedBox(height: 16),

@@ -148,8 +148,8 @@ class ExcelExportService {
     }
 
     _autoWidths(sheet, allRows);
-    // Client-built: printed landscape here (the server sets its own files).
-    _download(xlsxLandscape(workbook.encode()!), 'monthly-breakdown-$today.xlsx');
+    // Client-built: landscape, fit on one page (the server sets its own files).
+    _download(xlsxPrintSetup(workbook.encode()!), 'monthly-breakdown-$today.xlsx');
   }
 
   /// Pivot breakdown — employees × categories for a single cycle.
@@ -211,6 +211,6 @@ class ExcelExportService {
     _styleRow(sheet, totalRowIndex, colCount, _totalStyle());
 
     _autoWidths(sheet, allRows);
-    _download(xlsxLandscape(workbook.encode()!), 'pivot-${state.cycleId}-$today.xlsx');
+    _download(xlsxPrintSetup(workbook.encode()!), 'pivot-${state.cycleId}-$today.xlsx');
   }
 }

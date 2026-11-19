@@ -96,3 +96,4 @@ final budgetHolderCandidatesProvider = FutureProvider<List<UserListItem>>((
 /// (`yyyy/MM`); null while cycles load or none is open.
 final openPaymentCycleLabelProvider = Provider<String?>((ref) =>
     openCycleLabel(ref.watch(cyclesProvider).asData?.value ?? const []));
+

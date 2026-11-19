@@ -71,7 +71,34 @@ Found in PC-5 manual QA run 2 (`docs/in-progress/pc-5-summary-report-spec.md`).
     English. Every control must re-render in the new language (the mobile
     filter dialog already does).
 
+## Added 2026-11-19 - owner QA round 3 (after the checklist)
+
+14. Admin company page: "Clear stored sheet exports" below Billing, like the other sections.
+15. Needs action: each line's reason inside its own row / card, no summary list; a
+    shorter title that fits mobile - Monthly too.
+16. A budget's end date can be set up to 6 months back (server + proc script).
+17. Submit when blocked looks disabled (not just gray); tapping it anyway shakes the
+    Needs action card.
+18. A manager on a Returned budget can clearly resubmit (the Submit beside Approve read
+    as disabled).
+19. Budget page: the end date shows the year (15.12.2026, not 15.12).
+20. "+ New Expense" blocked at the limit looks disabled - disabled buttons in general.
+21. Mobile, Awaiting budget: the awaiting-approval banner moves into the back row's free
+    end (where approved budgets show the downloads).
+22. Every Excel file prints "Fit Sheet on One Page" (server and app-built).
+23. Budget settlement wording (HE): "לחייב את העובד" / "לשלם לעובד" instead of
+    "להחזר מהעובד" / "לתשלום לעובד".
+24. PDF: totals align toward the amount (left in RTL).
+25. PDF: long notes truncated; text only - no markup or control characters.
+26. Payments info tooltip stays when budgets are off (history stays), saying it is for
+    budgets.
+27. Budgets off: the Payments eye on a budget row opens the sheet, not the dashboard.
+28. Sheet review opened from Payments: the back button says "Back", not "Back to approvals".
+29. Payments: "Process" becomes "Settle" / "התחשבנות".
+
 ## Done when
+
+- All twelve verified
 
 - All thirteen verified on desktop and mobile, Hebrew and English (QA clicks every
   control).
@@ -130,3 +157,48 @@ Backend 754 passed / 0 failed / 2 skipped (item 3 tests, `@ignore` until the SQL
 Checked clean: Q1 amber card with reasons + Submit disabled (manager and holder); Q4 manager Submit on an employee's Draft, Submit beside Close on Returned; Q7 search in the table, a miss keeps it with "No expenses found"; Q9 arrow right EN / left HE; Q10 no Status column (desktop), no pills (cards and compact rows), Returned keeps tabs + Status; Q11 strips flush with the cards (1440, 375); Q12 PDF / Excel in the mobile back row, EN + HE, Monthly + budget, PDF still downloads (200); Q13 dropdowns relabel and open in HE; console: no exceptions or overflows.
 
 Result: clean (run 1; Q2, Q3, Q8 not covered).
+
+### Round 3 QA matrix (written before run 2)
+
+| # | Check | Must NOT appear |
+|---|---|---|
+| R14 | Admin company > Configuration: "Stored sheet exports" card under Billing; Clear -> Cancel / Confirm count | Title row: no Clear button |
+| R15 | Budget + Monthly: each flagged line shows its reason in its row (desktop) / card and compact row (mobile); card title "Expenses to fix" / "הוצאות לתיקון" fits 375 | No reasons summary list; clean lines show no note |
+| R16 | End date 6 months back accepted, 7 refused (client picker + server, after the script) | - |
+| R17 | Blocked Submit looks disabled (faded green, not-allowed cursor); tapping it shakes the amber card | An enabled Submit never shakes anything |
+| R18 | Manager on a Returned budget: purple Submit beside green Approve, both look active | - |
+| R19 | Budget header "Ends" shows dd.mm.yyyy, fits 375 | - |
+| R20 | Disabled buttons app-wide read as disabled (Add at limit, Payments bulk while exporting) | A loading button never fades |
+| R21 | Mobile Awaiting budget: amber chip in the back row, no strip below; tap shows the "can still edit" tooltip | Desktop: strip unchanged; Returned: strip unchanged |
+| R22 | Excel (sheet, Payments, Analysis): landscape, fit to one page, opens without repair | - |
+| R23 | Sheet export HE settlement: "לשלם לעובד" / "לחייב את העובד" | Old wording anywhere in the files |
+| R24 | PDF HE totals sit beside the amount (left); EN on the right; Excel the same | - |
+| R25 | Long / hostile note: PDF and Excel show capped plain text | - |
+| R26 | Payments info icon shown with budgets off too; text starts "Budgets only" / "לתקציבים בלבד" | - |
+| R27 | Budgets off: Payments eye on a budget row opens the sheet review, no downloads there | Never the team dashboard |
+| R28 | Sheet review from Payments: "Back" / "חזור"; from a deep link: "Back to approvals" | - |
+| R29 | Payments: "Settle" / "התחשבנות" buttons; bulk "Settle N sheets" / "התחשבנות ב-N גליונות" | "Process" / "טיפול" on those buttons |
+
+Round 3 CR (independent reviewer, both repos) + security review: no blockers. Fixed: hidden
+bidi characters written as char codes in a unit test, plus the PDF document disposed; `GO`
+after each banner in all three prod scripts (comments no longer land inside procs);
+shake counter auto-disposes; budget back row's trailing part flexible. Kept on purpose:
+Excel fit to one page (owner's words). Security review: no findings. Found while fixing: a
+note test that passed by accident (culture-aware compare ignores bidi marks) - now ordinal.
+Backend 766/766 (6-month scenario included), unit tests green; `flutter test` 280.
+
+### Run 2 - 2026-11-19 (round 3)
+- Branch / commit: feature/pc5-sheet-export @ uncommitted (both repos)
+- QA company: XpenseDesk Demo Company; manager m@, employee e@, platform admin qa-admin-1@
+- Coverage: R14-R29; manager 1440, employee 1440 + 375, EN + HE; budgets #1018 (returned, end date moved 5 months back, then restored), #1017 (Awaiting), #1013 / #1016 / #1020 (Approved), Payments, Analysis, admin company page.
+- Data changed and restored: #1018 returned -> end date 19.06.2026 -> back to 15.12.2026 -> submitted for the holder (Awaiting again; its activity keeps the trail); "Allow negative balance" off -> on; Budgets module off -> on; stored sheet exports cleared (14 files - they rebuild on the next download).
+- Not covered: the shake animation itself (a widget test proves the tap reaches it; the wobble is the app's existing ShakeOnDemand); R25 long / hostile note on a real line (unit tests cover PDF + Excel); tooltips on a real touch tap.
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Manager | EN | Returned budget (someone else's) | Major | A blocked Submit had nothing to shake and the review rows did not say why | Fixed (run 2): reason in the review rows (desktop, compact, cards) and the review list shakes |
+| 2 | Manager | EN | Sheet review of a budget (budgets off) | Minor | Blank title - a budget has no cycle | Fixed (run 2): shows "Budget" |
+
+Checked clean: R14 card under Billing, Cancel / Confirm ("Stored files deleted: 14"), title row only Destroy; R15 reason inside rows / cards / compact rows (holder and manager), "Expenses to fix" / "הוצאות לתיקון" fits 375, no summary; R16 7 months "Out of range", 5 months saved, back to 15.12 clears the flag; R17 blocked Submit faded (green / purple), no submit request; R18 purple Submit beside green Approve, Submit on behalf -> Awaiting; R19 header dates with year (1440, 375); R20 disabled Decline (faded pink), "+ New Expense" faded at the limit, no bulk strip; R21 mobile Awaiting chip, no strip; desktop strip unchanged; R22 sheet / Payments / Analysis Excel: landscape + fit to page, well-formed; R23 "לחייב את העובד" / "לשלם לעובד", old wording gone; R24 HE PDF totals beside the amount; R26 icon with budgets off, "Budgets only"; R27 budgets off -> sheet review, no downloads; R28 "Back" from Payments, "Back to approvals" by deep link; R29 "Settle" / "Settle 1 sheet". Console: no exceptions.
+
+Result: 2 findings - 0 open, 2 fixed.

@@ -46,6 +46,12 @@ class AppButton extends StatelessWidget {
   MaterialTapTargetSize? get _denseTapTarget =>
       dense ? MaterialTapTargetSize.shrinkWrap : null;
 
+  /// A disabled button says so under the mouse too.
+  static final _cursor = WidgetStateProperty.resolveWith<MouseCursor>(
+      (states) => states.contains(WidgetState.disabled)
+          ? SystemMouseCursors.forbidden
+          : SystemMouseCursors.click);
+
   @override
   Widget build(BuildContext context) {
     final style = _buildStyle();
@@ -60,7 +66,9 @@ class AppButton extends StatelessWidget {
           )
         : Text(label);
 
-    final effectiveOnPressed = isLoading ? null : onPressed;
+    // Loading keeps the enabled look (a no-op tap), so only a truly disabled
+    // button fades.
+    final effectiveOnPressed = isLoading ? () {} : onPressed;
 
     if ((icon != null || iconWidget != null) && !isLoading) {
       return ElevatedButton.icon(
@@ -104,17 +112,21 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.normal:
         return ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return AppTheme.muted.withAlpha(110);
             if (states.contains(WidgetState.hovered)) return AppTheme.primary;
             return AppTheme.muted;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return AppTheme.mutedForeground.withAlpha(140);
             if (states.contains(WidgetState.hovered)) return Colors.white;
             return AppTheme.foreground;
           }),
           overlayColor: WidgetStateProperty.all(Colors.transparent),
-          side: WidgetStateProperty.all(
-            const BorderSide(color: AppTheme.border),
-          ),
+          side: WidgetStateProperty.resolveWith((states) => BorderSide(
+                color: states.contains(WidgetState.disabled)
+                    ? AppTheme.border.withAlpha(110)
+                    : AppTheme.border,
+              )),
           shape: WidgetStateProperty.all(
             const RoundedRectangleBorder(borderRadius: _radius),
           ),
@@ -123,7 +135,7 @@ class AppButton extends StatelessWidget {
           minimumSize: _denseMinSize,
           tapTargetSize: _denseTapTarget,
           elevation: WidgetStateProperty.all(0),
-          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+          mouseCursor: _cursor,
         );
 
       case AppButtonVariant.ghost:
@@ -134,7 +146,10 @@ class AppButton extends StatelessWidget {
             }
             return Colors.transparent;
           }),
-          foregroundColor: WidgetStateProperty.all(AppTheme.foreground),
+          foregroundColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.disabled)
+                  ? AppTheme.mutedForeground.withAlpha(140)
+                  : AppTheme.foreground),
           overlayColor: WidgetStateProperty.all(Colors.transparent),
           side: WidgetStateProperty.all(BorderSide.none),
           shape: WidgetStateProperty.all(
@@ -145,7 +160,7 @@ class AppButton extends StatelessWidget {
           minimumSize: _denseMinSize,
           tapTargetSize: _denseTapTarget,
           elevation: WidgetStateProperty.all(0),
-          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+          mouseCursor: _cursor,
         );
     }
   }
@@ -158,14 +173,14 @@ class AppButton extends StatelessWidget {
   }) {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) return AppTheme.muted;
+        // Disabled = its own color, faded - never the gray of the normal
+        // variant, which reads as an enabled button (owner QA, 2026-11-19).
+        if (states.contains(WidgetState.disabled)) return bg.withAlpha(90);
         if (states.contains(WidgetState.hovered)) return bgHover;
         return bg;
       }),
       foregroundColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) {
-          return AppTheme.mutedForeground;
-        }
+        if (states.contains(WidgetState.disabled)) return fg.withAlpha(220);
         return fg;
       }),
       overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -178,7 +193,7 @@ class AppButton extends StatelessWidget {
       minimumSize: _denseMinSize,
       tapTargetSize: _denseTapTarget,
       elevation: WidgetStateProperty.all(0),
-      mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+      mouseCursor: _cursor,
     );
   }
 }

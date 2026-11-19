@@ -2,6 +2,7 @@ import 'screen_imports.dart';
 import '../models/company_module.dart';
 import '../models/payment_report_row.dart';
 import '../models/payments_filter.dart';
+import '../providers/budgets_provider.dart';
 import '../providers/payments_provider.dart';
 import '../utils/app_navigator.dart';
 import '../utils/payments_utils.dart';
@@ -115,10 +116,10 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     });
   }
 
-  // A budget opens its budget page; a Monthly sheet its review (PC-8 QA).
+  // Budget page for a budget (PC-8 QA) - the sheet review when budgets are off (FS-1025 #27).
   void _openSheet(PaymentReportRow row) => Navigator.pushNamed(
         context,
-        row.sheetType == CompanyModuleKey.pettyCash
+        row.sheetType == CompanyModuleKey.pettyCash && ref.read(isPettyCashEnabledProvider)
             ? AppRoutes.budgetPath(row.expenseSheetId)
             : '/manager/sheet/${row.expenseSheetId}',
       );

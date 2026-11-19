@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../providers/budgets_provider.dart';
 import '../../theme/app_theme.dart';
 
 /// Info icon by the Payments "Amount" header: a negative budget amount means
-/// the employee returns money. Hidden when the company has budgets off.
-class PaymentsAmountInfoIcon extends ConsumerWidget {
+/// the employee is charged. Shown with budgets off too - their history stays
+/// in the list - and the text says it is for budgets (FS-1025 #26).
+class PaymentsAmountInfoIcon extends StatelessWidget {
   const PaymentsAmountInfoIcon({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!ref.watch(isPettyCashEnabledProvider)) return const SizedBox.shrink();
+  Widget build(BuildContext context) {
     return Tooltip(
       message: AppLocalizations.of(context)!.paymentsNegativeAmountInfo,
       triggerMode: TooltipTriggerMode.tap, // touch: a tap, not a long press

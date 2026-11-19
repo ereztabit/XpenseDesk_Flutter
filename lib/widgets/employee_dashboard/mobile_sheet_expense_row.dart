@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
+import '../expenses/expense_needs_action_note.dart';
 
 /// One compact mobile list row.
 ///
@@ -129,6 +130,7 @@ class MobileSheetExpenseRow extends ConsumerWidget {
                     ],
                   ],
                 ),
+                ExpenseNeedsActionNote(expense: expense), // FS-1025 #15
               ],
             ),
           ),

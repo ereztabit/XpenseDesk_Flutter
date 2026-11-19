@@ -94,7 +94,7 @@ email. The client may also filter locally - the list is small.
 | `BudgetAmountRequired` | 400 | `initialAmount` missing |
 | `BudgetAmountInvalid` | 400 | `initialAmount` not above 0 (or absurdly large) |
 | `BudgetEndDateRequired` | 400 | `endDate` missing |
-| `BudgetEndDateInPast` | 400 | `endDate` more than 30 days before the company's today (FS-1013; was: before today) |
+| `BudgetEndDateInPast` | 400 | `endDate` more than 6 calendar months before the company's today (PC-QA-2; was 30 days, FS-1013) |
 
 Validation order: name, holder, amount, end date, then holder active, end date not past, name free - the first failing check
 answers.
@@ -372,3 +372,12 @@ new holder (the new holder only). Never when the holder is the manager acting.
 Language = the holder's (Hebrew or English); content: what a budget is, name,
 amount, end date, how to use it, and a button to `{app}/budgets/{budgetId}`.
 Best effort - a failed email never fails the create or the edit.
+
+## PC-QA-2 - end date up to 6 months back
+
+No contract change - same `BudgetEndDateInPast` (400), on create and on an edit
+that changes the date. The rule: `endDate` may be as early as **today minus 6
+calendar months** in the company's time zone (today 19.11.2026 -> earliest
+19.05.2026; 31.08 -> 28.02/29.02). One day earlier is refused. Takes effect
+once the owner applies `docs/petty-cash/pc-qa-2-proc-budget-end-date.sql`;
+until then the server still refuses more than 30 days back.

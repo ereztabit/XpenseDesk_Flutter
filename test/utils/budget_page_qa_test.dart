@@ -79,17 +79,14 @@ void main() {
       expect(ExpenseSummary.fromJson(base).policyViolations, isEmpty);
     });
 
-    test('reasons name the line by merchant, else date; EN and HE', () {
-      final lines = [
-        _line(merchant: 'Cafe', violations: ['BudgetExpenseDateAfterEndDate', 'BudgetExpenseAmountMissing']),
-        _line(violations: ['BudgetExpenseAmountMissing']),
-        _line(actionRequired: true),
-      ];
-      final r = budgetNeedsActionReasons(en, lines, 'he-IL');
-      expect(r, hasLength(2));
-      expect(r[0], "Cafe: Dated after the budget's end date, No amount");
-      expect(r[1], endsWith(': No amount'));
-      expect(budgetNeedsActionReasons(he, lines.take(1).toList(), 'he-IL').single, contains('ללא סכום'));
+    test('what to fix on a line (#15): missing details, then rules; EN and HE', () {
+      expect(expenseNeedsActionTexts(en, _line(violations: ['BudgetExpenseDateAfterEndDate', 'BudgetExpenseAmountMissing'])),
+          ["Dated after the budget's end date", 'No amount']);
+      // An incomplete line already says it; "No amount" is not repeated.
+      expect(expenseNeedsActionTexts(en, _line(actionRequired: true, violations: ['BudgetExpenseAmountMissing'])),
+          [en.expenseMissingDetails]);
+      expect(expenseNeedsActionTexts(he, _line(violations: ['BudgetExpenseAmountMissing'])), ['ללא סכום']);
+      expect(expenseNeedsActionTexts(en, _line()), isEmpty);
     });
 
     test('submit refusals have their own message', () {

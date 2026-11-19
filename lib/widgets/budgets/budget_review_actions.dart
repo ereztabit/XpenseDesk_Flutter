@@ -36,14 +36,12 @@ class BudgetReviewActions extends ConsumerStatefulWidget {
   final Budget budget;
   final ExpenseSheetDetail sheet;
 
-  /// Whether [BudgetReviewActions] has a button for this user and budget -
-  /// the page uses it to decide whether to render a bar at all.
+  /// Whether there is a button for this user - the page renders a bar only then.
   static bool hasActions(Budget budget, ExpenseSheetDetail sheet,
           {required String? email, required bool isManager}) =>
       _canSubmit(budget, sheet, email, isManager) || _canReview(sheet, isManager);
 
-  // The holder, or any manager on the holder's behalf (guide section 2,
-  // FS-1025 #4).
+  // The holder, or any manager on the holder's behalf (guide section 2, FS-1025 #4).
   static bool _canSubmit(Budget b, ExpenseSheetDetail sheet, String? email, bool isManager) =>
       (budgetIsHeldBy(b, email) || isManager) &&
       (sheet.expenseSheetStatusId == ExpenseSheetStatus.draft.id ||
@@ -178,11 +176,13 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
         : null;
     final submit = canSubmit
         ? BudgetSubmitButton(
+            budgetId: b.budgetId,
             amountText: _amountText,
             isBusy: _busy,
-            // Needs action blocks submit (FS-1025 #1, #6); beside Approve, Approve leads.
-            onPressed: sheet.expenses.any(budgetLineNeedsAction) ? null : _submit,
-            variant: review != null ? AppButtonVariant.normal : AppButtonVariant.success,
+            onPressed: _submit,
+            // Needs action blocks it (#1, #6); beside Approve it is purple, Approve green (#18).
+            blocked: sheet.expenses.any(budgetLineNeedsAction),
+            variant: review != null ? AppButtonVariant.primary : AppButtonVariant.success,
             bare: review != null && !context.isMobile,
           )
         : null;

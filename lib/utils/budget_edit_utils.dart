@@ -58,13 +58,17 @@ bool budgetEditChanges(Budget b, String name, String holderUserId, double amount
     endDate.month != b.endDate.month ||
     endDate.day != b.endDate.day;
 
-/// FS-1013: how far back a budget's end date may lie (user decision
-/// 2026-11-18) - the server's 55002 / BudgetEndDateInPast rule.
-const int budgetEndDateMaxDaysBack = 30;
+/// How far back a budget's end date may lie: 6 calendar months (owner QA
+/// 2026-11-19, was 30 days) - the server's BudgetEndDateInPast rule.
+const int budgetEndDateMaxMonthsBack = 6;
 
-/// The earliest end date a budget may get today.
-DateTime budgetEarliestEndDate(DateTime today) =>
-    DateTime(today.year, today.month, today.day - budgetEndDateMaxDaysBack);
+/// The earliest end date a budget may get today. A day the target month lacks
+/// becomes its last day (31 Aug -> 28/29 Feb), as SQL DATEADD does.
+DateTime budgetEarliestEndDate(DateTime today) {
+  final month = today.month - budgetEndDateMaxMonthsBack;
+  final lastDay = DateTime(today.year, month + 1, 0).day;
+  return DateTime(today.year, month, today.day > lastDay ? lastDay : today.day);
+}
 
 /// FS-1013 fix: the list's sections open on first load - a dashboard focus
 /// opens just that one; otherwise only sections that hold a budget (an empty

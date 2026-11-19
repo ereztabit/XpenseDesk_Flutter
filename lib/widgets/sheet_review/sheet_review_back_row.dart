@@ -41,13 +41,16 @@ class SheetReviewBackRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Back returns to wherever the sheet was opened from (Payments, the
+    // dashboard...) - "to approvals" only when it goes there (FS-1025 #28).
+    final backLabel = Navigator.of(context).canPop() ? l10n.back : l10n.backToApprovals;
 
     if (context.isMobile) {
       return Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
-            tooltip: l10n.backToApprovals,
+            tooltip: backLabel,
             onPressed: () => _back(context),
           ),
           const SizedBox(width: 4),
@@ -70,7 +73,7 @@ class SheetReviewBackRow extends StatelessWidget {
     return Row(
       children: [
         AppButton(
-          label: l10n.backToApprovals,
+          label: backLabel,
           variant: AppButtonVariant.ghost,
           icon: Icons.arrow_back,
           onPressed: () => _back(context),

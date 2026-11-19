@@ -107,15 +107,16 @@ List<String> budgetLineViolationTexts(AppLocalizations l10n, List<String> codes)
     },
 ];
 
-/// FS-1025 #6: "Merchant: reason" for every Needs action line that breaks the
-/// policy - named by merchant, else by its date.
-List<String> budgetNeedsActionReasons(
-  AppLocalizations l10n,
-  List<ExpenseSummary> lines,
-  String locale,
-) => [
-  for (final e in lines)
-    if (e.policyViolations.isNotEmpty)
-      '${(e.merchantName?.trim().isNotEmpty ?? false) ? e.merchantName!.trim() : (e.expenseDate?.toCompanyDate(locale) ?? '-')}: '
-          '${budgetLineViolationTexts(l10n, e.policyViolations).join(', ')}',
+/// FS-1025 #15: what to fix on one line, shown inside its own row / card - a
+/// bulk receipt that could not be read ("Missing details"), then the budget
+/// rules it breaks. "No amount" is left out when the line is already marked
+/// incomplete (it says the same thing). Empty for a line with nothing to fix.
+List<String> expenseNeedsActionTexts(AppLocalizations l10n, ExpenseSummary e) => [
+  if (e.isActionRequired) l10n.expenseMissingDetails,
+  ...budgetLineViolationTexts(
+    l10n,
+    e.isActionRequired
+        ? e.policyViolations.where((c) => c != 'BudgetExpenseAmountMissing').toList()
+        : e.policyViolations,
+  ),
 ];
