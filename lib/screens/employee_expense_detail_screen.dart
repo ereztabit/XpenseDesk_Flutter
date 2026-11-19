@@ -627,6 +627,7 @@ class _EmployeeExpenseDetailScreenState
     TextInputType? keyboardType,
     String? errorText,
     bool missing = false,
+    int? maxLength,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,6 +641,7 @@ class _EmployeeExpenseDetailScreenState
           readOnly: !enabled,
           enableInteractiveSelection: true,
           maxLines: maxLines,
+          maxLength: maxLength,
           inputFormatters: enabled ? inputFormatters : null,
           keyboardType: keyboardType,
           style: TextStyle(
@@ -1001,7 +1003,9 @@ class _EmployeeExpenseDetailScreenState
             enabled: _isEditable && !_isSaving),
         const SizedBox(height: 16),
         _buildTextField(l10n.noteLabel, _noteController,
-            maxLines: 3, enabled: _isEditable && !_isSaving),
+            maxLines: 3,
+            maxLength: _isEditable ? ExpensePolicy.noteLimitFor(_initialNote) : null,
+            enabled: _isEditable && !_isSaving),
         const SizedBox(height: 16),
         _buildAiDetectedPanel(l10n, companyLocale, uiLocale),
       ],
@@ -1027,6 +1031,9 @@ class _EmployeeExpenseDetailScreenState
         // Manager cannot edit notes
         _buildTextField(l10n.noteLabel, _noteController,
             maxLines: 3,
+            // Counter only where the note is editable (never for a manager).
+            maxLength: _isEditable && !widget.isManagerMode
+                ? ExpensePolicy.noteLimitFor(_initialNote) : null,
             enabled: widget.isManagerMode ? false : enabled),
       ],
     );

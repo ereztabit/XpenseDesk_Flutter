@@ -3,7 +3,6 @@ import '../models/expense_sheet_detail.dart';
 import '../models/expense_sheet_status.dart';
 import '../models/expense_summary.dart';
 import '../models/dashboard_ui_state.dart';
-import '../providers/budgets_provider.dart';
 import '../providers/expense_provider.dart';
 import '../providers/expense_sheet_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
@@ -463,9 +462,8 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     // decline on a Declined line). Whole-sheet decline stays WfA-only.
     final isSheetLocked =
         sheet.expenseSheetStatusId == ExpenseSheetStatus.approved.id;
-    // A budget's files only while budgets are on - the server refuses them
-    // otherwise (FS-1025 #27).
-    final canDownload = isSheetLocked && (!sheet.isBudget || ref.watch(isPettyCashEnabledProvider));
+    // Approved = history: a budget downloads even with Budgets off (owner QA).
+    final canDownload = isSheetLocked;
     final justAdded = _showJustAddedCue ? _justAddedLine(sheet) : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

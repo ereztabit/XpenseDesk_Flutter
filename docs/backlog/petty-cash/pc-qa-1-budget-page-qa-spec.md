@@ -96,6 +96,16 @@ Found in PC-5 manual QA run 2 (`docs/in-progress/pc-5-summary-report-spec.md`).
 28. Sheet review opened from Payments: the back button says "Back", not "Back to approvals".
 29. Payments: "Process" becomes "Settle" / "התחשבנות".
 
+## Added 2026-11-19 - owner QA round 4
+
+30. "התחשבנות" broke onto two lines in the desktop Payments action column: the text
+    shrinks to fit, the button keeps its size.
+31. Budgets off: an approved budget still downloads as PDF / Excel (history stays) -
+    supersedes "no downloads" in R27. Server and client.
+32. Expense note: max 300 characters, counter right below the input (create and edit).
+    A longer note saved before keeps its length - never cut on edit.
+33. The support-session marker ("התחברות תמיכה") moves from the header to the footer.
+
 ## Done when
 
 - All twelve verified
@@ -175,7 +185,7 @@ Result: clean (run 1; Q2, Q3, Q8 not covered).
 | R24 | PDF HE totals sit beside the amount (left); EN on the right; Excel the same | - |
 | R25 | Long / hostile note: PDF and Excel show capped plain text | - |
 | R26 | Payments info icon shown with budgets off too; text starts "Budgets only" / "לתקציבים בלבד" | - |
-| R27 | Budgets off: Payments eye on a budget row opens the sheet review, no downloads there | Never the team dashboard |
+| R27 | Budgets off: Payments eye on a budget row opens the sheet review, PDF / Excel download there (R31) | Never the team dashboard |
 | R28 | Sheet review from Payments: "Back" / "חזור"; from a deep link: "Back to approvals" | - |
 | R29 | Payments: "Settle" / "התחשבנות" buttons; bulk "Settle N sheets" / "התחשבנות ב-N גליונות" | "Process" / "טיפול" on those buttons |
 
@@ -200,5 +210,22 @@ Backend 766/766 (6-month scenario included), unit tests green; `flutter test` 28
 | 2 | Manager | EN | Sheet review of a budget (budgets off) | Minor | Blank title - a budget has no cycle | Fixed (run 2): shows "Budget" |
 
 Checked clean: R14 card under Billing, Cancel / Confirm ("Stored files deleted: 14"), title row only Destroy; R15 reason inside rows / cards / compact rows (holder and manager), "Expenses to fix" / "הוצאות לתיקון" fits 375, no summary; R16 7 months "Out of range", 5 months saved, back to 15.12 clears the flag; R17 blocked Submit faded (green / purple), no submit request; R18 purple Submit beside green Approve, Submit on behalf -> Awaiting; R19 header dates with year (1440, 375); R20 disabled Decline (faded pink), "+ New Expense" faded at the limit, no bulk strip; R21 mobile Awaiting chip, no strip; desktop strip unchanged; R22 sheet / Payments / Analysis Excel: landscape + fit to page, well-formed; R23 "לחייב את העובד" / "לשלם לעובד", old wording gone; R24 HE PDF totals beside the amount; R26 icon with budgets off, "Budgets only"; R27 budgets off -> sheet review, no downloads; R28 "Back" from Payments, "Back to approvals" by deep link; R29 "Settle" / "Settle 1 sheet". Console: no exceptions.
+
+Result: 2 findings - 0 open, 2 fixed.
+
+### Run 3 - 2026-11-19 (round 4)
+- Branch / commit: feature/pc5-sheet-export @ uncommitted (both repos)
+- QA company: XpenseDesk Demo Company; manager m@, employee e@, platform admin platformadmin@ (connect as m@)
+- Coverage: R30-R33; Payments 1440 / 870 / 375 EN + HE, bulk bar; Budgets off -> Payments eye -> sheet review -> PDF + Excel; employee note on a budget expense 1440 EN; support session dashboard 1440 EN + HE, 375 HE.
+- Data changed and restored: Budgets module off -> on; a typed note discarded (not saved).
+- Not covered: the note on the new-expense screen (needs a receipt upload + AI run; same constant, the counter is Flutter's built-in one); the employee downloading their own budget with Budgets off (the server rule is the same for both roles).
+- Owner's finding, not caught by runs 1-2: R30 and R31 - now standing rows 5a.7 / 5a.8 in the manual-qa skill.
+
+| # | Lane | Lang | Screen | Severity | Finding | Status |
+|---|---|---|---|---|---|---|
+| 1 | Review | - | Expense detail | Major | A stored note over 300 (WhatsApp) would be cut to 300 on the first keystroke | Fixed (run 3): the limit is the longer of 300 and the stored note |
+| 2 | Manager | - | Budgets off download | Major | API test read the budget through the Budgets API (403 with Budgets off) | Fixed (run 3): test reads the budget as opened |
+
+Checked clean: R30 "התחשבנות" one line at 1440 / 870 / 375, bulk "התחשבנות ב-2 גליונות" one line; R31 Budgets off: budget rows listed, eye opens the sheet review with both download buttons, PDF + Excel 200; R32 "0/300" under the note, typing stops at 300/300; R33 "Support session: QA Manager" / "התחברות תמיכה: QA Manager" in the footer, header clean, 375 wraps above the copyright line. Backend: full suite 766/767 then the one fixed scenario green (sheet export 125/125). Flutter: 281 tests, analyze clean (9 earlier infos).
 
 Result: 2 findings - 0 open, 2 fixed.

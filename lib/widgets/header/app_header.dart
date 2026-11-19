@@ -12,7 +12,6 @@ import '../language_switcher.dart';
 import '../cycle/cycle_compact_badge.dart';
 import '../../providers/cycle_provider.dart';
 import 'billing_alert_banner.dart';
-import 'impersonation_banner.dart';
 import '../pwa/pwa_install_auto_prompt.dart';
 import '../pwa/pwa_install_launcher.dart';
 import '../notifications/notifications_bell.dart';
@@ -383,13 +382,6 @@ class _AppHeaderState extends ConsumerState<AppHeader> {
                 // menu button on mobile; renders nothing when bulk upload is
                 // off for the company.
                 const NotificationsBell(),
-
-                // FS-1001: support-session marker, in the bar rather than a
-                // banner below it — a full-width banner pushes every screen down
-                // for the whole call, and a support session is exactly when the
-                // page should look like the customer's. Renders nothing on an
-                // ordinary session.
-                const ImpersonationBanner(),
 
                 // Mobile: cycle pill — sits right beside the hamburger icon
                 if (isMobile && cycle != null) ...[

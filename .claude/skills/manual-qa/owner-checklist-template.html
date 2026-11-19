@@ -1,0 +1,117 @@
+<title>{{TITLE}}</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Layout: one reading column; a progress header, then groups of checkable rows (check, what to do, what you should see). */
+:root {
+  --bg: #f6f5fa; --surface: #ffffff; --fg: #1d1a2b; --muted: #6b6880; --line: #e3e0ee;
+  --accent: #5b3fd1; --accent-soft: #ece8fb; --amber: #b7791f; --amber-soft: #fbf1df; --done: #2f855a;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #14121c; --surface: #1d1a28; --fg: #ece9f6; --muted: #a29fb6; --line: #34304a;
+  --accent: #a08bff; --accent-soft: #2a2442; --amber: #e7b15e; --amber-soft: #3a2f1c; --done: #6fcf97; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #14121c; --surface: #1d1a28; --fg: #ece9f6; --muted: #a29fb6; --line: #34304a;
+  --accent: #a08bff; --accent-soft: #2a2442; --amber: #e7b15e; --amber-soft: #3a2f1c; --done: #6fcf97; color-scheme: dark; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 56px; }
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 22px; }
+header { display: grid; gap: 8px; }
+h1 { font-family: var(--display); font-size: 28px; font-weight: 600; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; max-width: 65ch; }
+.bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; position: sticky; top: env(safe-area-inset-top, 0px);
+  background: var(--bg); padding-block: 10px; z-index: 5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.track { flex: 1 1 220px; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; min-width: 0; }
+.fill { height: 100%; width: 0; background: var(--accent); transition: width .25s; }
+.count { font-variant-numeric: tabular-nums; font-weight: 600; }
+button.reset { font: inherit; font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--line);
+  border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+button.reset:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+section h2 { font-family: var(--display); font-size: 17px; font-weight: 600; margin: 0; padding: 14px 16px;
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+section h2 small { font-family: var(--body); font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: .02em; }
+.note { margin: 0; padding: 10px 16px; font-size: 13px; color: var(--amber); background: var(--amber-soft); border-bottom: 1px solid var(--line); }
+ul { list-style: none; margin: 0; padding: 0; }
+li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--line); }
+li:first-child { border-top: 0; }
+li input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+li label { cursor: pointer; display: grid; gap: 3px; min-width: 0; }
+.do { font-weight: 600; }
+.see { color: var(--muted); font-size: 14px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 1px 6px; margin-inline-end: 6px; }
+li.checked .do, li.checked .see { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+li.checked .do { color: var(--done); }
+[dir="rtl"], .he { unicode-bidi: isolate; }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+</style>
+
+
+<!-- Template for the owner hand-over checklist (manual-qa section 8).
+     Replace every {{...}}; one <section> per screen / area; one <li> per check.
+     Every checkbox id is unique; bump STORAGE_KEY per round so old ticks never carry over. -->
+<div class="wrap">
+  <header>
+    <h1>{{TITLE}}</h1>
+    <p class="sub">{{ONE LINE: what this round fixed, that it passed CR + security + Claude's QA, where (localhost dev / branch). Ticks stay in this browser only.}}</p>
+  </header>
+
+  <div class="bar" aria-live="polite">
+    <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+    <span class="count" id="count">0 / 0</span>
+    <button class="reset" id="reset" type="button">Clear ticks</button>
+  </div>
+
+  <section>
+    <h2>{{SCREEN OR AREA}} <small>{{owner item numbers}}</small></h2>
+    <ul>
+      <li><input type="checkbox" id="a1"><label for="a1"><span class="tag">{{item #}}</span><span class="do">{{Where + what to do, one action}}</span><span class="see">{{What you should see. Hebrew copy as <span class="he" dir="rtl" lang="he">...</span>.}}</span></label></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>I could not cover <small>needs a real device / app / account</small></h2>
+    <ul>
+      <li><input type="checkbox" id="g1"><label for="g1"><span class="do">{{e.g. open the Excel in Excel, real-phone tap}}</span><span class="see">{{Why Claude could not.}}</span></label></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Before release <small>prod database - tracked in the backend backlog</small></h2>
+    <ul>
+      <li><input type="checkbox" id="d1"><label for="d1"><span class="do">Apply <code>{{script.sql}}</code> on prod</span><span class="see">{{What it unlocks.}}</span></label></li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function () {
+  var KEY = '{{STORAGE_KEY}}';
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('li input[type=checkbox]'));
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+  function render() {
+    var done = 0;
+    boxes.forEach(function (b) { b.closest('li').classList.toggle('checked', b.checked); if (b.checked) done++; });
+    document.getElementById('count').textContent = done + ' / ' + boxes.length;
+    document.getElementById('fill').style.width = (boxes.length ? (done / boxes.length) * 100 : 0) + '%';
+  }
+  function save() {
+    var s = {};
+    boxes.forEach(function (b) { if (b.checked) s[b.id] = true; });
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {}
+  }
+  boxes.forEach(function (b) {
+    b.checked = !!saved[b.id];
+    b.addEventListener('change', function () { save(); render(); });
+  });
+  document.getElementById('reset').addEventListener('click', function () {
+    boxes.forEach(function (b) { b.checked = false; }); save(); render();
+  });
+  render();
+})();
+</script>

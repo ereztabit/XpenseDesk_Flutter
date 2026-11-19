@@ -725,7 +725,7 @@ Applies to: `_canContinue`/`_isFormValid` getters, `TextFormField` validators, s
 
 **ABSOLUTE RULE: every code change must be followed by a CR pass per [.claude/commands/code-review.md](.claude/commands/code-review.md).**
 
-The CR enforces seven rules. **Rule 7 is the one to run first** — Rules 1–6 only
+The CR enforces eight rules. **Rule 7 is the one to run first** — Rules 1–6 only
 inspect the files you wrote, so all six pass cleanly on a widget that should
 never have existed.
 
@@ -736,6 +736,7 @@ never have existed.
 5. Flutter modern-patterns hygiene — no `withOpacity`, no `EdgeInsets.only(left:|right:)`, no `TextAlign.left|right`, no `arrow_back_ios`, no raw `http.*` outside `ApiService`, no ARB placeholders.
 6. Responsive overflow risk — icon-button columns inside `Row` use `SizedBox(width: N)` not `Expanded(flex:)` so they have a hard minimum at narrow viewports.
 7. Reuse — every new container-shaped widget names the shared widget it reused, or states which candidates were read and why none fit. Not greppable by design: reuse is a relationship between your diff and the code you did *not* touch.
+8. Free-text limits — every free-text input sets `maxLength` from a shared constant (counter right below it), at or under the server limit; a longer stored value is never cut on edit.
 
 Invoke `/code-review` after every change. Findings categorized blocker / should-fix / nit. Wait for user approval before applying fixes.
 

@@ -32,4 +32,10 @@ void main() {
             today: DateTime(2026, 9, 29)),
         isNull);
   });
+
+  test('note limit: 300, or a longer stored note keeps its length', () {
+    expect(ExpensePolicy.noteLimitFor(''), 300);
+    expect(ExpensePolicy.noteLimitFor('a' * 300), 300);
+    expect(ExpensePolicy.noteLimitFor('a' * 450), 450);
+  });
 }

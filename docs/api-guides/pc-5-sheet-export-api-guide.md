@@ -34,7 +34,6 @@ The first download builds the file and stores it; every later download returns t
 |---|---|---|
 | 400 | `SheetExportFormatInvalid` | `format` is not `pdf` / `excel` |
 | 404 | `ExpenseSheetNotFound` | Missing, deleted, another company's, or not the caller's sheet and the caller is not a manager |
-| 403 | `BudgetsNotEnabled` | A budget while the company cannot use budgets |
 | 409 | `SheetExportNotApproved` | The sheet is not Approved |
 | 422 | `SheetExportTooLarge` | More than 1,000 lines |
 | 429 | `SheetExportBusy` | The server is building other files - retry in a moment |
@@ -42,6 +41,8 @@ The first download builds the file and stores it; every later download returns t
 | 500 | `SheetExportFailed` | The file could not be built |
 
 Platform-admin sessions are refused (403) like every company endpoint.
+An approved budget downloads even when the company has turned Budgets off - it
+is history (owner QA, 2026-11-19; `BudgetsNotEnabled` is no longer returned here).
 
 ### What is in the file
 

@@ -8,6 +8,14 @@ enum DatePolicyViolation { tooOld, inFuture }
 class ExpensePolicy {
   ExpensePolicy._();
 
+  /// Longest expense note the user can type; the counter shows under the input.
+  static const int noteMaxLength = 300;
+
+  /// The limit on edit: a longer note saved before (e.g. a WhatsApp upload)
+  /// keeps its length - it can shrink, never be cut on the first keystroke.
+  static int noteLimitFor(String stored) =>
+      stored.length > noteMaxLength ? stored.length : noteMaxLength;
+
   /// Why [date] falls outside the window — more than 12 months before
   /// [today] (defaults to now), or after it — or null when it is inside.
   /// The server's `ExpenseService.IsExpenseDateInRange`, on dates only.

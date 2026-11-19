@@ -13,6 +13,7 @@ class AppButton extends StatelessWidget {
     this.iconWidget,
     this.isLoading = false,
     this.dense = false,
+    this.fitLabel = false,
   }) : assert(icon == null || iconWidget == null,
             'Provide icon OR iconWidget, not both');
 
@@ -21,15 +22,15 @@ class AppButton extends StatelessWidget {
   final AppButtonVariant variant;
   final IconData? icon;
 
-  /// Custom leading widget for non-glyph icons (e.g. the multicolor
-  /// [MicrosoftLogo]). Mutually exclusive with [icon].
+  /// Custom leading widget (e.g. the multicolor [MicrosoftLogo]); not with [icon].
   final Widget? iconWidget;
-
   final bool isLoading;
 
-  /// Compact form for inline/secondary controls (smaller padding, font, and
-  /// tap target). Default buttons stay full-size.
+  /// Compact: smaller padding, font and tap target. Default buttons stay full-size.
   final bool dense;
+
+  /// Fixed-width spot: the label shrinks onto one line, the button keeps its size.
+  final bool fitLabel;
 
   static const _radius = BorderRadius.all(Radius.circular(12));
   static const _padding = EdgeInsets.symmetric(horizontal: 24, vertical: 14);
@@ -64,10 +65,9 @@ class AppButton extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           )
-        : Text(label);
+        : _label();
 
-    // Loading keeps the enabled look (a no-op tap), so only a truly disabled
-    // button fades.
+    // Loading keeps the enabled look (no-op tap): only a disabled button fades.
     final effectiveOnPressed = isLoading ? () {} : onPressed;
 
     if ((icon != null || iconWidget != null) && !isLoading) {
@@ -75,7 +75,7 @@ class AppButton extends StatelessWidget {
         onPressed: effectiveOnPressed,
         style: style,
         icon: iconWidget ?? Icon(icon, size: dense ? 16 : 18),
-        label: Text(label),
+        label: _label(),
       );
     }
 
@@ -85,6 +85,10 @@ class AppButton extends StatelessWidget {
       child: child,
     );
   }
+
+  Widget _label() => fitLabel
+      ? FittedBox(fit: BoxFit.scaleDown, child: Text(label, maxLines: 1, softWrap: false))
+      : Text(label);
 
   ButtonStyle _buildStyle() {
     switch (variant) {
@@ -166,11 +170,7 @@ class AppButton extends StatelessWidget {
   }
 
   /// Shared builder for colored variants (primary, destructive, success).
-  ButtonStyle _coloredStyle({
-    required Color bg,
-    required Color bgHover,
-    required Color fg,
-  }) {
+  ButtonStyle _coloredStyle({required Color bg, required Color bgHover, required Color fg}) {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         // Disabled = its own color, faded - never the gray of the normal

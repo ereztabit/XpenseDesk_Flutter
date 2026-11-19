@@ -117,6 +117,7 @@ class DesktopPaymentsRow extends StatelessWidget {
                             ? Icons.check_circle_outline
                             : Icons.edit_outlined,
                         dense: true,
+                        fitLabel: true, // "התחשבנות" in the 120px column
                         onPressed: onEdit!,
                       ),
                     ),
