@@ -14,6 +14,7 @@ Newest first. One row per feature. The row is inserted at `start-feature` (Versi
 
 | Date | Version | Feature | Description |
 |------|---------|---------|-------------|
+| 2026-11-20 | v1.54 | Budget incomplete-receipt fix (prod incident) | Approving a budget with a line that needs action shows the localized reason; caption for a bulk receipt refused because the sheet was already submitted. |
 | 2026-11-19 | v1.53 | Budgets PC-9 - Payments + History (FS-1021) | Manager Payments (pending) and History (all), employee read-only History, Settle / Closed wording, phone status toggle, sign-in lands on Budgets. |
 | 2026-11-19 | v1.53 | Budgets owner QA fixes (FS-1025) | Budget page QA rounds 1-5: layout, bell opens the batch sheet, end date up to 6 months back, same-size Settle / Edit, sheet type with Budgets off. |
 | 2026-11-18 | v1.53 | PC-5 sheet export (FS-1016) | "Download as PDF" and "Download as Excel" on approved Monthly sheets and approved budgets; admin "Clear stored sheet exports". |
