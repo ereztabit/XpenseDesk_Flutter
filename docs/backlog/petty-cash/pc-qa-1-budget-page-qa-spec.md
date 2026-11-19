@@ -52,8 +52,16 @@ Seen on Sheet review of an approved Monthly sheet (manager view).
     Total. Redesign it as an organized summary of the payment, aligned with
     the cards around it. Design it in the Lovable app mock first. Use the
     same box for the approved budget's payment status (PC-8 / D16).
+12. **Mobile: back + title row wastes space.** On mobile, the "<- Sheet
+    review" row takes a full row and its trailing half is empty. The sheet
+    card below is pushed down, so the first line card only starts mid-screen.
+    Make the top tighter: fold the back arrow and the title into one compact
+    row with the sheet card, or put that row's empty half to use, e.g. for
+    the PDF / Excel downloads that now take their own row inside the card.
+    Same on the budget page. On mobile the line cards also each carry an
+    "Approved" pill on an approved sheet; drop it with item 10.
 
 ## Done when
 
-- All nine verified on desktop and mobile, Hebrew and English (QA clicks every
+- All twelve verified on desktop and mobile, Hebrew and English (QA clicks every
   control).
