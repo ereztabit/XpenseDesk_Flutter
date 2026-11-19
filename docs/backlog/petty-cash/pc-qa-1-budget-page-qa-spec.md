@@ -36,6 +36,23 @@ Owner QA pass on the budget page. Numbers match the backend story.
    wrong way. It must point forward in reading direction - right in English,
    left in Hebrew.
 
+## Added 2026-11-19 - approved Monthly sheet (client only)
+
+Seen on Sheet review of an approved Monthly sheet (manager view).
+
+10. **Drop the Status column on an approved sheet.** Every line on an
+    approved sheet reads "Approved" (D24: an approved sheet lists only its
+    approved lines), so the column carries no information. Remove it on the
+    approved Monthly sheet, and on the approved budget too, for the same
+    reason.
+11. **Payment status box needs a design.** The box is mostly empty white
+    space: an icon and a "Pending" pill on one side, "Total" on the other,
+    nothing in between. Its edges also don't line up with the header card
+    and the table around it. The total it shows is the same as the header's
+    Total. Redesign it as an organized summary of the payment, aligned with
+    the cards around it. Design it in the Lovable app mock first. Use the
+    same box for the approved budget's payment status (PC-8 / D16).
+
 ## Done when
 
 - All nine verified on desktop and mobile, Hebrew and English (QA clicks every
