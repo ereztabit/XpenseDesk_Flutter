@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
+import '../expenses/expense_needs_action_note.dart';
 import '../expenses/expense_status_badge.dart';
 
 /// Compact mobile row for the Sheet Review "list / table" layout — the
@@ -22,6 +23,7 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
     required this.expense,
     required this.companyLocale,
     required this.isLast,
+    this.hideStatus = false,
     required this.onTap,
     this.onApprove,
     this.onDecline,
@@ -31,6 +33,7 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
   final ExpenseSummary expense;
   final String companyLocale;
   final bool isLast;
+  final bool hideStatus;
   final VoidCallback onTap;
   final VoidCallback? onApprove;
   final VoidCallback? onDecline;
@@ -105,6 +108,7 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
                         ],
                       ],
                     ),
+                    ExpenseNeedsActionNote(expense: expense), // FS-1025 #15
                   ],
                 ),
               ),
@@ -121,11 +125,13 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
                       color: AppTheme.foreground,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  ExpenseStatusBadge(
-                    expenseStatusId: expense.expenseStatusId,
-                    isAiData: expense.isAiData,
-                  ),
+                  if (!hideStatus) ...[
+                    const SizedBox(height: 4),
+                    ExpenseStatusBadge(
+                      expenseStatusId: expense.expenseStatusId,
+                      isAiData: expense.isAiData,
+                    ),
+                  ],
                 ],
               ),
               if (showApprove || showDecline || showDelete) ...[

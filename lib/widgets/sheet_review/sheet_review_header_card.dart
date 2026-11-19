@@ -7,9 +7,12 @@ import '../../models/expense_sheet_status.dart';
 import '../../providers/auth_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
+import '../../utils/responsive_utils.dart';
 import '../employee_dashboard/sheet_status_badge.dart';
 import '../ltr_text.dart';
 import '../selectable_scope.dart';
+import 'sheet_decline_comment_callout.dart';
+import 'sheet_review_meta_item.dart';
 
 /// Sheet Review header card — status badge, employee, cycle, timestamps,
 /// totals, and a read-only decline-comment callout while the sheet is
@@ -20,17 +23,27 @@ import '../selectable_scope.dart';
 /// Manager-facing + read-only: unlike the employee `DeclinedSheetBanner`, this
 /// has no auto-resubmit explainer — it's just the recorded reason.
 class SheetReviewHeaderCard extends ConsumerWidget {
-  const SheetReviewHeaderCard({super.key, required this.sheet});
+  const SheetReviewHeaderCard({super.key, required this.sheet, this.actions});
 
   final ExpenseSheetDetail sheet;
+
+  /// Optional actions (PC-5 downloads): after the badge on wide screens,
+  /// under the meta row below desktop width. Kept out of the selection area.
+  final Widget? actions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final companyLocale = ref.watch(companyLocaleProvider);
+    // Below desktop the actions go on their own row: next to the badge they
+    // squeeze the cycle title.
+    final narrow = !context.isDesktop;
     final baseCurrency = ref.watch(companyBaseCurrencyProvider);
 
-    final cycleText = sheet.cycleLabel.toCycleLongMonth(companyLocale);
+    // A budget has no cycle: name the sheet type (budgets off, from Payments - FS-1025 #27).
+    final cycleText = sheet.isBudget && sheet.cycleLabel.trim().isEmpty
+        ? l10n.paymentsSheetTypeBudget
+        : sheet.cycleLabel.toCycleLongMonth(companyLocale);
     final itemsText =
         '${sheet.expenses.length} ${sheet.expenses.length == 1 ? l10n.itemsCountSingular : l10n.itemsCountPlural}';
     final total = _sheetTotal();
@@ -60,18 +73,30 @@ class SheetReviewHeaderCard extends ConsumerWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // The status pill sits right after the name; downloads take the
+                  // trailing corner (owner QA, 2026-11-19).
                   Expanded(
-                    child: Text(
-                      cycleText,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.foreground,
-                      ),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            cycleText,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.foreground,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SheetStatusBadge(statusId: sheet.expenseSheetStatusId),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  SheetStatusBadge(statusId: sheet.expenseSheetStatusId),
+                  if (actions != null && !narrow) ...[
+                    const SizedBox(width: 12),
+                    SelectionContainer.disabled(child: actions!),
+                  ],
                 ],
               ),
               const SizedBox(height: 4),
@@ -96,24 +121,28 @@ class SheetReviewHeaderCard extends ConsumerWidget {
                 spacing: 16,
                 runSpacing: 4,
                 children: [
-                  _MetaItem(label: l10n.items, value: itemsText),
+                  SheetReviewMetaItem(label: l10n.items, value: itemsText),
                   if (totalText != null)
-                    _MetaItem(label: l10n.tableTotalHeader, value: totalText),
+                    SheetReviewMetaItem(label: l10n.tableTotalHeader, value: totalText),
                   if (sheet.submittedAt != null)
-                    _MetaItem(
+                    SheetReviewMetaItem(
                       label: l10n.submitted,
                       value: sheet.submittedAt!.toLongDate(companyLocale),
                     ),
                   if (sheet.reviewedAt != null)
-                    _MetaItem(
+                    SheetReviewMetaItem(
                       label: l10n.approvedAt,
                       value: sheet.reviewedAt!.toLongDate(companyLocale),
                     ),
                 ],
               ),
+              if (actions != null && narrow) ...[
+                const SizedBox(height: 12),
+                SelectionContainer.disabled(child: actions!),
+              ],
               if (hasComment) ...[
                 const SizedBox(height: 12),
-                _DeclineCommentCallout(
+                SheetDeclineCommentCallout(
                   comment: comment,
                   managerName: sheet.reviewedByName?.trim(),
                 ),
@@ -135,76 +164,3 @@ class SheetReviewHeaderCard extends ConsumerWidget {
   }
 }
 
-class _MetaItem extends StatelessWidget {
-  const _MetaItem({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: AppTheme.mutedForeground),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.foreground,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _DeclineCommentCallout extends StatelessWidget {
-  const _DeclineCommentCallout({required this.comment, this.managerName});
-
-  final String comment;
-  final String? managerName;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final hasManager = (managerName ?? '').isNotEmpty;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.destructive.withAlpha(13),
-        border: Border.all(color: AppTheme.destructive.withAlpha(102)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            hasManager
-                ? '$managerName ${l10n.declinedByManagerPrefix}'
-                : l10n.declinedByManagerFallback,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.destructive,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            comment,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppTheme.foreground,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
+import '../expenses/expense_needs_action_note.dart';
 
 /// One data row in the desktop sheet-expense table.
 ///
@@ -117,12 +118,20 @@ class DesktopSheetTableRow extends ConsumerWidget {
           ),
           Expanded(
             flex: 22,
-            child: Text(
-              (expense.merchantName?.trim().isNotEmpty ?? false)
-                  ? expense.merchantName!
-                  : '—',
-              style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  (expense.merchantName?.trim().isNotEmpty ?? false)
+                      ? expense.merchantName!
+                      : '—',
+                  style: const TextStyle(fontSize: 14, color: AppTheme.foreground),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // What to fix, on the line itself (FS-1025 #15).
+                ExpenseNeedsActionNote(expense: expense),
+              ],
             ),
           ),
           SizedBox(

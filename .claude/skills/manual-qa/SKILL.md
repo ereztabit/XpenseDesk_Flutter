@@ -20,7 +20,8 @@ gate that keeps obvious defects from reaching them.
 
 **Order inside a feature:** build clean -> `flutter analyze` clean ->
 `/code-review` with fixes applied -> the offer -> **this skill** -> audit the
-findings into the feature md (section 7) -> report to the user. After any fix
+findings into the feature md (section 7) -> publish the owner's checklist
+(section 8) -> report to the user. After any fix
 round, ask the user before running it again.
 
 ## 0 - Prerequisites (check, do not assume)
@@ -287,6 +288,20 @@ backend SQL gate does for scripts). Missing rows are added before QA starts.
    opens / expands. *Missed: empty sections expanded; no Back on your own
    budget.*
 
+7. **Hebrew fit of every changed control.** Zoom every changed or renamed
+   button / chip / pill / column header in HE at 1440, the narrow desktop and
+   375. A second line or clipped text fails the run. Fix by fitting the text
+   (`AppButton(fitLabel: true)`), never by widening the control. *Missed:
+   "התחשבנות" wrapping in the 120px Payments action column.*
+8. **Module OFF.** For every feature that belongs to a module (Budgets, Bulk
+   upload, ...), turn the module off in company config and re-run: past
+   records must still open, view and download; only creating / editing new
+   ones stops. Turn it back on after. *Missed: an approved budget's PDF /
+   Excel would not download with Budgets off.*
+9. **Free-text limits.** Every changed free-text input (note, comment,
+   reason) shows its counter right below it, stops at the limit in EN and HE,
+   and a value at the limit saves and reloads intact.
+
 Plus one copy rule: read every confirm / destructive message against what the
 system really does (permanent vs recoverable, who can undo). *Missed: "support
 can restore" on a delete the owner wants final.*
@@ -369,3 +384,26 @@ A run that stops before its matrix is done (the browser pane went hidden, the
 server died) is recorded as `Result: partial - stopped at <step>` and **never
 counts as passed**: finish-feature treats it like no record. Re-run the rows
 it did not reach.
+
+## 8 - Hand-over: the owner's manual QA checklist (mandatory)
+
+Work is handed to the owner only after build + tests, CR, security review and
+this skill's run are all clean - and always **with a checklist artifact** for
+the owner's own QA. No hand-over without it (owner rule, 2026-11-19).
+
+- **Start from** [owner-checklist-template.html](owner-checklist-template.html):
+  copy it to the scratchpad, fill every `{{...}}`, set a fresh `STORAGE_KEY`
+  (`<feature>-round<N>-v1`), publish it with the Artifact tool and give the
+  link in the report.
+- **One row per thing the owner should see**, grouped by screen: where to go,
+  one action, and what they should see (Hebrew copy quoted as it appears).
+  Tag each row with the owner's own item number.
+- **Every owner request in the round gets at least one row** - cross-check the
+  rows against their message before publishing.
+- **Standing rows** whenever they apply: the Hebrew-fit check (5a.7) on each
+  changed control, the module-OFF check (5a.8), the free-text limit (5a.9).
+- **"I could not cover"** lists what Claude's browser cannot prove: opening a
+  file in Excel / a PDF viewer, printing, a real phone tap, real email.
+- **"Before release"** lists every SQL script still pending on prod, the same
+  list as the backend backlog row.
+- Rows describe behaviour, not code. Short - one line to do, one line to see.

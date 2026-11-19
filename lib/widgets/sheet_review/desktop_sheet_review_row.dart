@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../../utils/expense_display_utils.dart';
 import '../action_icon_button.dart';
 import '../ai_badge.dart';
+import '../expenses/expense_needs_action_note.dart';
 import '../expenses/expense_status_badge.dart';
 
 /// Shared cell padding for the desktop Sheet Review [Table] (header + rows).
@@ -22,7 +23,8 @@ const TextStyle _cellTextStyle = TextStyle(
 );
 
 /// Builds one data [TableRow] for the desktop Sheet Review table. Columns mirror
-/// the header: Date · Merchant · Category · Amount · Status · Actions.
+/// the header: Date · Merchant · Category · Amount · Status · Actions (no
+/// Status on an approved sheet - [showStatus], FS-1025 #10).
 ///
 /// The open-detail icon is always present (the whole row is also tappable via
 /// [TableRowInkWell]) — it reads as edit while the sheet is non-terminal
@@ -41,6 +43,7 @@ TableRow buildSheetReviewRow(
   VoidCallback? onApprove,
   VoidCallback? onDecline,
   VoidCallback? onDelete,
+  bool showStatus = true,
 }) {
   final l10n = AppLocalizations.of(context)!;
   final uiLocale = Localizations.localeOf(context);
@@ -67,10 +70,17 @@ TableRow buildSheetReviewRow(
       ),
       _tapCell(
         onTap,
-        Text(
-          (merchant != null && merchant.isNotEmpty) ? merchant : '—',
-          style: _cellTextStyle,
-          overflow: TextOverflow.ellipsis,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              (merchant != null && merchant.isNotEmpty) ? merchant : '—',
+              style: _cellTextStyle,
+              overflow: TextOverflow.ellipsis,
+            ),
+            ExpenseNeedsActionNote(expense: expense), // FS-1025 #15
+          ],
         ),
       ),
       _tapCell(
@@ -102,21 +112,22 @@ TableRow buildSheetReviewRow(
           ),
         ),
       ),
-      _tapCell(
-        onTap,
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          // One line always: in a narrow column the pill scales down instead
-          // of breaking mid-word ("Approve/d") - FS-1013 owner QA.
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: ExpenseStatusBadge(
-              expenseStatusId: expense.expenseStatusId,
-              isAiData: expense.isAiData,
+      if (showStatus)
+        _tapCell(
+          onTap,
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            // One line always: in a narrow column the pill scales down instead
+            // of breaking mid-word ("Approve/d") - FS-1013 owner QA.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ExpenseStatusBadge(
+                expenseStatusId: expense.expenseStatusId,
+                isAiData: expense.isAiData,
+              ),
             ),
           ),
         ),
-      ),
       TableCell(
         verticalAlignment: TableCellVerticalAlignment.middle,
         child: Padding(

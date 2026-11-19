@@ -44,34 +44,37 @@ String paymentsTotalLabelText(AppLocalizations l10n, int count) =>
     '${l10n.paymentsTotalLabel} · $count '
     '${count == 1 ? l10n.awaitingPaymentSheetSingular : l10n.awaitingPaymentSheetPlural}';
 
-/// Bulk action label: "Process 2 sheets" / "Process 1 sheet".
-String paymentProcessCountText(AppLocalizations l10n, int count) =>
-    '${l10n.paymentProcessButton} $count '
-    '${count == 1 ? l10n.awaitingPaymentSheetSingular : l10n.awaitingPaymentSheetPlural}';
+/// Bulk action label: "Process 2 sheets" / "טיפול ב-2 גליונות" - a prefix
+/// ending in a hyphen joins the number with no space.
+String paymentProcessCountText(AppLocalizations l10n, int count) {
+  final prefix = l10n.paymentProcessCountPrefix;
+  final join = prefix.endsWith('-') ? '' : ' ';
+  return '$prefix$join$count '
+      '${count == 1 ? l10n.awaitingPaymentSheetSingular : l10n.awaitingPaymentSheetPlural}';
+}
 
 String paymentDirectionText(AppLocalizations l10n, PaymentDirection d) =>
     d == PaymentDirection.collect
     ? l10n.paymentsDirectionToCollect
     : l10n.paymentsDirectionToPay;
 
-/// Awaiting Payment / Paid / Collected; plain "Processed" without a direction.
-String paymentStatusText(
-  AppLocalizations l10n,
-  PaymentStatus status, {
-  PaymentDirection? direction,
-}) {
-  if (status == PaymentStatus.awaitingPayment) return l10n.paymentStatusPending;
-  return switch (direction) {
-    PaymentDirection.pay => l10n.paymentStatusPaid,
-    PaymentDirection.collect => l10n.paymentStatusCollected,
-    null => l10n.paymentStatusProcessed,
-  };
-}
+/// Pending / Closed / No payment - one word per state, whichever way the
+/// money went (owner QA 2026-11-19: not Paid, Charged or Returned).
+String paymentStatusText(AppLocalizations l10n, PaymentStatus status) =>
+    switch (status) {
+      PaymentStatus.awaitingPayment => l10n.paymentStatusPending,
+      PaymentStatus.processed => l10n.paymentStatusProcessed,
+      PaymentStatus.noPayment => l10n.paymentStatusNoPayment,
+    };
 
 String paymentSheetTypeText(AppLocalizations l10n, CompanyModuleKey type) =>
     type == CompanyModuleKey.pettyCash
     ? l10n.paymentsSheetTypeBudget
     : l10n.paymentsSheetTypeMonthly;
+
+/// PC-9 History: the sheet a row stands for - "Events #1004", or "Monthly".
+String paymentSheetLabelText(AppLocalizations l10n, PaymentReportRow row) =>
+    paymentBudgetText(row) ?? paymentSheetTypeText(l10n, row.sheetType);
 
 /// "Events #1004" for a budget row; null for a Monthly row.
 String? paymentBudgetText(PaymentReportRow row) {

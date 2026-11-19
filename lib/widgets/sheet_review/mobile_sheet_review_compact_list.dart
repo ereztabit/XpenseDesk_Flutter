@@ -15,9 +15,13 @@ class MobileSheetReviewCompactList extends StatelessWidget {
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
+    this.hideStatus = false,
   });
 
   final List<ExpenseSummary> expenses;
+
+  /// An approved sheet: no per-row status pill (FS-1025 #10).
+  final bool hideStatus;
   final String companyLocale;
   final void Function(ExpenseSummary) onTapLine;
   final void Function(ExpenseSummary)? onApproveLine;
@@ -41,6 +45,7 @@ class MobileSheetReviewCompactList extends StatelessWidget {
             expense: e,
             companyLocale: companyLocale,
             isLast: index == expenses.length - 1,
+            hideStatus: hideStatus,
             onTap: () => onTapLine(e),
             onApprove: onApproveLine == null ? null : () => onApproveLine!(e),
             onDecline: onDeclineLine == null ? null : () => onDeclineLine!(e),

@@ -97,7 +97,11 @@ class AuthGate extends ConsumerWidget {
     switch (mode) {
       case AuthGateMode.guestOnly:
         if (userInfo == null) return null;
-        return defaultRouteForUser(userInfo);
+        // A dashboard landing goes through /home, which may pick Budgets (D43).
+        final home = defaultRouteForUser(userInfo);
+        return home == '/dashboard' || home == '/user/dashboard'
+            ? AppRoutes.home
+            : home;
       case AuthGateMode.authenticated:
         return userInfo == null ? '/' : null;
       case AuthGateMode.managerOnly:

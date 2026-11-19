@@ -627,6 +627,7 @@ class _EmployeeExpenseDetailScreenState
     TextInputType? keyboardType,
     String? errorText,
     bool missing = false,
+    int? maxLength,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,6 +641,7 @@ class _EmployeeExpenseDetailScreenState
           readOnly: !enabled,
           enableInteractiveSelection: true,
           maxLines: maxLines,
+          maxLength: maxLength,
           inputFormatters: enabled ? inputFormatters : null,
           keyboardType: keyboardType,
           style: TextStyle(
@@ -1001,7 +1003,9 @@ class _EmployeeExpenseDetailScreenState
             enabled: _isEditable && !_isSaving),
         const SizedBox(height: 16),
         _buildTextField(l10n.noteLabel, _noteController,
-            maxLines: 3, enabled: _isEditable && !_isSaving),
+            maxLines: 3,
+            maxLength: _isEditable ? ExpensePolicy.noteLimitFor(_initialNote) : null,
+            enabled: _isEditable && !_isSaving),
         const SizedBox(height: 16),
         _buildAiDetectedPanel(l10n, companyLocale, uiLocale),
       ],
@@ -1024,10 +1028,11 @@ class _EmployeeExpenseDetailScreenState
         const SizedBox(height: 16),
         _buildCategoryDropdown(l10n, uiLocale, enabled: enabled),
         const SizedBox(height: 16),
-        // Manager cannot edit notes
+        // A manager edits the note too, as in the fast-track form (owner 2026-11-19).
         _buildTextField(l10n.noteLabel, _noteController,
             maxLines: 3,
-            enabled: widget.isManagerMode ? false : enabled),
+            maxLength: _isEditable ? ExpensePolicy.noteLimitFor(_initialNote) : null,
+            enabled: enabled),
       ],
     );
   }

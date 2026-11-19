@@ -14,6 +14,7 @@ import '../app_button.dart';
 import '../bulk_upload/confirm_choice_dialog.dart';
 import '../profile/profile_section_card.dart';
 import 'admin_feature_toggle_row.dart';
+import 'admin_sheet_exports_card.dart';
 import 'admin_free_plan_card.dart';
 
 /// The admin company page's Configuration tab (FS-1007, bulk upload UI/UX
@@ -182,6 +183,9 @@ class _AdminCompanyConfigurationBodyState
                 companyId: widget.companyId,
                 companyName: widget.companyName,
               ),
+              // PC-5: under Billing, as its own section (owner QA, 2026-11-19).
+              const SizedBox(height: 16),
+              AdminSheetExportsCard(companyId: widget.companyId),
             ],
           ),
         ),

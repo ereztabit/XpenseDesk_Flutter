@@ -8,6 +8,7 @@ import '../providers/expense_sheet_provider.dart';
 import '../providers/manager_dashboard_provider.dart';
 import '../providers/payments_provider.dart';
 import '../services/expense_service.dart';
+import '../utils/app_navigator.dart';
 import '../utils/format_utils.dart';
 import '../utils/ref_utils.dart';
 import '../utils/responsive_utils.dart';
@@ -23,6 +24,7 @@ import '../widgets/sheet_review/sheet_activity_timeline.dart';
 import '../widgets/sheet_review/sheet_review_back_row.dart';
 import '../widgets/sheet_review/sheet_review_error_view.dart';
 import '../widgets/sheet_review/sheet_review_header_card.dart';
+import '../widgets/sheet_export/sheet_export_actions.dart';
 import '../widgets/sheet_review/sheet_review_line_section.dart';
 import '../widgets/sheet_review/sheet_review_just_added_strip.dart';
 
@@ -33,10 +35,19 @@ import '../widgets/sheet_review/sheet_review_just_added_strip.dart';
 /// approve/decline; `Declined` shows approve only (the server accepts approve on
 /// declined sheets — the manager's escape hatch; re-declining is rejected);
 /// Approved renders read-only.
+///
+/// [readOnly] (PC-9, D40): an employee opening their own sheet from History
+/// via `/employee/history/sheet/{id}` - same layout and PDF / Excel, no
+/// decisions, edits or line review; works with any module off.
 class SheetReviewScreen extends ConsumerStatefulWidget {
-  const SheetReviewScreen({super.key, required this.expenseSheetId});
+  const SheetReviewScreen({
+    super.key,
+    required this.expenseSheetId,
+    this.readOnly = false,
+  });
 
   final String expenseSheetId;
+  final bool readOnly;
 
   @override
   ConsumerState<SheetReviewScreen> createState() => _SheetReviewScreenState();
@@ -92,12 +103,14 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   /// sheet is the manager's escape hatch — declined lines stay declined; with
   /// zero approvable lines it simply closes the sheet (server-confirmed no-op).
   bool _canApproveSheet(ExpenseSheetDetail sheet) =>
-      sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
-      sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
+      !widget.readOnly &&
+      (sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
+          sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id);
 
   /// Whole-sheet decline: WaitingForApproval only — re-declining a Declined
   /// sheet is rejected by the server (409).
   bool _canDeclineSheet(ExpenseSheetDetail sheet) =>
+      !widget.readOnly &&
       sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id;
 
   /// FS-1004. Add an expense to this sheet: WaitingForApproval or Declined only.
@@ -105,8 +118,9 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
   /// a manager cannot reach anyway because a draft is private to its owner until
   /// they submit it. Same statuses the server accepts.
   bool _canAddExpense(ExpenseSheetDetail sheet) =>
-      sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
-      sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id;
+      !widget.readOnly &&
+      (sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id ||
+          sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id);
 
   /// Opens the new-expense form aimed at this sheet. The line will belong to the
   /// sheet's owner and be approved on entry, so on return the sheet is refreshed
@@ -164,7 +178,9 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
 
   void _openLineDetail(ExpenseSummary expense) {
     Navigator.of(context)
-        .pushNamed('/manager/expense/${expense.expenseId}')
+        .pushNamed(widget.readOnly
+            ? '/employee/expense/${expense.expenseId}'
+            : '/manager/expense/${expense.expenseId}')
         .then((_) => _refresh());
   }
 
@@ -421,6 +437,9 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
                     ),
                     error: (error, _) => SheetReviewErrorView(
                       isNotFound: error is ExpenseSheetNotFoundException,
+                      fallbackRoute: widget.readOnly
+                          ? AppRoutes.employeeHistory
+                          : AppRoutes.managerApprovals,
                     ),
                     data: (sheet) => _buildContent(context, l10n, sheet),
                   ),
@@ -461,13 +480,30 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     // decline on a Declined line). Whole-sheet decline stays WfA-only.
     final isSheetLocked =
         sheet.expenseSheetStatusId == ExpenseSheetStatus.approved.id;
+    // Approved = history: a budget downloads even with Budgets off (owner QA).
+    final canDownload = isSheetLocked;
     final justAdded = _showJustAddedCue ? _justAddedLine(sheet) : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SheetReviewBackRow(title: l10n.sheetReviewTitle),
-        const SizedBox(height: 16),
-        SheetReviewHeaderCard(sheet: sheet),
+        // PC-5 downloads (approved only): in the card on desktop, in the back
+        // row's empty end on mobile so the card starts higher (FS-1025 #12).
+        SheetReviewBackRow(
+          title: l10n.sheetReviewTitle,
+          fallbackRoute: widget.readOnly
+              ? AppRoutes.employeeHistory
+              : AppRoutes.managerApprovals,
+          trailing: canDownload && context.isMobile
+              ? SheetExportActions(sheetId: sheet.expenseSheetId, inRow: true)
+              : null,
+        ),
+        SizedBox(height: context.isMobile ? 8 : 16),
+        SheetReviewHeaderCard(
+          sheet: sheet,
+          actions: canDownload && !context.isMobile
+              ? SheetExportActions(sheetId: sheet.expenseSheetId)
+              : null,
+        ),
         // Desktop: actions inline below the header. Mobile: sticky bottom bar.
         if (canApproveSheet && context.isDesktop) ...[
           const SizedBox(height: 16),
@@ -499,11 +535,13 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
         SheetReviewLineSection(
           expenses: sheet.expenses,
           onTapLine: _openLineDetail,
-          canEditLines: !isSheetLocked,
+          canEditLines: !isSheetLocked && !widget.readOnly,
           onApproveLine: canApproveSheet ? _handleLineApprove : null,
           onDeclineLine: canApproveSheet ? _handleLineDecline : null,
-          onDeleteLine: !isSheetLocked ? _handleLineDelete : null,
+          onDeleteLine:
+              !isSheetLocked && !widget.readOnly ? _handleLineDelete : null,
           focusTab: _showJustAddedCue ? FilterTab.approved : null,
+          approvedOnly: isSheetLocked,
         ),
         const SizedBox(height: 16),
         SheetActivityTimeline(log: sheet.log),

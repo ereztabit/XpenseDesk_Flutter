@@ -4,20 +4,23 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
-import '../app_button.dart';
+import '../../utils/payments_copy_utils.dart';
 import 'payment_amount_cell.dart';
 import 'payment_employee_cell.dart';
+import 'payment_row_select_cell.dart';
 import 'payment_sheet_type_cell.dart';
+import 'payment_status_cell.dart';
 import 'payments_table_columns.dart';
 
-/// One desktop Payments row, in [PaymentsTableColumns] order: checkbox
-/// (pending rows only), name + status pill, amount, Process / Edit, then the
-/// reference columns.
+/// One desktop Payments row, in [PaymentsTableColumns] order: select box
+/// (Pending) or Edit (Closed) + eye, name, amount, plain-text status, then
+/// the reference columns (owner QA 2026-11-19).
 class DesktopPaymentsRow extends StatelessWidget {
   const DesktopPaymentsRow({
     super.key,
     required this.row,
     this.showSheetType = true,
+    this.historyOnly = false,
     required this.locale,
     required this.currencyCode,
     required this.isSelected,
@@ -29,13 +32,17 @@ class DesktopPaymentsRow extends StatelessWidget {
 
   final PaymentReportRow row;
   final bool showSheetType; // false: Monthly-only company, as before PC-8
+
+  /// An employee's History: the sheet's name in place of the employee, no
+  /// gov ID column.
+  final bool historyOnly;
   final String locale;
   final String? currencyCode;
   final bool isSelected;
   final bool isHighlighted; // processed meanwhile by another manager
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
-  final VoidCallback? onEdit; // null hides the action
+  final VoidCallback? onEdit; // null: no Edit (History, No payment)
 
   static const _dash = '—';
   static const _cellStyle = TextStyle(fontSize: 13, color: AppTheme.foreground);
@@ -46,7 +53,6 @@ class DesktopPaymentsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final Color? rowColor = isHighlighted
         ? AppTheme.destructive.withAlpha(20)
         : isSelected
@@ -61,22 +67,19 @@ class DesktopPaymentsRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _cell(
-            PaymentsTableColumns.checkbox,
-            row.isAwaiting && onToggleSelection != null
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (v) => onToggleSelection!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : const SizedBox.shrink(),
+          PaymentRowSelectCell(
+            row: row,
+            isSelected: isSelected,
+            onToggleSelection: onToggleSelection,
+            onView: onTap,
+            onEdit: onEdit,
           ),
           _cell(
             PaymentsTableColumns.employee,
             PaymentEmployeeCell(
               row: row,
               onTap: onTap,
-              showDirection: showSheetType,
+              label: historyOnly ? _sheetLabel(context) : null,
             ),
           ),
           _cell(
@@ -85,33 +88,9 @@ class DesktopPaymentsRow extends StatelessWidget {
               row: row,
               locale: locale,
               currencyCode: currencyCode,
-              showDirection: showSheetType,
             ),
           ),
-          _cell(
-            PaymentsTableColumns.action,
-            onEdit == null
-                ? const SizedBox.shrink()
-                : Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: SizedBox(
-                      height: 32,
-                      child: AppButton(
-                        label: row.isAwaiting
-                            ? l10n.paymentProcessButton
-                            : l10n.paymentEditButton,
-                        variant: row.isAwaiting
-                            ? AppButtonVariant.primary
-                            : AppButtonVariant.normal,
-                        icon: row.isAwaiting
-                            ? Icons.check_circle_outline
-                            : Icons.edit_outlined,
-                        dense: true,
-                        onPressed: onEdit!,
-                      ),
-                    ),
-                  ),
-          ),
+          _cell(PaymentsTableColumns.status, PaymentStatusCell(row: row)),
           if (showSheetType)
             _cell(
               PaymentsTableColumns.sheetType,
@@ -120,7 +99,7 @@ class DesktopPaymentsRow extends StatelessWidget {
           _cell(
             PaymentsTableColumns.cycle,
             Text(
-              row.cycleLabel.toCycleLongMonth(locale),
+              row.cycleLabel.isEmpty ? _dash : row.cycleLabel.toCycleLongMonth(locale),
               style: _cellStyle,
               overflow: TextOverflow.ellipsis,
             ),
@@ -139,18 +118,22 @@ class DesktopPaymentsRow extends StatelessWidget {
               style: _cellStyle,
             ),
           ),
-          _cell(
-            PaymentsTableColumns.govId,
-            Text(
-              row.employeeGovId ?? _dash,
-              style: _mutedCellStyle,
-              overflow: TextOverflow.ellipsis,
+          if (!historyOnly)
+            _cell(
+              PaymentsTableColumns.govId,
+              Text(
+                row.employeeGovId ?? _dash,
+                style: _mutedCellStyle,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
         ],
       ),
     );
   }
+
+  String _sheetLabel(BuildContext context) =>
+      paymentSheetLabelText(AppLocalizations.of(context)!, row);
 
   Widget _cell(double width, Widget child) => SizedBox(
     width: width,

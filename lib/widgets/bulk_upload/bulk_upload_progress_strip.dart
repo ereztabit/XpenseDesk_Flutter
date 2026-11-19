@@ -18,13 +18,21 @@ import 'creeping_progress_bar.dart';
 /// finishes the strip hides and the expense list refetches
 /// (`BulkUploadBatchesNotifier`).
 class BulkUploadProgressStrip extends ConsumerWidget {
-  const BulkUploadProgressStrip({super.key});
+  const BulkUploadProgressStrip({super.key, this.budgetId});
+
+  /// Only batches filed here (FS-1025 #2): this budget, or with null the
+  /// Monthly sheet - another budget's upload never shows as this one's.
+  final String? budgetId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(isBulkUploadEnabledProvider)) return const SizedBox.shrink();
     final batches = ref.watch(bulkUploadBatchesProvider).asData?.value;
-    final progress = batches == null ? null : processingProgress(batches);
+    // No target on the batch (server not yet sending it): shown everywhere, as before.
+    final mine = batches
+        ?.where((b) => b.sheetType == null || (budgetId == null ? !b.isBudget : b.expenseSheetId == budgetId))
+        .toList();
+    final progress = mine == null ? null : processingProgress(mine);
     if (progress == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;

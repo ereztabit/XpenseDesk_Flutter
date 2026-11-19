@@ -305,6 +305,36 @@ class ApiService {
         return response.bodyBytes;
       });
 
+  /// POST returning status, headers and raw bytes - for file downloads whose
+  /// failures must surface their error envelope (PC-5 sheet export). A first
+  /// build can take a while, hence the long timeout.
+  Future<({int statusCode, Map<String, String> headers, Uint8List bytes})>
+      postBinaryWithStatus(
+    String endpoint,
+    Map<String, dynamic> body, {
+    String? authToken,
+    Duration timeout = const Duration(seconds: 60),
+  }) =>
+          _run(() async {
+            final uri = Uri.parse('$baseUrl$endpoint');
+            final response = await http
+                .post(
+                  uri,
+                  headers: _buildHeaders(authToken: authToken),
+                  body: jsonEncode(body),
+                )
+                .timeout(timeout);
+            if (response.statusCode == 401) {
+              onUnauthorized?.call();
+              throw const UnauthorizedException();
+            }
+            return (
+              statusCode: response.statusCode,
+              headers: response.headers,
+              bytes: response.bodyBytes,
+            );
+          });
+
   /// Make a DELETE request with optional authorization token
   Future<Map<String, dynamic>> delete(
     String endpoint, {

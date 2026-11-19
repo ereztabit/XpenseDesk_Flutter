@@ -15,9 +15,14 @@ class SheetReviewBackRow extends StatelessWidget {
     super.key,
     required this.title,
     this.fallbackRoute = '/manager-approvals',
+    this.trailing,
   });
 
   final String title;
+
+  /// Mobile only: fills the row's empty end (the PDF / Excel downloads on an
+  /// approved sheet), so the sheet card starts higher (FS-1025 #12).
+  final Widget? trailing;
 
   /// Where to go when there is nothing to pop — e.g. Sheet Review was opened via
   /// a deep link or after a browser refresh, so it is the only route on the
@@ -36,25 +41,34 @@ class SheetReviewBackRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // Back returns to wherever the sheet was opened from (Payments, the
+    // dashboard...) - "to approvals" only when it goes there (FS-1025 #28;
+    // a read-only History sheet falls back to History - PC-9).
+    final toApprovals =
+        !Navigator.of(context).canPop() && fallbackRoute == '/manager-approvals';
+    final backLabel = toApprovals ? l10n.backToApprovals : l10n.back;
 
     if (context.isMobile) {
       return Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
-            tooltip: l10n.backToApprovals,
+            tooltip: backLabel,
             onPressed: () => _back(context),
           ),
           const SizedBox(width: 4),
           Expanded(
             child: Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context)
                   .textTheme
                   .headlineMedium
                   ?.copyWith(fontSize: 20),
             ),
           ),
+          if (trailing != null) ...[const SizedBox(width: 8), trailing!],
         ],
       );
     }
@@ -62,7 +76,7 @@ class SheetReviewBackRow extends StatelessWidget {
     return Row(
       children: [
         AppButton(
-          label: l10n.backToApprovals,
+          label: backLabel,
           variant: AppButtonVariant.ghost,
           icon: Icons.arrow_back,
           onPressed: () => _back(context),

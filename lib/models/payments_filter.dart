@@ -28,9 +28,12 @@ class PaymentsFilter {
     this.sheetType,
   });
 
-  /// The report's landing state: Awaiting Payment, nothing else filtered.
-  static const defaults =
-      PaymentsFilter(status: PaymentStatus.awaitingPayment);
+  /// The landing state: every status, nothing filtered (PC-9, D41). The
+  /// dashboard cards still open on Pending by passing it explicitly.
+  static const defaults = PaymentsFilter();
+
+  /// The manager's "Payments" entry: what still has to be settled.
+  static const pending = PaymentsFilter(status: PaymentStatus.awaitingPayment);
 
   static const Object _unset = Object();
 
@@ -88,8 +91,11 @@ class PaymentsFilter {
 
   /// Query params for `GET /api/payments` and body for the filtered export.
   /// Omitted keys mean "no filter" server-side.
+  /// PC-9: the screen always lists "No payment" sheets too
+  /// (`includeNoPayment`); the export body sends it as a JSON bool.
   Map<String, String> toQueryParams({int? page, int? pageSize}) {
     return {
+      'includeNoPayment': 'true',
       if (status != null) 'paymentStatus': '${status!.queryId}',
       'userId': ?userId,
       'cycleId': ?cycleId,

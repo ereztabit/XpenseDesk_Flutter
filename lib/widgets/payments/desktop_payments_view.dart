@@ -6,14 +6,13 @@ import '../../models/payment_report_row.dart';
 import '../../models/payments_filter.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
-import '../../theme/app_theme.dart';
-import '../../utils/app_navigator.dart';
 import '../../utils/payments_copy_utils.dart';
 import '../../utils/payments_utils.dart';
 import '../manager_dashboard/paging_overflow_notice.dart';
 import 'desktop_bulk_action_bar.dart';
 import 'desktop_payments_table.dart';
 import 'payments_filter_card.dart';
+import 'payments_title_row.dart';
 
 /// Desktop composition of the Payments Report body. The whole view flows with
 /// the page (no inner vertical scroll — #6); the table sizes to its rows and
@@ -62,13 +61,6 @@ class DesktopPaymentsView extends ConsumerWidget {
   final ValueChanged<PaymentReportRow> onEditRow;
   final ScrollController horizontalScrollController;
 
-  void _back(BuildContext context) {
-    final nav = Navigator.of(context);
-    nav.canPop()
-        ? nav.pop()
-        : nav.pushReplacementNamed(AppRoutes.managerDashboard);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -83,25 +75,7 @@ class DesktopPaymentsView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
-              // canPop falls back to the dashboard so back works after a
-              // browser refresh / deep link (nothing to pop otherwise).
-              onPressed: () => _back(context),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              l10n.paymentsTitle,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.foreground,
-              ),
-            ),
-          ],
-        ),
+        const PaymentsTitleRow(),
         const SizedBox(height: 12),
         PaymentsFilterCard(
           pending: pending,

@@ -34,6 +34,7 @@ import '../models/company_module.dart';
 import '../providers/budgets_provider.dart';
 import '../utils/budget_copy_utils.dart';
 import '../utils/category_utils.dart';
+import '../utils/expense_policy_utils.dart';
 import '../utils/free_receipts_utils.dart';
 import '../widgets/free_receipts/free_receipts_callout.dart';
 import '../widgets/free_receipts/free_receipts_meter.dart';
@@ -1207,7 +1208,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           textInputAction: TextInputAction.newline,
           maxLines: 3,
           minLines: 3,
-          maxLength: 200,
+          maxLength: ExpensePolicy.noteMaxLength,
           decoration: const InputDecoration(),
         ),
         const SizedBox(height: 16),
@@ -1422,7 +1423,7 @@ class _NewExpenseScreenState extends ConsumerState<NewExpenseScreen>
           textInputAction: TextInputAction.newline,
           maxLines: 3,
           minLines: 3,
-          maxLength: 200,
+          maxLength: ExpensePolicy.noteMaxLength,
           decoration: const InputDecoration(),
         ),
       ],

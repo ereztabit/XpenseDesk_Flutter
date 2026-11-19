@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 import '../../generated/l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/payments_utils.dart';
+import 'payments_amount_info_icon.dart';
 import 'payments_header_cell.dart';
 import 'payments_table_columns.dart';
 
 /// Sticky header row of the desktop Payments table - the select-all checkbox
 /// plus one [PaymentsHeaderCell] per column, in [PaymentsTableColumns] order.
-/// The action column (Process / Edit) has no caption: it sits by the amount.
 class DesktopPaymentsHeaderRow extends StatelessWidget {
   const DesktopPaymentsHeaderRow({
     super.key,
     this.showSheetType = true,
+    this.historyOnly = false,
     required this.sortField,
     required this.sortAscending,
     required this.onSort,
@@ -22,6 +23,9 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
   });
 
   final bool showSheetType;
+
+  /// An employee's History: "Sheet" heads the name column; no gov ID.
+  final bool historyOnly;
   final PaymentsSortField? sortField;
   final bool sortAscending;
   final ValueChanged<PaymentsSortField> onSort;
@@ -37,6 +41,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
       double width,
       PaymentsSortField field, {
       bool centered = false,
+      Widget? trailing,
     }) => PaymentsHeaderCell(
       label: label,
       width: width,
@@ -45,6 +50,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
       ascending: sortAscending,
       onSort: onSort,
       centered: centered,
+      trailing: trailing,
     );
 
     return Container(
@@ -57,16 +63,22 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
         children: [
           SizedBox(
             width: PaymentsTableColumns.checkbox,
-            child: hasSelectable && onToggleAll != null
-                ? Checkbox(
-                    value: allSelected,
-                    onChanged: (v) => onToggleAll!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : const SizedBox.shrink(),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: SizedBox(
+                width: PaymentsTableColumns.selectSlot, // the eye sits after it
+                child: hasSelectable && onToggleAll != null
+                    ? Checkbox(
+                        value: allSelected,
+                        onChanged: (v) => onToggleAll!(v ?? false),
+                        visualDensity: VisualDensity.compact,
+                      )
+                    : null,
+              ),
+            ),
           ),
           cell(
-            l10n.employee,
+            historyOnly ? l10n.paymentsSheetColumn : l10n.employee,
             PaymentsTableColumns.employee,
             PaymentsSortField.employee,
           ),
@@ -75,8 +87,13 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             PaymentsTableColumns.amount,
             PaymentsSortField.amount,
             centered: true,
+            trailing: const PaymentsAmountInfoIcon(),
           ),
-          const SizedBox(width: PaymentsTableColumns.action),
+          cell(
+            l10n.paymentStatusFilterLabel,
+            PaymentsTableColumns.status,
+            PaymentsSortField.status,
+          ),
           if (showSheetType)
             cell(
               l10n.paymentsSheetTypeLabel,
@@ -94,11 +111,12 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             PaymentsTableColumns.processedDate,
             PaymentsSortField.processedDate,
           ),
-          cell(
-            l10n.govIdColumn,
-            PaymentsTableColumns.govId,
-            PaymentsSortField.govId,
-          ),
+          if (!historyOnly)
+            cell(
+              l10n.govIdColumn,
+              PaymentsTableColumns.govId,
+              PaymentsSortField.govId,
+            ),
         ],
       ),
     );

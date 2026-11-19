@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/payment_status.dart';
 import '../../models/payments_filter.dart';
 import '../../theme/app_theme.dart';
 import '../app_button.dart';
 import '../date_range_filter.dart';
+import 'payment_status_filter_dropdown.dart';
 import 'payments_advanced_filters.dart';
-import 'payments_dropdown.dart';
 import 'payments_sheet_type_dropdown.dart';
 
 /// Desktop filter card of the Payments Report: Payment Status + Approval Date
@@ -67,23 +66,8 @@ class _PaymentsFilterCardState extends State<PaymentsFilterCard> {
             runSpacing: 12,
             crossAxisAlignment: WrapCrossAlignment.end,
             children: [
-              PaymentsDropdown<PaymentStatus?>(
-                sectionLabel: l10n.paymentStatusFilterLabel,
+              PaymentStatusFilterDropdown(
                 selected: pending.status,
-                entries: [
-                  DropdownMenuEntry<PaymentStatus?>(
-                    value: null,
-                    label: l10n.allOption,
-                  ),
-                  DropdownMenuEntry<PaymentStatus?>(
-                    value: PaymentStatus.awaitingPayment,
-                    label: l10n.paymentStatusPending,
-                  ),
-                  DropdownMenuEntry<PaymentStatus?>(
-                    value: PaymentStatus.processed,
-                    label: l10n.paymentStatusProcessed,
-                  ),
-                ],
                 onSelected: (value) =>
                     widget.onPendingChanged(pending.copyWith(status: value)),
               ),

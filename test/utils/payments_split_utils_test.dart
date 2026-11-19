@@ -86,16 +86,8 @@ void main() {
     });
   });
 
-  test('status text by direction', () {
-    expect(
-        paymentStatusText(en, PaymentStatus.processed,
-            direction: PaymentDirection.collect),
-        'Charged');
-    expect(
-        paymentStatusText(en, PaymentStatus.processed,
-            direction: PaymentDirection.pay),
-        'Paid');
-    expect(paymentStatusText(en, PaymentStatus.processed), 'Processed');
+  test('status text is Closed whichever way the money went', () {
+    expect(paymentStatusText(en, PaymentStatus.processed), 'Closed');
   });
 
   test('PagedPayments.withoutSheets adjusts each side apart', () {

@@ -29,6 +29,10 @@ class ExpenseSummary {
   /// until completed. Decide from this flag, never from the values.
   final bool isActionRequired;
 
+  /// FS-1025 #6: budget policy rules this line breaks (`BudgetExpenseDateAfterEndDate`,
+  /// `BudgetExpenseAmountMissing`); empty when none, or not a budget line.
+  final List<String> policyViolations;
+
   /// Parent sheet linkage (nullable for older payloads + compact nested
   /// projections inside `ExpenseSheetDetail.expenses[]`). On the post-sheets
   /// API, top-level `/api/expenses/search` rows always populate these.
@@ -56,6 +60,7 @@ class ExpenseSummary {
     this.reviewedAt,
     this.isAiData = false,
     this.isActionRequired = false,
+    this.policyViolations = const [],
     this.expenseSheetId,
     this.expenseSheetStatusId,
     this.expenseSheetStatusAlias,
@@ -86,6 +91,10 @@ class ExpenseSummary {
           : null,
       isAiData: json['isAiData'] as bool? ?? false,
       isActionRequired: json['isActionRequired'] as bool? ?? false,
+      policyViolations: (json['policyViolations'] as List<dynamic>?)
+              ?.whereType<String>()
+              .toList() ??
+          const [],
       expenseSheetId: json['expenseSheetId'] as String?,
       expenseSheetStatusId: (json['expenseSheetStatusId'] as num?)?.toInt(),
       expenseSheetStatusAlias: json['expenseSheetStatusAlias'] as String?,

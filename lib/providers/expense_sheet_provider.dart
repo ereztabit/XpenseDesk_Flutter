@@ -34,4 +34,12 @@ final sheetDetailProvider =
 
   final service = ref.watch(expenseServiceProvider);
   return service.getSheetDetail(sheetId);
-});
+}, retry: sheetDetailRetry);
+
+/// A sheet that is not there (or not yours - the server answers 404) is final:
+/// show "not found" at once instead of retrying (PC-9 QA). Others: 3 tries.
+Duration? sheetDetailRetry(int retryCount, Object error) {
+  if (error is ExpenseSheetNotFoundException) return null;
+  if (retryCount >= 3) return null;
+  return Duration(milliseconds: 200 * (1 << retryCount));
+}

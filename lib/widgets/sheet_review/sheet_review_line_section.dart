@@ -29,7 +29,12 @@ class SheetReviewLineSection extends ConsumerStatefulWidget {
     this.onDeclineLine,
     this.onDeleteLine,
     this.focusTab,
+    this.approvedOnly = false,
   });
+
+  /// An Approved sheet is closed: only its approved lines, no status tabs -
+  /// a declined line is gone for good (owner QA, 2026-11-19).
+  final bool approvedOnly;
 
   /// FS-1004. Set to move the selection off the default bucket — used
   /// after a manager files a line, which is approved on entry and so lands in
@@ -59,7 +64,9 @@ class _SheetReviewLineSectionState
   @override
   void initState() {
     super.initState();
-    _selectedTab = widget.focusTab ??
+    _selectedTab = widget.approvedOnly
+        ? FilterTab.approved
+        : widget.focusTab ??
         SheetExpenseBuckets.initialTab(
             SheetExpenseBuckets.countsPerTab(widget.expenses));
   }
@@ -69,7 +76,9 @@ class _SheetReviewLineSectionState
     super.didUpdateWidget(oldWidget);
     // Only on a change, so a rebuild for any other reason does not yank the
     // user back out of a tab they picked themselves.
-    if (widget.focusTab != null && widget.focusTab != oldWidget.focusTab) {
+    if (widget.approvedOnly) {
+      _selectedTab = FilterTab.approved;
+    } else if (widget.focusTab != null && widget.focusTab != oldWidget.focusTab) {
       _selectedTab = widget.focusTab!;
     }
   }
@@ -85,12 +94,14 @@ class _SheetReviewLineSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SheetReviewFilterTabs(
-          counts: counts,
-          selected: _selectedTab,
-          onSelected: (tab) => setState(() => _selectedTab = tab),
-        ),
-        const SizedBox(height: 12),
+        if (!widget.approvedOnly) ...[
+          SheetReviewFilterTabs(
+            counts: counts,
+            selected: _selectedTab,
+            onSelected: (tab) => setState(() => _selectedTab = tab),
+          ),
+          const SizedBox(height: 12),
+        ],
         // View toggle: mobile only, and only when the bucket has records.
         if (context.isMobile && hasRecords) ...[
           const Align(
@@ -102,6 +113,7 @@ class _SheetReviewLineSectionState
         if (hasRecords)
           SheetReviewLineList(
             expenses: filtered,
+            hideStatus: widget.approvedOnly,
             onTapLine: widget.onTapLine,
             canEditLines: widget.canEditLines,
             onApproveLine: widget.onApproveLine,

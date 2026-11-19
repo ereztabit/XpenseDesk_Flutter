@@ -5,20 +5,21 @@ import '../../models/payment_report_row.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/format_utils.dart';
 import '../../utils/payments_copy_utils.dart';
-import '../app_button.dart';
 import 'payment_employee_cell.dart';
+import 'payment_row_select_cell.dart';
 
 /// One mobile Payments row, two lines:
-///   [x] Employee name [Pending] ............. amount (red "-₪" to charge)
-///       Budget #1016 · November 2026               [Process]
-/// Money to charge is red with a minus. The employee name opens the sheet;
-/// the button opens the payment-status dialog (Process when pending, Edit
-/// once processed).
+///   [x] (eye) Employee name ..................... amount (red "-₪" to charge)
+///             Budget #1016 · November 2026
+/// The select box (Pending) or Edit (Closed) leads, as on desktop; Settle runs
+/// from the bulk card (owner QA 2026-11-19: no per-row Settle button). No
+/// status on the card - the toggle above the table holds it.
 class MobilePaymentRow extends StatelessWidget {
   const MobilePaymentRow({
     super.key,
     required this.row,
     this.showSheetType = true,
+    this.historyOnly = false,
     required this.locale,
     required this.currencyCode,
     required this.isSelected,
@@ -32,6 +33,9 @@ class MobilePaymentRow extends StatelessWidget {
 
   /// False for a Monthly-only company: the subtitle is just the cycle.
   final bool showSheetType;
+
+  /// An employee's History (PC-9): the sheet names the row.
+  final bool historyOnly;
   final String locale;
   final String? currencyCode;
   final bool isSelected;
@@ -39,7 +43,7 @@ class MobilePaymentRow extends StatelessWidget {
   final ValueChanged<bool>? onToggleSelection;
   final VoidCallback onTap;
 
-  /// Opens the payment-status dialog for this row. Null hides the action.
+  /// Opens the payment-status dialog of a Closed row. Null hides Edit.
   final VoidCallback? onEdit;
 
   @override
@@ -51,9 +55,11 @@ class MobilePaymentRow extends StatelessWidget {
         ? AppTheme.primaryTint
         : null;
     final cycle = row.cycleLabel.toCycleLongMonth(locale);
-    final subtitle = showSheetType
-        ? '${paymentBudgetText(row) ?? paymentSheetTypeText(l10n, row.sheetType)} · $cycle'
-        : cycle;
+    final sheet = paymentSheetLabelText(l10n, row);
+    // A budget with nothing owed has no cycle: a dash, as on desktop.
+    final subtitle = historyOnly || !showSheetType
+        ? (cycle.isEmpty ? '—' : cycle)
+        : [sheet, cycle].where((s) => s.isNotEmpty).join(' · ');
 
     return Container(
       color: rowColor,
@@ -61,17 +67,14 @@ class MobilePaymentRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 40,
-            height: 24,
-            child: row.isAwaiting && onToggleSelection != null
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (v) => onToggleSelection!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : null,
+          PaymentRowSelectCell(
+            row: row,
+            isSelected: isSelected,
+            onToggleSelection: onToggleSelection,
+            onView: onTap,
+            onEdit: onEdit,
           ),
+          const SizedBox(width: 4),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,8 +85,8 @@ class MobilePaymentRow extends StatelessWidget {
                       child: PaymentEmployeeCell(
                         row: row,
                         onTap: onTap,
-                        showDirection: showSheetType,
                         fontSize: 14,
+                        label: historyOnly ? sheet : null,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -114,25 +117,6 @@ class MobilePaymentRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (onEdit != null) ...[
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        height: 32, // a real button, not a chip
-                        child: AppButton(
-                          label: row.isAwaiting
-                              ? l10n.paymentProcessButton
-                              : l10n.paymentEditButton,
-                          variant: row.isAwaiting
-                              ? AppButtonVariant.primary
-                              : AppButtonVariant.normal,
-                          icon: row.isAwaiting
-                              ? Icons.check_circle_outline
-                              : Icons.edit_outlined,
-                          dense: true,
-                          onPressed: onEdit,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ],

@@ -18,17 +18,22 @@ final paymentServiceProvider = Provider<PaymentService>((ref) {
 });
 
 /// The APPLIED report filter (the screen edits a pending copy and commits it
-/// here on Search). Deliberately non-autoDispose so the filter survives
-/// navigating away and back within the session — the spec's filter-retention
-/// requirement.
+/// here on Search). Shared by the Payments and History entries; each screen
+/// opens on its entry's filter and takes it back when it is on top again
+/// (`PaymentsScreenEntry`).
 final paymentsFilterProvider =
     NotifierProvider<PaymentsFilterNotifier, PaymentsFilter>(
   PaymentsFilterNotifier.new,
 );
 
 class PaymentsFilterNotifier extends Notifier<PaymentsFilter> {
+  /// Starts over when the signed-in user changes, so a manager's filter (an
+  /// employee picked) never carries into the next user's History (PC-9).
   @override
-  PaymentsFilter build() => PaymentsFilter.defaults;
+  PaymentsFilter build() {
+    ref.watch(userInfoProvider.select((u) => u?.email));
+    return PaymentsFilter.defaults;
+  }
 
   void set(PaymentsFilter filter) => state = filter;
 }
@@ -145,8 +150,9 @@ final sheetTypePaymentsSummaryProvider = FutureProvider.autoDispose
       .getSummary(sheetType: sheetType);
 });
 
-/// Sheet types the company pays through payments; the report offers a type
-/// filter only when there is more than one.
+/// Sheet types in the company's payments; the report offers a type filter and
+/// column only when there is more than one. Budgets count while the module is
+/// off too - their history stays (owner QA 2026-11-19).
 final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
   final modules = ref.watch(companyModulesProvider);
   final monthly = modules
@@ -155,7 +161,7 @@ final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
       .firstOrNull;
   return [
     if (monthly ?? true) CompanyModuleKey.monthly,
-    if (ref.watch(isPettyCashEnabledProvider)) CompanyModuleKey.pettyCash,
+    if (ref.watch(isPettyCashAvailableProvider)) CompanyModuleKey.pettyCash,
   ];
 });
 
@@ -163,3 +169,9 @@ final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
 /// Payments report exactly as before PC-8.
 final paymentsMultiTypeProvider =
     Provider<bool>((ref) => ref.watch(paymentSheetTypesProvider).length > 1);
+
+/// PC-9: an employee sees the screen as their read-only "History" - own sheets
+/// (server-scoped), no selection, Settle, Edit or employee filter.
+final paymentsHistoryOnlyProvider = Provider<bool>(
+  (ref) => !(ref.watch(userInfoProvider)?.isManager ?? false),
+);

@@ -15,6 +15,7 @@ class MobilePaymentsHeaderCell extends StatelessWidget {
     required this.ascending,
     required this.onSort,
     this.alignEnd = false,
+    this.trailing,
   });
 
   final String label;
@@ -27,39 +28,51 @@ class MobilePaymentsHeaderCell extends StatelessWidget {
   /// Right-align (start in RTL) under an end-aligned row value, e.g. Amount.
   final bool alignEnd;
 
+  /// Shown after the label, outside the sort tap target (e.g. an info icon).
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     final isActive = field == activeField;
     return Expanded(
       flex: flex,
-      child: InkWell(
-        onTap: () => onSort(field),
-        child: Row(
-          mainAxisAlignment: alignEnd
-              ? MainAxisAlignment.end
-              : MainAxisAlignment.start,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isActive ? AppTheme.primary : AppTheme.mutedForeground,
-                ),
-                overflow: TextOverflow.ellipsis,
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => onSort(field),
+              child: Row(
+                mainAxisAlignment: alignEnd
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+                children: [
+                  Flexible(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isActive
+                            ? AppTheme.primary
+                            : AppTheme.mutedForeground,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (isActive) ...[
+                    const SizedBox(width: 2),
+                    Icon(
+                      ascending ? Icons.arrow_upward : Icons.arrow_downward,
+                      size: 11,
+                      color: AppTheme.primary,
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (isActive) ...[
-              const SizedBox(width: 2),
-              Icon(
-                ascending ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 11,
-                color: AppTheme.primary,
-              ),
-            ],
-          ],
-        ),
+          ),
+          ?trailing,
+        ],
       ),
     );
   }

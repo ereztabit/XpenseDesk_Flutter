@@ -75,9 +75,10 @@ void main() {
   );
 
   test('bulk action reads Process N sheets', () {
-    expect(paymentProcessCountText(en, 2), 'Process 2 sheets');
-    expect(paymentProcessCountText(en, 1), 'Process 1 sheet');
-    expect(paymentProcessCountText(he, 2), 'טיפול 2 גליונות');
+    expect(paymentProcessCountText(en, 2), 'Settle 2 sheets');
+    expect(paymentProcessCountText(en, 1), 'Settle 1 sheet');
+    expect(paymentProcessCountText(he, 6), 'התחשבנות ב-6 גליונות');
+    expect(paymentProcessCountText(he, 1), 'התחשבנות ב-1 גליון');
   });
 
   test('pending badge and charge wording', () {

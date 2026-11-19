@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../generated/l10n/app_localizations.dart';
 import '../models/menu_items.dart';
 import '../theme/app_theme.dart';
+import 'header/impersonation_banner.dart';
 
 class AppFooter extends StatelessWidget {
   /// Shows a Terms of Service link beside the copyright line. Used on screens
@@ -36,6 +37,9 @@ class AppFooter extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 8,
         children: [
+          // Support session marker (renders nothing otherwise): in the header
+          // it crowded the bar and overflowed (owner QA 2026-11-19).
+          const ImpersonationBanner(),
           Text(
             '© $year ${l10n.appName}. ${l10n.allRightsReserved}.',
             style: Theme.of(context).textTheme.bodyMedium,

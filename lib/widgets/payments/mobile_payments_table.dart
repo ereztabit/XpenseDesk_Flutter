@@ -9,6 +9,7 @@ import '../../utils/payments_utils.dart';
 import '../selectable_scope.dart';
 import 'mobile_payment_row.dart';
 import 'mobile_payments_header_cell.dart';
+import 'payments_amount_info_icon.dart';
 import 'payments_total_row.dart';
 
 /// Mobile table-like list of the Payments Report (D17 scroll model): pinned
@@ -52,8 +53,10 @@ class MobilePaymentsTable extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final showSheetType = ref.watch(paymentsMultiTypeProvider);
+    // An employee's History (PC-9): no selection, no Settle / Edit.
+    final historyOnly = ref.watch(paymentsHistoryOnlyProvider);
     final selectableIds = rows
-        .where((r) => r.isAwaiting)
+        .where((r) => r.isAwaiting && !historyOnly)
         .map((r) => r.expenseSheetId)
         .toSet();
     final allSelected =
@@ -83,8 +86,9 @@ class MobilePaymentsTable extends ConsumerWidget {
                         )
                       : const SizedBox.shrink(),
                 ),
+                const SizedBox(width: 40), // the rows' eye column + gap
                 MobilePaymentsHeaderCell(
-                  label: l10n.employee,
+                  label: historyOnly ? l10n.paymentsSheetColumn : l10n.employee,
                   flex: 3,
                   field: PaymentsSortField.employee,
                   activeField: sortField,
@@ -99,6 +103,7 @@ class MobilePaymentsTable extends ConsumerWidget {
                   ascending: sortAscending,
                   onSort: onSort,
                   alignEnd: true,
+                  trailing: const PaymentsAmountInfoIcon(),
                 ),
               ],
             ),
@@ -137,16 +142,20 @@ class MobilePaymentsTable extends ConsumerWidget {
                         return MobilePaymentRow(
                           row: row,
                           showSheetType: showSheetType,
+                          historyOnly: historyOnly,
                           locale: locale,
                           currencyCode: currencyCode,
                           isSelected: selectedIds.contains(row.expenseSheetId),
                           isHighlighted: highlightedIds.contains(
                             row.expenseSheetId,
                           ),
-                          onToggleSelection: (selected) =>
-                              onToggleSelection(row, selected),
+                          onToggleSelection: historyOnly
+                              ? null
+                              : (selected) => onToggleSelection(row, selected),
                           onTap: () => onRowTap(row),
-                          onEdit: () => onEdit(row),
+                          onEdit: historyOnly || row.isNoPayment
+                              ? null
+                              : () => onEdit(row),
                         );
                       },
                     ),

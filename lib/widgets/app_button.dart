@@ -13,6 +13,7 @@ class AppButton extends StatelessWidget {
     this.iconWidget,
     this.isLoading = false,
     this.dense = false,
+    this.fitLabel = false,
   }) : assert(icon == null || iconWidget == null,
             'Provide icon OR iconWidget, not both');
 
@@ -21,15 +22,15 @@ class AppButton extends StatelessWidget {
   final AppButtonVariant variant;
   final IconData? icon;
 
-  /// Custom leading widget for non-glyph icons (e.g. the multicolor
-  /// [MicrosoftLogo]). Mutually exclusive with [icon].
+  /// Custom leading widget (e.g. the multicolor [MicrosoftLogo]); not with [icon].
   final Widget? iconWidget;
-
   final bool isLoading;
 
-  /// Compact form for inline/secondary controls (smaller padding, font, and
-  /// tap target). Default buttons stay full-size.
+  /// Compact: smaller padding, font and tap target. Default buttons stay full-size.
   final bool dense;
+
+  /// Fixed-width spot: the label shrinks onto one line, the button keeps its size.
+  final bool fitLabel;
 
   static const _radius = BorderRadius.all(Radius.circular(12));
   static const _padding = EdgeInsets.symmetric(horizontal: 24, vertical: 14);
@@ -46,6 +47,12 @@ class AppButton extends StatelessWidget {
   MaterialTapTargetSize? get _denseTapTarget =>
       dense ? MaterialTapTargetSize.shrinkWrap : null;
 
+  /// A disabled button says so under the mouse too.
+  static final _cursor = WidgetStateProperty.resolveWith<MouseCursor>(
+      (states) => states.contains(WidgetState.disabled)
+          ? SystemMouseCursors.forbidden
+          : SystemMouseCursors.click);
+
   @override
   Widget build(BuildContext context) {
     final style = _buildStyle();
@@ -58,16 +65,17 @@ class AppButton extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           )
-        : Text(label);
+        : _label();
 
-    final effectiveOnPressed = isLoading ? null : onPressed;
+    // Loading keeps the enabled look (no-op tap): only a disabled button fades.
+    final effectiveOnPressed = isLoading ? () {} : onPressed;
 
     if ((icon != null || iconWidget != null) && !isLoading) {
       return ElevatedButton.icon(
         onPressed: effectiveOnPressed,
         style: style,
         icon: iconWidget ?? Icon(icon, size: dense ? 16 : 18),
-        label: Text(label),
+        label: _label(),
       );
     }
 
@@ -77,6 +85,10 @@ class AppButton extends StatelessWidget {
       child: child,
     );
   }
+
+  Widget _label() => fitLabel
+      ? FittedBox(fit: BoxFit.scaleDown, child: Text(label, maxLines: 1, softWrap: false))
+      : Text(label);
 
   ButtonStyle _buildStyle() {
     switch (variant) {
@@ -104,17 +116,21 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.normal:
         return ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return AppTheme.muted.withAlpha(110);
             if (states.contains(WidgetState.hovered)) return AppTheme.primary;
             return AppTheme.muted;
           }),
           foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) return AppTheme.mutedForeground.withAlpha(140);
             if (states.contains(WidgetState.hovered)) return Colors.white;
             return AppTheme.foreground;
           }),
           overlayColor: WidgetStateProperty.all(Colors.transparent),
-          side: WidgetStateProperty.all(
-            const BorderSide(color: AppTheme.border),
-          ),
+          side: WidgetStateProperty.resolveWith((states) => BorderSide(
+                color: states.contains(WidgetState.disabled)
+                    ? AppTheme.border.withAlpha(110)
+                    : AppTheme.border,
+              )),
           shape: WidgetStateProperty.all(
             const RoundedRectangleBorder(borderRadius: _radius),
           ),
@@ -123,7 +139,7 @@ class AppButton extends StatelessWidget {
           minimumSize: _denseMinSize,
           tapTargetSize: _denseTapTarget,
           elevation: WidgetStateProperty.all(0),
-          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+          mouseCursor: _cursor,
         );
 
       case AppButtonVariant.ghost:
@@ -134,7 +150,10 @@ class AppButton extends StatelessWidget {
             }
             return Colors.transparent;
           }),
-          foregroundColor: WidgetStateProperty.all(AppTheme.foreground),
+          foregroundColor: WidgetStateProperty.resolveWith((states) =>
+              states.contains(WidgetState.disabled)
+                  ? AppTheme.mutedForeground.withAlpha(140)
+                  : AppTheme.foreground),
           overlayColor: WidgetStateProperty.all(Colors.transparent),
           side: WidgetStateProperty.all(BorderSide.none),
           shape: WidgetStateProperty.all(
@@ -145,27 +164,23 @@ class AppButton extends StatelessWidget {
           minimumSize: _denseMinSize,
           tapTargetSize: _denseTapTarget,
           elevation: WidgetStateProperty.all(0),
-          mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+          mouseCursor: _cursor,
         );
     }
   }
 
   /// Shared builder for colored variants (primary, destructive, success).
-  ButtonStyle _coloredStyle({
-    required Color bg,
-    required Color bgHover,
-    required Color fg,
-  }) {
+  ButtonStyle _coloredStyle({required Color bg, required Color bgHover, required Color fg}) {
     return ButtonStyle(
       backgroundColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) return AppTheme.muted;
+        // Disabled = its own color, faded - never the gray of the normal
+        // variant, which reads as an enabled button (owner QA, 2026-11-19).
+        if (states.contains(WidgetState.disabled)) return bg.withAlpha(90);
         if (states.contains(WidgetState.hovered)) return bgHover;
         return bg;
       }),
       foregroundColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.disabled)) {
-          return AppTheme.mutedForeground;
-        }
+        if (states.contains(WidgetState.disabled)) return fg.withAlpha(220);
         return fg;
       }),
       overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -178,7 +193,7 @@ class AppButton extends StatelessWidget {
       minimumSize: _denseMinSize,
       tapTargetSize: _denseTapTarget,
       elevation: WidgetStateProperty.all(0),
-      mouseCursor: WidgetStateProperty.all(SystemMouseCursors.click),
+      mouseCursor: _cursor,
     );
   }
 }

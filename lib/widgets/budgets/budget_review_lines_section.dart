@@ -5,6 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/budget.dart';
 import '../../models/expense_summary.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/budget_shake_provider.dart';
 import '../../providers/budgets_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/expense_sheet_provider.dart';
@@ -16,6 +17,7 @@ import '../../utils/settlement_utils.dart';
 import '../expenses/delete_expense_dialog.dart';
 import '../last_action_confirm_dialog.dart';
 import '../sheet_review/sheet_review_line_section.dart';
+import '../shake_on_demand.dart';
 
 /// FS-1013 PC-2 - a manager reviewing someone else's budget sees its expenses
 /// as the sheet review's line list ([SheetReviewLineSection]: Pending /
@@ -120,7 +122,10 @@ class BudgetReviewLinesSection extends ConsumerWidget {
         l10n.failedToLoadExpenses,
         style: const TextStyle(color: AppTheme.destructive),
       ),
-      data: (sheet) => SheetReviewLineSection(
+      // A tap on the blocked Submit shakes the list - its flagged rows say why (FS-1025 #17).
+      data: (sheet) => ShakeOnDemand(
+        token: ref.watch(budgetNeedsActionShakeProvider(budget.budgetId)),
+        child: SheetReviewLineSection(
         expenses: sheet.expenses,
         canEditLines: true,
         onTapLine: (line) => Navigator.of(context)
@@ -136,6 +141,7 @@ class BudgetReviewLinesSection extends ConsumerWidget {
           final deleted = await DeleteExpenseDialog.show(context, line.expenseId);
           if (deleted) _refresh(container);
         },
+      ),
       ),
     );
   }
