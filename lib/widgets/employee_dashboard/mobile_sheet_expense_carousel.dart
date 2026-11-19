@@ -18,6 +18,7 @@ class MobileSheetExpenseCarousel extends StatefulWidget {
   const MobileSheetExpenseCarousel({
     super.key,
     required this.expenses,
+    this.hideStatusBadge = false,
     required this.enableSwipeToDelete,
     this.warnOnResolveLastDeclined = false,
     this.onEdit,
@@ -27,6 +28,9 @@ class MobileSheetExpenseCarousel extends StatefulWidget {
   });
 
   final List<ExpenseSummary> expenses;
+
+  /// An approved sheet: every card would read "Approved" (FS-1025 #10).
+  final bool hideStatusBadge;
   final bool enableSwipeToDelete;
 
   /// Forwarded to each [SwipeableExpenseCard]: when true, swipe-deleting the
@@ -80,6 +84,7 @@ class _MobileSheetExpenseCarouselState
               )
             : MobileExpenseCard(
                 expense: expense,
+                hideStatusBadge: widget.hideStatusBadge,
                 onEdit: widget.onEdit != null
                     ? () => widget.onEdit!(expense)
                     : null,

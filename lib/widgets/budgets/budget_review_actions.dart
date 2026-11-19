@@ -22,15 +22,14 @@ import '../app_button.dart';
 import '../sheet_review/approve_sheet_confirm_dialog.dart';
 import '../sheet_review/decline_sheet_dialog.dart';
 import '../sheet_review/sheet_review_actions.dart';
+import 'budget_submit_button.dart';
 
 /// The budget's decision buttons (FS-1012 S3, UX hand-off section 2.4 item 7):
-/// - the holder of a Draft or Returned budget with expenses: the green
-///   "Submit {amount} for approval";
-/// - a manager on an Awaiting (or Returned) budget: the review screen's own
-///   Approve / Return buttons ([SheetReviewActions]) with its own confirm and
-///   reason dialogs, calling the same sheet endpoints - a budget is a sheet.
-/// Renders nothing otherwise. The page places it inline on desktop and in the
-/// sticky bar on mobile.
+/// - Draft or Returned with expenses: "Submit {amount} for approval" for the
+///   holder, or a manager on the holder's behalf (FS-1025 #4);
+/// - a manager on an Awaiting / Returned budget: the review screen's Approve /
+///   Return ([SheetReviewActions]) - a budget is a sheet.
+/// Nothing otherwise. Inline on desktop, the sticky bar on mobile.
 class BudgetReviewActions extends ConsumerStatefulWidget {
   const BudgetReviewActions({super.key, required this.budget, required this.sheet});
 
@@ -41,10 +40,12 @@ class BudgetReviewActions extends ConsumerStatefulWidget {
   /// the page uses it to decide whether to render a bar at all.
   static bool hasActions(Budget budget, ExpenseSheetDetail sheet,
           {required String? email, required bool isManager}) =>
-      _canSubmit(budget, sheet, email) || _canReview(sheet, isManager);
+      _canSubmit(budget, sheet, email, isManager) || _canReview(sheet, isManager);
 
-  static bool _canSubmit(Budget b, ExpenseSheetDetail sheet, String? email) =>
-      budgetIsHeldBy(b, email) &&
+  // The holder, or any manager on the holder's behalf (guide section 2,
+  // FS-1025 #4).
+  static bool _canSubmit(Budget b, ExpenseSheetDetail sheet, String? email, bool isManager) =>
+      (budgetIsHeldBy(b, email) || isManager) &&
       (sheet.expenseSheetStatusId == ExpenseSheetStatus.draft.id ||
           sheet.expenseSheetStatusId == ExpenseSheetStatus.declined.id) &&
       sheet.expenses.isNotEmpty;
@@ -146,47 +147,54 @@ class _BudgetReviewActionsState extends ConsumerState<BudgetReviewActions> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(userInfoProvider);
     ref.watch(openPaymentCycleLabelProvider); // loaded before Approve opens
     final b = widget.budget;
     final sheet = widget.sheet;
+    final isManager = user?.isManager ?? false;
+    final canSubmit = BudgetReviewActions._canSubmit(b, sheet, user?.email, isManager);
 
-    if (BudgetReviewActions._canSubmit(b, sheet, user?.email)) {
-      // A manager approves their own budget - no one to send it to (user
-      // decision 2026-11-17, the Monthly rule): the review screen's Approve CTA.
-      if (user?.isManager ?? false) {
-        return SheetReviewActions(
-          onApprove: _approveOwn,
-          isBusy: _busy,
-          expenseCount: SheetExpenseBuckets.approvableCount(sheet.expenses),
-          amountText: _amountText,
-        );
-      }
-      final button = AppButton(
-        label: '${l10n.budgetsSubmitPrefix} $_amountText ${l10n.budgetsSubmitSuffix}',
-        variant: AppButtonVariant.success,
-        icon: Icons.send,
-        isLoading: _busy,
-        onPressed: _busy ? null : _submit,
-      );
-      return context.isMobile
-          ? SizedBox(width: double.infinity, child: button)
-          : Align(alignment: AlignmentDirectional.centerEnd, child: button);
-    }
-
-    if (BudgetReviewActions._canReview(sheet, user?.isManager ?? false)) {
+    // A manager approves their own budget - no one to send it to (user
+    // decision 2026-11-17, the Monthly rule): the review screen's Approve CTA.
+    if (canSubmit && isManager && budgetIsHeldBy(b, user?.email)) {
       return SheetReviewActions(
-        onApprove: _approve,
-        onDecline: sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id
-            ? _return
-            : null,
+        onApprove: _approveOwn,
         isBusy: _busy,
         expenseCount: SheetExpenseBuckets.approvableCount(sheet.expenses),
         amountText: _amountText,
       );
     }
 
-    return const SizedBox.shrink();
+    final review = BudgetReviewActions._canReview(sheet, isManager)
+        ? SheetReviewActions(
+            onApprove: _approve,
+            onDecline: sheet.expenseSheetStatusId == ExpenseSheetStatus.waitingForApproval.id
+                ? _return
+                : null,
+            isBusy: _busy,
+            expenseCount: SheetExpenseBuckets.approvableCount(sheet.expenses),
+            amountText: _amountText,
+          )
+        : null;
+    final submit = canSubmit
+        ? BudgetSubmitButton(
+            amountText: _amountText,
+            isBusy: _busy,
+            // Needs action blocks submit (FS-1025 #1, #6); beside Approve, Approve leads.
+            onPressed: sheet.expenses.any(budgetLineNeedsAction) ? null : _submit,
+            variant: review != null ? AppButtonVariant.normal : AppButtonVariant.success,
+            bare: review != null && !context.isMobile,
+          )
+        : null;
+
+    if (submit != null && review != null) {
+      return context.isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [submit, const SizedBox(height: 8), review],
+            )
+          : Wrap(alignment: WrapAlignment.end, spacing: 12, runSpacing: 8, children: [submit, review]);
+    }
+    return submit ?? review ?? const SizedBox.shrink();
   }
 }

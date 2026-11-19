@@ -113,6 +113,7 @@ class _SheetReviewLineSectionState
         if (hasRecords)
           SheetReviewLineList(
             expenses: filtered,
+            hideStatus: widget.approvedOnly,
             onTapLine: widget.onTapLine,
             canEditLines: widget.canEditLines,
             onApproveLine: widget.onApproveLine,

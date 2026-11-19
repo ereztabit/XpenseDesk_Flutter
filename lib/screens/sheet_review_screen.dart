@@ -466,12 +466,18 @@ class _SheetReviewScreenState extends ConsumerState<SheetReviewScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SheetReviewBackRow(title: l10n.sheetReviewTitle),
-        const SizedBox(height: 16),
+        // PC-5 downloads (approved only): in the card on desktop, in the back
+        // row's empty end on mobile so the card starts higher (FS-1025 #12).
+        SheetReviewBackRow(
+          title: l10n.sheetReviewTitle,
+          trailing: isSheetLocked && context.isMobile
+              ? SheetExportActions(sheetId: sheet.expenseSheetId, inRow: true)
+              : null,
+        ),
+        SizedBox(height: context.isMobile ? 8 : 16),
         SheetReviewHeaderCard(
           sheet: sheet,
-          // PC-5: downloads on an approved sheet only.
-          actions: sheet.expenseSheetStatusId == ExpenseSheetStatus.approved.id
+          actions: isSheetLocked && !context.isMobile
               ? SheetExportActions(sheetId: sheet.expenseSheetId)
               : null,
         ),

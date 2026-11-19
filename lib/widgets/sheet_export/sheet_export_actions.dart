@@ -18,9 +18,13 @@ import '../payments/excel_download_icon.dart';
 /// Side by side, never full width (owner QA, 2026-11-19): standard size from
 /// 600px; on a phone compact "PDF" / "Excel", centred on one line.
 class SheetExportActions extends ConsumerStatefulWidget {
-  const SheetExportActions({super.key, required this.sheetId});
+  const SheetExportActions({super.key, required this.sheetId, this.inRow = false});
 
   final String sheetId;
+
+  /// Placed inside a Row (the mobile back row, FS-1025 #12): shrink to fit
+  /// instead of centring across the full width.
+  final bool inRow;
 
   @override
   ConsumerState<SheetExportActions> createState() => _SheetExportActionsState();
@@ -86,6 +90,6 @@ class _SheetExportActionsState extends ConsumerState<SheetExportActions> {
       children: [pdf, excel],
     );
     // Phone: centred across the card (owner QA, 2026-11-19).
-    return compact ? SizedBox(width: double.infinity, child: buttons) : buttons;
+    return compact && !widget.inRow ? SizedBox(width: double.infinity, child: buttons) : buttons;
   }
 }

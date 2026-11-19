@@ -1,5 +1,6 @@
 import '../generated/l10n/app_localizations.dart';
 import '../models/budget.dart';
+import '../models/expense_summary.dart';
 import 'budget_utils.dart';
 import 'format_utils.dart';
 
@@ -45,6 +46,9 @@ String? budgetErrorText(AppLocalizations l10n, String? code) => switch (code) {
   'BudgetsNotEnabled' => l10n.budgetsErrNotEnabled,
   'BudgetSubmitNotAllowed' => l10n.budgetsErrSubmitNotAllowed,
   'BudgetHasActionRequired' => l10n.budgetsErrActionRequired,
+  // FS-1025 #6: a line breaks the budget policy.
+  'BudgetExpenseDateAfterEndDate' => l10n.budgetsErrDateAfterEnd,
+  'BudgetExpenseAmountMissing' => l10n.budgetsErrAmountMissing,
   'BudgetApprovedClosed' => l10n.budgetsErrApproved,
   'BudgetAccessDenied' => l10n.budgetsErrAccess,
   'BudgetNotFound' => l10n.budgetsErrNotFound,
@@ -91,3 +95,27 @@ String? budgetExpenseErrorText(
       return budgetErrorText(l10n, code);
   }
 }
+
+/// FS-1025 #6: why a budget line sits in Needs action, one line per broken
+/// rule (`policyViolations` codes); unknown codes are skipped.
+List<String> budgetLineViolationTexts(AppLocalizations l10n, List<String> codes) => [
+  for (final c in codes)
+    ?switch (c) {
+      'BudgetExpenseDateAfterEndDate' => l10n.budgetsLineDateAfterEnd,
+      'BudgetExpenseAmountMissing' => l10n.budgetsLineAmountMissing,
+      _ => null,
+    },
+];
+
+/// FS-1025 #6: "Merchant: reason" for every Needs action line that breaks the
+/// policy - named by merchant, else by its date.
+List<String> budgetNeedsActionReasons(
+  AppLocalizations l10n,
+  List<ExpenseSummary> lines,
+  String locale,
+) => [
+  for (final e in lines)
+    if (e.policyViolations.isNotEmpty)
+      '${(e.merchantName?.trim().isNotEmpty ?? false) ? e.merchantName!.trim() : (e.expenseDate?.toCompanyDate(locale) ?? '-')}: '
+          '${budgetLineViolationTexts(l10n, e.policyViolations).join(', ')}',
+];

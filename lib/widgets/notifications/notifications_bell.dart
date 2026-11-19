@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
+import '../../providers/budgets_provider.dart';
 import '../../providers/bulk_upload_provider.dart';
 import '../../providers/expense_sheet_provider.dart';
 import '../../providers/live_updates_provider.dart';
@@ -59,9 +60,11 @@ class _NotificationsBellState extends ConsumerState<NotificationsBell> {
       builder: (sheetContext) => NotificationsPanel(
         previousSeen: previousSeen,
         maxListHeight: height * 0.85 - 64,
-        onBatchTap: () {
+        onBatchTap: (batch) {
           Navigator.of(sheetContext).pop();
-          _openMyExpenses();
+          batch.isBudget
+              ? _openBudget(batch.expenseSheetId!)
+              : _openMyExpenses();
         },
       ),
     );
@@ -73,48 +76,69 @@ class _NotificationsBellState extends ConsumerState<NotificationsBell> {
     final origin = box.localToGlobal(Offset.zero);
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    _popover = OverlayEntry(builder: (ctx) {
-      final screen = MediaQuery.sizeOf(ctx);
-      final anchor =
-          isRtl ? origin.dx + box.size.width - _popoverWidth : origin.dx;
-      final left =
-          anchor.clamp(8.0, screen.width - _popoverWidth - 8).toDouble();
-      return Stack(
-        children: [
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: _closePopover,
-              behavior: HitTestBehavior.opaque,
-            ),
-          ),
-          Positioned(
-            top: origin.dy + box.size.height + 8,
-            left: left,
-            width: _popoverWidth,
-            child: Material(
-              color: AppTheme.card,
-              elevation: 6,
-              borderRadius: BorderRadius.circular(10),
-              clipBehavior: Clip.antiAlias,
-              child: NotificationsPanel(
-                previousSeen: previousSeen,
-                maxListHeight: screen.height * 0.7,
-                onBatchTap: () {
-                  _closePopover();
-                  _openMyExpenses();
-                },
+    _popover = OverlayEntry(
+      builder: (ctx) {
+        final screen = MediaQuery.sizeOf(ctx);
+        final anchor = isRtl
+            ? origin.dx + box.size.width - _popoverWidth
+            : origin.dx;
+        final left = anchor
+            .clamp(8.0, screen.width - _popoverWidth - 8)
+            .toDouble();
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: _closePopover,
+                behavior: HitTestBehavior.opaque,
               ),
             ),
-          ),
-        ],
-      );
-    });
+            Positioned(
+              top: origin.dy + box.size.height + 8,
+              left: left,
+              width: _popoverWidth,
+              child: Material(
+                color: AppTheme.card,
+                elevation: 6,
+                borderRadius: BorderRadius.circular(10),
+                clipBehavior: Clip.antiAlias,
+                child: NotificationsPanel(
+                  previousSeen: previousSeen,
+                  maxListHeight: screen.height * 0.7,
+                  onBatchTap: (batch) {
+                    _closePopover();
+                    batch.isBudget
+                        ? _openBudget(batch.expenseSheetId!)
+                        : _openMyExpenses();
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
     Overlay.of(context).insert(_popover!);
   }
 
   void _closePopover() {
     _popover?.remove();
     _popover = null;
+  }
+
+  /// FS-1025 #3: a batch sent into a budget opens that budget. Already there
+  /// -> just refresh it.
+  Future<void> _openBudget(String budgetId) async {
+    final path = AppRoutes.budgetPath(budgetId);
+    final alreadyThere = ModalRoute.of(context)?.settings.name == path;
+    if (!alreadyThere) {
+      final guard = ref.read(navigationGuardProvider);
+      final canLeave = guard == null || await guard();
+      if (!canLeave || !mounted) return;
+    }
+    ref.invalidate(sheetDetailProvider(budgetId));
+    ref.invalidate(budgetProvider(budgetId));
+    if (!alreadyThere) Navigator.of(context).pushNamed(path);
   }
 
   /// §6.3: a card opens My expenses (employee and manager alike), where the
@@ -144,8 +168,8 @@ class _NotificationsBellState extends ConsumerState<NotificationsBell> {
     final l10n = AppLocalizations.of(context)!;
     // S1.01: keeps the live connection up while the app shell is showing.
     ref.watch(liveUpdatesProvider);
-    final batches = ref.watch(bulkUploadBatchesProvider).asData?.value ??
-        const [];
+    final batches =
+        ref.watch(bulkUploadBatchesProvider).asData?.value ?? const [];
     final lastSeen = ref.watch(notificationsLastSeenProvider);
     final isProcessing = hasProcessingBatch(batches);
 

@@ -22,7 +22,8 @@ const TextStyle _cellTextStyle = TextStyle(
 );
 
 /// Builds one data [TableRow] for the desktop Sheet Review table. Columns mirror
-/// the header: Date · Merchant · Category · Amount · Status · Actions.
+/// the header: Date · Merchant · Category · Amount · Status · Actions (no
+/// Status on an approved sheet - [showStatus], FS-1025 #10).
 ///
 /// The open-detail icon is always present (the whole row is also tappable via
 /// [TableRowInkWell]) — it reads as edit while the sheet is non-terminal
@@ -41,6 +42,7 @@ TableRow buildSheetReviewRow(
   VoidCallback? onApprove,
   VoidCallback? onDecline,
   VoidCallback? onDelete,
+  bool showStatus = true,
 }) {
   final l10n = AppLocalizations.of(context)!;
   final uiLocale = Localizations.localeOf(context);
@@ -102,21 +104,22 @@ TableRow buildSheetReviewRow(
           ),
         ),
       ),
-      _tapCell(
-        onTap,
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          // One line always: in a narrow column the pill scales down instead
-          // of breaking mid-word ("Approve/d") - FS-1013 owner QA.
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: ExpenseStatusBadge(
-              expenseStatusId: expense.expenseStatusId,
-              isAiData: expense.isAiData,
+      if (showStatus)
+        _tapCell(
+          onTap,
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            // One line always: in a narrow column the pill scales down instead
+            // of breaking mid-word ("Approve/d") - FS-1013 owner QA.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ExpenseStatusBadge(
+                expenseStatusId: expense.expenseStatusId,
+                isAiData: expense.isAiData,
+              ),
             ),
           ),
         ),
-      ),
       TableCell(
         verticalAlignment: TableCellVerticalAlignment.middle,
         child: Padding(

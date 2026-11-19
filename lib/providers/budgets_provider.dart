@@ -37,6 +37,14 @@ final isPettyCashEnabledProvider = Provider<bool>((ref) {
   return false;
 });
 
+/// The company lets a budget go below zero (module setting, D4).
+final budgetsAllowNegativeProvider = Provider<bool>((ref) {
+  for (final m in ref.watch(companyModulesProvider)) {
+    if (m.key == CompanyModuleKey.pettyCash) return m.allowNegativeBalance ?? false;
+  }
+  return false;
+});
+
 /// Outstanding budgets of the company (manager only; empty otherwise). The
 /// dashboard, the list and the nav all read this one fetch.
 final budgetsProvider = FutureProvider<List<Budget>>((ref) async {

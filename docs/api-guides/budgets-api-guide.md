@@ -303,3 +303,72 @@ Full contract and the Excel changes: the payment-status guide, section 10.
 | Code | Status | When |
 |---|---|---|
 | `PaymentsSheetTypeInvalid` | 400 | **New.** `sheetType` is not `Monthly` or `PettyCash` (report, summary, Export All) |
+
+## PC-QA-1 - budget page QA (FS-1025)
+
+Story: docs/petty-cash/pc-qa-1-budget-page-qa.md. All additive.
+
+### Budget policy (item 6)
+
+A line breaks the budget's policy when (1) its receipt date (`expenseDate`) is
+after the budget's `endDate`, or (2) it has no amount (`amount` null or 0). A
+**declined** line breaks nothing. Checked on every read and on submit, against
+the end date as it is now - moving the end date earlier can create violations,
+moving it later clears them.
+
+**Read.** `GET /api/expense-sheets/{budgetId}` - every line in `expenses[]`
+appends `policyViolations`: the rules it breaks, as error codes, in rule order.
+Always empty on a declined or an already approved line.
+
+```json
+{ "expenseId": "...", "amount": null, "policyViolations": ["BudgetExpenseAmountMissing"] }
+```
+
+| Value | Rule |
+|---|---|
+| `BudgetExpenseDateAfterEndDate` | The receipt date is after the budget's end date |
+| `BudgetExpenseAmountMissing` | The line has no amount |
+
+Always an array; empty when the line breaks nothing, on an **Approved** budget
+(closed), on a Monthly sheet, and on every other expense list.
+
+**Submit.** `POST /api/budgets/{budgetId}/submit` - by the holder or a manager
+on the holder's behalf - is refused while a line breaks the policy:
+
+| Code | Status | `data` | When |
+|---|---|---|---|
+| `BudgetExpenseDateAfterEndDate` | 409 | `{ "expenseIds": ["..."] }` | A line is dated after the end date |
+| `BudgetExpenseAmountMissing` | 409 | `{ "expenseIds": ["..."] }` | A line has no amount |
+
+Order: the existing refusals answer first, unchanged (`BudgetsNotEnabled`,
+`BudgetNotFound`, `BudgetAccessDenied`, `BudgetSubmitNotAllowed`,
+`BudgetHasActionRequired`); then rule 1, then rule 2 - one code per refusal,
+`expenseIds` = every line breaking that rule. A line read only in part (Action
+Required) keeps answering `BudgetHasActionRequired` on submit, but the read
+already flags it (e.g. `BudgetExpenseAmountMissing`) for the Needs attention
+reason.
+
+### Where a bulk batch files (item 3)
+
+`GET /api/bulk-uploads` and the `batchUpdated` push: every batch appends
+`expenseSheetId` (the budget it files into; `null` = the sender's Monthly
+sheet) and `sheetType` (`"Monthly"` / `"PettyCash"`). The bell's "Processing
+complete" opens `/budgets/{expenseSheetId}` when `sheetType` is `PettyCash`.
+Both fields read `null` until the owner applies
+`docs/petty-cash/pc-qa-1-proc-BulkUpload_GetBatches.sql`.
+
+### Budget at its limit (item 8)
+
+Nothing new: `GET /api/company` -> `modules[]` row `"PettyCash"` ->
+`allowNegativeBalance` (every role), plus the budget's `balance`. At limit =
+`allowNegativeBalance` is not `true` and `balance <= 0`. The server still
+refuses a line that goes below zero (`BudgetBalanceExceeded`).
+
+### Holder invitation email (item 5)
+
+No API change. The holder is emailed (EmailType `SheetHolderInvitation`) when a
+manager creates a budget for someone else, and when a `PUT` gives the budget a
+new holder (the new holder only). Never when the holder is the manager acting.
+Language = the holder's (Hebrew or English); content: what a budget is, name,
+amount, end date, how to use it, and a button to `{app}/budgets/{budgetId}`.
+Best effort - a failed email never fails the create or the edit.

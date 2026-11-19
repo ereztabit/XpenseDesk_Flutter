@@ -49,6 +49,9 @@ class PaymentStatusStrip extends ConsumerWidget {
     final cycle = sheet.paymentCycleLabel;
 
     return Container(
+      // Card's default side margin, so the edges line up with the header
+      // card and the table (FS-1025 #11).
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.card,

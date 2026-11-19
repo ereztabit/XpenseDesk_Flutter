@@ -22,6 +22,7 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
     required this.expense,
     required this.companyLocale,
     required this.isLast,
+    this.hideStatus = false,
     required this.onTap,
     this.onApprove,
     this.onDecline,
@@ -31,6 +32,7 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
   final ExpenseSummary expense;
   final String companyLocale;
   final bool isLast;
+  final bool hideStatus;
   final VoidCallback onTap;
   final VoidCallback? onApprove;
   final VoidCallback? onDecline;
@@ -121,11 +123,13 @@ class MobileSheetReviewCompactRow extends ConsumerWidget {
                       color: AppTheme.foreground,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  ExpenseStatusBadge(
-                    expenseStatusId: expense.expenseStatusId,
-                    isAiData: expense.isAiData,
-                  ),
+                  if (!hideStatus) ...[
+                    const SizedBox(height: 4),
+                    ExpenseStatusBadge(
+                      expenseStatusId: expense.expenseStatusId,
+                      isAiData: expense.isAiData,
+                    ),
+                  ],
                 ],
               ),
               if (showApprove || showDecline || showDelete) ...[

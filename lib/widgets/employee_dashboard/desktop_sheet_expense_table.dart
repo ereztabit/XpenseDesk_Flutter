@@ -21,6 +21,7 @@ class DesktopSheetExpenseTable extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.emptyState,
+    this.header,
   });
 
   final List<ExpenseSummary> expenses;
@@ -29,6 +30,10 @@ class DesktopSheetExpenseTable extends StatelessWidget {
   final void Function(ExpenseSummary)? onEdit;
   final void Function(ExpenseSummary)? onDelete;
   final Widget? emptyState;
+
+  /// Sits inside the card, right above the column header (the budget search,
+  /// FS-1025 #7). Stays when nothing matches, so a search can be cleared.
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +45,16 @@ class DesktopSheetExpenseTable extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: expenses.isEmpty
-            ? (emptyState ?? const SizedBox.shrink())
-            : Column(
+        child: Column(
                 children: [
-                  const DesktopSheetTableHeader(),
+                  if (header != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: header,
+                    ),
+                  if (expenses.isEmpty) emptyState ?? const SizedBox.shrink(),
+                  if (expenses.isNotEmpty) const DesktopSheetTableHeader(),
+                  if (expenses.isNotEmpty)
                   SelectableScope(
                     child: Column(
                       children: List.generate(expenses.length, (index) {

@@ -22,9 +22,13 @@ class MobileSheetReviewList extends StatefulWidget {
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
+    this.hideStatus = false,
   });
 
   final List<ExpenseSummary> expenses;
+
+  /// An approved sheet: no per-card status pill (FS-1025 #10).
+  final bool hideStatus;
   final void Function(ExpenseSummary) onTapLine;
   final void Function(ExpenseSummary)? onApproveLine;
   final void Function(ExpenseSummary)? onDeclineLine;
@@ -78,7 +82,7 @@ class _MobileSheetReviewListState extends State<MobileSheetReviewList> {
         }
         return GestureDetector(
           onTap: () => widget.onTapLine(e),
-          child: MobileExpenseCard(expense: e),
+          child: MobileExpenseCard(expense: e, hideStatusBadge: widget.hideStatus),
         );
       }),
     );

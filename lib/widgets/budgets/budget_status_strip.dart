@@ -69,6 +69,7 @@ class BudgetStatusStrip extends ConsumerWidget {
     }
 
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4), // lines up with the cards
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: color.withAlpha(13),

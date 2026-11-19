@@ -36,6 +36,9 @@ class SheetExpensesArea extends ConsumerWidget {
     this.emptyTitle,
     this.emptyDescription,
     this.budgetId,
+    this.hideStatus = false,
+    this.tableHeader,
+    this.noMatchText,
   });
 
   /// FS-1012 budget page: its own empty-state copy (null = Monthly's).
@@ -44,6 +47,15 @@ class SheetExpensesArea extends ConsumerWidget {
 
   /// FS-1012: the empty state's "+ New expense" files onto this budget.
   final String? budgetId;
+
+  /// An approved sheet: no per-line status (FS-1025 #10).
+  final bool hideStatus;
+
+  /// Desktop: inside the table card above its header (FS-1025 #7). With
+  /// [noMatchText], an empty list is a search miss shown in the table, not
+  /// the "no expenses yet" state.
+  final Widget? tableHeader;
+  final String? noMatchText;
 
   final List<ExpenseSummary> expenses;
   final String companyLocale;
@@ -98,7 +110,8 @@ class SheetExpensesArea extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-    if (expenses.isEmpty) {
+    final searchMiss = noMatchText != null && context.isDesktop;
+    if (expenses.isEmpty && !searchMiss) {
       final title = emptyTitle ?? l10n.employeeEmptyStateTitle;
       final emptyDesc = emptyDescription ??
           (isDraft ? l10n.employeeEmptyStateDesc : l10n.noExpensesPendingDesc);
@@ -142,6 +155,17 @@ class SheetExpensesArea extends ConsumerWidget {
         onView: onViewCb,
         onEdit: onEditCb,
         onDelete: onDeleteCb,
+        header: tableHeader,
+        emptyState: noMatchText == null
+            ? null
+            : Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  noMatchText!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppTheme.mutedForeground),
+                ),
+              ),
       );
     }
 
@@ -158,6 +182,7 @@ class SheetExpensesArea extends ConsumerWidget {
     return MobileSheetExpenseCarousel(
       expenses: expenses,
       enableSwipeToDelete: canDelete,
+      hideStatusBadge: hideStatus,
       warnOnResolveLastDeclined: warnOnResolveLastDeclined,
       onEdit: onEditCb,
       onView: onViewCb,

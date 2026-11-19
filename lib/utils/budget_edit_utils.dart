@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../models/budget.dart';
+import '../models/expense_summary.dart';
 import 'app_navigator.dart';
 import 'budget_utils.dart';
 
@@ -75,3 +76,16 @@ Set<BudgetSection> budgetInitiallyExpanded(List<Budget> budgets, BudgetSection? 
             for (final s in BudgetSection.values)
               if (budgets.any((b) => b.statusId == s.statusId)) s,
           };
+
+/// FS-1025 #1: a budget line that needs the holder's hands before submit - a
+/// bulk-upload receipt that could not be read, or (#6) a line breaking the
+/// budget policy. It sits in the amber Needs action card above the list, as on
+/// the Monthly sheet, and blocks submit.
+bool budgetLineNeedsAction(ExpenseSummary e) =>
+    e.isActionRequired || e.policyViolations.isNotEmpty;
+
+/// FS-1025 #8: no new line fits - the company does not allow a negative
+/// balance and the budget has nothing left. Add is grayed out and the bulk
+/// upload section hidden; with negatives allowed nothing changes.
+bool budgetAtLimit(Budget b, {required bool allowNegative}) =>
+    !allowNegative && b.balance <= 0;

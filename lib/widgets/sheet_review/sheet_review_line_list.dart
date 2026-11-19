@@ -25,7 +25,11 @@ class SheetReviewLineList extends ConsumerWidget {
     this.onApproveLine,
     this.onDeclineLine,
     this.onDeleteLine,
+    this.hideStatus = false,
   });
+
+  /// An approved sheet: no Status column, no per-line pill (FS-1025 #10).
+  final bool hideStatus;
 
   final List<ExpenseSummary> expenses;
   final void Function(ExpenseSummary) onTapLine;
@@ -44,6 +48,7 @@ class SheetReviewLineList extends ConsumerWidget {
     if (context.isDesktop) {
       return DesktopSheetReviewTable(
         expenses: expenses,
+        hideStatus: hideStatus,
         companyLocale: companyLocale,
         onTapLine: onTapLine,
         canEditLines: canEditLines,
@@ -57,6 +62,7 @@ class SheetReviewLineList extends ConsumerWidget {
     if (layout == LayoutMode.list) {
       return MobileSheetReviewCompactList(
         expenses: expenses,
+        hideStatus: hideStatus,
         companyLocale: companyLocale,
         onTapLine: onTapLine,
         onApproveLine: onApproveLine,
@@ -66,6 +72,7 @@ class SheetReviewLineList extends ConsumerWidget {
     }
     return MobileSheetReviewList(
       expenses: expenses,
+      hideStatus: hideStatus,
       onTapLine: onTapLine,
       onApproveLine: onApproveLine,
       onDeclineLine: onDeclineLine,

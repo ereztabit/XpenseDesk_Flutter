@@ -16,10 +16,18 @@ class NeedsActionSection extends StatelessWidget {
     super.key,
     required this.count,
     required this.child,
+    this.explanation,
+    this.reasons = const [],
   });
 
   final int count;
   final Widget child;
+
+  /// Replaces the unreadable-receipt sentence (a budget, FS-1025 #6).
+  final String? explanation;
+
+  /// One line per flagged expense saying what to fix (FS-1025 #6).
+  final List<String> reasons;
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +86,18 @@ class NeedsActionSection extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            l10n.actionRequiredExplanation,
+            explanation ?? l10n.actionRequiredExplanation,
             style: const TextStyle(
                 fontSize: 14, color: AppTheme.mutedForeground),
           ),
+          for (final r in reasons)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(top: 4),
+              child: Text(
+                '• $r',
+                style: const TextStyle(fontSize: 13, color: AppTheme.foreground),
+              ),
+            ),
           const SizedBox(height: 12),
           child,
         ],

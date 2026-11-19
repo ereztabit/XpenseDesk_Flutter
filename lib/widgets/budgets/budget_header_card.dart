@@ -48,11 +48,11 @@ class BudgetHeaderCard extends ConsumerWidget {
     const ltr = TextDirection.ltr;
     final endShort = b.endDate.toCompanyDayMonth(locale);
     // PC-5: an approved budget's downloads sit where the Monthly sheet's do -
-    // the trailing top corner on desktop, under the status row below it
-    // (owner QA, 2026-11-19).
-    final downloads =
-        budgetIsApproved(b) ? SheetExportActions(sheetId: b.budgetId) : null;
-    final narrow = !context.isDesktop;
+    // the trailing top corner on desktop; on mobile they move up into the
+    // back row (BudgetBackRow, FS-1025 #12).
+    final downloads = budgetIsApproved(b) && context.isDesktop
+        ? SheetExportActions(sheetId: b.budgetId)
+        : null;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -95,7 +95,7 @@ class BudgetHeaderCard extends ConsumerWidget {
                       const SizedBox(width: 12),
                       trailing!,
                     ],
-                    if (downloads != null && !narrow) ...[
+                    if (downloads != null) ...[
                       const SizedBox(width: 12),
                       downloads,
                     ],
@@ -136,10 +136,6 @@ class BudgetHeaderCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (downloads != null && narrow) ...[
-                  const SizedBox(height: 12),
-                  downloads,
-                ],
               ],
             ),
           ),

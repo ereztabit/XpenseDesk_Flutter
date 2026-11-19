@@ -55,6 +55,13 @@ class BulkUploadBatch {
   final int pendingCount;
   final List<BulkUploadItem> items;
 
+  /// FS-1025: the budget the batch files into; null = the sender's Monthly
+  /// sheet (older payloads carry neither field).
+  final String? expenseSheetId;
+
+  /// `Monthly` | `PettyCash`, when the server sends it.
+  final String? sheetType;
+
   const BulkUploadBatch({
     required this.batchId,
     required this.status,
@@ -66,7 +73,12 @@ class BulkUploadBatch {
     required this.unreadableCount,
     required this.pendingCount,
     this.items = const [],
+    this.expenseSheetId,
+    this.sheetType,
   });
+
+  /// Filed into a budget, not the Monthly sheet.
+  bool get isBudget => expenseSheetId != null && sheetType != 'Monthly';
 
   bool get isCompleted => status == 'Completed';
 
@@ -95,6 +107,8 @@ class BulkUploadBatch {
               .map(BulkUploadItem.fromJson)
               .toList() ??
           const [],
+      expenseSheetId: json['expenseSheetId'] as String?,
+      sheetType: json['sheetType'] as String?,
     );
   }
 }

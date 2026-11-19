@@ -51,7 +51,7 @@ class BulkUploadEntryArea extends ConsumerWidget {
         ],
         // Under the strip on desktop, under the title row on mobile. Renders
         // nothing unless a batch is processing.
-        const BulkUploadProgressStrip(),
+        BulkUploadProgressStrip(budgetId: budgetId),
       ],
     );
   }

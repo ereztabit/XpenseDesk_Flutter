@@ -15,9 +15,14 @@ class SheetReviewBackRow extends StatelessWidget {
     super.key,
     required this.title,
     this.fallbackRoute = '/manager-approvals',
+    this.trailing,
   });
 
   final String title;
+
+  /// Mobile only: fills the row's empty end (the PDF / Excel downloads on an
+  /// approved sheet), so the sheet card starts higher (FS-1025 #12).
+  final Widget? trailing;
 
   /// Where to go when there is nothing to pop — e.g. Sheet Review was opened via
   /// a deep link or after a browser refresh, so it is the only route on the
@@ -49,12 +54,15 @@ class SheetReviewBackRow extends StatelessWidget {
           Expanded(
             child: Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context)
                   .textTheme
                   .headlineMedium
                   ?.copyWith(fontSize: 20),
             ),
           ),
+          if (trailing != null) ...[const SizedBox(width: 8), trailing!],
         ],
       );
     }
