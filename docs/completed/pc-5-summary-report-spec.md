@@ -1,6 +1,6 @@
 # PC-5 - Sheet export: Download as PDF / Download as Excel
 
-> Mission: FS-1016. Backend story + decisions: BackEnd/XpenseDeskServer/docs/petty-cash/pc-5-summary-report.md.
+> Mission: FS-1016. Backend story + decisions: BackEnd/XpenseDeskServer/docs/done/pc-5-summary-report.md.
 > **Implementation plan (all slices, limits, tests): BackEnd/XpenseDeskServer/docs/petty-cash/pc-5-implementation-plan.md.**
 > PDF code source: the POC at `C:\Projects\QuestPdfPoc`.
 
