@@ -27,8 +27,13 @@ final paymentsFilterProvider =
 );
 
 class PaymentsFilterNotifier extends Notifier<PaymentsFilter> {
+  /// Starts over when the signed-in user changes, so a manager's filter (an
+  /// employee picked) never carries into the next user's History (PC-9).
   @override
-  PaymentsFilter build() => PaymentsFilter.defaults;
+  PaymentsFilter build() {
+    ref.watch(userInfoProvider.select((u) => u?.email));
+    return PaymentsFilter.defaults;
+  }
 
   void set(PaymentsFilter filter) => state = filter;
 }
@@ -164,3 +169,9 @@ final paymentSheetTypesProvider = Provider<List<CompanyModuleKey>>((ref) {
 /// Payments report exactly as before PC-8.
 final paymentsMultiTypeProvider =
     Provider<bool>((ref) => ref.watch(paymentSheetTypesProvider).length > 1);
+
+/// PC-9: an employee sees the screen as their read-only "History" - own sheets
+/// (server-scoped), no selection, Settle, Edit or employee filter.
+final paymentsHistoryOnlyProvider = Provider<bool>(
+  (ref) => !(ref.watch(userInfoProvider)?.isManager ?? false),
+);

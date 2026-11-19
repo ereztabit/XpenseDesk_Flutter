@@ -24,6 +24,8 @@ Production readiness: see docs/pre-deployment-issues.md — no hard blockers rem
 
 - [ ] [Business][P2] **FS-1016** PC-5 sheet export (Budget + Monthly) -- IN PROGRESS on `feature/pc5-sheet-export` (both repos). "Download as PDF" and "Download as Excel" on approved sheets (two files, server-built); admin "clear stored exports". see docs/in-progress/pc-5-summary-report-spec.md
 
+- [ ] [Business][P2] **FS-1021** PC-9 Payments & History (absorbs FS-1022) -- IN PROGRESS on `feature/pc5-sheet-export` (both repos, owner's call). Payments screen renamed, every approved sheet incl. "No payment", desktop row actions into a ⋮ menu; employee read-only "History" (own sheets, view / export / PDF + Excel), Digital archive hidden from employees. see docs/backlog/petty-cash/pc-9-budget-report-spec.md (kept in backlog/ - the mission registry links that path)
+
 ## Tags
 
 Every open line starts with a category and a priority: `[Category][P#]`. New
@@ -52,7 +54,6 @@ so in its spec rather than double-tagging here.
 
 - [ ] [Business][P3] **FS-1014** PC-3 move expenses between open sheets + "Other" locked in every module -- not phase 1. see docs/backlog/petty-cash/pc-3-move-expenses-spec.md
 - [ ] [Business][P3] **FS-1017** PC-6 notifications + end-date alerts -- last. see docs/backlog/petty-cash/pc-6-notifications-spec.md
-- [ ] [Business][P2] **FS-1021** PC-9 Payments & History (reshaped 2026-11-19, absorbs FS-1022) -- NEXT after FS-1016 + FS-1025. Payments screen renamed, desktop row actions into a ⋮ menu, mobile Settle / Edit same size; employee read-only "History" nav item (own sheets, view / export / PDF + Excel), Digital archive hidden from employees. No Lovable round. see docs/backlog/petty-cash/pc-9-budget-report-spec.md
 - [ ] [Business][P3] **FS-1023** Digital archive -- NOT DESIGNED, another day. The renamed cycle expenses report becomes a receipt search engine (merchant / amount across cycles and sheet types). see docs/backlog/digital-archive-spec.md
 - [ ] [Technical][P3] **FS-1018** PC-7 remove the dark-launch flags -- Petty Cash, Travel (if Travel is done) and the stale bulk upload flag, with their admin switches. Only after Petty Cash is done. see docs/backlog/petty-cash/pc-7-remove-flags-spec.md
 

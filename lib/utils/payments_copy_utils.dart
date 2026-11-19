@@ -59,15 +59,20 @@ String paymentDirectionText(AppLocalizations l10n, PaymentDirection d) =>
     : l10n.paymentsDirectionToPay;
 
 /// Awaiting Payment / Paid / Collected; plain "Processed" without a direction.
+/// [forHolder]: the employee is looking - money they gave back reads
+/// "Returned", not "Charged" (owner 2026-11-19, as D16's "To return").
 String paymentStatusText(
   AppLocalizations l10n,
   PaymentStatus status, {
   PaymentDirection? direction,
+  bool forHolder = false,
 }) {
   if (status == PaymentStatus.awaitingPayment) return l10n.paymentStatusPending;
+  if (status == PaymentStatus.noPayment) return l10n.paymentStatusNoPayment;
   return switch (direction) {
     PaymentDirection.pay => l10n.paymentStatusPaid,
-    PaymentDirection.collect => l10n.paymentStatusCollected,
+    PaymentDirection.collect =>
+      forHolder ? l10n.paymentStatusReturned : l10n.paymentStatusCollected,
     null => l10n.paymentStatusProcessed,
   };
 }
@@ -76,6 +81,10 @@ String paymentSheetTypeText(AppLocalizations l10n, CompanyModuleKey type) =>
     type == CompanyModuleKey.pettyCash
     ? l10n.paymentsSheetTypeBudget
     : l10n.paymentsSheetTypeMonthly;
+
+/// PC-9 History: the sheet a row stands for - "Events #1004", or "Monthly".
+String paymentSheetLabelText(AppLocalizations l10n, PaymentReportRow row) =>
+    paymentBudgetText(row) ?? paymentSheetTypeText(l10n, row.sheetType);
 
 /// "Events #1004" for a budget row; null for a Monthly row.
 String? paymentBudgetText(PaymentReportRow row) {

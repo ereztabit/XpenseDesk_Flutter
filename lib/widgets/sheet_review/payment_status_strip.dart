@@ -95,7 +95,11 @@ class PaymentStatusStrip extends ConsumerWidget {
                   runSpacing: 4,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    PaymentStatusBadge(status: status, direction: direction),
+                    PaymentStatusBadge(
+                      status: status,
+                      direction: direction,
+                      forHolder: !isManager,
+                    ),
                     if (sheet.paymentReference != null &&
                         sheet.paymentReference!.isNotEmpty)
                       Text(

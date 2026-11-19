@@ -1250,5 +1250,12 @@
   "adminClearSheetExportsTitle": "Clear stored sheet exports?",
   "adminClearSheetExportsBody": "Deletes every stored PDF and Excel download of this company's approved sheets. The next download of each sheet builds it again.",
   "adminClearSheetExportsConfirm": "Clear",
-  "adminClearSheetExportsDone": "Stored files deleted:"
+  "adminClearSheetExportsDone": "Stored files deleted:",
+  "paymentsHistoryTitle": "Payments & History",
+  "historyTitle": "History",
+  "paymentStatusNoPayment": "No payment",
+  "paymentsSheetColumn": "Sheet",
+  "paymentsRowView": "View",
+  "paymentsExportHistoryTooltip": "Export to Excel",
+  "paymentStatusReturned": "Returned"
 }

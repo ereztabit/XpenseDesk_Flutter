@@ -4,9 +4,14 @@
 ///
 /// Wire convention (matches the rest of the API): query params use the int id
 /// ([queryId]); responses and write bodies use the string name ([wireName]).
+///
+/// [noPayment] (PC-9) is an approved sheet outside the payment lifecycle: the
+/// server sends `null` for it; the client uses this value for the filter
+/// (`paymentStatus=0`) and the grey "No payment" pill.
 enum PaymentStatus {
   awaitingPayment(1, 'AwaitingPayment'),
-  processed(2, 'Processed');
+  processed(2, 'Processed'),
+  noPayment(0, 'NoPayment');
 
   final int queryId;
   final String wireName;

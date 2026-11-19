@@ -5,6 +5,7 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payments_filter.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/manager_dashboard_provider.dart';
+import '../../providers/payments_provider.dart';
 import '../date_range_filter.dart';
 import 'payments_dropdown.dart';
 
@@ -24,8 +25,8 @@ class PaymentsAdvancedFilters extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final employees =
-        ref.watch(companyEmployeesProvider).asData?.value ?? const [];
+    // An employee's History has no employee filter (PC-9).
+    final historyOnly = ref.watch(paymentsHistoryOnlyProvider);
     final cycles = ref.watch(cyclesProvider).asData?.value ?? const [];
 
     return Wrap(
@@ -33,17 +34,20 @@ class PaymentsAdvancedFilters extends ConsumerWidget {
       runSpacing: 12,
       crossAxisAlignment: WrapCrossAlignment.end,
       children: [
-        PaymentsDropdown<String?>(
-          sectionLabel: l10n.employee,
-          selected: pending.userId,
-          entries: [
-            DropdownMenuEntry<String?>(value: null, label: l10n.allOption),
-            for (final e in employees)
-              DropdownMenuEntry<String?>(value: e.userId, label: e.fullName),
-          ],
-          onSelected: (value) =>
-              onChanged(pending.copyWith(userId: value)),
-        ),
+        if (!historyOnly)
+          PaymentsDropdown<String?>(
+            sectionLabel: l10n.employee,
+            selected: pending.userId,
+            entries: [
+              DropdownMenuEntry<String?>(value: null, label: l10n.allOption),
+              for (final e
+                  in ref.watch(companyEmployeesProvider).asData?.value ??
+                      const [])
+                DropdownMenuEntry<String?>(value: e.userId, label: e.fullName),
+            ],
+            onSelected: (value) =>
+                onChanged(pending.copyWith(userId: value)),
+          ),
         PaymentsDropdown<String?>(
           sectionLabel: l10n.cycle,
           selected: pending.cycleId,

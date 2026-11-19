@@ -60,11 +60,14 @@ class DesktopPaymentsTable extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final showSheetType = ref.watch(paymentsMultiTypeProvider);
+    final historyOnly = ref.watch(paymentsHistoryOnlyProvider);
     final minWidth = PaymentsTableColumns.tableWidth(
       showSheetType: showSheetType,
+      showGovId: !historyOnly,
     );
+    // An employee's History (PC-9): no selection, no Settle / Edit.
     final selectableIds = rows
-        .where((r) => r.isAwaiting)
+        .where((r) => r.isAwaiting && !historyOnly)
         .map((r) => r.expenseSheetId)
         .toSet();
     final allSelected =
@@ -98,19 +101,20 @@ class DesktopPaymentsTable extends ConsumerWidget {
                   children: [
                     DesktopPaymentsHeaderRow(
                       showSheetType: showSheetType,
+                      historyOnly: historyOnly,
                       sortField: sortField,
                       sortAscending: sortAscending,
                       onSort: onSort,
                       allSelected: allSelected,
                       hasSelectable: selectableIds.isNotEmpty,
-                      onToggleAll: onToggleAll,
+                      onToggleAll: historyOnly ? null : onToggleAll,
                     ),
                     const Divider(
                       height: 1,
                       thickness: 1,
                       color: AppTheme.border,
                     ),
-                    _body(l10n, showSheetType),
+                    _body(l10n, showSheetType, historyOnly),
                   ],
                 ),
               ),
@@ -121,7 +125,7 @@ class DesktopPaymentsTable extends ConsumerWidget {
     );
   }
 
-  Widget _body(AppLocalizations l10n, bool showSheetType) {
+  Widget _body(AppLocalizations l10n, bool showSheetType, bool historyOnly) {
     if (loading) {
       return const Padding(
         padding: EdgeInsets.all(40),
@@ -161,15 +165,19 @@ class DesktopPaymentsTable extends ConsumerWidget {
             DesktopPaymentsRow(
               row: rows[i],
               showSheetType: showSheetType,
+              historyOnly: historyOnly,
               locale: locale,
               currencyCode: currencyCode,
               isSelected: selectedIds.contains(rows[i].expenseSheetId),
               isHighlighted: highlightedIds.contains(rows[i].expenseSheetId),
-              onToggleSelection: onToggleSelection != null
+              onToggleSelection: onToggleSelection != null && !historyOnly
                   ? (selected) => onToggleSelection!(rows[i], selected)
                   : null,
               onTap: () => onRowTap(rows[i]),
-              onEdit: onEdit != null ? () => onEdit!(rows[i]) : null,
+              // A "No payment" row has nothing to settle (PC-9).
+              onEdit: onEdit != null && !historyOnly && !rows[i].isNoPayment
+                  ? () => onEdit!(rows[i])
+                  : null,
             ),
             if (i < rows.length - 1)
               const Divider(height: 1, color: AppTheme.border),

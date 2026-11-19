@@ -41,8 +41,9 @@ class PaymentBulkLimitExceededException implements Exception {
   const PaymentBulkLimitExceededException();
 }
 
-/// Service for the XpenseDesk Payments API. All endpoints are manager-only —
-/// the server returns 403 for any other role.
+/// Service for the XpenseDesk Payments API. The list and Export All also serve
+/// an employee's History, scoped to them by the server (PC-9); every write,
+/// the summary and the bulk export are manager-only (403 otherwise).
 class PaymentService {
   final ApiService _apiService;
   final AuthService _authService;
@@ -267,7 +268,7 @@ class PaymentService {
 
     return _apiService.postBinary(
       '/api/reports/export-payments-report',
-      filter.toQueryParams(),
+      {...filter.toQueryParams(), 'includeNoPayment': true},
       authToken: sessionToken,
     );
   }

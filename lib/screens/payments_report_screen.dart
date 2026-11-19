@@ -12,7 +12,8 @@ import '../widgets/payments/mobile_payments_view.dart';
 import '../widgets/payments/payments_filter_dialog.dart';
 import '../widgets/payments/payments_report_actions.dart';
 
-/// Payments Report — the manager's payroll workspace (manager-only).
+/// Payments & History — the manager's payroll workspace; for an employee the
+/// read-only "History" of their own approved sheets (PC-9).
 ///
 /// Scroll model (D17): header, title row, filters, and caption are pinned;
 /// only the table body scrolls. The APPLIED filter lives in
@@ -46,7 +47,6 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
 
   @override
   final Set<String> selectedIds = {};
-
   @override
   final Set<String> highlightedIds = {};
 
@@ -116,12 +116,14 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     });
   }
 
-  // Budget page for a budget (PC-8 QA) - the sheet review when budgets are off (FS-1025 #27).
+  // Budget page; sheet review with Budgets off; read-only for History (PC-9, D40).
   void _openSheet(PaymentReportRow row) => Navigator.pushNamed(
         context,
-        row.sheetType == CompanyModuleKey.pettyCash && ref.read(isPettyCashEnabledProvider)
-            ? AppRoutes.budgetPath(row.expenseSheetId)
-            : '/manager/sheet/${row.expenseSheetId}',
+        ref.read(paymentsHistoryOnlyProvider)
+            ? AppRoutes.historySheetPath(row.expenseSheetId)
+            : row.sheetType == CompanyModuleKey.pettyCash && ref.read(isPettyCashEnabledProvider)
+                ? AppRoutes.budgetPath(row.expenseSheetId)
+                : '/manager/sheet/${row.expenseSheetId}',
       );
 
   @override
@@ -136,6 +138,7 @@ class _PaymentsReportScreenState extends ConsumerState<PaymentsReportScreen>
     final view = context.isMobile
         ? MobilePaymentsView(
             onOpenFilters: _openFilterDialog,
+            onExportAll: exportAll,
             onExportSelected: exportSelected,
             onMarkProcessedSelection: () => markProcessed(selectedIds.toList()),
             rows: rows,

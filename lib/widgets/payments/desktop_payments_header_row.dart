@@ -13,6 +13,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
   const DesktopPaymentsHeaderRow({
     super.key,
     this.showSheetType = true,
+    this.historyOnly = false,
     required this.sortField,
     required this.sortAscending,
     required this.onSort,
@@ -22,6 +23,9 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
   });
 
   final bool showSheetType;
+
+  /// An employee's History: "Sheet" heads the name column; no gov ID.
+  final bool historyOnly;
   final PaymentsSortField? sortField;
   final bool sortAscending;
   final ValueChanged<PaymentsSortField> onSort;
@@ -74,7 +78,7 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             ),
           ),
           cell(
-            l10n.employee,
+            historyOnly ? l10n.paymentsSheetColumn : l10n.employee,
             PaymentsTableColumns.employee,
             PaymentsSortField.employee,
           ),
@@ -85,10 +89,11 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             centered: true,
             trailing: const PaymentsAmountInfoIcon(),
           ),
-          // Process / Edit buttons (owner QA, 2026-11-19: the column needs a caption).
+          // The row ⋮ menu (PC-9; owner QA 2026-11-19: the column needs a caption).
           PaymentsHeaderCell(
             label: l10n.actions,
             width: PaymentsTableColumns.action,
+            centered: true,
           ),
           if (showSheetType)
             cell(
@@ -107,11 +112,12 @@ class DesktopPaymentsHeaderRow extends StatelessWidget {
             PaymentsTableColumns.processedDate,
             PaymentsSortField.processedDate,
           ),
-          cell(
-            l10n.govIdColumn,
-            PaymentsTableColumns.govId,
-            PaymentsSortField.govId,
-          ),
+          if (!historyOnly)
+            cell(
+              l10n.govIdColumn,
+              PaymentsTableColumns.govId,
+              PaymentsSortField.govId,
+            ),
         ],
       ),
     );

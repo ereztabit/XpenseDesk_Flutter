@@ -42,8 +42,11 @@ class SheetReviewBackRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // Back returns to wherever the sheet was opened from (Payments, the
-    // dashboard...) - "to approvals" only when it goes there (FS-1025 #28).
-    final backLabel = Navigator.of(context).canPop() ? l10n.back : l10n.backToApprovals;
+    // dashboard...) - "to approvals" only when it goes there (FS-1025 #28;
+    // a read-only History sheet falls back to History - PC-9).
+    final toApprovals =
+        !Navigator.of(context).canPop() && fallbackRoute == '/manager-approvals';
+    final backLabel = toApprovals ? l10n.backToApprovals : l10n.back;
 
     if (context.isMobile) {
       return Row(

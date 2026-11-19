@@ -1250,5 +1250,12 @@
   "adminClearSheetExportsTitle": "לנקות את קבצי הייצוא השמורים?",
   "adminClearSheetExportsBody": "מוחק את כל קבצי ה-PDF וה-Excel השמורים של הגליונות המאושרים בחברה. ההורדה הבאה של כל גליון תבנה אותו מחדש.",
   "adminClearSheetExportsConfirm": "ניקוי",
-  "adminClearSheetExportsDone": "קבצים שנמחקו:"
+  "adminClearSheetExportsDone": "קבצים שנמחקו:",
+  "paymentsHistoryTitle": "תשלומים והיסטוריה",
+  "historyTitle": "היסטוריה",
+  "paymentStatusNoPayment": "ללא תשלום",
+  "paymentsSheetColumn": "גיליון",
+  "paymentsRowView": "צפייה",
+  "paymentsExportHistoryTooltip": "ייצוא לאקסל",
+  "paymentStatusReturned": "הוחזר"
 }

@@ -21,6 +21,10 @@ class AppRoutes {
   static const String employeeNewExpense = '/employee/new-expense';
   static const String managerPayments = '/manager/payments';
 
+  /// PC-9: an employee's History and the read-only sheet it opens.
+  static const String employeeHistory = '/employee/history';
+  static String historySheetPath(String id) => '$employeeHistory/sheet/$id';
+
   // --- Budgets (FS-1012) ---
   /// Manager budgets dashboard (B1).
   static const String budgets = '/budgets';

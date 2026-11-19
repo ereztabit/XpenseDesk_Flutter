@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../generated/l10n/app_localizations.dart';
-import '../../models/payment_status.dart';
 import '../../models/payments_filter.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/manager_dashboard_provider.dart';
+import '../../providers/payments_provider.dart';
 import '../app_button.dart';
 import '../date_range_filter.dart';
+import 'payment_status_filter_dropdown.dart';
 import 'payments_dropdown.dart';
 import 'payments_sheet_type_dropdown.dart';
 import 'payments_dialog_header.dart';
@@ -49,8 +50,7 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final employees =
-        ref.watch(companyEmployeesProvider).asData?.value ?? const [];
+    final historyOnly = ref.watch(paymentsHistoryOnlyProvider);
     final cycles = ref.watch(cyclesProvider).asData?.value ?? const [];
 
     return Dialog(
@@ -66,24 +66,9 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
               children: [
                 PaymentsDialogHeader(title: l10n.filtersTitle, enabled: true),
                 const SizedBox(height: 8),
-                PaymentsDropdown<PaymentStatus?>(
-                  sectionLabel: l10n.paymentStatusFilterLabel,
+                PaymentStatusFilterDropdown(
                   width: _fieldWidth,
                   selected: _pending.status,
-                  entries: [
-                    DropdownMenuEntry<PaymentStatus?>(
-                      value: null,
-                      label: l10n.allOption,
-                    ),
-                    DropdownMenuEntry<PaymentStatus?>(
-                      value: PaymentStatus.awaitingPayment,
-                      label: l10n.paymentStatusPending,
-                    ),
-                    DropdownMenuEntry<PaymentStatus?>(
-                      value: PaymentStatus.processed,
-                      label: l10n.paymentStatusProcessed,
-                    ),
-                  ],
                   onSelected: (value) => setState(
                     () => _pending = _pending.copyWith(status: value),
                   ),
@@ -109,26 +94,30 @@ class _PaymentsFilterDialogState extends ConsumerState<PaymentsFilterDialog> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
-                PaymentsDropdown<String?>(
-                  sectionLabel: l10n.employee,
-                  width: _fieldWidth,
-                  selected: _pending.userId,
-                  entries: [
-                    DropdownMenuEntry<String?>(
-                      value: null,
-                      label: l10n.allOption,
-                    ),
-                    for (final e in employees)
+                // An employee's History has no employee filter (PC-9).
+                if (!historyOnly) ...[
+                  const SizedBox(height: 14),
+                  PaymentsDropdown<String?>(
+                    sectionLabel: l10n.employee,
+                    width: _fieldWidth,
+                    selected: _pending.userId,
+                    entries: [
                       DropdownMenuEntry<String?>(
-                        value: e.userId,
-                        label: e.fullName,
+                        value: null,
+                        label: l10n.allOption,
                       ),
-                  ],
-                  onSelected: (value) => setState(
-                    () => _pending = _pending.copyWith(userId: value),
+                      for (final e in ref.watch(companyEmployeesProvider)
+                              .asData?.value ?? const [])
+                        DropdownMenuEntry<String?>(
+                          value: e.userId,
+                          label: e.fullName,
+                        ),
+                    ],
+                    onSelected: (value) => setState(
+                      () => _pending = _pending.copyWith(userId: value),
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 14),
                 PaymentsDropdown<String?>(
                   sectionLabel: l10n.cycle,

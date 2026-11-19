@@ -5,14 +5,14 @@ import '../../generated/l10n/app_localizations.dart';
 import '../../models/payment_report_row.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payments_provider.dart';
-import '../../theme/app_theme.dart';
-import '../../utils/app_navigator.dart';
 import '../../utils/payments_copy_utils.dart';
 import '../../utils/payments_utils.dart';
 import '../manager_dashboard/paging_overflow_notice.dart';
+import 'history_export_button.dart';
 import 'mobile_bulk_action_card.dart';
 import 'mobile_payments_table.dart';
 import 'payments_active_filter_badge.dart';
+import 'payments_title_row.dart';
 
 /// Mobile composition of the Payments Report body (D16/D17): pinned title row
 /// (back · title · filter badge), animated bulk card, caption,
@@ -35,6 +35,7 @@ class MobilePaymentsView extends ConsumerWidget {
     required this.onToggleAll,
     required this.onRowTap,
     required this.onEditRow,
+    required this.onExportAll,
   });
 
   final VoidCallback onOpenFilters;
@@ -51,12 +52,8 @@ class MobilePaymentsView extends ConsumerWidget {
   final ValueChanged<PaymentReportRow> onRowTap;
   final ValueChanged<PaymentReportRow> onEditRow;
 
-  void _back(BuildContext context) {
-    final nav = Navigator.of(context);
-    nav.canPop()
-        ? nav.pop()
-        : nav.pushReplacementNamed(AppRoutes.managerDashboard);
-  }
+  /// Exports the applied filter - offered on the phone to an employee only.
+  final VoidCallback onExportAll;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,31 +69,20 @@ class MobilePaymentsView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 12),
-        Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppTheme.foreground),
-              visualDensity: VisualDensity.compact,
-              // canPop falls back to the dashboard so back works after a
-              // browser refresh / deep link (nothing to pop otherwise).
-              onPressed: () => _back(context),
-            ),
-            Expanded(
-              child: Text(
-                l10n.paymentsTitle,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.foreground,
-                ),
-                overflow: TextOverflow.ellipsis,
+        PaymentsTitleRow(
+          compact: true,
+          trailing: [
+            // A manager has no Export All on the phone: select all, then
+            // Export (owner). An employee cannot select, so they get one.
+            if (ref.watch(paymentsHistoryOnlyProvider))
+              HistoryExportButton(
+                onPressed: onExportAll,
+                isExporting: exportState.exportingAll,
               ),
-            ),
             PaymentsActiveFilterBadge(
               activeCount: appliedFilter.activeCount,
               onTap: onOpenFilters,
             ),
-            // No Export All on mobile: select all, then Export (owner).
           ],
         ),
         AnimatedSize(

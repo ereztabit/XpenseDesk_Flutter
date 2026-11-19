@@ -33,10 +33,13 @@ class PaymentTotals {
   /// The company takes back more than it pays.
   bool get isNetNegative => ((payAmount - collectAmount) * 100).round() < 0;
 
+  /// PC-9: a "No payment" row moves no money - left out, as in the server
+  /// totals and the Excel Total.
   static PaymentTotals of(Iterable<PaymentReportRow> rows) {
     var payCount = 0, collectCount = 0;
     var payAmount = 0.0, collectAmount = 0.0;
     for (final r in rows) {
+      if (r.isNoPayment) continue;
       if (r.isCollect) {
         collectCount++;
         collectAmount += r.magnitude;
@@ -110,9 +113,13 @@ class PaymentsSortUtils {
       PaymentReportRow a, PaymentReportRow b, PaymentsSortField field) {
     switch (field) {
       case PaymentsSortField.employee:
-        return a.employeeName
+        // Same person (always so in an employee's History, PC-9): by sheet.
+        final byName = a.employeeName
             .toLowerCase()
             .compareTo(b.employeeName.toLowerCase());
+        return byName != 0
+            ? byName
+            : _compare(a, b, PaymentsSortField.sheetType);
       case PaymentsSortField.govId:
         return (a.employeeGovId ?? '').compareTo(b.employeeGovId ?? '');
       case PaymentsSortField.cycle:

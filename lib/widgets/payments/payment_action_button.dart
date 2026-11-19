@@ -18,8 +18,8 @@ class PaymentActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return SizedBox(
-      // The desktop action cell less its padding - the phone uses the same.
-      width: PaymentsTableColumns.action - PaymentsTableColumns.cellGap,
+      // One width in every language (desktop moved to the ⋮ menu in PC-9).
+      width: PaymentsTableColumns.actionButton - PaymentsTableColumns.cellGap,
       height: 32,
       child: AppButton(
         label: row.isAwaiting ? l10n.paymentProcessButton : l10n.paymentEditButton,

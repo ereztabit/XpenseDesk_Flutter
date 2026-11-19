@@ -5,7 +5,8 @@ import '../../theme/app_theme.dart';
 import 'payment_status_badge.dart';
 
 /// Employee name (opens the sheet) with the payment-status pill beside it
-/// ("QA Employee [Pending]") - desktop table and mobile rows.
+/// ("QA Employee [Pending]") - desktop table and mobile rows. In an
+/// employee's History (PC-9) [label] names the sheet instead.
 class PaymentEmployeeCell extends StatelessWidget {
   const PaymentEmployeeCell({
     super.key,
@@ -13,6 +14,7 @@ class PaymentEmployeeCell extends StatelessWidget {
     required this.onTap,
     this.showDirection = true,
     this.fontSize = 13,
+    this.label,
   });
 
   final PaymentReportRow row;
@@ -22,8 +24,12 @@ class PaymentEmployeeCell extends StatelessWidget {
   final bool showDirection;
   final double fontSize;
 
+  /// Replaces the employee name (History: "Events #1004" / "Monthly").
+  final String? label;
+
   @override
   Widget build(BuildContext context) {
+    final text = label ?? row.employeeName;
     return Row(
       children: [
         Flexible(
@@ -32,9 +38,9 @@ class PaymentEmployeeCell extends StatelessWidget {
             child: GestureDetector(
               onTap: onTap,
               child: Tooltip(
-                message: row.employeeName,
+                message: text,
                 child: Text(
-                  row.employeeName,
+                  text,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: fontSize,
@@ -46,13 +52,13 @@ class PaymentEmployeeCell extends StatelessWidget {
             ),
           ),
         ),
-        if (row.paymentStatus != null) ...[
-          const SizedBox(width: 8),
-          PaymentStatusBadge(
-            status: row.paymentStatus!,
-            direction: showDirection ? row.direction : null,
-          ),
-        ],
+        const SizedBox(width: 8),
+        PaymentStatusBadge(
+          status: row.displayStatus,
+          direction: showDirection ? row.direction : null,
+          // An employee's History reads "Returned", not "Charged".
+          forHolder: label != null,
+        ),
       ],
     );
   }

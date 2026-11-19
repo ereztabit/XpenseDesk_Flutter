@@ -381,3 +381,38 @@ calendar months** in the company's time zone (today 19.11.2026 -> earliest
 19.05.2026; 31.08 -> 28.02/29.02). One day earlier is refused. Takes effect
 once the owner applies `docs/petty-cash/pc-qa-2-proc-budget-end-date.sql`;
 until then the server still refuses more than 30 days back.
+
+## PC-9 - Payments & History (FS-1021)
+
+Story: docs/petty-cash/pc-9-budget-report.md. All additive - a caller that
+sends nothing new gets exactly today's answer. Needs
+`docs/petty-cash/pc-9-proc-payments-history.sql` applied.
+
+### `GET /api/payments` and `POST /api/reports/export-payments-report`
+
+| Input | Change |
+|---|---|
+| `includeNoPayment` (query / body, bool, default `false`) | **New.** `true` also lists every other approved sheet, both types - one that never entered payments (a budget settled to zero, a Monthly sheet with nothing approved). |
+| `paymentStatus` | **New value `0` = No payment** (only those sheets; implies `includeNoPayment`). `1` / `2` as before; anything else is still `400 PaymentInvalidTargetStatus`. |
+| Caller | **Employees allowed** (was 403). An employee always gets **their own sheets only** - Monthly sheets they filed and budgets they hold; a `userId` they send is ignored. |
+
+A "No payment" row: `paymentStatus` = `null`, `amount` = `0` (a legacy sheet
+may carry its approved amount), `direction` = `"Pay"`; a budget among them has
+`expenseCycleId` / `cycleLabel` = `null` (no payment cycle). **`expenseCycleId`
+is now nullable** on every row. The envelope money (`pageTotalAmount`,
+`grandTotalAmount`, `payCount`, `collectCount`, `grandCollectAmount`,
+`pageCollectAmount`) counts payment sheets only; `totalCount` counts every
+listed sheet. Excel: Payment Status reads "No Payment", Direction is empty,
+and the Total adds up the payment sheets only.
+
+### Still manager-only (403 for an employee)
+
+`GET /api/payments/summary`, `POST /api/payments/process`,
+`PUT /api/payments/{id}`, `POST /api/payments/bulk-update`,
+`POST /api/reports/bulk-export-payments-report`.
+
+### Opening a sheet from History
+
+No change: `GET /api/expense-sheets/{id}` and the PC-5 PDF / Excel download
+already answer the filer / holder of a sheet (another employee's sheet = 404
+`ExpenseSheetNotFound`), with any module off.

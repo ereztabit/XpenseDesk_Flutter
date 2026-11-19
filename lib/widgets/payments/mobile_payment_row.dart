@@ -20,6 +20,7 @@ class MobilePaymentRow extends StatelessWidget {
     super.key,
     required this.row,
     this.showSheetType = true,
+    this.historyOnly = false,
     required this.locale,
     required this.currencyCode,
     required this.isSelected,
@@ -33,6 +34,9 @@ class MobilePaymentRow extends StatelessWidget {
 
   /// False for a Monthly-only company: the subtitle is just the cycle.
   final bool showSheetType;
+
+  /// An employee's History (PC-9): the sheet names the row, no select column.
+  final bool historyOnly;
   final String locale;
   final String? currencyCode;
   final bool isSelected;
@@ -52,9 +56,11 @@ class MobilePaymentRow extends StatelessWidget {
         ? AppTheme.primaryTint
         : null;
     final cycle = row.cycleLabel.toCycleLongMonth(locale);
-    final subtitle = showSheetType
-        ? '${paymentBudgetText(row) ?? paymentSheetTypeText(l10n, row.sheetType)} · $cycle'
-        : cycle;
+    final sheet = paymentSheetLabelText(l10n, row);
+    // A budget with nothing owed has no cycle: a dash, as on desktop.
+    final subtitle = historyOnly || !showSheetType
+        ? (cycle.isEmpty ? '—' : cycle)
+        : [sheet, cycle].where((s) => s.isNotEmpty).join(' · ');
 
     return Container(
       color: rowColor,
@@ -62,17 +68,18 @@ class MobilePaymentRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 40,
-            height: 32,
-            child: row.isAwaiting && onToggleSelection != null
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (v) => onToggleSelection!(v ?? false),
-                    visualDensity: VisualDensity.compact,
-                  )
-                : null,
-          ),
+          if (!historyOnly)
+            SizedBox(
+              width: 40,
+              height: 32,
+              child: row.isAwaiting && onToggleSelection != null
+                  ? Checkbox(
+                      value: isSelected,
+                      onChanged: (v) => onToggleSelection!(v ?? false),
+                      visualDensity: VisualDensity.compact,
+                    )
+                  : null,
+            ),
           PaymentViewSheetButton(onPressed: onTap),
           const SizedBox(width: 4),
           Expanded(
@@ -87,6 +94,7 @@ class MobilePaymentRow extends StatelessWidget {
                         onTap: onTap,
                         showDirection: showSheetType,
                         fontSize: 14,
+                        label: historyOnly ? sheet : null,
                       ),
                     ),
                     const SizedBox(width: 8),

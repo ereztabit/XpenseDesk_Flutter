@@ -53,8 +53,10 @@ class MobilePaymentsTable extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final showSheetType = ref.watch(paymentsMultiTypeProvider);
+    // An employee's History (PC-9): no selection, no Settle / Edit.
+    final historyOnly = ref.watch(paymentsHistoryOnlyProvider);
     final selectableIds = rows
-        .where((r) => r.isAwaiting)
+        .where((r) => r.isAwaiting && !historyOnly)
         .map((r) => r.expenseSheetId)
         .toSet();
     final allSelected =
@@ -74,19 +76,20 @@ class MobilePaymentsTable extends ConsumerWidget {
             padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 12, 4),
             child: Row(
               children: [
-                SizedBox(
-                  width: 40,
-                  child: selectableIds.isNotEmpty
-                      ? Checkbox(
-                          value: allSelected,
-                          onChanged: (v) => onToggleAll(v ?? false),
-                          visualDensity: VisualDensity.compact,
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                if (!historyOnly)
+                  SizedBox(
+                    width: 40,
+                    child: selectableIds.isNotEmpty
+                        ? Checkbox(
+                            value: allSelected,
+                            onChanged: (v) => onToggleAll(v ?? false),
+                            visualDensity: VisualDensity.compact,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
                 const SizedBox(width: 36), // the rows' eye column
                 MobilePaymentsHeaderCell(
-                  label: l10n.employee,
+                  label: historyOnly ? l10n.paymentsSheetColumn : l10n.employee,
                   flex: 3,
                   field: PaymentsSortField.employee,
                   activeField: sortField,
@@ -140,16 +143,20 @@ class MobilePaymentsTable extends ConsumerWidget {
                         return MobilePaymentRow(
                           row: row,
                           showSheetType: showSheetType,
+                          historyOnly: historyOnly,
                           locale: locale,
                           currencyCode: currencyCode,
                           isSelected: selectedIds.contains(row.expenseSheetId),
                           isHighlighted: highlightedIds.contains(
                             row.expenseSheetId,
                           ),
-                          onToggleSelection: (selected) =>
-                              onToggleSelection(row, selected),
+                          onToggleSelection: historyOnly
+                              ? null
+                              : (selected) => onToggleSelection(row, selected),
                           onTap: () => onRowTap(row),
-                          onEdit: () => onEdit(row),
+                          onEdit: historyOnly || row.isNoPayment
+                              ? null
+                              : () => onEdit(row),
                         );
                       },
                     ),
