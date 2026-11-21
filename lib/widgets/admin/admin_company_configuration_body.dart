@@ -15,6 +15,7 @@ import '../bulk_upload/confirm_choice_dialog.dart';
 import '../profile/profile_section_card.dart';
 import 'admin_feature_toggle_row.dart';
 import 'admin_sheet_exports_card.dart';
+import 'admin_company_ai_profile_card.dart';
 import 'admin_free_plan_card.dart';
 
 /// The admin company page's Configuration tab (FS-1007, bulk upload UI/UX
@@ -178,6 +179,8 @@ class _AdminCompanyConfigurationBodyState
                 title: l10n.adminConfigFeaturesTitle,
                 children: content,
               ),
+              const SizedBox(height: 16), // FS-1026: the company's AI profile
+              AdminCompanyAiProfileCard(companyId: widget.companyId, companyName: widget.companyName),
               const SizedBox(height: 16),
               AdminFreePlanCard(
                 companyId: widget.companyId,

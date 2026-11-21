@@ -335,6 +335,21 @@ class ApiService {
             );
           });
 
+  /// GET a file from a full URL outside the API (e.g. a receipt image in blob
+  /// storage): no auth header, status and bytes returned for the caller to check.
+  Future<({int statusCode, String? contentType, Uint8List bytes})> getExternalBytes(
+    String url, {
+    Duration timeout = const Duration(seconds: 60),
+  }) =>
+      _run(() async {
+        final response = await http.get(Uri.parse(url)).timeout(timeout);
+        return (
+          statusCode: response.statusCode,
+          contentType: response.headers['content-type'],
+          bytes: response.bodyBytes,
+        );
+      });
+
   /// Make a DELETE request with optional authorization token
   Future<Map<String, dynamic>> delete(
     String endpoint, {

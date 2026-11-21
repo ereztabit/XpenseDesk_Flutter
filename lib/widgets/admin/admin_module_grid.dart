@@ -33,7 +33,17 @@ const List<_AdminModule> _modules = [
     icon: Icons.currency_exchange,
     route: AppRoutes.adminCurrencies,
   ),
+  _AdminModule(
+    title: _receiptAiTitle,
+    description: _receiptAiDescription,
+    icon: Icons.receipt_long_outlined,
+    route: AppRoutes.adminReceiptAi,
+  ),
 ];
+
+String _receiptAiTitle(AppLocalizations l10n) => l10n.adminModuleReceiptAi;
+String _receiptAiDescription(AppLocalizations l10n) =>
+    l10n.adminModuleReceiptAiDescription;
 
 String _companiesTitle(AppLocalizations l10n) => l10n.adminModuleCompanies;
 String _companiesDescription(AppLocalizations l10n) =>

@@ -82,6 +82,46 @@ class AppRoutes {
     return match == null ? null : int.tryParse(match.group(1)!);
   }
 
+  // --- Receipt AI module (FS-1026) ---
+  // Tab, profile number and expense id all live in the path, so refresh and
+  // shared links land on the same screen.
+  static const String adminReceiptAi = '/admin/receipt-ai';
+  static const String adminAiTabProfiles = 'profiles';
+  static const String adminAiTabCompanies = 'companies';
+  static const String adminAiTabUsage = 'usage';
+
+  static String adminAiTab(String tab) => '$adminReceiptAi/$tab';
+  static String adminAiProfile(int profileId) =>
+      '$adminReceiptAi/$adminAiTabProfiles/$profileId';
+  static String adminAiScan(String expenseId) =>
+      '$adminReceiptAi/$adminAiTabUsage/scans/$expenseId';
+
+  /// Parses a Receipt AI path, or null when [path] is not one:
+  /// `/admin/receipt-ai[/{tab}]` -> tab (null = the first tab),
+  /// `/admin/receipt-ai/profiles/{n}` -> profileId,
+  /// `/admin/receipt-ai/usage/scans/{guid}` -> expenseId.
+  static ({String? tab, int? profileId, String? expenseId})?
+  parseAdminReceiptAiPath(String path) {
+    final base = RegExp.escape(adminReceiptAi);
+    final profile = RegExp(
+      '^$base/$adminAiTabProfiles/([1-9][0-9]{0,8})/?\$',
+    ).firstMatch(path);
+    if (profile != null) {
+      return (tab: null, profileId: int.parse(profile.group(1)!), expenseId: null);
+    }
+
+    final scan = RegExp(
+      '^$base/$adminAiTabUsage/scans/([0-9a-fA-F-]{36})/?\$',
+    ).firstMatch(path);
+    if (scan != null && _guid.hasMatch(scan.group(1)!)) {
+      return (tab: null, profileId: null, expenseId: scan.group(1)!);
+    }
+
+    final tab = RegExp('^$base(?:/([a-z]+))?/?\$').firstMatch(path);
+    if (tab == null) return null;
+    return (tab: tab.group(1), profileId: null, expenseId: null);
+  }
+
   // --- Company module (FS-1001) ---
   //
   // The company id lives in the PATH, not in route arguments, so the address bar

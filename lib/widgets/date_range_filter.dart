@@ -20,6 +20,7 @@ class DateRangeFilter extends ConsumerWidget {
     required this.to,
     required this.onChanged,
     this.width = 320,
+    this.locale,
   });
 
   final String sectionLabel;
@@ -27,6 +28,10 @@ class DateRangeFilter extends ConsumerWidget {
   final DateTime? to;
   final void Function(DateTime? from, DateTime? to) onChanged;
   final double width;
+
+  /// Formatting locale. Null = the company locale. The admin shell has no
+  /// company and passes `kAdminFormatLocale` (FS-1026).
+  final String? locale;
 
   Future<void> _pick(BuildContext context, {required bool isFrom}) async {
     final now = DateTime.now();
@@ -48,7 +53,7 @@ class DateRangeFilter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final locale = ref.watch(companyLocaleProvider);
+    final String locale = this.locale ?? ref.watch(companyLocaleProvider);
     final hasValue = from != null || to != null;
 
     return SizedBox(

@@ -306,6 +306,38 @@ Plus one copy rule: read every confirm / destructive message against what the
 system really does (permanent vs recoverable, who can undo). *Missed: "support
 can restore" on a delete the owner wants final.*
 
+## 5b - Aesthetics pass (separate from functional - added after FS-1026)
+
+FS-1026 passed three functional QA runs and the owner rejected the look in
+one glance: unequal pill buttons, misaligned rows, a "side by side" that
+stacked. Functional clicking never sees this. So the aesthetics pass is its
+**own pass with its own findings table**, run after the functional lanes, on
+every changed screen, at **1440, the narrow desktop (~870) and 375**. A screen
+"looks fine" is not a result - each check below gets a yes/no per screen.
+
+**How to look:** full screenshot first, then `zoom` on every row of controls
+(header actions, filter bars, table action columns, card footers, dialog
+buttons). Judge the zoom, not the 800px thumbnail. When unsure, measure with
+`javascript_tool` on the semantics tree (enable it, then compare
+`getBoundingClientRect()` heights/tops of the buttons in one row).
+
+| # | Check | Fails when |
+|---|---|---|
+| V1 | **Button design** | Any button is not the house `AppButton` look: a `dense` AppButton (reads as a pill), a chip/`TextButton`/link styled as an action, a pill-shaped segmented switch. Row actions in tables are `ActionIconButton` with a tooltip. |
+| V2 | **Equal size in a row** | Two buttons in one row/bar differ in height, or sibling actions (Save / Verified, Import / Download) differ in height or style weight. |
+| V3 | **Alignment** | Controls in one row are not on one centre line (input vs button vs dropdown vs date filter), a button floats off its row, a column's cells start at different x, a card's footer buttons do not line up with the card's content edge. |
+| V4 | **Equal control heights** | Inputs, dropdowns, date filters and search fields in one bar differ in height; a disabled input changes shape (pill vs square) instead of just greying. |
+| V5 | **Layout means what it says** | "Side by side", "two columns", "grid" render as stacked at any desktop width. Comparison views (before/after images, model vs model) stay in one row with equal sizes; on mobile they scroll sideways rather than stack. |
+| V6 | **Wasted space / scrollbars** | A horizontal scrollbar on a table that fits, a card squeezed to a fixed width beside a wide empty area, content hugging one side of a wide screen. |
+| V7 | **Status vs action** | A status badge looks clickable, or an action looks like a status badge. Badges of one row are the same height and sit on one line. |
+| V8 | **Mobile wrap** | At 375 a row that does not fit wraps into equal-width stacked buttons, never a mix of sizes; no clipped label, no overflow stripe. |
+| V9 | **Consistency with sibling modules** | The new screen's buttons, tabs, tables and filters differ from the existing admin/app screens doing the same job (compare side by side with one of them). |
+
+Record it in the feature md as its own table under the run
+(`#### Aesthetics - 1440 / 870 / 375`), one row per screen x V-check that
+failed, with the zoom screenshot as evidence. A run with an open V-finding is
+not handed over.
+
 ## 6 - Findings and the report
 
 Collect findings from every lane in one table, most severe first:

@@ -23,6 +23,9 @@ import 'screens/admin_companies_screen.dart';
 import 'screens/admin_company_screen.dart';
 import 'screens/admin_currencies_screen.dart';
 import 'screens/admin_currency_sync_run_screen.dart';
+import 'screens/admin_receipt_ai_screen.dart';
+import 'screens/admin_ai_profile_screen.dart';
+import 'screens/admin_ai_scan_screen.dart';
 import 'screens/budget_list_screen.dart';
 import 'screens/budget_page_screen.dart';
 import 'screens/budgets_dashboard_screen.dart';
@@ -74,6 +77,20 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       builder: (_) => AdminAuthGate(
         child: AdminCurrencySyncRunScreen(syncRunId: currencyRunId),
       ),
+    );
+  }
+
+  // /admin/receipt-ai[/...] — Receipt AI (FS-1026): tabs, one profile, one scan.
+  final receiptAiRoute = AppRoutes.parseAdminReceiptAiPath(uri.path);
+  if (receiptAiRoute != null) {
+    final Widget screen = receiptAiRoute.profileId != null
+        ? AdminAiProfileScreen(profileId: receiptAiRoute.profileId!)
+        : receiptAiRoute.expenseId != null
+        ? AdminAiScanScreen(expenseId: receiptAiRoute.expenseId!)
+        : AdminReceiptAiScreen(initialTab: receiptAiRoute.tab);
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) => AdminAuthGate(child: screen),
     );
   }
 

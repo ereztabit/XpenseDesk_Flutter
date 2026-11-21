@@ -7,6 +7,7 @@ import '../models/admin_company_row.dart';
 import '../models/admin_company_user_row.dart';
 import '../services/admin_service.dart';
 import '../utils/admin_companies_utils.dart';
+import 'admin_receipt_ai_provider.dart';
 
 /// Provider for AdminService singleton.
 final adminServiceProvider = Provider<AdminService>((ref) {
@@ -229,4 +230,6 @@ final List<ProviderOrFamily> adminCachedProviders = [
   adminCompanyConfigurationProvider,
   adminCurrencyOverviewProvider,
   adminCurrencySyncRunProvider,
+  // FS-1026 Receipt AI.
+  ...adminReceiptAiCachedProviders,
 ];

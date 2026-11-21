@@ -19,6 +19,7 @@ class AdminSearchField extends StatefulWidget {
     required this.hintText,
     required this.clearTooltip,
     required this.onChanged,
+    this.compact = false,
   });
 
   /// Current query, owned by the caller's provider. Seeds the field on first
@@ -28,6 +29,10 @@ class AdminSearchField extends StatefulWidget {
   final String hintText;
   final String clearTooltip;
   final ValueChanged<String> onChanged;
+
+  /// 40px tall, to sit in one row with 40px dropdowns and date filters
+  /// (FS-1026 Receipt AI). Default false: the existing lists are unchanged.
+  final bool compact;
 
   @override
   State<AdminSearchField> createState() => _AdminSearchFieldState();
@@ -55,6 +60,10 @@ class _AdminSearchFieldState extends State<AdminSearchField> {
       onChanged: widget.onChanged,
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.search),
+        isDense: widget.compact ? true : null,
+        contentPadding: widget.compact ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10) : null,
+        prefixIconConstraints: widget.compact ? const BoxConstraints(minWidth: 40, minHeight: 40) : null,
+        suffixIconConstraints: widget.compact ? const BoxConstraints(minWidth: 40, minHeight: 40) : null,
         hintText: widget.hintText,
         filled: true,
         fillColor: AppTheme.card,
